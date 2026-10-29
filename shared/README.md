@@ -16,7 +16,7 @@
 - 공무원 요약은 상담 기록을 `situation`(앞에 «[담당 공무원 상담 기록]»), 사전 지표·욕구를 `profile`로 보낸다. 쟁점·욕구·긴급은 화면 규칙 값을 쓰고 요약·연계 후보만 AI 답으로 바꾼다.
 - `config.js`의 `aiEndpoint`가 비어 있으면 **규칙 기반 시연 모드**(`mode:"rules"`). 화면에 «AI 연결 전 시연 모드»를 표시한다.
 - 채우면 Edge Function을 부르고, 돌아온 서비스 ID 중 **목록에 있는 것만** 남긴다. 실패하면 자동으로 규칙 모드로 돌아간다.
-- 규칙: 각 서비스의 `rule` — `ageMin`·`ageMax`(본인 나이), `ageAlt`(이 태그가 있으면 나이 조건 면제), `all`(모두 필요), `any`(하나 이상), `boost`(가산), `childAgeMin`·`childAgeMax`(자녀 나이 하한·상한), `req`(이 중 하나는 꼭 — 장애·산모·한부모·치매 사업), `name`(이름 속 상황어 — 사용자 태그와 겹치면 +3), `core`(상황별 기본 서비스 가점), `base`(기본 서비스 가산점). 생명 위기 낱말이면 결과 맨 위에 109 고정 카드, 생계 위기면 129 고정 카드(S5b-2). 태그 목록은 `citizen/data/services.sample.json` `meta.tag_vocab`.
+- 규칙: 각 서비스의 `rule` — `ageMin`·`ageMax`(본인 나이), `ageAlt`(이 태그가 있으면 나이 조건 면제), `all`(모두 필요), `any`(하나 이상), `boost`(가산), `childAgeMin`·`childAgeMax`(자녀 나이 하한·상한), `req`(이 중 하나는 꼭 — 장애·산모·한부모·치매 사업), `name`(이름 속 상황어 — 사용자 태그와 겹치면 +3), `core`(상황별 기본 서비스 가점), `base`(기본 서비스 가산점). 고정 카드(S5b-2 재검수): 생명 위기 낱말 → 109, 폭력 피해(`violence` 태그) → 1366, 생계 위기(끼니·쫓겨남, 또는 위기·갑자기+실직·폐업·수입·돈·월세) → 129. «막막·급하·당장»만이면 안내 띠만. AI 함수는 하루 IP별 20회·전체 200회 상한(`edge/daeum-ai/rate_limit.sql`, 넘으면 429 → 규칙 모드). 태그 목록은 `citizen/data/services.sample.json` `meta.tag_vocab`.
 
 ## 도움 요청 형식 (공무원 창구가 읽는다)
 저장 위치: `localStorage["daeum.requests"]` = 아래 객체의 **JSON 배열**(오래된 것부터). 같은 브라우저의 다른 탭이 바꾸면 `storage` 이벤트가 온다 — `DaeumRequests.onChange(fn)`.

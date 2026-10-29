@@ -8,6 +8,10 @@ const MODEL = "claude-sonnet-5-5";
 const MAX_SITUATION = 1200;
 // 비용 상한: 화면이 규칙으로 먼저 추린 후보만 받는다(400건 통째로 보내면 1회 약 9만 토큰 ≈ 270원, 60건이면 약 40원 — 추정)
 const MAX_SERVICES = 60;
+// 하루 호출 상한(S5b-2 케르 재검수 ③): Origin 은 위조할 수 있으므로 IP별·전체 하루 상한을 DB(rate_limit.sql)로 건다.
+// 넘으면 429 → 화면은 자동으로 규칙 모드. 1회 ≈ 34원(추정) → 전체 200회/일 ≈ 6,800원/일 상한. 최후 방어선은 콘솔 월 한도 $20.
+const DAILY_PER_IP = 20;
+const DAILY_TOTAL = 200;
 const ALLOW_ORIGINS = ["https://hcyang572-gif.github.io", "http://localhost:8000", "http://127.0.0.1:8000"];
 
 const SYSTEM = `너는 복지 상담 창구의 안내자다. 사람이 자기(또는 가족의) 상황을 말하면, 함께 받은 «서비스 목록»에서 받을 수 있을 만한 것을 고른다.
@@ -35,6 +39,30 @@ function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), { status, headers: { ...cors(origin), "Content-Type": "application/json; charset=utf-8" } });
 }
 
+async function ipHash(req: Request): Promise<string> {
+  const ip = (req.headers.get("cf-connecting-ip") || (req.headers.get("x-forwarded-for") || "").split(",")[0] || "unknown").trim();
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("daeum:" + ip));
+  return Array.from(new Uint8Array(d)).slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** 상한 확인 + 1 증가(원자적, DB 함수 daeum_ai_hit). 확인 자체가 실패하면 AI를 부르지 않는다(비용 쪽으로 안전하게). */
+async function rateOk(req: Request): Promise<{ ok: boolean; why?: string }> {
+  const url = Deno.env.get("SUPABASE_URL"), sk = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !sk) return { ok: false, why: "limiter-env" };
+  try {
+    const r = await fetch(url + "/rest/v1/rpc/daeum_ai_hit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: sk, Authorization: "Bearer " + sk },
+      body: JSON.stringify({ p_ip: await ipHash(req), p_ip_limit: DAILY_PER_IP, p_total_limit: DAILY_TOTAL }),
+    });
+    if (!r.ok) return { ok: false, why: "limiter-" + r.status };
+    const j = await r.json();
+    return { ok: !!j.ok, why: j.why };
+  } catch {
+    return { ok: false, why: "limiter-error" };
+  }
+}
+
 type Svc = { id: string; name: string; target?: string; support?: string };
 
 Deno.serve(async (req) => {
@@ -54,6 +82,8 @@ Deno.serve(async (req) => {
   const services = (Array.isArray(body.services) ? body.services : []).slice(0, MAX_SERVICES)
     .filter((s) => s && typeof s.id === "string" && typeof s.name === "string");
   if (!situation || !services.length) return json({ error: "상황 문장과 서비스 목록이 필요합니다" }, 400, origin);
+  const rl = await rateOk(req);
+  if (!rl.ok) return json({ error: "오늘 AI 안내 사용량을 넘었습니다(" + (rl.why || "") + ")" }, 429, origin);
 
   const ids = new Set(services.map((s) => s.id));
   const catalog = services.map((s) => `${s.id} | ${s.name} | 대상: ${(s.target ?? "").slice(0, 160)} | 내용: ${(s.support ?? "").slice(0, 120)}`).join("\n");

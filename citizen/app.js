@@ -150,22 +150,26 @@
     return out.filter(function (x, i) { return out.indexOf(x) === i; });
   }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
-  // 위기 상담전화 고정 카드 — AI 답과 상관없이 늘 맨 위(서비스 목록 밖의 고정 안내)
-  function hotlineCard(pr) {
-    if (!pr.urgentSuicide && !pr.urgentCrisis) return null;
+  // 위기 상담전화 고정 카드 — AI 답과 상관없이 늘 맨 위(서비스 목록 밖의 고정 안내). 생명 > 폭력 피해 > 생계 순
+  function hotCard(title, html) {
     var li = el("li", "card is-urgent hotline");
     li.setAttribute("role", "alert");
-    if (pr.urgentSuicide) {
-      li.appendChild(el("h2", null, "지금 바로 이야기 나눌 곳이 있어요"));
-      li.innerHTML += '<p class="hot-num"><a href="tel:109">109</a> 자살예방 상담전화 · 24시간 · 무료</p>' +
-        '<p class="hot-num"><a href="tel:1393">1393</a> 예전 번호(지금은 109로 통합)</p>' +
-        '<p class="why">혼자 견디지 않으셔도 됩니다. 위험이 급하면 <a href="tel:112">112</a>·<a href="tel:119">119</a>로 바로 연락해 주세요.</p>';
-    } else {
-      li.appendChild(el("h2", null, "갑자기 생계가 어려워졌다면"));
-      li.innerHTML += '<p class="hot-num"><a href="tel:129">129</a> 보건복지상담센터</p>' +
-        '<p class="why">긴급복지지원은 먼저 돕고 나중에 확인합니다. 주소지 읍면동 행정복지센터에서도 바로 신청할 수 있어요.</p>';
-    }
+    li.appendChild(el("h2", null, title));
+    li.insertAdjacentHTML("beforeend", html);
     return li;
+  }
+  function hotlineCards(pr) {
+    var out = [];
+    if (pr.urgentSuicide) out.push(hotCard("지금 바로 이야기 나눌 곳이 있어요",
+      '<p class="hot-num"><a href="tel:109">109</a> 자살예방 상담전화 · 24시간 · 무료</p>' +
+      '<p class="why">예전 번호 1393은 109로 통합되었습니다. 혼자 견디지 않으셔도 됩니다. 위험이 급하면 <a href="tel:112">112</a>·<a href="tel:119">119</a>로 바로 연락해 주세요.</p>'));
+    if (pr.urgentViolence) out.push(hotCard("폭력 피해 상담은 여기로",
+      '<p class="hot-num"><a href="tel:1366">1366</a> 여성긴급전화 · 24시간</p>' +
+      '<p class="why">지금 위험하면 <a href="tel:112">112</a>로 바로 신고해 주세요.</p>'));
+    if (pr.urgentCrisis) out.push(hotCard("갑자기 생계가 어려워졌다면",
+      '<p class="hot-num"><a href="tel:129">129</a> 보건복지상담센터</p>' +
+      '<p class="why">긴급복지지원은 먼저 돕고 나중에 확인합니다. 주소지 읍면동 행정복지센터에서도 바로 신청할 수 있어요.</p>'));
+    return out;
   }
   function renderResult(res) {
     $("summary").textContent = res.summary;
@@ -173,14 +177,15 @@
     $("mode-note").textContent = res.notice || "";
     var pr = res.profile || {};
     // 생명 위기·생계 위기는 맨 위 고정 카드로 알린다(S5b-2). 띠는 «마음이 힘듦»만 있을 때.
-    var hot = hotlineCard(pr);
-    $("urgent").hidden = !!hot || !(pr.urgentMental || pr.urgentCrisis);
+    var hot = hotlineCards(pr);
+    // 고정 카드가 없고 마음 힘듦·«막막» 같은 낱말만 있으면 안내 띠만
+    $("urgent").hidden = hot.length > 0 || !pr.urgent;
     $("urgent").innerHTML = pr.urgentMental
       ? '마음이 많이 힘드시면 지금 바로 <a href="tel:109">109</a>(24시간)로 전화해 주세요. 혼자 견디지 않으셔도 됩니다.'
       : '갑자기 생계가 어려워졌다면 <a href="tel:129">129</a>(보건복지상담센터)로 바로 상담할 수 있어요. 긴급복지지원은 먼저 돕고 나중에 확인합니다.';
     if (res.mode === "rules" && C.aiEndpoint && window.DaeumNet) DaeumNet.noteAiDown(res.notice);
     var ol = $("cards"); ol.innerHTML = "";
-    if (hot) ol.appendChild(hot);
+    hot.forEach(function (c) { ol.appendChild(c); });
     if (!res.items.length) {
       var li = el("li", "empty", "말씀만으로는 딱 맞는 서비스를 찾지 못했어요. 아래 «담당 공무원에게 도움 요청»을 누르시면 공무원이 직접 살펴봅니다.");
       ol.appendChild(li);

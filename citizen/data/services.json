@@ -25,7 +25,7 @@
    "D2_sgg": 5,
    "D2_sido_wide": 19,
    "D1_focus": 375,
-   "loaded": 368
+   "loaded": 369
   },
   "scope": "화면 적재 최대 400건(Edge MAX_SERVICES=400). 지자체(D2)는 경상북도 상주시 사업 전부 + 경상북도 광역(시군 미지정) 사업 전부, 중앙부처(D1)는 목록의 생애주기·대상·주제·이름·요약에 농촌 고령지역 관련어(노년·노인·어르신·장애·저소득·기초생활·차상위·수급·농어·농업인·어업인·독거·1인가구·돌봄·요양·치매·간병·위기·긴급·에너지·난방·주거·보훈·의료비)가 하나라도 있는 것을 관련어 개수 순으로 남은 자리만큼. 순위 가중: 상주시 사업 base 2, 경상북도 광역 base 1.",
   "verification": "소관부처·담당부서·문의처·신청방법은 API 원천 값 그대로이며 사람이 다시 확인하지 않았다(서비스마다 source.checked=false). D1 문의처=목록 rprsCtadr, D2 문의처=상세 inqplCtadrList. 원천에 문의처가 없으면 129 안내로 대체. target·support 는 300자에서 자름. area 필드: 중앙(D1)·경북(D2 경상북도 광역)·상주(D2 상주시). 다른 시군 지자체 사업은 싣지 않는다. rule: 만 60세 이상 전용 사업 base +2, 이름에 상황어가 있으면 base +1, 저소득·아픔은 boost(가점), 보훈·창업 등 특정 자격 사업은 any=[\"special\"](화면 태그에 없어 규칙 매칭 제외, AI 경로로만). rule(상황 태그·나이)은 분류어에서 기계적으로 뽑은 것이라 시연 전 표본 검수가 필요하다.",
@@ -158,7 +158,8 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00004570&wlfareInfoReldBztpCd=02",
    "rule": {
     "any": [
-     "pregnancy"
+     "pregnancy",
+     "infant"
     ],
     "ageMin": 19,
     "ageMax": 34,
@@ -198,7 +199,8 @@
      "singleParent",
      "pregnancy",
      "housing",
-     "crisis"
+     "crisis",
+     "infant"
     ],
     "ageMin": 19,
     "ageMax": 34,
@@ -544,7 +546,12 @@
     "all": [
      "child"
     ],
-    "base": 1
+    "base": 1,
+    "req": [
+     "singleParent",
+     "pregnancy",
+     "infant"
+    ]
    },
    "region": "경상북도",
    "area": "경북",
@@ -699,7 +706,8 @@
    "rule": {
     "any": [
      "pregnancy",
-     "crisis"
+     "crisis",
+     "infant"
     ],
     "ageMin": 19,
     "ageMax": 34,
@@ -885,7 +893,7 @@
     "name": [
      "energy"
     ],
-    "core": 3
+    "core": 5
    },
    "region": "전국",
    "area": "중앙",
@@ -1330,9 +1338,13 @@
     "any": [
      "disability",
      "housing",
-     "crisis"
+     "crisis",
+     "violence"
     ],
     "base": 1,
+    "req": [
+     "violence"
+    ],
     "name": [
      "housing"
     ]
@@ -1522,7 +1534,10 @@
      "lowIncome",
      "sick"
     ],
-    "base": 1
+    "base": 1,
+    "req": [
+     "sick"
+    ]
    },
    "region": "전국",
    "area": "중앙",
@@ -1835,7 +1850,8 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00001115&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "senior"
+     "senior",
+     "sick"
     ],
     "ageMin": 65,
     "boost": [
@@ -1843,6 +1859,9 @@
      "sick"
     ],
     "base": 3,
+    "req": [
+     "sick"
+    ],
     "name": [
      "senior"
     ]
@@ -1886,7 +1905,7 @@
      "energy",
      "crisis"
     ],
-    "core": 3
+    "core": 5
    },
    "region": "전국",
    "area": "중앙",
@@ -2247,7 +2266,8 @@
    "rule": {
     "any": [
      "senior",
-     "singleParent"
+     "singleParent",
+     "sick"
     ],
     "ageMin": 35,
     "boost": [
@@ -2255,6 +2275,9 @@
      "sick"
     ],
     "base": 1,
+    "req": [
+     "sick"
+    ],
     "name": [
      "senior"
     ]
@@ -2358,7 +2381,8 @@
     "any": [
      "pregnancy",
      "housing",
-     "crisis"
+     "crisis",
+     "infant"
     ],
     "boost": [
      "lowIncome",
@@ -2894,7 +2918,9 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00000061&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "pregnancy"
+     "pregnancy",
+     "infant",
+     "sick"
     ],
     "all": [
      "infant"
@@ -2907,7 +2933,8 @@
     "childAgeMax": 5,
     "req": [
      "pregnancy",
-     "infant"
+     "infant",
+     "sick"
     ]
    },
    "region": "전국",
@@ -3559,6 +3586,47 @@
    }
   },
   {
+   "id": "D1-WLF00003254",
+   "dataset": "D1",
+   "name": "청소년방과후아카데미운영지원",
+   "provider": "성평등가족부 청소년활동진흥과",
+   "target": "대상 분류: 아동,청소년 / 다문화·탈북민,다자녀,장애인,저소득,한부모·조손 (자격 상세는 복지로 안내)",
+   "support": "방과후 돌봄이 필요한 취약계층 청소년에게 체험활동, 학습지원, 급식, 상담 등 종합서비스 제공을 통한 건강한 성장과 자립을 지원합니다.",
+   "apply": "복지로 상세 안내에서 확인",
+   "contact": "02-330-2831~4",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00003254&wlfareInfoReldBztpCd=01",
+   "rule": {
+    "any": [
+     "singleParent",
+     "careNeed",
+     "disability",
+     "food"
+    ],
+    "all": [
+     "child"
+    ],
+    "boost": [
+     "lowIncome",
+     "sick"
+    ],
+    "childAgeMax": 18
+   },
+   "region": "전국",
+   "area": "중앙",
+   "updated": "20210903",
+   "source": {
+    "api": "D1",
+    "servId": "WLF00003254",
+    "fetched": "2026-10-29",
+    "checked": false,
+    "detail": false
+   }
+  },
+  {
    "id": "D1-WLF00001060",
    "dataset": "D1",
    "name": "대학생 근로장학금 지원",
@@ -3833,10 +3901,14 @@
      "housing",
      "debt",
      "crisis",
-     "mental"
+     "mental",
+     "violence"
     ],
     "boost": [
      "sick"
+    ],
+    "req": [
+     "violence"
     ]
    },
    "region": "전국",
@@ -5532,10 +5604,14 @@
    "rule": {
     "any": [
      "crisis",
-     "mental"
+     "mental",
+     "violence"
     ],
     "boost": [
      "sick"
+    ],
+    "req": [
+     "violence"
     ]
    },
    "region": "전국",
@@ -5603,7 +5679,8 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00001135&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "pregnancy"
+     "pregnancy",
+     "infant"
     ],
     "boost": [
      "lowIncome"
@@ -6666,11 +6743,7 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00004669&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "crisis"
-    ],
-    "base": 1,
-    "name": [
-     "crisis"
+     "special"
     ]
    },
    "region": "전국",
@@ -6700,7 +6773,8 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00004647&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "pregnancy"
+     "pregnancy",
+     "infant"
     ],
     "ageMin": 65,
     "boost": [
@@ -6990,7 +7064,8 @@
    "rule": {
     "any": [
      "pregnancy",
-     "disability"
+     "disability",
+     "infant"
     ],
     "all": [
      "infant"
@@ -7075,10 +7150,14 @@
    "rule": {
     "any": [
      "disability",
-     "mental"
+     "mental",
+     "sick"
     ],
     "ageMin": 13,
     "boost": [
+     "sick"
+    ],
+    "req": [
      "sick"
     ]
    },
@@ -7215,7 +7294,10 @@
      "lowIncome",
      "sick"
     ],
-    "base": 1
+    "base": 1,
+    "req": [
+     "sick"
+    ]
    },
    "region": "전국",
    "area": "중앙",
@@ -7779,7 +7861,8 @@
     "any": [
      "pregnancy",
      "careNeed",
-     "crisis"
+     "crisis",
+     "infant"
     ],
     "all": [
      "child"
@@ -8125,7 +8208,8 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00001088&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "pregnancy"
+     "pregnancy",
+     "infant"
     ],
     "boost": [
      "sick"
@@ -8230,9 +8314,13 @@
    "rule": {
     "any": [
      "debt",
-     "crisis"
+     "crisis",
+     "violence"
     ],
-    "base": 1
+    "base": 1,
+    "req": [
+     "violence"
+    ]
    },
    "region": "전국",
    "area": "중앙",
@@ -10463,7 +10551,8 @@
    "rule": {
     "any": [
      "pregnancy",
-     "disability"
+     "disability",
+     "infant"
     ],
     "base": 1,
     "req": [
@@ -10637,7 +10726,8 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00003246&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "pregnancy"
+     "pregnancy",
+     "infant"
     ],
     "all": [
      "child"
@@ -10939,12 +11029,20 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00005023&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "lowIncome"
+     "lowIncome",
+     "singleParent",
+     "pregnancy",
+     "infant"
     ],
     "ageMin": 13,
     "ageMax": 18,
     "all": [
      "child"
+    ],
+    "req": [
+     "singleParent",
+     "pregnancy",
+     "infant"
     ]
    },
    "region": "전국",
@@ -11273,7 +11371,8 @@
    "rule": {
     "any": [
      "pregnancy",
-     "disability"
+     "disability",
+     "infant"
     ],
     "ageMin": 19,
     "ageMax": 64,
@@ -12410,7 +12509,9 @@
    "url": "https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00006313&wlfareInfoReldBztpCd=01",
    "rule": {
     "any": [
-     "pregnancy"
+     "pregnancy",
+     "infant",
+     "sick"
     ],
     "all": [
      "infant"
@@ -12422,7 +12523,8 @@
     "childAgeMax": 5,
     "req": [
      "pregnancy",
-     "infant"
+     "infant",
+     "sick"
     ]
    },
    "region": "전국",

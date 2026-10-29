@@ -20,7 +20,7 @@
   var LEX = {
     alone: ["혼자 살", "혼자 사", "혼자 지내", "홀로", "독거", "1인 가구", "혼자서 지내", "혼자 계", "사별", "혼자예요", "혼자입니다"],
     lowIncome: ["돈이 없", "생활비", "형편", "가난", "수입이 없", "수입 없", "소득이 없", "수급자", "차상위", "빠듯", "생계", "먹고살기", "연금만"],
-    unemployed: ["실직", "해고", "퇴사", "직장을 잃", "일자리를 잃", "일을 그만", "회사를 그만", "권고사직", "폐업", "일이 끊", "실업", "일을 못 하게", "그만두게"],
+    unemployed: ["취업 준비", "구직", "실직", "해고", "퇴사", "직장을 잃", "일자리를 잃", "일을 그만", "회사를 그만", "권고사직", "폐업", "일이 끊", "실업", "일을 못 하게", "그만두게"],
     working: ["일은 하는데", "일하는데", "알바", "아르바이트", "일용직", "벌이가 적", "월급이 적"],
     singleParent: ["한부모", "이혼", "혼자 키우", "혼자 아이", "혼자 애", "싱글맘", "싱글대디", "남편 없이", "아내 없이", "양육비"],
     child: ["아이", "자녀", "아들", "딸", "초등", "중학생", "고등학생", "애들", "애가", "손주", "손자", "손녀"],
@@ -33,7 +33,9 @@
     housing: ["월세", "집세", "전세", "보증금", "집이 낡", "쫓겨", "방값", "집주인", "집 수리", "지붕", "곰팡이"],
     energy: ["난방", "보일러", "전기요금", "가스요금", "추워", "춥", "기름값", "연탄", "전기세", "냉방", "에어컨", "더위"],
     debt: ["빚", "대출", "채무", "독촉", "추심", "카드값", "사채"],
-    crisis: ["갑자기", "당장", "급해", "급하", "막막", "굶", "끼니", "먹을 게", "쌀이 떨", "위기", "길에 나앉"],
+    // «막막·급하·당장»은 위기 태그가 아니라 안내 띠(SOFT_WORDS)만 켠다(재검수 ①)
+    crisis: ["갑자기", "굶", "끼니", "먹을 게", "쌀이 떨", "위기", "길에 나앉"],
+    violence: ["때려", "때리", "에게 맞", "한테 맞", "맞고 살", "폭행", "폭력", "학대", "스토킹", "성폭", "추행", "협박"],
     food: ["끼니", "굶", "먹을 게", "쌀이", "반찬", "밥을 못"],
     mental: ["우울", "죽고 싶", "살기 싫", "죽을 것 같", "극단", "자살", "사라지고 싶", "잠을 못", "외롭", "외로워",
       "살고 싶지 않", "살고 싶지가 않", "목숨을 끊", "생을 마감", "삶을 끝", "더는 못 버티", "더 이상 못 버티", "없어지고 싶", "극단적 선택", "자해"]
@@ -41,6 +43,11 @@
   // 생명 위기 낱말(mental 의 일부 — «외롭다·잠을 못 잔다»는 여기 넣지 않는다)
   var SUICIDE_WORDS = ["죽고 싶", "살기 싫", "죽을 것 같", "극단", "자살", "사라지고 싶", "살고 싶지 않", "살고 싶지가 않",
     "목숨을 끊", "생을 마감", "삶을 끝", "더는 못 버티", "더 이상 못 버티", "없어지고 싶", "자해"];
+  var CRISIS_HARD = ["굶", "끼니", "먹을 게", "쌀이 떨", "길에 나앉"];
+  var CRISIS_SOFT = ["위기", "갑자기"];
+  var CRISIS_CAUSE = ["실직", "폐업", "수입", "돈", "월세"];
+  var SOFT_WORDS = ["막막", "급해", "급하", "당장"];
+  var NAME_WEIGHT = { energy: 6 };   // 이름 속 상황어 가점(기본 3)
   // 어르신을 가리키는 말(나이가 없을 때 senior 로 본다)
   var SENIOR_WORDS = ["어르신", "노인", "할머니", "할아버지", "노모", "노부", "칠순", "팔순", "구순"];
   var CHILD_NEAR = /(아이|애|딸|아들|자녀|손주|손자|손녀|아기|막내|첫째|둘째|학생)/;
@@ -51,7 +58,7 @@
     working: "일하지만 소득이 적음", singleParent: "혼자 아이를 키움", child: "자녀가 있음", infant: "어린 아기가 있음",
     pregnancy: "임신·출산", sick: "아픈 곳이 있음", careNeed: "혼자 생활하기 어려움", dementia: "기억력이 걱정됨",
     disability: "장애가 있음", housing: "집·월세 걱정", energy: "난방·전기 요금 걱정", debt: "빚 걱정",
-    crisis: "갑자기 어려워짐", food: "끼니 걱정", mental: "마음이 힘듦"
+    crisis: "갑자기 어려워짐", food: "끼니 걱정", mental: "마음이 힘듦", violence: "폭력 피해"
   };
   // 빠른 선택 칩(화면에서 씀)
   var CHIPS = [
@@ -79,6 +86,7 @@
     // «아이»가 «아이고»처럼 감탄사로 쓰인 경우 거름
     if (tags.child && !/(아이[가는를들이도와랑]|아이 [가-힣]|자녀|아들|딸|초등|중학생|고등학생|애들|애가|손주|손자|손녀)/.test(text)) delete tags.child;
     if (tags.infant) tags.child = tags.child || false;
+    if (tags.food) tags.lowIncome = true;   // 끼니 걱정은 생계 어려움이기도 하다
 
     // 나이: "82살", "78세", "80대", "마흔" 등
     var subjectAges = [], childAges = [], m, re = /(\d{1,3})\s*(세|살)/g;
@@ -111,7 +119,12 @@
       age: age, ageBand: ageBand, ageLabel: ageLabel, ageKnown: age != null, seniorHint: seniorHint,
       childAges: childAges, childAgesGuess: childAgesGuess, tags: Object.keys(tags),
       isProxy: !!proxy.isProxy, relation: proxy.relation || "",
-      urgent: !!(tags.mental || tags.crisis), urgentMental: !!tags.mental, urgentCrisis: !!(tags.crisis || tags.food),
+      urgent: !!(tags.mental || tags.crisis || has(text, SOFT_WORDS)), urgentMental: !!tags.mental,
+      // 생계 위기(129 고정 카드·긴급 가점)는 좁게(S5b-2 재검수): 끼니·쫓겨남 낱말, 또는 «위기/갑자기» + 실직·폐업·수입·돈·월세.
+      // «막막·급하·당장»만으로는 켜지 않는다(«취업 준비가 막막» 같은 말) — 그때는 안내 띠만.
+      urgentCrisis: has(text, CRISIS_HARD) || (has(text, CRISIS_SOFT) && has(text, CRISIS_CAUSE)),
+      // 폭력 피해(S5b-2): 1366 고정 카드
+      urgentViolence: !!tags.violence,
       // 생명 위기 낱말(S5b-2): 이때는 결과 맨 위에 109 고정 카드
       urgentSuicide: has(text, SUICIDE_WORDS)
     };
@@ -151,12 +164,15 @@
     any.forEach(function (t) { if (reasons.indexOf(REASON[t]) < 0) reasons.push(REASON[t]); score += 2; });
     (r.boost || []).forEach(function (t) { if (T[t]) { score += 1; if (reasons.length < 3 && reasons.indexOf(REASON[t]) < 0) reasons.push(REASON[t]); } });
     if (!reasons.length) return null;
-    if (svc.urgent) score += 100;
+    if (svc.urgent && (p.urgentCrisis || p.urgentSuicide)) score += 100;   // 긴급 가점은 좁은 위기 판정일 때만
     score += r.base || 0;            // 기본이 되는 서비스(기초연금·구직급여 등)를 앞에 두는 가중
     // 이름에 사용자 상황이 드러난 사업을 앞에(«난방» 문장 → 에너지바우처·연료비), 상황별 기본 서비스 가점(core)
     var nameHit = (r.name || []).filter(function (t) { return T[t]; }).length;
-    score += 3 * nameHit;
-    if (nameHit || (r.core && (r.ageMin || 0) >= 60)) score += r.core || 0;
+    // 난방(energy)은 이름 가점을 크게(재검수 ⑤: «78세 혼자 난방비 걱정»에 노인 수술 사업이 앞서던 것)
+    score += (r.name || []).reduce(function (a, t) { return a + (T[t] ? (NAME_WEIGHT[t] || 3) : 0); }, 0);
+    // 기본 서비스 가점은 «긴급» 말고 그 서비스 고유의 상황(난방·생계·주거…)이 이름과 겹칠 때만
+    var coreHit = (r.name || []).some(function (t) { return t !== "crisis" && T[t]; });
+    if (coreHit || (r.core && (r.ageMin || 0) >= 60)) score += r.core || 0;
     return { score: score, reasons: reasons.slice(0, 3), ageNote: ageNote };
   }
 
