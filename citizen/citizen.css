@@ -257,3 +257,37 @@ select { min-height: 56px; }
 #place-wrap .hint { display: block; font-weight: var(--fw-m); font-size: var(--fs-s); color: var(--ink2); margin: -4px 0 var(--sp-2); }
 #find.find-sub { min-height: var(--tap); width: auto; margin: var(--sp-2) auto 0; display: flex; background: none; box-shadow: none; color: var(--acc-ink);
   font-size: var(--fs-s); font-weight: var(--fw-m); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ══════════ S10b(🩵 미르 10-30) 시안 A «하루 한 장» — 우리가족 v5 재질(종이 결·세라믹·에나멜), 주민 메뉴 2칸 ══════════ */
+.top { background-color: transparent; background-image: var(--nz-dock), var(--dock); background-size: 160px 160px, auto; box-shadow: var(--hl), 0 1px 0 var(--hair);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4); flex-wrap: nowrap; }
+.brand { font-weight: var(--fw-b); }
+.brand i { position: relative; width: 28px; height: 28px; border-radius: 10px; background: var(--enamel); box-shadow: var(--enamel-sh); }
+.brand i::before, .brand i::after { content: ""; position: absolute; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+.brand i::before { left: 5px; opacity: .65; } .brand i::after { right: 5px; }
+/* 메뉴 2칸 — 세라믹 세그먼트(우물 속 떠오른 구슬) */
+.top .seg { display: inline-flex; gap: 2px; padding: 4px; margin-left: auto; border-radius: var(--r-pill); background: var(--well); box-shadow: var(--well-sh); min-width: 0; }
+.top .seg button { min-height: var(--tap); padding: 0 16px; border: 0; border-radius: var(--r-pill); background: none; cursor: pointer; white-space: nowrap;
+  font: var(--fw-m) var(--fs-s) var(--f); color: var(--ink2); transition: color var(--t) var(--c-std); }
+.top .seg button[aria-current="page"] { color: var(--ink); background: var(--bead); box-shadow: var(--bead-sh); }
+.top .badge { margin-left: 0; }
+.top .badge:not([hidden]) { display: none; } /* 모드 표시는 찾은 도움 화면 안내문(mode-note)으로 충분 — 머리띠를 비운다 */
+@media (max-width: 400px) { .brand { font-size: 0; gap: 0; min-width: var(--tap); justify-content: center; } .top .seg button { padding: 0 12px; } }
+/* 누구의 일 — 우물 속 세라믹 구슬 */
+.who-btn[aria-checked="true"] { background: var(--bead); box-shadow: var(--bead-sh); }
+/* 칩 — 세라믹, 고르면 먹 에나멜 */
+.chip { color: var(--ink); background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--e-sm); }
+.chip[aria-pressed="true"] { color: #fff; background: var(--ink-enamel); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 .5px rgba(0,0,0,.4), 2px 8px 16px -8px rgba(20,16,40,.5); }
+.chip[aria-pressed="true"]::before { content: "✓ "; color: #fff; }
+/* 글 칸 — 우물 */
+textarea, select, input[type="text"] { border-radius: var(--rb); }
+.speak textarea { background: var(--well); box-shadow: var(--well-sh); border-color: transparent; }
+.speak textarea:focus { border-color: var(--acc); }
+/* 큰 주 단추 — 에나멜 알약 60px */
+.btn-big { border-radius: var(--r-pill); min-height: 60px; }
+.row2 .d-btn, .actions .d-btn { border-radius: var(--r-pill); }
+.nav .bk { background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--e-sm); }
+.example { border-radius: var(--r); }
+.card.svc::before { color: var(--acc-ink); }
+.radio:has(input:checked) { box-shadow: inset 0 0 0 2px var(--acc); }
+.cta { background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--pb) 94%, transparent) 38%); }

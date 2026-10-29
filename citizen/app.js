@@ -46,6 +46,9 @@
     if (STEPS.indexOf(step) < 0) step = "ask";
     if (((step === "result" || step === "checklist") && !S.result) || (step === "request" && !S.input) || (step === "done" && !S.done)) step = "ask";
     STEPS.forEach(function (s) { $("step-" + s).hidden = s !== step; });
+    // 주민 메뉴 2칸(S10b): 보낸 알림 화면만 «보낸 알림», 나머지 흐름은 모두 «알리기»
+    var seg = step === "progress" ? "progress" : "ask";
+    document.querySelectorAll(".top .seg [data-seg]").forEach(function (b) { if (b.dataset.seg === seg) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
     if (step === "checklist") renderChecklist();
     if (step === "progress") renderProgress();
     window.scrollTo(0, 0);

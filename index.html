@@ -5,60 +5,68 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>닿음</title>
 <meta name="description" content="주민이 알리고, 공무원이 찾아간다 — 찾아가는 복지 업무 도구 시제품">
-<meta name="theme-color" content="#F4F4F8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0A0A12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F1EFF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0A12" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%237B70E2%27/%3E%3Cstop offset=%271%27 stop-color=%27%234236A8%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2715%27 fill=%27url(%23g)%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="shared/tokens.css">
 <style>
+  /* 첫 화면 — S10b 시안 A: 실크(밤) 카드 한 장 + 문 두 개. 3초 안에: 제목 한 줄 · 세 단계 흐름 · 누구로 들어갈지 */
   body { display: flex; flex-direction: column; }
-  main { flex: 1; width: 100%; max-width: 64rem; margin: 0 auto; padding: clamp(var(--sp-10), 9vh, 6rem) var(--sp-4) var(--sp-10); }
-  .logo { display: inline-flex; align-items: center; gap: var(--sp-3); font-size: var(--fs-b); font-weight: var(--fw-b); color: var(--ink2); }
-  .logo i { width: 28px; height: 28px; border-radius: 50%; flex: none;
-    background: radial-gradient(60% 60% at 35% 30%, rgba(255,255,255,.9), transparent 60%), conic-gradient(from 200deg, var(--acc-hi), #86A6D8, #B0617B, var(--acc-hi));
-    box-shadow: inset 0 0 0 .5px rgba(0,0,0,.15), 0 2px 10px -2px color-mix(in srgb, var(--acc) 70%, transparent); }
-  .hero { display: grid; gap: var(--sp-4); margin: var(--sp-8) 0 var(--sp-10); }
-  .name { margin: 0; font-size: clamp(4rem, 15vw, 7.5rem); font-weight: var(--fw-h); letter-spacing: -.06em; line-height: .95; padding-bottom: .06em;
-    background: linear-gradient(180deg, var(--ink) 35%, color-mix(in srgb, var(--ink) 50%, var(--acc))); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .line { margin: 0; font-size: clamp(1.25rem, 4.4vw, 1.625rem); font-weight: var(--fw-b); letter-spacing: -.035em; line-height: 1.4; }
-  .note { margin: 0; font-size: var(--fs-s); color: var(--ink2); }
-  .doors { display: grid; gap: var(--sp-4); }
-  .door { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--sp-5); padding: var(--sp-6); min-height: 9rem; text-decoration: none; color: var(--ink); }
-  .door .ic { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; color: var(--on-acc); background: var(--enamel); box-shadow: var(--enamel-sh); }
-  .door .ic svg { width: 30px; height: 30px; }
-  .door.citizen .ic { color: var(--acc-ink); background: var(--well); box-shadow: var(--well-sh); }
-  .door strong { display: block; font-size: var(--fs-h2); font-weight: var(--fw-h); letter-spacing: -.04em; line-height: 1.25; margin-top: 2px; }
-  .door span { display: block; color: var(--ink2); font-size: var(--fs-b); line-height: 1.55; margin-top: var(--sp-1); }
-  .door .go { color: var(--ink2); }
-  footer { max-width: 64rem; width: 100%; margin: 0 auto; padding: var(--sp-5) var(--sp-4) var(--sp-8); font-size: var(--fs-xs); color: var(--ink2); border-top: 1px solid var(--hair); }
-  @media (min-width: 720px) { .doors { grid-template-columns: 1fr 1fr; } .door { grid-template-columns: 1fr auto; align-content: start; min-height: 15rem; } .door .ic { grid-column: 1 / -1; margin-bottom: var(--sp-4); } }
+  main { flex: 1; width: 100%; max-width: 64rem; margin: 0 auto; padding: var(--sp-5) var(--sp-4) var(--sp-8); display: grid; gap: var(--sp-4); align-content: start; }
+  .hero { border-radius: var(--r-lg); padding: 32px 26px 28px; min-height: min(56vh, 30rem); display: flex; flex-direction: column; }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: var(--fw-b); letter-spacing: -.04em; color: #fff; }
+  .brand i { position: relative; width: 30px; height: 30px; border-radius: 10px; background: var(--enamel); box-shadow: var(--enamel-sh); }
+  .brand i::before, .brand i::after { content: ""; position: absolute; top: 11px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
+  .brand i::before { left: 6px; opacity: .65; } .brand i::after { right: 6px; }
+  .hero h1 { margin: auto 0 0; padding-top: var(--sp-10); font-size: clamp(2rem, 8.6vw, 3.25rem); line-height: 1.22; font-weight: var(--fw-b); letter-spacing: -.045em; color: #fff; }
+  .hero p { margin: 14px 0 0; font-size: var(--fs-b); line-height: 1.6; color: rgba(244,242,255,.88); }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 22px 0 0; padding: 0; list-style: none; font-size: .875rem; font-weight: var(--fw-m); color: rgba(244,242,255,.92); }
+  .flow li { padding: 6px 12px; border-radius: 14px; background: rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 0 0 .5px rgba(255,255,255,.12); }
+  .flow li + li::before { content: ""; display: inline-block; width: 14px; height: 1px; margin: 0 10px 0 -22px; vertical-align: middle; background: rgba(255,255,255,.5); }
+  .flow li + li { margin-left: 22px; }
+  .doors { display: grid; gap: var(--sp-3); }
+  .door { display: flex; align-items: center; gap: 16px; padding: 18px 20px; min-height: 88px; border-radius: var(--r); text-decoration: none; color: var(--ink); transition: transform var(--t-fast) var(--c-std); }
+  .door:active { transform: scale(.98); }
+  .door .di { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; flex: none; background: var(--acc-soft); color: var(--acc-ink); }
+  .door b { display: block; font-size: 1.125rem; font-weight: var(--fw-b); letter-spacing: -.02em; }
+  .door span.t { display: block; font-size: var(--fs-xs); color: var(--ink2); margin-top: 2px; }
+  .door .arr { margin-left: auto; color: var(--ink2); }
+  .door.p { color: #fff; background: var(--enamel); box-shadow: var(--enamel-sh); }
+  .door.p span.t, .door.p .arr { color: rgba(255,255,255,.86); }
+  .door.p .di { color: #fff; background: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
+  .door.p:active { box-shadow: var(--enamel-dn); }
+  footer { max-width: 64rem; width: 100%; margin: 0 auto; padding: var(--sp-4) var(--sp-4) var(--sp-8); font-size: var(--fs-xs); color: var(--ink2); }
+  @media (min-width: 900px) {
+    main { grid-template-columns: 1.35fr 1fr; align-items: stretch; padding-top: var(--sp-12); gap: var(--sp-5); }
+    .hero { min-height: 32rem; padding: 44px 40px 36px; }
+    .doors { align-content: end; gap: var(--sp-4); }
+    .door { min-height: 120px; padding: 24px; }
+  }
 </style>
 </head>
 <body>
 <div class="d-aura" aria-hidden="true"></div>
 <main>
-  <div class="logo d-rise"><i aria-hidden="true"></i>상주시 복지 창구</div>
-  <div class="hero">
-    <p class="cnum d-rise" style="--d:1">찾아가는 복지 · 담당 공무원 업무 도구</p>
-    <h1 class="name d-rise" style="--d:2">닿음</h1>
-    <p class="line d-rise" style="--d:3">주민이 알리고, 공무원이 찾아갑니다.</p>
-    <p class="note d-rise" style="--d:4">상주시 적용 예시 · 가구 정보는 모두 가상</p>
-  </div>
+  <section class="hero d-card d-silk d-rise" data-silk="night" aria-labelledby="hero-h">
+    <div class="brand"><i aria-hidden="true"></i>닿음</div>
+    <h1 id="hero-h">주민이 알리고,<br>공무원이 찾아갑니다</h1>
+    <p>상주시 찾아가는 복지 업무 도구 · 적용 예시(가구 정보는 모두 가상)</p>
+    <ol class="flow" aria-label="흐름"><li>이웃 알림</li><li>오늘 동선</li><li>도움 연계</li></ol>
+  </section>
   <nav class="doors" aria-label="창구 선택">
-    <a class="door officer d-card d-lift d-rise" style="--d:5" href="officer/index.html" data-h="light">
-      <span class="ic" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1Z"/></svg></span>
-      <div><span class="cnum">공무원</span><strong>공무원 창구</strong>
-      <span>하루 방문 동선, 부재 가구 재시도 일정, 연계 누락 확인과 행복이음에 옮길 초안을 한 화면에서 챙깁니다.</span></div>
-      <svg class="d-ico go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+    <a class="door p d-rise" style="--d:2" href="officer/index.html" data-h="light">
+      <span class="di" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <span><b>공무원으로 시작</b><span class="t">오늘 찾아갈 집과 순서 · 다시 찾을 집 · 연계 누락</span></span>
+      <svg class="d-ico arr" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
     </a>
-    <a class="door citizen d-card d-lift d-rise" style="--d:6" href="citizen/index.html" data-h="light">
-      <span class="ic" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></span>
-      <div><span class="cnum">주민</span><strong>이웃·도움 알리기</strong>
-      <span>걱정되는 이웃이나 힘든 사정을 알리면 읍면동 담당 공무원의 방문 순서에 반영됩니다. 복지 서비스 찾기·신청은 복지로에서 합니다.</span></div>
-      <svg class="d-ico go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+    <a class="door d-card d-rise" style="--d:3" href="citizen/index.html" data-h="light">
+      <span class="di" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg></span>
+      <span><b>이웃을 알리기</b><span class="t">걱정되는 이웃·도움이 필요할 때 담당 공무원에게</span></span>
+      <svg class="d-ico arr" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
     </a>
   </nav>
 </main>
-<footer>상주시 적용 예시 시제품 · 가구 정보는 모두 가상 · 공개 데이터와 합성(가상) 데이터만 씁니다 · 실제 개인정보 없음</footer>
+<footer>상주시 적용 예시 시제품 · 공개 데이터와 합성(가상) 데이터만 씁니다 · 실제 개인정보 없음 · 복지 서비스 찾기·신청은 복지로</footer>
 <script src="shared/ui.js"></script>
 </body>
 </html>

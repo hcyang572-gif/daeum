@@ -58,14 +58,14 @@ console.log("S9j 시험");
 t("같은 날 다시 열면 다시 깔지 않음(담당자가 누른 결과 보존) · 담당자 기록은 남김", function () {
   mem = {};
   withNow("2026-10-30T09:00:00", seed);
-  var mine = F.contacts.add(F.store.get("attempts", []), { householdId: "S-050", channel: "phone", result: "no_answer", at: "2026-10-30T09:30:00" });
+  var mine = F.contacts.add(F.store.get("attempts", []), { householdId: "A-030", channel: "phone", result: "no_answer", at: "2026-10-30T09:30:00" });
   F.store.set("attempts", mine);
   F.store.set("followups", F.followUp.mark({}, "LD-2:m1", "2026-10-30T10:00:00"));
   withNow("2026-10-30T15:00:00", seed);
   assert.ok(F.store.get("followups", {})["LD-2:m1"], "같은 날 재실행이 재점검 표시를 지움");
   withNow("2026-11-02T09:00:00", seed);
   var att = F.store.get("attempts", []);
-  assert.ok(att.some(function (x) { return x.householdId === "S-050" && !x.seed; }), "담당자 기록이 지워짐");
+  assert.ok(att.some(function (x) { return x.householdId === "A-030" && !x.seed; }), "담당자 기록이 지워짐");
   assert.strictEqual(att.filter(function (x) { return x.seed; }).length, 13, "시연 기록 개수");
   assert.ok(!F.store.get("followups", {})["LD-2:m1"], "날이 바뀌면 시연 재점검 표시도 새로");
 });
@@ -79,7 +79,7 @@ t("?demo=off 이면 시연 기록을 지우고 깔지 않음", function () {
 });
 
 t("사후관리: 1개월 안 했으면 3개월은 아직 안 뜨고, 1개월 하면 3개월이 뜬다", function () {
-  var links = [{ id: "L1", householdId: "S-001", label: "가구 S-001", at: "2026-08-01T10:00:00", serviceNames: ["기초연금"] }];
+  var links = [{ id: "L1", householdId: "A-001", label: "가구 A-001", at: "2026-08-01T10:00:00", serviceNames: ["기초연금"] }];
   var oc = { L1: { result: "decided", at: "2026-08-03T10:00:00" } };
   var d1 = F.followUp.due(links, oc, {}, new Date("2026-10-30T09:00:00"));
   assert.deepStrictEqual(d1.map(function (x) { return x.key; }), ["L1:m1"]);

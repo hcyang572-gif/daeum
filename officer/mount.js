@@ -92,6 +92,8 @@
     var c = t.counts;
     if (window.DaeumUI) DaeumUI.countUp($("todayCount"), c.stops, "가구"); else $("todayCount").innerHTML = c.stops + "<small>가구</small>";
     $("kpiReq").textContent = c.newRequests; $("kpiDue").textContent = c.dueSoon; $("kpiRevisit").textContent = c.revisits;
+    var nr = $("navRevisit"); if (nr) nr.textContent = c.revisits || "";
+    var sg = $("sigLine"); if (sg) sg.classList.toggle("on", c.newRequests > 0);
     var dueHint = q($("tab-today"), '[data-slot="kpi-due"] em'); if (dueHint) dueHint.textContent = "처리 기한 하루 이내·지남(시연 설정)";
     var S = {}; t.sections.forEach(function (s) { S[s.key] = s; });
     fillList("todayRequests", S["new"].items, "새로 들어온 요청이 없습니다.");
@@ -101,18 +103,21 @@
     var box = clear($("todayRoute")), R = t.route;
     if (!R.order.length) box.appendChild(h("p", { class: "d-slot", text: "가구 명단에서 방문할 집을 담으면 동선을 묶어 드립니다." }));
     else {
-      box.appendChild(h("p", { class: "small", text: "방문 " + R.order.length + "곳 · 이동 " + R.km.toFixed(1) + "km(추정) · 예상 " + (R.minutes / 60).toFixed(1) + "시간" }));
-      var ol = h("ol", { class: "slot-list" }), lastA = null;
+      var sum = "방문 " + R.order.length + "곳 · 이동 " + R.km.toFixed(1) + "km(추정) · 예상 " + (R.minutes / 60).toFixed(1) + "시간";
+      if ($("todayKm")) { routeArt(R.order); $("todayKm").innerHTML = R.km.toFixed(1) + "<small>km 이동(추정)</small>"; $("todayMeta").textContent = "방문 " + R.order.length + "곳 · 예상 " + (R.minutes / 60).toFixed(1) + "시간 · " + routeAreas(R.order); }
+      box.appendChild(h("p", { class: "small" + ($("todayKm") ? " sr" : ""), text: sum }));
+      var ol = h("ol", { class: "slot-list visits" }), lastA = null;
       R.order.slice(0, 8).forEach(function (s, i) {
-        ol.appendChild(h("li", null, [h("span", { class: "num", text: String(i + 1) }), " ", h("span", { class: "grow", text: s.label }),
-          h("span", { class: "small", text: s.area !== lastA ? s.area : "" }),
+        ol.appendChild(h("li", { class: s.kind === "request" ? "req" : null }, [h("span", { class: "vn num", text: String(i + 1), "aria-hidden": "true" }), h("span", { class: "grow" }, [h("span", { class: "sr", text: (i + 1) + "번 " }), h("b", { text: s.label }),
+          h("span", { class: "small", text: " " + s.area + (s.kind === "request" ? " · 주민 신호" : "") })]),
           O.row(s.id) ? h("div", { class: "acts" }, [btn("방문 전 카드", function () { openCard(s.id); })]) : null]));
         lastA = s.area;
       });
-      if (R.order.length > 8) ol.appendChild(h("li", { class: "small", text: "외 " + (R.order.length - 8) + "곳 — «지도에서 경로 보기»에서 전부 봅니다" }));
+      if (R.order.length > 8) ol.appendChild(h("li", { class: "small", text: "외 " + (R.order.length - 8) + "곳 — «순서 다시 짜기 · 지도»에서 전부 봅니다" }));
       box.appendChild(ol);
       box.appendChild(sheetActs());
     }
+    if (!R.order.length && $("todayKm")) { clear($("todayArt")); $("todayKm").textContent = ""; $("todayMeta").textContent = "가구 명단에서 방문할 집을 담으면 순서를 묶어 드립니다"; }
     renderTodayGaps();
     var go = q($("tab-today"), 'a[href="#route"]');
     if (go && !go._m) { go._m = 1; go.addEventListener("click", function () { if (lastToday) O.setPicked(lastToday.route.order.map(function (s) { return s.id; })); }); }
@@ -128,6 +133,35 @@
     lines.forEach(function (l) { auto.appendChild(h("li", { text: l })); });
   }
 
+  // 오늘 동선 실크 위 그림 — 방문 순서대로 가상 좌표(x,y)를 이은 선과 번호(장식, 같은 내용이 옆 목록에 있다)
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function sv(tag, at) { var e = document.createElementNS(SVGNS, tag); Object.keys(at || {}).forEach(function (k) { e.setAttribute(k, at[k]); }); return e; }
+  function routeArt(order) {
+    var svg = clear($("todayArt")); if (!svg) return;
+    var pts = order.slice(0, 12).map(function (s) {
+      if (isFinite(s.x) && isFinite(s.y)) return s;
+      var r = O.row(s.id); return r && r.h && isFinite(r.h.x) ? { x: r.h.x, y: r.h.y, kind: s.kind } : null; // 동선 줄에 좌표가 없으면 명단 가구 좌표
+    }).filter(Boolean); if (pts.length < 1) return;
+    var xs = pts.map(function (p) { return p.x; }), ys = pts.map(function (p) { return p.y; });
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    var span = Math.max(x1 - x0, y1 - y0) || 1, P = 14, W = 100 - 2 * P;
+    var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    var xy = pts.map(function (p) { return [50 + (p.x - cx) / span * W, 50 - (p.y - cy) / span * W]; }); // 북쪽이 위
+    var g = sv("g", { fill: "none", stroke: "rgba(255,255,255,.07)", "stroke-width": ".4" });
+    [22, 40, 58, 76].forEach(function (y, i) { g.appendChild(sv("path", { d: "M-5 " + y + "c20-" + (6 + i) + " 40 4 60-3s30-" + (8 - i) + " 50-2" })); });
+    svg.appendChild(g);
+    if (xy.length > 1) svg.appendChild(sv("path", { class: "art-line", d: "M" + xy.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" L"), pathLength: "1" }));
+    xy.forEach(function (p, i) {
+      svg.appendChild(sv("circle", { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: "4.2", class: "art-pin" + (pts[i].kind === "request" ? " req" : "") }));
+      var t = sv("text", { x: p[0].toFixed(1), y: (p[1] + 1.5).toFixed(1), class: "art-no" }); t.textContent = String(i + 1); svg.appendChild(t);
+    });
+  }
+  function routeAreas(order) {
+    var seen = [];
+    order.forEach(function (s) { if (s.area && seen.indexOf(s.area) < 0) seen.push(s.area); });
+    return seen.length > 3 ? seen.slice(0, 3).join("·") + " 외 " + (seen.length - 3) + "곳" : seen.join("·");
+  }
+
   // 오늘 할 일 «③ 연계 누락» — 4단계 멈춘 집 수(흐름 순서). 자세한 목록은 연계·보고서 화면
   var GAP_ORDER = ["req_stalled", "met_nolink", "link_nocheck", "applied_nodecision"];
   var GAP_SHORT = { req_stalled: ["주민 신호", "확인 뒤 멈춤"], met_nolink: ["상담", "연계 없음"], link_nocheck: ["안내", "신청 확인 안 함"], applied_nodecision: ["신청", "결정 확인 안 함"] };
@@ -141,6 +175,7 @@
     if (!F.linkGap) { ol.appendChild(empty("연계 누락 계산 기능이 없습니다.")); return; }
     var g = gapData();
     $("kpiGap").textContent = g.total;
+    var ng = $("navGap"); if (ng) ng.textContent = g.total || "";
     g.stages.forEach(function (s) {
       var n = s.items.length, nm = GAP_SHORT[s.key] || [s.label, ""];
       ol.appendChild(h("li", { class: n ? "on" : null }, [h("span", { class: "gs-k" }, [h("b", { text: nm[0] }), h("span", { class: "small", text: nm[1] })]),
@@ -363,7 +398,7 @@
     if (tab === "today") renderToday(lastToday);
     if (tab === "list") renderHouseholds();
     if (tab === "contacts") renderContacts();
-    if (tab === "board") renderStats();
+    if (tab === "board" || tab === "report") renderStats();
   }
   document.addEventListener("daeum:officer-show", onShow);
   document.addEventListener("daeum:officer-summary", function (e) { O = window.DaeumOfficer; renderConsult(e.detail); });

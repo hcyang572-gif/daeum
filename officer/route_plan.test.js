@@ -59,5 +59,17 @@ t("순서 옮기기: 위·아래·범위 밖", function () {
   assert.deepStrictEqual(RP.move(["a", "b", "c"], 0, 5), ["a", "b", "c"]);
 });
 
+t("S10b 읍면 배치: 시연 가구는 동(洞)이 아닌 읍면, 상위 12곳이 2개 읍면 이상 · 묶은 동선이 순서대로보다 짧다", function () {
+  var kind = {}; D.areas.forEach(function (a) { kind[a.name] = a.kind; });
+  D.households.forEach(function (h) { assert.notStrictEqual(kind[h.area], "동", h.id + " " + h.area); });
+  var top = D.households.filter(function (h) { return Object.keys(h.indicators).some(function (k) { return h.indicators[k]; }); }).slice(0, 12)
+    .map(function (h) { return { id: h.id, x: h.x, y: h.y, area: h.area }; });
+  assert(new Set(top.map(function (s) { return s.area; })).size >= 2, "상위 12곳이 한 읍면뿐");
+  var best = RP.candidates(top, office, true)[0];
+  assert(RP.tourKm(best, office, true) < RP.tourKm(top, office, true), "묶은 동선이 더 길다");
+  var s = RP.schedule(best, RP.approxLegs(best, office, true), { start: "09:30", ret: true });
+  assert(RP.parseHm(s.back.arrive) <= RP.parseHm("19:00"), "복귀 " + s.back.arrive + " — 하루 동선이 비현실적");
+});
+
 console.log("결과: 통과 " + pass + " · 실패 " + fail);
 if (fail) process.exit(1);

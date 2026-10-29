@@ -608,8 +608,10 @@
 
   // ── 탭·초기화 ──────────────────────────────────────────
   // 화면 이름(머리띠 제목) — 경로는 «오늘 할 일»의 동선 묶음에서 들어온다
-  var TABS = { today: ["오늘 할 일", "오늘 할 일", "today"], list: ["가구 명단", "가구 명단 · 지역 신호 순", "list"], route: ["오늘 할 일", "방문 경로", "today"],
-    contacts: ["방문·연락", "방문·연락 기록", "contacts"], record: ["상담 기록", "상담 기록", "record"], board: ["연계·보고서", "연계 누락 · 행복이음 초안 · 보고서", "board"] };
+  // S10b(시안 A): 메뉴 4칸 = 오늘·다시 찾을 집·연계 누락·가구. 경로는 «오늘», 상담 기록은 «가구», 현황·보고서는 «더보기»에 속한다
+  var TABS = { today: ["오늘", "오늘 찾아갈 집", "today"], route: ["오늘", "방문 경로", "today"],
+    contacts: ["다시 찾을 집", "다시 찾을 집 · 방문·연락 기록", "contacts"], board: ["연계 누락", "연계 누락 · 행복이음에 옮길 초안", "board"],
+    list: ["가구", "가구 명단 · 지역 신호 순", "list"], record: ["가구", "상담 기록", "list"], report: ["현황·보고서", "현황 · 보고서", "more"] };
   var lastTab = "";
   function show() {
     var tab = (location.hash || "#today").slice(1);
@@ -620,6 +622,10 @@
       a.classList.toggle("on", on);
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
+    [].forEach.call(document.querySelectorAll("#moreMenu [data-more]"), function (a) {
+      if (a.dataset.more === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    document.body.setAttribute("data-tab", tab);
     $("pageTitle").textContent = TABS[tab][1];
     document.title = "닿음 · 공무원 창구 · " + TABS[tab][1];
     if (lastTab && lastTab !== tab) window.scrollTo(0, 0);
@@ -629,7 +635,7 @@
     if (tab === "list") renderList();
     if (tab === "route") renderRoute();
     if (tab === "record") { fillRecHouses(); renderLinks(); }
-    if (tab === "board") renderBoard();
+    if (tab === "board" || tab === "report") renderBoard();
     emit("show", { tab: tab });
   }
   // features 연결(mount.js)용 신호 — 화면이 바뀌거나 요약이 끝나면 알린다
@@ -643,7 +649,7 @@
   }
   function renderToday() {
     var d = new Date(), W = "일월화수목금토";
-    $("todayDate").textContent = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + W.charAt(d.getDay()) + "요일 · 닿음이 " + D.households.length.toLocaleString() + "가구를 지역 신호 순으로 미리 정리했어요";
+    $("todayDate").textContent = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + W.charAt(d.getDay()) + "요일";
   }
   function loadServices() {
     // 국민 창구가 만든 서비스 목록이 있으면 합친다(없으면 내장 목록만)
@@ -736,6 +742,9 @@
     $("btnMic").addEventListener("click", toggleMic);
     $("btnSummarize").addEventListener("click", summarize);
     $("btnLink").addEventListener("click", saveLink);
+    // 오늘 «새 주민 신호» 줄 → 접어 둔 칸을 펼치고 그리로(해시는 바꾸지 않는다)
+    var sig = $("sigLine"); if (sig) sig.addEventListener("click", function (e) { e.preventDefault(); var m = $("moreToday"); if (!m) return; m.open = true; m.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); var sm = m.querySelector("summary"); if (sm) sm.focus({ preventScroll: true }); });
+    var skr = $("skipRoute"); if (skr) skr.addEventListener("click", function () { var n = $("routeNote"); if (n) n.focus(); }); // 긴 시각표를 키보드로 건너뛰기
     window.addEventListener("hashchange", show);
     REQ.onChange(function () { rebuild(); show(); }); // 국민 창구 탭에서 요청이 들어오면 반영
     show();

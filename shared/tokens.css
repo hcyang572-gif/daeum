@@ -1,67 +1,68 @@
-/* 닿음 디자인 토큰 — C 관제(밤 유리·정밀 숫자) 한 벌. 국민·공무원·보고서·인쇄 모든 화면이 여기 값만 쓴다(화면별 예외 색·임의 값 금지).
-   정본 시안: _design/시안_S9a_3방향.html .scr[data-dir="c"] (커밋 067e97d) · 출처·움직임 값: _design/TOKENS.md
-   S9b-1(10-29): 종전 청록·주황 토큰을 C 관제로 교체. 옛 이름(--brand·--surface 등)은 같은 값의 별칭으로만 남긴다. */
+/* 닿음 디자인 토큰 — S10b(10-30) 시안 A «하루 한 장»: 우리가족 매니저 v5 «오로라 플러스» 값을 그대로 옮긴 한 벌.
+   정본 시안: _design/시안_S10a.html (A안) · 원값: family-talk/design_mockups/v5_a_aurora_plus.html:10-115
+   종이 결(노이즈 타일)·실크는 shared/ui.js 가 캔버스로 만들어 --nz-* 와 [data-silk] 에 꽂는다(없으면 아래 SVG 결로 대신).
+   옛 이름(--brand·--surface 등)은 같은 값의 별칭으로만 남긴다. 화면별 예외 색·임의 값 금지. */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
 
 :root {
   color-scheme: light;
-  /* ── 바탕·면 ── */
-  --pa: #F4F4F8; --pb: #ECECF2;                       /* 바탕 위→아래 */
-  --s1a: rgba(255,255,255,.86); --s1b: rgba(250,250,253,.8); /* 유리 카드 위→아래 */
-  --solid: #FFFFFF;                                   /* 유리 효과가 없을 때·입력칸 */
-  --ink: #15141F; --ink2: #575566;                    /* 본문 / 보조 글자(바탕 대비 7:1) */
-  --ink3: #8A8899;                                    /* 장식 전용 — 글자에 쓰지 않음(3.3:1) */
-  --hair: rgba(21,20,31,.08);                         /* 장식선 */
-  --edge: #8A8899;                                    /* 입력칸·단추 테두리(바탕 대비 3:1 이상) */
-  /* ── 주색 iris ── */
-  --acc: #5B4FD0; --acc-hi: #7B70E2; --acc-lo: #4236A8; --acc-ink: #4B3FBE; --acc-soft: #ECEAFA; --on-acc: #FFFFFF;
-  --acc-top: #6A5FDA;                                 /* 에나멜 단추 윗빛 — 흰 글자 4.5:1 유지 */
+  /* ── 바탕·면(우리가족 pg·paper·s1) ── */
+  --pg: #EEEDF3; --pa: #F8F7FC; --pb: #F1EFF8;           /* 바탕 / 종이 위→아래 */
+  --s1a: #FFFFFF; --s1b: #FCFBFF;                         /* 카드 위→아래(불투명 종이) */
+  --solid: #FFFFFF;                                       /* 입력칸·대화상자 */
+  --ink: #1B1830; --ink2: #5E5A73;                        /* 본문 / 보조 글자(종이 대비 6:1 이상) */
+  --ink3: #8D89A1;                                        /* 장식 전용 — 글자에 쓰지 않음 */
+  --hair: rgba(27,24,48,.08); --ink-12: rgba(27,24,48,.12);
+  --edge: #8A8899;                                        /* 입력칸 테두리(바탕 대비 3:1 이상) */
+  /* ── 주색(우리가족 보라) ── */
+  --acc: #5A4AC2; --acc-hi: #7465D6; --acc-lo: #463799; --acc-ink: #4E3FB5; --acc-soft: #ECEAF8; --on-acc: #FFFFFF;
+  --acc-top: #6A5BCF;                                     /* 에나멜 윗빛 — 흰 글자 4.5:1 유지 */
+  /* ── 보조 색(우리가족 sage·rose·champ) ── */
+  --sage: #3F7A72; --rose: #9E4F69; --champ: #8A6528;
   /* ── 상태 ── */
-  --pos: #29704F; --pos-soft: #E4F2EC;
-  --neg: #B0413E; --neg-soft: #F8E9E8; --on-neg: #FFFFFF;
-  --warn: #8A5A00; --warn-soft: #FBF1DC;
-  /* ── 재질: 윗변 빛·아랫변 그늘·그림자 3단·우물·유리 ── */
-  --hl: inset 0 1px 0 rgba(255,255,255,.9); --hlb: inset 0 -1px 0 rgba(21,20,31,.05);
-  --e1: 0 0 0 .5px rgba(21,20,31,.08), 0 1px 2px rgba(21,20,31,.06);
-  --e2: 0 0 0 .5px rgba(21,20,31,.08), 0 2px 4px -1px rgba(21,20,31,.06), 0 16px 36px -18px rgba(40,30,110,.25);
-  --e3: 0 0 0 .5px rgba(21,20,31,.09), 0 4px 10px -4px rgba(21,20,31,.1), 0 28px 60px -24px rgba(40,30,110,.35);
-  --well: linear-gradient(180deg, #E8E8EF, #EFEFF4);
-  --well-sh: inset 0 1px 2px rgba(21,20,31,.08), inset 0 0 0 .5px rgba(21,20,31,.06), 0 1px 0 rgba(255,255,255,.8);
-  --glass: rgba(255,255,255,.66); --glass-hl: rgba(255,255,255,.95); --glass-brd: rgba(21,20,31,.07);
-  --aura-o: .35;                                      /* 오로라 빛 번짐 세기 */
-  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .09 0 0 0 0 .07 0 0 0 0 .2 .09 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  /* ── 에나멜(주 단추·구슬) ── */
-  --enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.22), transparent 46%), linear-gradient(155deg, var(--acc-top), var(--acc) 52%, var(--acc-lo));
-  --enamel-sh: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 4px rgba(20,20,80,.25), 0 0 0 .5px color-mix(in srgb, var(--acc-lo) 70%, transparent), 1px 3px 6px -2px color-mix(in srgb, var(--acc) 45%, transparent), 3px 14px 28px -12px color-mix(in srgb, var(--acc) 60%, transparent);
-  --enamel-dn: inset 0 1px 0 rgba(255,255,255,.2), inset 0 1px 5px rgba(20,20,80,.42), 0 0 0 .5px color-mix(in srgb, var(--acc-lo) 70%, transparent), 0 1px 1px rgba(40,30,120,.3);
-  /* ── 모서리 ── */
-  --r: 22px;        /* 카드 */
-  --r-lg: 28px;     /* 큰 판·탭 띠 */
-  --rb: 14px;       /* 단추·입력칸 */
-  --r-sm: 10px;     /* 작은 꼬리표 */
-  --r-pill: 999px;
+  --pos: #2A7155; --pos-soft: #E4F2EC;
+  --neg: #A8434A; --neg-soft: #F8E9EA; --on-neg: #FFFFFF;
+  --warn: #8A5410; --warn-soft: #FBF1DC;
+  /* ── 재질: 윗변 빛·아랫변 그늘·층 그림자(보랏빛 확산)·우물 ── */
+  --hl: inset 0 1px 0 rgba(255,255,255,.92); --hlb: inset 0 -1px 0 rgba(23,21,40,.05);
+  --e1: 0 0 0 .5px rgba(27,24,48,.06), 1px 1px 2px rgba(40,30,90,.07);
+  --e2: 0 0 0 .5px rgba(27,24,48,.06), 1px 2px 4px -1px rgba(40,30,90,.08), 4px 18px 40px -18px rgba(60,40,140,.22);
+  --e3: 0 0 0 .5px rgba(27,24,48,.07), 1px 4px 10px -4px rgba(40,30,90,.12), 6px 28px 60px -24px rgba(60,40,140,.32);
+  --e-sm: 0 0 0 .5px rgba(27,24,48,.06), 1px 1px 2px rgba(40,30,90,.06);
+  --float: linear-gradient(180deg, #FFFFFF, #F7F5FC);    /* 떠 있는 세라믹 단추 */
+  --dock: linear-gradient(180deg, rgba(255,255,255,.97), rgba(246,244,252,.94));
+  --bead: linear-gradient(180deg, #FFFFFF, #F4F2FC);      /* 떠오른 세라믹 구슬(활성 칸) */
+  --bead-sh: inset 0 1px 0 rgba(255,255,255,.95), 0 0 0 .5px var(--ink-12), 1px 3px 8px -3px rgba(60,40,140,.28);
+  --well: linear-gradient(180deg, #E9E7F1, #EFEDF6);
+  --well-sh: inset 0 1px 2px rgba(40,30,90,.08), inset 0 0 0 .5px rgba(23,21,40,.05), 0 1px 0 rgba(255,255,255,.8);
+  --aurora: radial-gradient(70% 55% at 8% -5%, rgba(140,120,235,.26), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(226,150,186,.20), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(110,170,200,.14), transparent 70%);
+  --aura-o: .3;                                           /* 천천히 도는 빛 번짐 세기 */
+  --silk-bg: #2B2D5E;                                     /* 실크(밤) 바탕 — 캔버스가 없을 때 */
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .09 0 0 0 0 .07 0 0 0 0 .2 .07 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --nz-paper: var(--nz); --nz-card: none; --nz-dock: none;
+  /* ── 에나멜(주 단추·번호 구슬) ── */
+  --enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.28), transparent 46%), linear-gradient(155deg, var(--acc-top), var(--acc) 52%, var(--acc-lo));
+  --enamel-sh: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 4px rgba(30,20,90,.25), 0 0 0 .5px rgba(40,28,120,.35), 1px 3px 6px -2px rgba(60,40,150,.32), 3px 14px 28px -12px color-mix(in srgb, var(--acc) 55%, transparent);
+  --enamel-dn: inset 0 1px 0 rgba(255,255,255,.2), inset 0 1px 5px rgba(30,20,90,.42), 0 0 0 .5px rgba(40,28,120,.4), 0 1px 1px rgba(60,40,150,.3);
+  --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.16), transparent 46%), linear-gradient(155deg, #34304C, #221F36 55%, #16142A);
+  /* ── 모서리(우리가족: 카드 24·단추 알약) ── */
+  --r: 24px; --r-lg: 32px; --rb: 16px; --r-sm: 12px; --r-pill: 999px;
   /* ── 글자 ── */
   --f: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --num: "Manrope", "Pretendard Variable", Pretendard, "Malgun Gothic", sans-serif;
-  --fs-xs: .875rem;   /* 14 — 최소 글자 */
-  --fs-s: .9375rem;   /* 15 */
-  --fs-b: 1.0625rem;  /* 17 — 공무원 본문 */
-  --fs-l: 1.1875rem;  /* 19 — 국민 본문 */
-  --fs-h3: 1.3125rem; /* 21 */
-  --fs-h2: 1.625rem;  /* 26 */
-  --fs-h1: clamp(1.875rem, 6.4vw, 2.375rem); /* 30~38 */
-  --fw-m: 600; --fw-b: 700; --fw-h: 800;
+  --fs-xs: .875rem; --fs-s: .9375rem; --fs-b: 1.0625rem; --fs-l: 1.1875rem; --fs-h3: 1.3125rem; --fs-h2: 1.625rem;
+  --fs-h1: clamp(1.875rem, 6.4vw, 2.375rem);
+  --fw-m: 600; --fw-b: 700; --fw-h: 700;
   /* ── 간격(4px 단계) ── */
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px; --sp-14: 56px;
-  --tap: 44px;      /* 누르는 곳 최소 */
-  --tap-main: 60px; /* 주 단추 */
+  --tap: 44px; --tap-main: 60px;
   /* ── 움직임(우리가족 AuroraTiming) ── */
   --c-std: cubic-bezier(.33,1,.68,1); --c-push: cubic-bezier(.32,.72,0,1); --c-spring: cubic-bezier(.34,1.12,.64,1); --c-exit: cubic-bezier(.32,0,.67,0);
-  --t-press: 70ms; --t-fast: 200ms; --t: 280ms; --t-push: 320ms; --t-slow: 640ms;
+  --t-press: 70ms; --t-fast: 160ms; --t: 240ms; --t-push: 320ms; --t-slow: 420ms;
 
-  /* ── 옛 이름 별칭(같은 값) — 새 코드는 위 이름을 쓴다 ── */
-  --bg: var(--pa); --bg-sunk: #E8E8EF; --surface: var(--solid); --ink-soft: var(--ink2); --line: var(--hair); --line-strong: var(--edge);
+  /* ── 옛 이름 별칭(같은 값) ── */
+  --bg: var(--pa); --bg-sunk: #E9E7F1; --surface: var(--solid); --ink-soft: var(--ink2); --line: var(--hair); --line-strong: var(--edge);
   --brand: var(--acc); --brand-strong: var(--acc-lo); --brand-soft: var(--acc-soft); --on-brand: var(--on-acc);
   --accent: var(--acc); --accent-strong: var(--acc-ink); --accent-soft: var(--acc-soft); --on-accent: var(--on-acc);
   --danger: var(--neg); --danger-soft: var(--neg-soft); --on-danger: var(--on-neg); --ok: var(--pos);
@@ -69,46 +70,57 @@
   --shadow-sm: var(--e1); --shadow: var(--e2); --shadow-lg: var(--e3);
   --font: var(--f); --fs-body: var(--fs-b); --fs-small: var(--fs-xs); --fw-bold: var(--fw-b); --fw-heavy: var(--fw-h);
   --ease: var(--c-std); --dur: var(--t-fast);
+  --glass: rgba(255,255,255,.72); --glass-hl: rgba(255,255,255,.95); --glass-brd: rgba(27,24,48,.07);
 }
-/* 다크 — 밤 유리(시스템 설정을 따르고, data-theme 으로 고정할 수 있다) */
+/* 다크 — 우리가족 밤 종이(시스템 설정을 따르고, data-theme 으로 고정할 수 있다) */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   color-scheme: dark;
-  --pa: #0A0A12; --pb: #06060B; --s1a: rgba(34,32,54,.62); --s1b: rgba(22,21,38,.56); --solid: #171626;
-  --ink: #F0EFF8; --ink2: #A8A6BD; --ink3: #77758C; --hair: rgba(255,255,255,.08); --edge: #6E6C84;
-  --acc: #6C5FE0; --acc-hi: #9186F0; --acc-lo: #4E42BE; --acc-ink: #B6AEF7; --acc-soft: rgba(124,110,240,.16); --acc-top: #6E62E2;
-  --pos: #7FD3AE; --pos-soft: rgba(127,211,174,.14); --neg: #F2A097; --neg-soft: rgba(242,120,110,.14); --on-neg: #2B0805; --warn: #E7B84F; --warn-soft: rgba(231,184,79,.14);
-  --hl: inset 0 1px 0 rgba(255,255,255,.12); --hlb: inset 0 -1px 0 rgba(0,0,0,.3);
-  --e1: 0 0 0 .5px rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.5);
-  --e2: 0 0 0 .5px rgba(255,255,255,.08), 0 2px 6px -2px rgba(0,0,0,.6), 0 24px 48px -20px rgba(0,0,0,.9);
-  --e3: 0 0 0 .5px rgba(255,255,255,.1), 0 4px 12px -4px rgba(0,0,0,.6), 0 36px 70px -26px rgba(0,0,0,.95);
-  --well: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.22));
-  --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.06), 0 1px 0 rgba(255,255,255,.04);
-  --glass: rgba(26,25,42,.55); --glass-hl: rgba(255,255,255,.12); --glass-brd: rgba(255,255,255,.08); --aura-o: .7;
-  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .1 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --bg-sunk: #12111E;
+  --pg: #0B0A12; --pa: #0F0E18; --pb: #0A0911; --s1a: #1A1928; --s1b: #16152A; --solid: #1A1928;
+  --ink: #EEECF7; --ink2: #A9A5BF; --ink3: #6F6B88; --hair: rgba(255,255,255,.07); --ink-12: rgba(238,236,247,.12); --edge: #6E6C84;
+  --acc: #6B5BD2; --acc-hi: #8576E0; --acc-lo: #5243B0; --acc-ink: #B9AEFF; --acc-soft: #25223F; --acc-top: #6E5FD6;
+  --sage: #7DB8AE; --rose: #E29AB0; --champ: #D9B977;
+  --pos: #6CC6A0; --pos-soft: rgba(108,198,160,.14); --neg: #F2A097; --neg-soft: rgba(242,120,110,.14); --on-neg: #2B0805; --warn: #E3A55A; --warn-soft: rgba(227,165,90,.14);
+  --hl: inset 0 1px 0 rgba(255,255,255,.09); --hlb: inset 0 -1px 0 rgba(0,0,0,.3);
+  --e1: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(4,3,14,.5);
+  --e2: 0 0 0 .5px rgba(255,255,255,.06), 1px 2px 4px -1px rgba(4,3,14,.55), 4px 20px 40px -18px rgba(4,3,14,.85);
+  --e3: 0 0 0 .5px rgba(255,255,255,.07), 1px 4px 10px -4px rgba(4,3,14,.6), 6px 30px 60px -24px rgba(4,3,14,.9);
+  --e-sm: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(4,3,14,.45);
+  --float: linear-gradient(180deg, #2A2840, #221F36); --dock: linear-gradient(180deg, rgba(30,28,46,.96), rgba(20,19,32,.94));
+  --bead: linear-gradient(180deg, #2C2A44, #24223A); --bead-sh: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 .5px rgba(255,255,255,.08), 1px 3px 8px -3px rgba(0,0,0,.6);
+  --well: linear-gradient(180deg, #131221, #19182A); --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
+  --aurora: radial-gradient(70% 55% at 8% -5%, rgba(140,120,235,.18), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(226,150,186,.10), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(110,170,200,.08), transparent 70%);
+  --aura-o: .5; --bg-sunk: #131221;
+  --glass: rgba(26,25,42,.6); --glass-hl: rgba(255,255,255,.1); --glass-brd: rgba(255,255,255,.08);
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --nz-paper: var(--nz);
 } }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --pa: #0A0A12; --pb: #06060B; --s1a: rgba(34,32,54,.62); --s1b: rgba(22,21,38,.56); --solid: #171626;
-  --ink: #F0EFF8; --ink2: #A8A6BD; --ink3: #77758C; --hair: rgba(255,255,255,.08); --edge: #6E6C84;
-  --acc: #6C5FE0; --acc-hi: #9186F0; --acc-lo: #4E42BE; --acc-ink: #B6AEF7; --acc-soft: rgba(124,110,240,.16); --acc-top: #6E62E2;
-  --pos: #7FD3AE; --pos-soft: rgba(127,211,174,.14); --neg: #F2A097; --neg-soft: rgba(242,120,110,.14); --on-neg: #2B0805; --warn: #E7B84F; --warn-soft: rgba(231,184,79,.14);
-  --hl: inset 0 1px 0 rgba(255,255,255,.12); --hlb: inset 0 -1px 0 rgba(0,0,0,.3);
-  --e1: 0 0 0 .5px rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.5);
-  --e2: 0 0 0 .5px rgba(255,255,255,.08), 0 2px 6px -2px rgba(0,0,0,.6), 0 24px 48px -20px rgba(0,0,0,.9);
-  --e3: 0 0 0 .5px rgba(255,255,255,.1), 0 4px 12px -4px rgba(0,0,0,.6), 0 36px 70px -26px rgba(0,0,0,.95);
-  --well: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.22));
-  --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.06), 0 1px 0 rgba(255,255,255,.04);
-  --glass: rgba(26,25,42,.55); --glass-hl: rgba(255,255,255,.12); --glass-brd: rgba(255,255,255,.08); --aura-o: .7;
-  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .1 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --bg-sunk: #12111E;
+  --pg: #0B0A12; --pa: #0F0E18; --pb: #0A0911; --s1a: #1A1928; --s1b: #16152A; --solid: #1A1928;
+  --ink: #EEECF7; --ink2: #A9A5BF; --ink3: #6F6B88; --hair: rgba(255,255,255,.07); --ink-12: rgba(238,236,247,.12); --edge: #6E6C84;
+  --acc: #6B5BD2; --acc-hi: #8576E0; --acc-lo: #5243B0; --acc-ink: #B9AEFF; --acc-soft: #25223F; --acc-top: #6E5FD6;
+  --sage: #7DB8AE; --rose: #E29AB0; --champ: #D9B977;
+  --pos: #6CC6A0; --pos-soft: rgba(108,198,160,.14); --neg: #F2A097; --neg-soft: rgba(242,120,110,.14); --on-neg: #2B0805; --warn: #E3A55A; --warn-soft: rgba(227,165,90,.14);
+  --hl: inset 0 1px 0 rgba(255,255,255,.09); --hlb: inset 0 -1px 0 rgba(0,0,0,.3);
+  --e1: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(4,3,14,.5);
+  --e2: 0 0 0 .5px rgba(255,255,255,.06), 1px 2px 4px -1px rgba(4,3,14,.55), 4px 20px 40px -18px rgba(4,3,14,.85);
+  --e3: 0 0 0 .5px rgba(255,255,255,.07), 1px 4px 10px -4px rgba(4,3,14,.6), 6px 30px 60px -24px rgba(4,3,14,.9);
+  --e-sm: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(4,3,14,.45);
+  --float: linear-gradient(180deg, #2A2840, #221F36); --dock: linear-gradient(180deg, rgba(30,28,46,.96), rgba(20,19,32,.94));
+  --bead: linear-gradient(180deg, #2C2A44, #24223A); --bead-sh: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 .5px rgba(255,255,255,.08), 1px 3px 8px -3px rgba(0,0,0,.6);
+  --well: linear-gradient(180deg, #131221, #19182A); --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
+  --aurora: radial-gradient(70% 55% at 8% -5%, rgba(140,120,235,.18), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(226,150,186,.10), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(110,170,200,.08), transparent 70%);
+  --aura-o: .5; --bg-sunk: #131221;
+  --glass: rgba(26,25,42,.6); --glass-hl: rgba(255,255,255,.1); --glass-brd: rgba(255,255,255,.08);
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --nz-paper: var(--nz);
 }
 
 /* ══════════ 바탕 ══════════ */
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--f); font-size: var(--fs-b); line-height: 1.6; letter-spacing: -.012em;
-  background-color: var(--pa); background-image: var(--nz), linear-gradient(180deg, var(--pa), var(--pb)); background-size: 160px 160px, auto; background-attachment: fixed;
+  background-color: var(--pg); background-image: var(--nz-paper), var(--aurora), linear-gradient(180deg, var(--pa), var(--pb)); background-size: 160px 160px, auto, auto; background-attachment: fixed;
   word-break: keep-all; overflow-wrap: break-word; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 h1, h2, h3, h4 { text-wrap: balance; }
 a { color: var(--acc-ink); text-underline-offset: 3px; }
@@ -116,46 +128,57 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
 [hidden] { display: none !important; }
 .sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .num { font-family: var(--num); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-.cnum { font: 700 .8125rem var(--num); letter-spacing: .12em; text-transform: uppercase; color: var(--acc-ink); }
+.cnum { font: var(--fw-m) var(--fs-xs) var(--f); letter-spacing: .01em; color: var(--ink2); }
+.bignum { font-family: var(--num); font-weight: 200; letter-spacing: -.045em; line-height: .9; font-variant-numeric: tabular-nums; }
 
 /* ══════════ 공통 부품(두 창구가 같이 쓴다) ══════════ */
-/* 오로라 빛 번짐 — 화면마다 하나, 뒤에 고정 */
-.d-aura { position: fixed; left: 50%; top: -28vh; width: min(900px, 140vw); aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; z-index: -1; pointer-events: none;
-  background: conic-gradient(from 90deg, rgba(124,110,240,0), rgba(124,110,240,.55), rgba(134,166,216,.4), rgba(176,97,123,.35), rgba(124,110,240,0));
-  filter: blur(70px); opacity: var(--aura-o); animation: d-spin 26s linear 2; }
-.d-grid { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
-  background-image: linear-gradient(var(--hair) 1px, transparent 1px), linear-gradient(90deg, var(--hair) 1px, transparent 1px); background-size: 32px 32px;
-  -webkit-mask-image: radial-gradient(80% 60% at 50% 20%, #000, transparent); mask-image: radial-gradient(80% 60% at 50% 20%, #000, transparent); }
-/* 유리 카드 */
-.d-card { position: relative; border-radius: var(--r); background-image: linear-gradient(180deg, var(--s1a), var(--s1b)); box-shadow: var(--hl), var(--hlb), var(--e2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5); backdrop-filter: blur(20px) saturate(1.5); }
-.d-glass { -webkit-backdrop-filter: blur(26px) saturate(1.7); backdrop-filter: blur(26px) saturate(1.7); background: var(--glass);
-  box-shadow: inset 0 1px 0 var(--glass-hl), inset 0 0 0 .5px var(--glass-brd), var(--e3); }
+/* 오로라 빛 번짐 — 화면마다 하나, 뒤에 고정. 아주 천천히 돈다(살아 있는 바탕) */
+.d-aura { position: fixed; left: 50%; top: -30vh; width: min(980px, 150vw); aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; z-index: -1; pointer-events: none;
+  background: conic-gradient(from 90deg, rgba(140,120,235,0), rgba(140,120,235,.5), rgba(110,170,200,.32), rgba(226,150,186,.38), rgba(140,120,235,0));
+  filter: blur(80px); opacity: var(--aura-o); animation: d-spin 60s linear infinite; }
+.d-grid { display: none; }
+/* 카드 — 불투명 종이 + 윗변 빛 + 층 그림자(우리가족 card) */
+.d-card { position: relative; border-radius: var(--r); background-color: var(--s1a); background-image: var(--nz-card), linear-gradient(180deg, var(--s1a), var(--s1b)); background-size: 160px 160px, auto;
+  box-shadow: var(--hl), var(--e2); }
+/* 떠 있는 띠(폰 도크·대화상자) */
+.d-glass { background-color: var(--s1a); background-image: var(--nz-dock), var(--dock); background-size: 160px 160px, auto; -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: var(--hl), var(--e3); }
 .d-well { background: var(--well); box-shadow: var(--well-sh); }
+/* 실크(밤) — 첫 화면·오늘 동선 지도에만. ui.js 가 캔버스 실크를 깐다 */
+.d-silk { position: relative; overflow: hidden; color: #F4F2FF; background-color: var(--silk-bg); background-size: cover; background-position: center;
+  background-image: radial-gradient(60% 50% at 20% 15%, rgba(106,108,174,.75), transparent 70%), radial-gradient(50% 45% at 85% 70%, rgba(59,63,124,.9), transparent 70%), linear-gradient(160deg, #2A2C5C, #3B3F7C 45%, #1E2048); }
+.d-silk::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 0 0 .5px rgba(255,255,255,.08); pointer-events: none; }
 /* 들어 올림(누를 수 있는 카드) */
 .d-lift { transition: transform var(--t-push) var(--c-spring), box-shadow var(--t-push) var(--c-std); }
-@media (hover: hover) { .d-lift:hover { transform: translateY(-3px); box-shadow: var(--hl), var(--hlb), var(--e3); } }
+@media (hover: hover) { .d-lift:hover { transform: translateY(-3px); box-shadow: var(--hl), var(--e3); } }
 .d-lift:active { transform: scale(.98); transition-duration: 100ms; }
-/* 순차 등장 */
-.d-rise { animation: d-rise .72s var(--c-push) both; animation-delay: calc(var(--d, 0) * 55ms + 60ms); }
-@keyframes d-rise { from { transform: translateY(16px) scale(.985); opacity: 0; } }
+/* 순차 등장(절제) */
+.d-rise { animation: d-rise var(--t-slow) var(--c-std) both; animation-delay: calc(var(--d, 0) * 70ms); }
+@keyframes d-rise { from { transform: translateY(12px); opacity: 0; } }
 @keyframes d-spin { to { transform: translateX(-50%) rotate(360deg); } }
 @keyframes d-grow { from { transform: scaleX(0); } }
 @keyframes d-draw { to { stroke-dashoffset: 0; } }
 @keyframes d-fade { from { opacity: 0; } }
 @keyframes d-ping { 0% { transform: scale(.92); opacity: .9; } 100% { transform: scale(1.4); opacity: 0; } }
-@keyframes d-tab { from { opacity: 0; transform: translateX(24px); } }
-/* 주 단추(에나멜)·보조 단추 */
-.d-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: var(--tap); padding: 0 20px; border: 0; border-radius: var(--rb);
-  font: var(--fw-b) var(--fs-b)/1.25 var(--f); letter-spacing: -.02em; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent;
-  transition: transform var(--t) var(--c-spring), box-shadow 240ms var(--c-std), background-color var(--t-fast) var(--c-std), color var(--t-fast) var(--c-std); }
-.d-btn svg { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes d-pulse { 0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 22%, transparent); } 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--acc) 0%, transparent); } }
+@keyframes d-tab { from { opacity: 0; transform: translateY(8px); } }
+/* 주 단추(에나멜)·보조 단추(세라믹) — 알약 */
+.d-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 0; border-radius: var(--r-pill);
+  font: var(--fw-m) var(--fs-b)/1.25 var(--f); letter-spacing: -.01em; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t-fast) var(--c-std), box-shadow var(--t) var(--c-std), filter var(--t); }
+.d-btn svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+@media (hover: hover) { .d-btn:hover { filter: brightness(1.04); } }
+.d-btn:active { transform: scale(.97); transition-duration: var(--t-press); }
 .d-btn-p { color: var(--on-acc); background: var(--enamel); box-shadow: var(--enamel-sh); }
-.d-btn-p:active { transform: scale(.97) translateY(1px); box-shadow: var(--enamel-dn); transition-duration: var(--t-press); }
-.d-btn-s { color: var(--acc-ink); background-image: linear-gradient(180deg, var(--s1a), var(--s1b)); box-shadow: var(--hl), var(--e1), inset 0 0 0 1px var(--edge); }
-.d-btn-s:active { transform: scale(.97); transition-duration: var(--t-press); }
+.d-btn-p:active { box-shadow: var(--enamel-dn); }
+.d-btn-s { color: var(--ink); background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--hlb), var(--e1), 1px 5px 12px -6px rgba(40,30,90,.2); }
+.d-btn-s:active { box-shadow: inset 0 1px 3px rgba(40,30,90,.14), 0 0 0 .5px var(--ink-12); }
 .d-btn[disabled] { opacity: .6; cursor: wait; }
-.d-ico { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.d-ico { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+/* 동그란 세라믹 단추(더보기·뒤로) */
+.d-round { display: inline-grid; place-items: center; width: var(--tap); height: var(--tap); flex: none; padding: 0; border: 0; border-radius: 50%; cursor: pointer; color: var(--ink2);
+  background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--e-sm); transition: transform var(--t-fast) var(--c-std); }
+.d-round:active { transform: scale(.94); }
 /* 꼬리표 — 색과 함께 점·글자로 뜻을 전한다 */
 .d-tag { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: var(--fw-m); line-height: 1.3; }
 .d-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
@@ -166,6 +189,20 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
 /* 자리표시(⚙️ 파로 모듈이 채우기 전) */
 .d-slot { display: grid; place-items: center; min-height: 96px; padding: var(--sp-4); border-radius: var(--rb); text-align: center; color: var(--ink2); font-size: var(--fs-s);
   background: var(--well); box-shadow: var(--well-sh); }
+/* 더보기 대화상자(두 창구 공통) */
+.d-sheet { width: min(26rem, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow: auto; margin: auto; padding: var(--sp-5); border: 0; border-radius: var(--r-lg); color: var(--ink);
+  background-color: var(--solid); background-image: var(--nz-card), linear-gradient(180deg, var(--s1a), var(--s1b)); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--e3); }
+.d-sheet[open] { animation: d-tab var(--t) var(--c-std) both; }
+.d-sheet::backdrop { background: color-mix(in srgb, #1B1830 32%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.d-sheet .sh-h { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin: 0 0 var(--sp-3); }
+.d-sheet .sh-h h2 { margin: 0; font-size: var(--fs-h3); font-weight: var(--fw-b); letter-spacing: -.03em; }
+.d-sheet ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.d-sheet .sh-i { display: flex; align-items: center; gap: var(--sp-3); width: 100%; min-height: 56px; padding: 0 var(--sp-4); border: 0; border-radius: var(--rb); text-align: left; cursor: pointer;
+  font: var(--fw-m) var(--fs-b)/1.3 var(--f); color: var(--ink); text-decoration: none; background: var(--well); box-shadow: var(--well-sh); }
+.d-sheet .sh-i small { display: block; font-size: var(--fs-xs); font-weight: 500; color: var(--ink2); }
+.d-sheet .sh-i .d-ico { color: var(--acc-ink); }
+.d-sheet .sh-i[aria-current="page"] { background: var(--bead); box-shadow: var(--bead-sh); }
+.d-sheet .sh-sep { margin: var(--sp-4) 0 var(--sp-2); font-size: var(--fs-xs); font-weight: var(--fw-m); color: var(--ink2); }
 
 /* 움직임 줄이기 — 반복 연출 끔, 등장은 즉시 */
 @media (prefers-reduced-motion: reduce) {
@@ -176,7 +213,8 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
 @media print {
   :root { color-scheme: light; }
   body { background: #fff; color: #000; }
-  .d-aura, .d-grid { display: none; }
+  .d-aura, .d-grid, .d-sheet { display: none !important; }
   .d-card, .d-glass { background: #fff; box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .d-silk { background: #fff !important; color: #000; border: 1px solid #ccc; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

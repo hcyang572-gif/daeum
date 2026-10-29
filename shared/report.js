@@ -152,7 +152,7 @@
       : { from: ymd(new Date(now.getFullYear(), now.getMonth(), 1)), to: ymd(now) });
     var H = stats.households, Q = stats.requests, Lk = stats.links, cd = o.countdown;
     var scope = stats.scope || o.area || null;
-    var office = o.office || (scope ? scope + " 행정복지센터 맞춤형복지팀" : "○○ 읍면동 맞춤형복지팀");
+    var office = o.office || (scope ? scope + " 행정복지센터 맞춤형복지팀" : "희망복지지원단(통합사례관리)");
     var name = kind === "weekly" ? "주간" : "월간";
     var sections = [];
     sections.push({ heading: "추진 현황", lines: [
@@ -201,7 +201,8 @@
     weekly: function (stats, o) { return makeReport("weekly", stats, o); },
     monthly: function (stats, o) { return makeReport("monthly", stats, o); },
     /** 읍면동 담당자의 «자기 동»: 명단 가구가 가장 많은 읍면동 */
-    homeArea: function (households) { var n = {}, best = null; (households || []).forEach(function (h) { n[h.area] = (n[h.area] || 0) + 1; if (!best || n[h.area] > n[best]) best = h.area; }); return best; },
+    // 관할 = 가구 절반 넘게 모인 읍면동 하나. 여러 읍면에 흩어져 있으면(S10b 10-30, 시청 희망복지지원단이 읍면을 도는 시연) null → 전체·읍면동별 표.
+    homeArea: function (households) { var n = {}, best = null, all = (households || []).length; (households || []).forEach(function (h) { n[h.area] = (n[h.area] || 0) + 1; if (!best || n[h.area] > n[best]) best = h.area; }); return best && n[best] * 2 > all ? best : null; },
     currentRound: currentRound
   };
   return F;
