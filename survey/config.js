@@ -5,7 +5,8 @@ window.SURVEY_CONFIG = {
   url: "https://gicjzrxgktpovnphtjhi.supabase.co",
   key: "sb_publishable_Gh5BZa8H-8YP4cLT3fW2-g_l0Bqn7ZR",
   table: "field_survey",
-  formVersion: "v1",
+  formVersion: "v2",          // v2(10-30): 한 화면 한 문항·핵심 문항만. 집계 때 form_version 으로 v1 과 구분
   tokenKey: "daeum_field_survey_token",
-  doneKey: "daeum_field_survey_done"
+  doneKey: "daeum_field_survey_done",
+  draftKey: "daeum_field_survey_draft"   // 카톡 창이 닫혀도 이어서 답하도록 기기에만 임시 저장(제출하면 지움)
 };
