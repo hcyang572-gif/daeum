@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>닿음 · 공무원 창구</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="officer.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>닿음</b><span>공무원 창구 · 상주시 적용 예시</span></div>
+  <nav class="tabs" role="tablist">
+    <a href="#list" data-tab="list">③ 오늘 방문 명단</a>
+    <a href="#route" data-tab="route">④ 방문 경로</a>
+    <a href="#record" data-tab="record">⑤ 상담 기록</a>
+    <a href="#board" data-tab="board">⑥ 수요 보드</a>
+  </nav>
+  <div class="mode" id="aiMode"></div>
+</header>
+<p class="virtual">상주시 적용 예시 · 이 화면의 가구·문의·좌표는 모두 <b>가상 데이터</b>입니다(실제 주민·개인정보 0건). 읍면동 이름과 세대 비율만 공개 자료에서 가져왔습니다(생성 규칙 <code>data/tools/make_households.py</code>).</p>
+
+<main>
+  <!-- ③ 오늘 방문 명단 -->
+  <section id="tab-list" class="tab">
+    <p class="vtag">가상 가구(실제 주민 아님)</p>
+    <div class="bar">
+      <label>읍면동 <select id="fArea"><option value="">전체</option></select></label>
+      <label>표시 <select id="fTop"><option>15</option><option selected>30</option><option>60</option><option value="300">전체</option></select></label>
+      <label>경로에 담을 수 <input id="fPick" type="number" min="1" max="30" value="12"></label>
+      <button id="btnPickTop" class="ghost">상위 순으로 다시 담기</button>
+      <button id="btnDemoReq" class="ghost" title="국민 창구가 아직 없을 때 흐름 확인용">시연용 국민 요청 1건 넣기</button>
+      <span class="spacer"></span>
+      <button id="btnWeights" class="ghost">가중치 조정</button>
+    </div>
+    <details id="formula" class="formula">
+      <summary>점수 산식 보기</summary>
+      <p>우선순위 점수 = <b>위기 지표 가중치의 합</b> + <b>가구 특성 가중치의 합</b> + (국민 요청이면 <b>20점</b>). 건강보험료 체납은 «개월 수 × 가중치»(최대 6개월). 가중치는 담당자가 바꿀 수 있고, 바꾸면 바로 다시 계산합니다(이 브라우저에만 저장).</p>
+      <div id="weightGrid" class="wgrid" hidden></div>
+    </details>
+    <div class="summary" id="listSummary"></div>
+    <table class="grid" id="listTable">
+      <thead><tr><th>담기</th><th>순위</th><th>가구</th><th>읍면</th><th>점수</th><th>왜 이 집인지</th><th>구성</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- ④ 방문 경로 -->
+  <section id="tab-route" class="tab" hidden>
+    <p class="vtag">가상 가구(실제 주민 아님)</p>
+    <div class="bar">
+      <span id="routeStat" class="stat"></span>
+      <span class="spacer"></span>
+      <label><input type="checkbox" id="routeReturn" checked> 시청으로 복귀</label>
+    </div>
+    <div class="route-wrap">
+      <svg id="map" viewBox="-27 -23 54 46" role="img" aria-label="방문 경로 단순 지도 — 가상 가구(실제 주민 아님), 읍면동 중심은 대략 위치"></svg>
+      <ol id="routeList" class="route-list"></ol>
+    </div>
+    <p class="note">경로는 «읍면별로 묶은 뒤, 가까운 곳부터»(최근접 이웃 근사)로 정합니다. 거리는 직선거리 × 1.3(도로 우회 계수, 추정)이며 실제 도로망(공개 도로망 데이터)은 다음 단계에서 붙입니다. 소요 시간은 평균 시속 40km + 가구당 30분 상담으로 어림한 값입니다.</p>
+  </section>
+
+  <!-- ⑤ 상담 기록 -->
+  <section id="tab-record" class="tab" hidden>
+    <p class="vtag">가상 가구(실제 주민 아님)</p>
+    <div class="bar">
+      <label>상담 가구 <select id="recHouse"></select></label>
+      <button id="btnSample" class="ghost">가상 상담 대본 넣기</button>
+      <button id="btnMic" class="ghost">음성으로 받아쓰기</button>
+      <span id="micState" class="stat"></span>
+    </div>
+    <div class="rec-wrap">
+      <div class="panel">
+        <h3>상담 내용</h3>
+        <div id="recHouseInfo" class="hinfo"></div>
+        <textarea id="recText" rows="12" placeholder="상담 내용을 적거나 «음성으로 받아쓰기»를 누르세요."></textarea>
+        <p class="note">음성 받아쓰기는 브라우저의 음성인식을 씁니다. 온라인 인식이라 음성이 브라우저 제공사 서버로 전송될 수 있습니다. 실제 상담에 쓰려면 기관 내부 인식기로 바꿔야 합니다.</p>
+        <button id="btnSummarize" class="primary">요약하고 연계 추천 받기</button>
+      </div>
+      <div class="panel">
+        <h3>요약</h3>
+        <div id="recResult" class="result"><p class="muted">왼쪽에서 요약을 누르면 쟁점·욕구·연계 후보가 나옵니다.</p></div>
+        <button id="btnLink" class="primary" hidden>선택한 서비스로 연계 저장</button>
+        <h3>저장된 연계 <small id="linkCount"></small></h3>
+        <ul id="linkList" class="links"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑥ 수요 보드 -->
+  <section id="tab-board" class="tab" hidden>
+    <p class="note">«물었는데 아직 신청하지 않은» 수요입니다. 문의·신청 수는 가상 값이고, 이 브라우저의 국민 요청과 연계 저장 건이 더해집니다.</p>
+    <div class="board-wrap">
+      <div class="panel"><h3>서비스별 미신청</h3><ul id="rankSvc" class="rank"></ul></div>
+      <div class="panel"><h3>읍면별 미신청</h3><ul id="rankArea" class="rank"></ul></div>
+    </div>
+    <div class="panel">
+      <h3>읍면 × 서비스 (미신청 / 문의)</h3>
+      <div class="scroll"><table class="grid heat" id="boardTable"></table></div>
+    </div>
+  </section>
+</main>
+
+<script src="../shared/config.js"></script>
+<script src="../shared/requests.js"></script>
+<script src="../shared/ai.js"></script>
+<script src="officer.js"></script>
+</body>
+</html>

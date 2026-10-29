@@ -1,0 +1,1055 @@
+{
+ "meta": {
+  "title": "닿음 시연용 복지서비스 표본",
+  "origin": "sample",
+  "note": "공공데이터 API 키 발급 전 시연용. 공개 안내 페이지(복지로·소관 기관 누리집)의 내용을 쉬운 말로 요약했다. 금액·연도별 기준은 해마다 바뀌므로 넣지 않고 «신청처 확인»으로 안내한다. 키가 생기면 tools/fetch_services.py 가 D1·D2(·D4) API로 services.json 을 새로 굽는다.",
+  "dataset_target": {
+   "D1": "중앙부처복지서비스 https://www.data.go.kr/data/15090532/openapi.do",
+   "D4": "민간복지서비스정보 https://www.data.go.kr/data/15116392/fileData.do"
+  },
+  "checked": "2026-10-29",
+  "tag_vocab": [
+   "senior",
+   "alone",
+   "lowIncome",
+   "unemployed",
+   "working",
+   "singleParent",
+   "child",
+   "infant",
+   "pregnancy",
+   "sick",
+   "careNeed",
+   "dementia",
+   "disability",
+   "housing",
+   "energy",
+   "debt",
+   "crisis",
+   "food",
+   "mental"
+  ]
+ },
+ "doc_sets": {
+  "means": [
+   "신분증",
+   "사회보장급여 신청서(신청처에 있음)",
+   "소득·재산 신고서",
+   "금융정보 등 제공 동의서",
+   "통장 사본"
+  ],
+  "simple": [
+   "신분증"
+  ],
+  "proxy": [
+   "(대신 신청할 때) 대리인 신분증",
+   "위임장 또는 가족관계를 확인할 수 있는 서류"
+  ]
+ },
+ "services": [
+  {
+   "id": "C001",
+   "dataset": "D1",
+   "name": "기초연금",
+   "provider": "보건복지부",
+   "target": "만 65세 이상이고 소득인정액이 선정기준액 이하인 분(어르신의 약 70%가 받도록 기준을 정함)",
+   "support": "매달 기초연금을 드립니다. 금액은 해마다 조정되니 신청처에서 확인하세요.",
+   "apply": "주소지 읍면동 행정복지센터, 국민연금공단 지사, 복지로(온라인)",
+   "contact": "국민연금공단 1355 · 보건복지상담센터 129",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://basicpension.mohw.go.kr/",
+   "rule": {
+    "ageMin": 65,
+    "any": [],
+    "boost": [
+     "lowIncome",
+     "alone"
+    ],
+    "base": 3
+   }
+  },
+  {
+   "id": "C002",
+   "dataset": "D1",
+   "name": "노인맞춤돌봄서비스",
+   "provider": "보건복지부",
+   "target": "만 65세 이상 기초생활수급자·차상위계층·기초연금 수급자 중 혼자 일상생활이 어려워 돌봄이 필요한 분",
+   "support": "생활지원사가 안부를 확인하고, 가사·외출 동행 같은 생활 지원과 필요한 도움 연결을 해 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "ageMin": 65,
+    "any": [
+     "alone",
+     "careNeed",
+     "sick",
+     "dementia"
+    ],
+    "boost": [
+     "lowIncome"
+    ],
+    "base": 1
+   }
+  },
+  {
+   "id": "C003",
+   "dataset": "D1",
+   "name": "응급안전안심서비스",
+   "provider": "보건복지부",
+   "target": "혼자 사는 어르신, 중증장애인 등 위급할 때 스스로 대처하기 어려운 분",
+   "support": "집에 화재·활동 감지기와 응급호출기를 달아, 위급할 때 119와 응급관리요원에게 바로 연결합니다.",
+   "apply": "주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "ageMin": 65,
+    "ageAlt": [
+     "disability"
+    ],
+    "any": [
+     "alone"
+    ],
+    "boost": [
+     "sick",
+     "careNeed"
+    ]
+   }
+  },
+  {
+   "id": "C004",
+   "dataset": "D1",
+   "name": "노인장기요양보험",
+   "provider": "보건복지부 · 국민건강보험공단",
+   "target": "만 65세 이상, 또는 치매·뇌혈관질환 등 노인성 질병이 있는 65세 미만으로 6개월 이상 혼자 일상생활이 어려운 분",
+   "support": "등급 판정을 받으면 방문요양·방문목욕·주야간보호·요양시설 이용 비용을 지원합니다(일부 본인부담).",
+   "apply": "국민건강보험공단 지사, 노인장기요양보험 누리집",
+   "contact": "국민건강보험공단 1577-1000",
+   "docs": [
+    "장기요양인정 신청서",
+    "신분증",
+    "(65세 미만) 노인성 질병 진단서"
+   ],
+   "means_tested": false,
+   "url": "https://www.longtermcare.or.kr/",
+   "rule": {
+    "ageMin": 65,
+    "ageAlt": [
+     "dementia"
+    ],
+    "any": [
+     "careNeed",
+     "dementia",
+     "sick"
+    ],
+    "boost": [
+     "alone"
+    ]
+   }
+  },
+  {
+   "id": "C005",
+   "dataset": "D1",
+   "name": "치매안심센터 조기검진·상담",
+   "provider": "보건복지부 · 보건소",
+   "target": "치매가 걱정되는 만 60세 이상 주민과 그 가족",
+   "support": "치매 조기검진, 진단 뒤 상담·쉼터 프로그램, 가족 상담을 합니다. 치료비·돌봄물품 지원은 대상 기준이 따로 있습니다.",
+   "apply": "주소지 보건소 치매안심센터",
+   "contact": "치매상담콜센터 1899-9988",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.nid.or.kr/",
+   "rule": {
+    "ageMin": 60,
+    "any": [
+     "dementia"
+    ],
+    "boost": [
+     "alone"
+    ],
+    "base": 1
+   }
+  },
+  {
+   "id": "C006",
+   "dataset": "D1",
+   "name": "기초생활보장 생계급여",
+   "provider": "보건복지부",
+   "target": "가구의 소득인정액이 정부 기준(기준 중위소득의 일정 비율) 이하인 가구",
+   "support": "매달 생계비를 드립니다. 가구 소득에 따라 금액이 달라집니다.",
+   "apply": "주소지 읍면동 행정복지센터, 복지로(온라인)",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "any": [
+     "lowIncome",
+     "unemployed",
+     "crisis",
+     "food"
+    ],
+    "boost": [
+     "alone",
+     "singleParent"
+    ]
+   }
+  },
+  {
+   "id": "C007",
+   "dataset": "D1",
+   "name": "의료급여",
+   "provider": "보건복지부",
+   "target": "기초생활보장 수급자 중 의료급여 선정기준 이하 가구 등",
+   "support": "병원·약국 진료비의 본인부담을 크게 줄여 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "any": [
+     "lowIncome",
+     "crisis"
+    ],
+    "boost": [
+     "sick"
+    ]
+   }
+  },
+  {
+   "id": "C008",
+   "dataset": "D1",
+   "name": "주거급여",
+   "provider": "국토교통부",
+   "target": "소득인정액이 주거급여 선정기준 이하인 가구(세입자·자가 모두)",
+   "support": "세 들어 사는 집은 임차료를, 내 집이면 집수리를 지원합니다.",
+   "apply": "주소지 읍면동 행정복지센터, 마이홈포털",
+   "contact": "마이홈 콜센터 1600-1004",
+   "docs": [
+    "$means",
+    "(세입자) 임대차계약서"
+   ],
+   "means_tested": true,
+   "url": "https://www.myhome.go.kr/",
+   "rule": {
+    "any": [
+     "housing"
+    ],
+    "boost": [
+     "lowIncome",
+     "unemployed"
+    ]
+   }
+  },
+  {
+   "id": "C009",
+   "dataset": "D1",
+   "name": "교육급여",
+   "provider": "교육부",
+   "target": "교육급여 선정기준 이하 가구의 초·중·고 학생",
+   "support": "교육활동지원비, 교과서대, 입학금·수업료를 지원합니다.",
+   "apply": "주소지 읍면동 행정복지센터, 교육비 원클릭 신청",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://oneclick.moe.go.kr/",
+   "rule": {
+    "all": [
+     "child"
+    ],
+    "any": [
+     "lowIncome",
+     "unemployed",
+     "singleParent"
+    ]
+   }
+  },
+  {
+   "id": "C010",
+   "dataset": "D1",
+   "name": "긴급복지지원",
+   "provider": "보건복지부",
+   "target": "주소득자의 사망·실직·중한 질병, 화재, 가정폭력 등 갑작스러운 위기로 생계가 어려운 가구",
+   "support": "생계비·의료비·주거비 등을 먼저 지원하고 나중에 확인합니다(선지원 후조사).",
+   "apply": "보건복지상담센터 129, 주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "신분증",
+    "위기 상황을 보여 주는 자료(없어도 먼저 상담 가능)"
+   ],
+   "means_tested": true,
+   "url": "https://www.129.go.kr/",
+   "rule": {
+    "any": [
+     "crisis",
+     "unemployed",
+     "food"
+    ],
+    "boost": [
+     "sick",
+     "singleParent",
+     "alone"
+    ],
+    "base": 2
+   }
+  },
+  {
+   "id": "C011",
+   "dataset": "D1",
+   "name": "구직급여(실업급여)",
+   "provider": "고용노동부",
+   "target": "고용보험에 가입해 일하다 회사 사정 등 본인 뜻과 달리 일을 그만두고, 다시 일하려는 분",
+   "support": "구직 활동을 하는 동안 구직급여를 드립니다. 받는 기간은 가입 기간·나이에 따라 다릅니다.",
+   "apply": "가까운 고용센터, 고용24(온라인 구직 등록·수급자격 신청)",
+   "contact": "고용노동부 고객상담센터 1350",
+   "docs": [
+    "신분증",
+    "이직확인서(회사가 제출)",
+    "통장 사본"
+   ],
+   "means_tested": false,
+   "url": "https://www.work24.go.kr/",
+   "rule": {
+    "any": [
+     "unemployed"
+    ],
+    "base": 3
+   }
+  },
+  {
+   "id": "C012",
+   "dataset": "D1",
+   "name": "국민취업지원제도",
+   "provider": "고용노동부",
+   "target": "취업을 원하는 만 15~69세 저소득 구직자 등",
+   "support": "1:1 취업 상담·직업훈련·일자리 알선을 하고, 조건에 맞으면 구직촉진수당을 드립니다.",
+   "apply": "가까운 고용센터, 고용24",
+   "contact": "고용노동부 고객상담센터 1350",
+   "docs": [
+    "$simple",
+    "(필요 시) 소득 확인 서류"
+   ],
+   "means_tested": true,
+   "url": "https://www.work24.go.kr/",
+   "rule": {
+    "ageMin": 15,
+    "ageMax": 69,
+    "any": [
+     "unemployed"
+    ],
+    "boost": [
+     "lowIncome",
+     "singleParent"
+    ]
+   }
+  },
+  {
+   "id": "C013",
+   "dataset": "D1",
+   "name": "국민내일배움카드",
+   "provider": "고용노동부",
+   "target": "실업자·재직자·자영업자 등 직업훈련을 받으려는 분(일부 제외 대상 있음)",
+   "support": "직업훈련 비용을 지원합니다.",
+   "apply": "고용24, 가까운 고용센터",
+   "contact": "고용노동부 고객상담센터 1350",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.work24.go.kr/",
+   "rule": {
+    "any": [
+     "unemployed"
+    ]
+   }
+  },
+  {
+   "id": "C014",
+   "dataset": "D1",
+   "name": "국민연금 실업크레딧",
+   "provider": "보건복지부 · 국민연금공단",
+   "target": "구직급여를 받는 분 중 국민연금 보험료 납부를 원하는 분",
+   "support": "실업 기간의 국민연금 보험료 일부를 지원해 가입 기간을 늘려 드립니다.",
+   "apply": "국민연금공단 지사, 고용센터",
+   "contact": "국민연금공단 1355",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.nps.or.kr/",
+   "rule": {
+    "ageMax": 59,
+    "any": [
+     "unemployed"
+    ]
+   }
+  },
+  {
+   "id": "C015",
+   "dataset": "D1",
+   "name": "자활근로",
+   "provider": "보건복지부",
+   "target": "기초생활수급자·차상위계층 중 일할 수 있는 분",
+   "support": "지역자활센터 등에서 일자리와 근로 소득, 자립 준비를 지원합니다.",
+   "apply": "주소지 읍면동 행정복지센터, 지역자활센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "ageMin": 18,
+    "ageMax": 64,
+    "all": [
+     "unemployed"
+    ],
+    "boost": [
+     "lowIncome"
+    ]
+   }
+  },
+  {
+   "id": "C016",
+   "dataset": "D1",
+   "name": "한부모가족 아동양육비",
+   "provider": "성평등가족부",
+   "target": "소득인정액이 기준 이하인 한부모가족·조손가족의 18세 미만 자녀",
+   "support": "아동양육비와 학용품비 등을 지원합니다.",
+   "apply": "주소지 읍면동 행정복지센터, 복지로(온라인)",
+   "contact": "한부모상담전화 1644-6621",
+   "docs": [
+    "$means",
+    "가족관계를 확인할 수 있는 서류"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "any": [
+     "singleParent"
+    ],
+    "boost": [
+     "lowIncome",
+     "unemployed"
+    ],
+    "base": 3
+   }
+  },
+  {
+   "id": "C017",
+   "dataset": "D1",
+   "name": "아이돌봄서비스",
+   "provider": "성평등가족부",
+   "target": "만 12세 이하 아동을 둔 가정 중 돌볼 사람이 없는 가정(소득에 따라 정부 지원 비율이 다름)",
+   "support": "아이돌보미가 집으로 와서 아이를 돌봅니다.",
+   "apply": "아이돌봄서비스 누리집, 주소지 읍면동 행정복지센터",
+   "contact": "아이돌봄 누리집 안내",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.idolbom.go.kr/",
+   "rule": {
+    "childAgeMax": 12,
+    "any": [
+     "child",
+     "infant"
+    ],
+    "boost": [
+     "singleParent",
+     "unemployed"
+    ]
+   }
+  },
+  {
+   "id": "C018",
+   "dataset": "D1",
+   "name": "아동수당",
+   "provider": "보건복지부",
+   "target": "기준 연령 미만 아동(연령 기준이 단계적으로 높아지는 중이니 신청처 확인, 소득 기준 없음)",
+   "support": "매달 아동수당을 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터, 복지로, 정부24",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "childAgeMax": 8,
+    "any": [
+     "child",
+     "infant"
+    ]
+   }
+  },
+  {
+   "id": "C019",
+   "dataset": "D1",
+   "name": "부모급여",
+   "provider": "보건복지부",
+   "target": "만 0~1세 아동을 키우는 가정",
+   "support": "매달 부모급여를 드립니다. 어린이집을 다니면 보육료로 대신 지원합니다.",
+   "apply": "주소지 읍면동 행정복지센터, 복지로, 정부24",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "childAgeMax": 1,
+    "any": [
+     "infant"
+    ]
+   }
+  },
+  {
+   "id": "C020",
+   "dataset": "D1",
+   "name": "첫만남이용권",
+   "provider": "보건복지부",
+   "target": "출생 신고를 한 아동",
+   "support": "태어난 아이에게 국민행복카드로 쓰는 이용권을 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터, 복지로, 정부24(출생신고 때 함께)",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "any": [
+     "infant",
+     "pregnancy"
+    ]
+   }
+  },
+  {
+   "id": "C021",
+   "dataset": "D1",
+   "name": "산모·신생아 건강관리 지원",
+   "provider": "보건복지부",
+   "target": "출산 가정(소득 기준 있음, 지자체에 따라 범위 확대)",
+   "support": "건강관리사가 집으로 와서 산모와 신생아를 돌봅니다.",
+   "apply": "주소지 보건소, 복지로",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "any": [
+     "pregnancy",
+     "infant"
+    ]
+   }
+  },
+  {
+   "id": "C022",
+   "dataset": "D1",
+   "name": "저소득층 기저귀·조제분유 지원",
+   "provider": "보건복지부",
+   "target": "만 2세 미만 영아를 둔 기초생활수급·차상위·한부모 가구 등",
+   "support": "기저귀·조제분유 구입비를 이용권으로 드립니다.",
+   "apply": "주소지 보건소, 복지로",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "childAgeMax": 1,
+    "all": [
+     "infant"
+    ],
+    "any": [
+     "lowIncome",
+     "singleParent",
+     "unemployed"
+    ]
+   }
+  },
+  {
+   "id": "C023",
+   "dataset": "D1",
+   "name": "에너지바우처",
+   "provider": "정부(운영: 한국에너지공단)",
+   "target": "생계·의료·주거·교육급여 수급 가구 중 어르신·영유아·장애인·임산부·중증질환자·한부모 등이 있는 가구",
+   "support": "겨울 난방·여름 냉방에 쓰는 이용권(전기·가스·등유·연탄 등)을 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터",
+   "contact": "에너지바우처 누리집 안내",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.energyv.or.kr/",
+   "rule": {
+    "any": [
+     "energy"
+    ],
+    "boost": [
+     "lowIncome",
+     "senior",
+     "disability",
+     "infant",
+     "singleParent",
+     "sick"
+    ]
+   }
+  },
+  {
+   "id": "C024",
+   "dataset": "D1",
+   "name": "전기요금 복지할인",
+   "provider": "한국전력공사",
+   "target": "기초생활수급자·차상위계층·장애인·국가유공자·출산 가구 등",
+   "support": "전기요금 일부를 할인합니다.",
+   "apply": "한전 고객센터, 주소지 읍면동 행정복지센터",
+   "contact": "한전 123",
+   "docs": [
+    "$simple",
+    "해당 자격을 확인할 수 있는 서류"
+   ],
+   "means_tested": true,
+   "url": "https://home.kepco.co.kr/",
+   "rule": {
+    "any": [
+     "energy",
+     "disability"
+    ],
+    "boost": [
+     "lowIncome"
+    ]
+   }
+  },
+  {
+   "id": "C025",
+   "dataset": "D1",
+   "name": "통신요금 감면",
+   "provider": "과학기술정보통신부",
+   "target": "기초생활수급자·차상위계층·장애인·기초연금 받는 어르신 등",
+   "support": "휴대전화·인터넷 요금 일부를 깎아 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터, 통신사 고객센터, 복지로",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "any": [
+     "lowIncome",
+     "disability",
+     "senior"
+    ]
+   }
+  },
+  {
+   "id": "C026",
+   "dataset": "D1",
+   "name": "문화누리카드",
+   "provider": "문화체육관광부",
+   "target": "만 6세 이상 기초생활수급자·차상위계층",
+   "support": "공연·여행·체육 등에 쓰는 카드를 해마다 충전해 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터, 문화누리카드 누리집",
+   "contact": "문화누리 고객지원센터 1544-3412",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.mnuri.kr/",
+   "rule": {
+    "ageMin": 6,
+    "all": [
+     "lowIncome"
+    ]
+   }
+  },
+  {
+   "id": "C027",
+   "dataset": "D1",
+   "name": "장애인연금",
+   "provider": "보건복지부",
+   "target": "만 18세 이상 중증장애인 중 소득인정액이 기준 이하인 분",
+   "support": "매달 장애인연금을 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "ageMin": 18,
+    "all": [
+     "disability"
+    ]
+   }
+  },
+  {
+   "id": "C028",
+   "dataset": "D1",
+   "name": "장애인 활동지원",
+   "provider": "보건복지부",
+   "target": "만 6세~65세 미만 등록 장애인 중 활동지원이 필요한 분(종합조사로 결정)",
+   "support": "활동지원사가 몸 돌봄·가사·이동을 돕고, 방문목욕·방문간호도 받을 수 있습니다.",
+   "apply": "주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple",
+    "활동지원 신청서"
+   ],
+   "means_tested": false,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "ageMin": 6,
+    "ageMax": 64,
+    "all": [
+     "disability"
+    ]
+   }
+  },
+  {
+   "id": "C029",
+   "dataset": "D1",
+   "name": "노인일자리 및 사회활동 지원",
+   "provider": "보건복지부",
+   "target": "만 65세 이상 어르신(사업에 따라 60세 이상)",
+   "support": "공익활동·사회서비스형 일자리 등에 참여하고 활동비를 받습니다.",
+   "apply": "노인일자리 여기(누리집), 시니어클럽·노인복지관, 주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.seniorro.or.kr/",
+   "rule": {
+    "ageMin": 60,
+    "any": [
+     "lowIncome",
+     "alone",
+     "unemployed"
+    ]
+   }
+  },
+  {
+   "id": "C030",
+   "dataset": "D1",
+   "name": "재난적의료비 지원",
+   "provider": "보건복지부 · 국민건강보험공단",
+   "target": "소득 기준 이하 가구 중 소득에 비해 의료비 부담이 지나치게 큰 환자",
+   "support": "본인이 낸 의료비 일부를 지원합니다.",
+   "apply": "국민건강보험공단 지사",
+   "contact": "국민건강보험공단 1577-1000",
+   "docs": [
+    "$simple",
+    "진료비 영수증·세부내역서"
+   ],
+   "means_tested": true,
+   "url": "https://www.nhis.or.kr/",
+   "rule": {
+    "all": [
+     "sick"
+    ],
+    "any": [
+     "lowIncome",
+     "unemployed",
+     "crisis"
+    ]
+   }
+  },
+  {
+   "id": "C031",
+   "dataset": "D1",
+   "name": "본인부담상한제",
+   "provider": "국민건강보험공단",
+   "target": "1년 동안 낸 건강보험 본인부담금이 소득 수준별 상한액을 넘은 분",
+   "support": "넘은 금액을 돌려 드립니다(공단이 대상자에게 안내).",
+   "apply": "국민건강보험공단 지사(안내문을 받으면 신청)",
+   "contact": "국민건강보험공단 1577-1000",
+   "docs": [
+    "$simple",
+    "통장 사본"
+   ],
+   "means_tested": false,
+   "url": "https://www.nhis.or.kr/",
+   "rule": {
+    "all": [
+     "sick"
+    ]
+   }
+  },
+  {
+   "id": "C032",
+   "dataset": "D1",
+   "name": "차상위 본인부담경감",
+   "provider": "보건복지부",
+   "target": "차상위계층 중 희귀·중증난치질환자, 만성질환자, 18세 미만 아동 등",
+   "support": "병원비 본인부담을 줄여 드립니다.",
+   "apply": "주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "all": [
+     "sick"
+    ],
+    "any": [
+     "lowIncome"
+    ]
+   }
+  },
+  {
+   "id": "C033",
+   "dataset": "D1",
+   "name": "근로장려금",
+   "provider": "국세청",
+   "target": "일은 하지만 소득이 적은 가구(소득·재산 기준 있음)",
+   "support": "일해서 번 소득에 따라 장려금을 드립니다.",
+   "apply": "홈택스·손택스, 가까운 세무서",
+   "contact": "국세청 126",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.hometax.go.kr/",
+   "rule": {
+    "any": [
+     "working"
+    ],
+    "boost": [
+     "lowIncome",
+     "singleParent"
+    ]
+   }
+  },
+  {
+   "id": "C034",
+   "dataset": "D1",
+   "name": "초·중·고 교육비 지원",
+   "provider": "교육부 · 시도교육청",
+   "target": "저소득층 초·중·고 학생(시도교육청 기준)",
+   "support": "방과후학교 수강권, 급식비, 인터넷 통신비 등을 지원합니다.",
+   "apply": "교육비 원클릭 신청, 주소지 읍면동 행정복지센터",
+   "contact": "교육부 콜센터 02-6222-6060",
+   "docs": [
+    "$means"
+   ],
+   "means_tested": true,
+   "url": "https://oneclick.moe.go.kr/",
+   "rule": {
+    "all": [
+     "child"
+    ],
+    "any": [
+     "lowIncome",
+     "singleParent",
+     "unemployed"
+    ]
+   }
+  },
+  {
+   "id": "C035",
+   "dataset": "D1",
+   "name": "지역아동센터",
+   "provider": "보건복지부",
+   "target": "만 18세 미만 돌봄이 필요한 아동(소득 등 우선 기준 있음)",
+   "support": "방과 후 보호·공부·식사·마음 돌봄을 지원합니다.",
+   "apply": "가까운 지역아동센터, 주소지 읍면동 행정복지센터",
+   "contact": "보건복지상담센터 129",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.bokjiro.go.kr/",
+   "rule": {
+    "childAgeMax": 17,
+    "all": [
+     "child"
+    ],
+    "any": [
+     "singleParent",
+     "unemployed",
+     "lowIncome"
+    ]
+   }
+  },
+  {
+   "id": "C036",
+   "dataset": "D1",
+   "name": "자살예방 상담전화 109",
+   "provider": "보건복지부",
+   "target": "마음이 너무 힘들거나 극단적인 생각이 드는 분, 그 가족과 지인",
+   "support": "24시간 전화로 상담합니다.",
+   "apply": "전화 109(국번 없이, 24시간)",
+   "contact": "109",
+   "docs": [],
+   "means_tested": false,
+   "urgent": true,
+   "url": "https://www.mohw.go.kr/",
+   "rule": {
+    "any": [
+     "mental"
+    ]
+   }
+  },
+  {
+   "id": "C037",
+   "dataset": "D1",
+   "name": "정신건강복지센터 상담",
+   "provider": "보건복지부 · 시군구",
+   "target": "우울·불안 등 마음 건강이 걱정되는 주민과 가족",
+   "support": "상담과 사례관리를 하고, 필요하면 진료로 이어 드립니다.",
+   "apply": "주소지 정신건강복지센터",
+   "contact": "정신건강위기상담 1577-0199",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.mohw.go.kr/",
+   "rule": {
+    "any": [
+     "mental"
+    ]
+   }
+  },
+  {
+   "id": "C038",
+   "dataset": "D1",
+   "name": "무료 법률상담",
+   "provider": "대한법률구조공단",
+   "target": "빚·임대차 등 법률 문제로 도움이 필요한 분(소송 지원은 소득 등 기준 있음)",
+   "support": "무료로 법률 상담을 하고, 조건에 맞으면 소송을 도와줍니다.",
+   "apply": "가까운 대한법률구조공단 지부",
+   "contact": "132(국번 없이)",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.klac.or.kr/",
+   "rule": {
+    "any": [
+     "debt"
+    ]
+   }
+  },
+  {
+   "id": "C039",
+   "dataset": "D1",
+   "name": "신용회복위원회 채무조정",
+   "provider": "신용회복위원회",
+   "target": "빚을 정해진 대로 갚기 어려운 분",
+   "support": "상환 기간을 늘리거나 이자를 줄이는 채무조정을 상담합니다.",
+   "apply": "가까운 신용회복위원회 상담센터",
+   "contact": "1600-5500",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": false,
+   "url": "https://www.ccrs.or.kr/",
+   "rule": {
+    "any": [
+     "debt"
+    ]
+   }
+  },
+  {
+   "id": "P001",
+   "dataset": "D4",
+   "name": "사랑의열매 긴급지원",
+   "provider": "사회복지공동모금회(민간)",
+   "target": "갑작스러운 위기로 도움이 필요하지만 공적 지원을 받기 어려운 가구",
+   "support": "생계·의료·주거 등 긴급 지원을 배분 기관을 거쳐 연결합니다.",
+   "apply": "주소지 읍면동 행정복지센터·지역 복지관을 통해 연계",
+   "contact": "사회복지공동모금회 누리집 안내",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.chest.or.kr/",
+   "rule": {
+    "any": [
+     "crisis",
+     "food",
+     "unemployed"
+    ],
+    "boost": [
+     "singleParent",
+     "alone"
+    ]
+   }
+  },
+  {
+   "id": "P002",
+   "dataset": "D4",
+   "name": "푸드뱅크·푸드마켓",
+   "provider": "전국푸드뱅크(민간)",
+   "target": "끼니가 걱정되는 가구, 저소득 가구 등",
+   "support": "기부받은 식품과 생활용품을 나눠 드립니다.",
+   "apply": "가까운 푸드뱅크·푸드마켓, 읍면동 행정복지센터 의뢰",
+   "contact": "전국푸드뱅크 누리집 안내",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.foodbank1377.org/",
+   "rule": {
+    "any": [
+     "food",
+     "lowIncome",
+     "crisis"
+    ]
+   }
+  },
+  {
+   "id": "P003",
+   "dataset": "D4",
+   "name": "대한적십자사 희망풍차 결연",
+   "provider": "대한적십자사(민간)",
+   "target": "홀로 사는 어르신, 위기 가정 등 취약 가구",
+   "support": "결연 후원, 긴급 지원, 봉사원 방문을 합니다.",
+   "apply": "대한적십자사 지사, 읍면동 행정복지센터 의뢰",
+   "contact": "대한적십자사 누리집 안내",
+   "docs": [
+    "$simple"
+   ],
+   "means_tested": true,
+   "url": "https://www.redcross.or.kr/",
+   "rule": {
+    "any": [
+     "alone",
+     "crisis"
+    ],
+    "boost": [
+     "senior"
+    ]
+   }
+  }
+ ]
+}

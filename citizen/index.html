@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>닿음 · 내 복지 찾기</title>
+<meta name="description" content="상황을 말하면 받을 수 있는 복지서비스와 신청 방법을 찾아 드립니다.">
+<meta name="theme-color" content="#13655d">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="citizen.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html" aria-label="닿음 첫 화면으로">닿음</a>
+  <span class="top-title">내 복지 찾기</span>
+  <span id="mode-badge" class="badge" hidden></span>
+</header>
+<div id="netguard" class="netguard" hidden></div>
+
+<main id="app">
+  <!-- ① 상황 말하기 -->
+  <section id="step-ask" class="step" aria-labelledby="ask-h">
+    <h1 id="ask-h">어떤 일로 힘드신가요?</h1>
+    <p class="lead">지금 상황을 편하게 말씀해 주세요. 받을 수 있는 도움과 신청할 곳을 찾아 드립니다.</p>
+
+    <div class="who" role="radiogroup" aria-label="누구의 일인가요">
+      <button type="button" class="who-btn" role="radio" aria-checked="true" data-proxy="0">제 일이에요</button>
+      <button type="button" class="who-btn" role="radio" aria-checked="false" data-proxy="1">가족을 대신해 물어요</button>
+    </div>
+    <div id="relation-wrap" class="field" hidden>
+      <label for="relation">누구의 일인가요?</label>
+      <select id="relation">
+        <option>어머니</option><option>아버지</option><option>배우자</option><option>자녀</option>
+        <option>형제·자매</option><option>이웃·지인</option><option>그 밖의 가족</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="situation" id="situation-label">상황</label>
+      <textarea id="situation" rows="5" maxlength="1200" placeholder="예) 82살이고 혼자 살아요. 무릎이 아파 병원 다니기가 힘들어요."></textarea>
+      <div class="voice-row">
+        <button type="button" id="mic" class="btn btn-ghost" aria-pressed="false">말로 하기</button>
+        <span id="mic-note" class="note">말씀하신 내용은 브라우저의 온라인 음성 인식을 거쳐 글자로 바뀝니다.</span>
+      </div>
+    </div>
+
+    <fieldset class="chips">
+      <legend>해당하는 것을 눌러 주세요(골라도 되고 안 골라도 됩니다)</legend>
+      <div id="chips" class="chip-list"></div>
+    </fieldset>
+
+    <button type="button" id="find" class="btn btn-primary btn-big">받을 수 있는 도움 찾기</button>
+    <p id="ask-error" class="error" role="alert" hidden></p>
+
+    <details class="examples">
+      <summary>예시로 해 보기</summary>
+      <div id="examples" class="example-list"></div>
+    </details>
+  </section>
+
+  <!-- ② 받을 수 있는 서비스 -->
+  <section id="step-result" class="step" aria-labelledby="result-h" hidden>
+    <h1 id="result-h" tabindex="-1">받을 수 있을 만한 도움</h1>
+    <p id="summary" class="summary"></p>
+    <p id="mode-note" class="note mode-note" hidden></p>
+    <div id="urgent" class="urgent" role="alert" hidden>
+      마음이 많이 힘드시면 지금 바로 <a href="tel:109">109</a>(24시간)로 전화해 주세요. 갑자기 생계가 어려워졌다면 <a href="tel:129">129</a>로 상담할 수 있어요.
+    </div>
+    <ol id="cards" class="cards"></ol>
+    <div class="always">
+      <strong>더 궁금하시면</strong>
+      보건복지상담센터 <a href="tel:129">129</a> · 주소지 읍면동 행정복지센터 맞춤형복지팀
+    </div>
+    <div class="actions">
+      <button type="button" id="to-request" class="btn btn-accent btn-big">담당 공무원에게 도움 요청</button>
+      <button type="button" class="btn btn-ghost" data-go="ask">다시 말하기</button>
+    </div>
+  </section>
+
+  <!-- ③ 도움 요청 -->
+  <section id="step-request" class="step" aria-labelledby="req-h" hidden>
+    <h1 id="req-h" tabindex="-1">담당 공무원에게 도움 요청</h1>
+    <p class="lead">복지 담당 공무원이 내용을 보고 연락하거나 찾아갑니다.</p>
+    <p class="demo-warn">시연 화면입니다. 실제 이름·주소·전화번호를 넣지 마세요.</p>
+    <form id="req-form" novalidate>
+      <div class="field">
+        <label for="region">사시는 곳(<span id="region-name"></span>)</label>
+        <select id="region" required></select>
+      </div>
+      <fieldset class="field">
+        <legend>어떻게 도와드릴까요?</legend>
+        <label class="radio"><input type="radio" name="contact" value="visit" checked> 집으로 와 주세요</label>
+        <label class="radio"><input type="radio" name="contact" value="phone"> 전화로 알려 주세요</label>
+        <label class="radio"><input type="radio" name="contact" value="center"> 제가 행정복지센터로 갈게요</label>
+      </fieldset>
+      <div class="field">
+        <label for="display-name">부르실 이름(가명 가능)</label>
+        <input id="display-name" type="text" maxlength="20" placeholder="예) 김○○" autocomplete="off">
+      </div>
+      <div class="field">
+        <span class="label">함께 보낼 내용</span>
+        <div id="req-preview" class="preview"></div>
+      </div>
+      <label class="consent">
+        <input type="checkbox" id="consent">
+        <span id="consent-text">위 상황과 찾은 서비스를 상주시 복지 담당 공무원이 보고 연락하는 데 동의합니다. (시연에서는 이 기기의 브라우저에만 저장됩니다.)</span>
+      </label>
+      <p id="req-error" class="error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="submit" class="btn btn-accent btn-big">요청 보내기</button>
+        <button type="button" class="btn btn-ghost" data-go="result">뒤로</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ④ 접수 -->
+  <section id="step-done" class="step" aria-labelledby="done-h" hidden>
+    <h1 id="done-h" tabindex="-1">요청을 받았습니다</h1>
+    <p class="lead">접수번호 <strong id="req-id"></strong></p>
+    <p>담당 공무원이 확인하면 고르신 방법으로 연락드립니다. 급하시면 <a href="tel:129">129</a>로 전화해 주세요.</p>
+    <div class="actions">
+      <a class="btn btn-ghost" href="../officer/index.html">공무원 창구에서 보기(시연)</a>
+      <button type="button" class="btn btn-primary" data-go="new">처음으로</button>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>서비스 정보: 복지로·소관 기관 공개 안내 요약(시연 표본) · 최종 대상 여부는 신청처에서 정합니다.</p>
+  <p>상주시 적용 예시 · 시연용이며 실제 개인정보를 받지 않습니다.</p>
+</footer>
+
+<script src="../shared/config.js"></script>
+<script src="../shared/netguard.js"></script>
+<script src="../shared/requests.js"></script>
+<script src="../shared/ai.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
