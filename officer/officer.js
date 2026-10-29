@@ -452,6 +452,7 @@
         .catch(function () { return tryAt(i + 1); });
     }
     return tryAt(0)
+      .catch(function () { used = "citizen/" + (C.serviceScriptFallback || "data/services.js"); return loadJs("../" + used, "__DAEUM_SERVICES__"); })
       .then(function (j) {
         var arr = Array.isArray(j) ? j : (j.services || []), added = 0;
         arr.forEach(function (s) {
@@ -532,11 +533,26 @@
       ' · 분모: ' + R.households_denominator.source + ' · 내려받은 날 ' + R.fetched + '. 아래 미신청 표(가상 값)와는 별개입니다.</p>';
     box.innerHTML = h;
   }
-  fetch("../data/recipients_sangju.json").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(renderRegionStat)
+  // file:// 로 열면 fetch 가 막힌다 — 그때는 같은 내용의 짝 .js(window.__DAEUM_…__)를 script 로 읽는다
+  function loadJs(src, name) {
+    return new Promise(function (ok, no) {
+      if (window[name]) return ok(window[name]);
+      var s = document.createElement("script");
+      s.src = src;
+      s.onload = function () { window[name] ? ok(window[name]) : no(new Error("사본 없음 " + src)); };
+      s.onerror = function () { no(new Error("읽지 못함 " + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  function loadData(name, globalName) {
+    return fetch("../data/" + name + ".json").then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .catch(function () { return loadJs("../data/" + name + ".js", globalName); });
+  }
+  loadData("recipients_sangju", "__DAEUM_RECIPIENTS__").then(renderRegionStat)
     .catch(function () { var b = $("regionStat"); if (b) b.querySelector("p").textContent = "공개 통계를 불러오지 못했습니다."; });
 
   Promise.all([
-    fetch("../data/households.json").then(function (r) { return r.json(); }).then(function (j) { D = j; }),
+    loadData("households", "__DAEUM_HOUSEHOLDS__").then(function (j) { D = j; }),
     loadServices()
   ]).then(init).catch(function (e) {
     document.querySelector("main").textContent = "데이터를 불러오지 못했습니다: " + e + " (http 서버로 열어 주세요)";
