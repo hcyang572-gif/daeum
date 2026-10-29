@@ -285,8 +285,18 @@
       el("div", { class: "seal", "aria-hidden": "true", html: '<svg viewBox="0 0 48 48" width="30" height="30"><path class="tick" d="M13 25l7.5 7.5L35 17" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' }),
       el("h1", { class: "lead sm", text: already ? "이미 응답해 주셨어요" : "고맙습니다" }),
       el("p", { class: "body", text: already ? "이 기기에서 보내 주신 답이 이미 접수되어 있습니다." : "보내 주신 답은 도구를 현장에 맞게 다듬는 데만 쓰겠습니다." }),
-      el("p", { class: "note", text: "이 창은 닫으셔도 됩니다." })
+      el("button", { type: "button", class: "btn main close", text: "창 닫기", onclick: closeWin }),
+      el("p", { class: "note", id: "closeNote", text: "" })
     ]);
+  }
+  // 카톡 안 브라우저는 전용 주소로 닫고, 그 밖에는 window.close — 브라우저가 막으면 닫는 법을 알려 준다
+  function closeWin() {
+    if (/KAKAOTALK/i.test(navigator.userAgent)) { location.href = "kakaotalk://inappbrowser/close"; return; }
+    try { window.close(); } catch (e) {}
+    setTimeout(function () {
+      var n = $("closeNote");
+      if (n && !window.closed) n.textContent = "이 브라우저는 직접 닫아야 합니다. 화면 위 × 또는 탭 닫기를 눌러 주세요.";
+    }, 300);
   }
 
   /* ── 보내기 ── */

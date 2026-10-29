@@ -161,6 +161,8 @@ main { max-width: 520px; margin: 0 auto; outline: none; padding-bottom: calc(150
 /* ── 감사 ── */
 .done { text-align: center; padding-top: clamp(88px, 22vh, 168px); }
 .done .body { margin-left: auto; margin-right: auto; }
+.done .close { max-width: 320px; margin: 40px auto 0; display: block; }
+.done .note:empty { display: none; }
 .seal { width: 64px; height: 64px; margin: 0 auto 28px; border-radius: 50%; display: grid; place-items: center; color: var(--on-acc); background: var(--acc); box-shadow: var(--sh-btn); }
 .nojs { margin: 40px auto; max-width: 520px; }
 
