@@ -147,4 +147,9 @@ button.mini { padding: 2px 8px; font-size: 12px; margin-left: auto; min-height: 
   .tabs a { min-height: 44px; }
   main { padding: var(--sp-3) var(--sp-3) var(--sp-10); }
 }
+.panel.real { border-left: 4px solid var(--accent, #2b6cb0); }
+.panel.real .tag { font-size: 12px; font-weight: 400; color: var(--ink-soft); margin-left: 6px; }
+.panel.real .kpi { margin: 0 0 var(--sp-2); font-size: 15px; }
+.panel.real .kpi b { font-size: 28px; margin-right: 6px; font-variant-numeric: tabular-nums; }
+.panel.real .small { font-size: 12px; margin: var(--sp-2) 0 0; }
 @media print { .top, .bar, .virtual { position: static; } button { display: none; } .grid thead th { position: static; } }

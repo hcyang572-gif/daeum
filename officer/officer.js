@@ -516,6 +516,25 @@
     show();
   }
 
+  // 상주시 실제 현황 — 사보원 «복지사업 시군구별 수급권자 현황»(공개 통계, data/recipients_sangju.json). 가상 가구와 별개로 실제 값만 보인다.
+  function renderRegionStat(R) {
+    var box = $("regionStat"); if (!box) return;
+    var b = R.basic_rate, pick = ["기초생활보장(맞춤형급여)", "기초생계급여", "기초의료급여", "기초주거급여", "차상위본인부담경감대상자", "기초연금"];
+    var rows = R.rows.filter(function (r) { return pick.indexOf(r["사업명"]) >= 0; });
+    var month = rows.length ? rows[0]["기준년월"] : "";
+    var h = '<h3>상주시 실제 현황 <small class="tag">공개 통계 · 실제 값</small></h3>' +
+      '<p class="kpi"><b>' + b.value_pct.toFixed(1) + '%</b> 기초생활보장 수급가구 비율 <span class="muted">(근사)</span></p>' +
+      '<p class="muted small">산식: ' + b.formula + ' — ' + b.note + '</p>' +
+      '<table class="grid"><thead><tr><th>사업</th><th>수급권자</th><th>수급가구</th></tr></thead><tbody>' +
+      rows.map(function (r) { return "<tr><td>" + r["사업명"] + "</td><td>" + r["수급권자수"].toLocaleString() + "</td><td>" + r["수급가구수"].toLocaleString() + "</td></tr>"; }).join("") +
+      '</tbody></table>' +
+      '<p class="muted small">출처: 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(공공데이터포털 15062448), 기준월 ' + month +
+      ' · 분모: ' + R.households_denominator.source + ' · 내려받은 날 ' + R.fetched + '. 아래 미신청 표(가상 값)와는 별개입니다.</p>';
+    box.innerHTML = h;
+  }
+  fetch("../data/recipients_sangju.json").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(renderRegionStat)
+    .catch(function () { var b = $("regionStat"); if (b) b.querySelector("p").textContent = "공개 통계를 불러오지 못했습니다."; });
+
   Promise.all([
     fetch("../data/households.json").then(function (r) { return r.json(); }).then(function (j) { D = j; }),
     loadServices()
