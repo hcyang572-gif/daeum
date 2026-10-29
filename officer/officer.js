@@ -324,7 +324,7 @@
     m.appendChild(svg("rect", { x: ox - 0.9 * k, y: oy - 0.9 * k, width: 1.8 * k, height: 1.8 * k, class: "office" }));
     m.appendChild(svg("text", { x: ox, y: oy + 2.4 * k, class: "olabel" }, "시청"));
     // 가까운 집 번호 겹침 풀기 — 네이버 지도와 같은 계산(route_map.js spreadBy). 실제 자리엔 작은 점 + 지시선
-    var off = RM && RM.spreadBy ? RM.spreadBy(order.map(function (s) { return { x: s.h.x, y: -s.h.y }; }), 2.1 * k) : order.map(function () { return [0, 0]; });
+    var off = RM && RM.spreadBy ? RM.spreadBy(order.map(function (s) { return { x: s.h.x, y: -s.h.y }; }), 2.5 * k) : order.map(function () { return [0, 0]; });
     order.forEach(function (s, i) {
       var g = svg("g", { class: "stop" + (s.h.request ? " req" : "") }), x = s.h.x + off[i][0], y = -s.h.y + off[i][1];
       if (off[i][0] || off[i][1]) {
@@ -739,6 +739,8 @@
     initWeights(false);
     rebuild();
     picked = lsGet(LS_PICK, null);
+    // 예전 시연 자료(남원동 가구)의 id가 남아 있으면 지금 명단에 없는 집이라 버린다 — 다 버려지면 앞 순서로 다시 담는다(S10d)
+    if (Array.isArray(picked)) picked = picked.filter(function (id) { return rowById(id); });
     if (!Array.isArray(picked) || !picked.length) pickTop(); else rebuild();
     $("fArea").addEventListener("change", renderList);
     $("fTop").addEventListener("change", renderList);

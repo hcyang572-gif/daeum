@@ -153,7 +153,7 @@
     if (xy.length > 1) svg.appendChild(sv("path", { class: "art-line", d: "M" + xy.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" L"), pathLength: "1" }));
     // 가까운 집 번호 겹침 풀기 — 네이버 지도와 같은 계산(route_map.js spreadBy). 실제 자리엔 작은 점 + 지시선
     var RMS = window.DaeumRouteMap && window.DaeumRouteMap.spreadBy;
-    var off = RMS ? RMS(xy.map(function (p) { return { x: p[0], y: p[1] }; }), 9) : xy.map(function () { return [0, 0]; });
+    var off = RMS ? RMS(xy.map(function (p) { return { x: p[0], y: p[1] }; }), 10) : xy.map(function () { return [0, 0]; });
     xy.forEach(function (p, i) {
       var q = [p[0] + off[i][0], p[1] + off[i][1]];
       if (off[i][0] || off[i][1]) {
