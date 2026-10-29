@@ -38,6 +38,9 @@
     mental: ["우울", "죽고 싶", "살기 싫", "죽을 것 같", "극단", "자살", "사라지고 싶", "잠을 못", "외롭", "외로워",
       "살고 싶지 않", "살고 싶지가 않", "목숨을 끊", "생을 마감", "삶을 끝", "더는 못 버티", "더 이상 못 버티", "없어지고 싶", "극단적 선택", "자해"]
   };
+  // 생명 위기 낱말(mental 의 일부 — «외롭다·잠을 못 잔다»는 여기 넣지 않는다)
+  var SUICIDE_WORDS = ["죽고 싶", "살기 싫", "죽을 것 같", "극단", "자살", "사라지고 싶", "살고 싶지 않", "살고 싶지가 않",
+    "목숨을 끊", "생을 마감", "삶을 끝", "더는 못 버티", "더 이상 못 버티", "없어지고 싶", "자해"];
   // 어르신을 가리키는 말(나이가 없을 때 senior 로 본다)
   var SENIOR_WORDS = ["어르신", "노인", "할머니", "할아버지", "노모", "노부", "칠순", "팔순", "구순"];
   var CHILD_NEAR = /(아이|애|딸|아들|자녀|손주|손자|손녀|아기|막내|첫째|둘째|학생)/;
@@ -107,7 +110,9 @@
       age: age, ageBand: ageBand, ageLabel: ageLabel, ageKnown: age != null, seniorHint: seniorHint,
       childAges: childAges, tags: Object.keys(tags),
       isProxy: !!proxy.isProxy, relation: proxy.relation || "",
-      urgent: !!(tags.mental || tags.crisis), urgentMental: !!tags.mental, urgentCrisis: !!(tags.crisis || tags.food)
+      urgent: !!(tags.mental || tags.crisis), urgentMental: !!tags.mental, urgentCrisis: !!(tags.crisis || tags.food),
+      // 생명 위기 낱말(S5b-2): 이때는 결과 맨 위에 109 고정 카드
+      urgentSuicide: has(text, SUICIDE_WORDS)
     };
   }
 
@@ -133,6 +138,10 @@
       }
     }
     if (r.childAgeMax != null && p.childAges.length && Math.min.apply(null, p.childAges) > r.childAgeMax) return null;
+    // 자녀 나이 하한(S5b-2): 말한 자녀가 모두 하한보다 어리면 제외(예: 초등생 자녀 → 중고교 입학 교복비 제외)
+    if (r.childAgeMin != null && p.childAges.length && Math.max.apply(null, p.childAges) < r.childAgeMin) return null;
+    // 이름이 대상을 가리키는 사업(장애·산모·한부모·치매)은 그 상황이 하나 이상 꼭 있어야 한다
+    if ((r.req || []).length && !r.req.some(function (t) { return T[t]; })) return null;
     var all = r.all || [];
     for (var i = 0; i < all.length; i++) { if (!T[all[i]]) return null; }
     all.forEach(function (t) { reasons.push(REASON[t]); score += 2; });
@@ -143,6 +152,10 @@
     if (!reasons.length) return null;
     if (svc.urgent) score += 100;
     score += r.base || 0;            // 기본이 되는 서비스(기초연금·구직급여 등)를 앞에 두는 가중
+    // 이름에 사용자 상황이 드러난 사업을 앞에(«난방» 문장 → 에너지바우처·연료비), 상황별 기본 서비스 가점(core)
+    var nameHit = (r.name || []).filter(function (t) { return T[t]; }).length;
+    score += 3 * nameHit;
+    if (nameHit || (r.core && (r.ageMin || 0) >= 60)) score += r.core || 0;
     return { score: score, reasons: reasons.slice(0, 3), ageNote: ageNote };
   }
 

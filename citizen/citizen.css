@@ -89,3 +89,6 @@ select { min-height: 56px; }
   .actions { grid-template-columns: 2fr 1fr; }
   #step-done .actions { grid-template-columns: 1fr 1fr; }
 }
+.card.hotline h2 { color: var(--danger); }
+.card.hotline .hot-num { font-size: 20px; font-weight: 700; margin: 6px 0; }
+.card.hotline .hot-num a { font-size: 28px; margin-right: 8px; }
