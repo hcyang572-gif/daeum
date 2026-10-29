@@ -31,19 +31,20 @@
     dementia: ["치매", "깜빡", "자꾸 잊", "기억이", "기억을 못", "같은 말을 반복"],
     disability: ["장애", "휠체어", "시각장", "청각장", "지체"],
     housing: ["월세", "집세", "전세", "보증금", "집이 낡", "쫓겨", "방값", "집주인", "집 수리", "지붕", "곰팡이"],
-    energy: ["난방", "보일러", "전기요금", "가스요금", "추워", "춥", "기름값", "연탄", "전기세", "냉방", "에어컨", "더위"],
+    energy: ["난방", "보일러", "전기요금", "가스요금", "추워", "춥", "기름값", "연탄", "전기세", "냉방", "에어컨", "더위",
+      "전기가 끊", "전기 끊", "단전", "가스가 끊", "가스 끊"],
     debt: ["빚", "대출", "채무", "독촉", "추심", "카드값", "사채"],
     // «막막·급하·당장»은 위기 태그가 아니라 안내 띠(SOFT_WORDS)만 켠다(재검수 ①)
     crisis: ["갑자기", "굶", "끼니", "먹을 게", "쌀이 떨", "위기", "길에 나앉"],
     violence: ["때려", "때리", "에게 맞", "한테 맞", "맞고 살", "폭행", "폭력", "학대", "스토킹", "성폭", "추행", "협박"],
-    food: ["끼니", "굶", "먹을 게", "쌀이", "반찬", "밥을 못"],
+    food: ["끼니", "굶", "먹을 게", "쌀이", "쌀도", "반찬", "밥을 못", "못 먹", "먹지 못"],
     mental: ["우울", "죽고 싶", "살기 싫", "죽을 것 같", "극단", "자살", "사라지고 싶", "잠을 못", "외롭", "외로워",
       "살고 싶지 않", "살고 싶지가 않", "목숨을 끊", "생을 마감", "삶을 끝", "더는 못 버티", "더 이상 못 버티", "없어지고 싶", "극단적 선택", "자해"]
   };
   // 생명 위기 낱말(mental 의 일부 — «외롭다·잠을 못 잔다»는 여기 넣지 않는다)
   var SUICIDE_WORDS = ["죽고 싶", "살기 싫", "죽을 것 같", "극단", "자살", "사라지고 싶", "살고 싶지 않", "살고 싶지가 않",
     "목숨을 끊", "생을 마감", "삶을 끝", "더는 못 버티", "더 이상 못 버티", "없어지고 싶", "자해"];
-  var CRISIS_HARD = ["굶", "끼니", "먹을 게", "쌀이 떨", "길에 나앉"];
+  var CRISIS_HARD = ["굶", "끼니", "먹을 게", "쌀이 떨", "쌀도 떨", "못 먹었", "길에 나앉", "전기가 끊", "단전"];  // S6d: C3 «쌀도 떨어졌어요·못 먹었습니다» 미인식 보정
   var CRISIS_SOFT = ["위기", "갑자기"];
   var CRISIS_CAUSE = ["실직", "폐업", "수입", "돈", "월세"];
   var SOFT_WORDS = ["막막", "급해", "급하", "당장"];
@@ -226,6 +227,22 @@
   }
   // 비용 상한(10-29): 함수는 services 를 앞에서 60건까지만 받는다. 화면은 규칙 관련도 순 상위 AI_MAX_SERVICES 건만 보낸다.
   var AI_MAX_SERVICES = 50;
+  // S6d: AI 앞 후보 50건에 «반드시 넣을» 묶음 — 태그 점수 규칙으로는 순위 밖으로 밀려 정답이 아예 전송되지 않던 것(정확도 표본 C1~C3·C5·G3).
+  // 고르는 것은 AI다 — 여기서는 후보에 넣기만 한다(규칙만 모드 결과는 바꾸지 않음). 서비스는 이름 일부로 찾는다.
+  var PIN_RULES = [
+    { when: function (p) { return p.urgentCrisis || p.urgentSuicide || p.urgentViolence; }, names: ["긴급복지 생계지원", "희망복지지원단"] },
+    { words: ["장례", "장제", "세상을 떠", "사망", "상을 당", "장사 지내", "장사 치르"], names: ["긴급복지 장제비지원", "장제급여", "사망일시금"] },
+    { words: ["농사", "농업", "영농", "농삿일", "밭일", "논일", "과수원", "농작업", "농장"], names: ["영농도우미", "농업인안전보험", "농업인 건강보험료"] }
+  ];
+  function pinnedIds(text, profile, all) {
+    var t = " " + String(text || "").replace(/\s+/g, " ") + " ", ids = [];
+    PIN_RULES.forEach(function (r) {
+      var on = r.when ? r.when(profile) : has(t, r.words);
+      if (!on) return;
+      r.names.forEach(function (n) { all.forEach(function (s) { if ((s.name || "").indexOf(n) >= 0 && ids.indexOf(s.id) < 0) ids.push(s.id); }); });
+    });
+    return ids;
+  }
   function clip(v, n) { v = v == null ? "" : String(v); return v.length > n ? v.slice(0, n) : v; }
   function compactSvc(s, target, support) {
     return { id: s.id, name: clip(s.name, 60), target: clip(target, 160), support: clip(support, 120) };
@@ -262,6 +279,10 @@
     }).filter(function (x) { return x.n > 0 && ranked.indexOf(x.id) < 0; })
       .sort(function (a, b) { return b.n - a.n; })
       .forEach(function (x) { ranked.push(x.id); });
+    // 반드시 넣을 묶음은 규칙 상위 10건 바로 뒤에 끼운다(50건 안 보장, 규칙이 이미 앞에 둔 것은 그 자리 유지)
+    var pins = pinnedIds(input.text, profile, all).filter(function (id) { var i = ranked.indexOf(id); return i < 0 || i >= 10; });
+    ranked = ranked.filter(function (id) { return pins.indexOf(id) < 0; });
+    Array.prototype.splice.apply(ranked, [Math.min(ranked.length, 10), 0].concat(pins));
     var compact = topFirst(all, ranked, AI_MAX_SERVICES).map(function (s) { return compactSvc(s, s.target, s.support); });
     // 학교급으로 «추정»한 자녀 나이는 숫자로 보내지 않는다(AI가 «7살, 12살»처럼 단정해 되읊음 — S5b-2 시험)
     var sentProfile = Object.assign({}, profile);
