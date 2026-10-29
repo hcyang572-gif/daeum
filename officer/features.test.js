@@ -117,11 +117,20 @@ t("차수 마감 역산(2026-5차 12-11): 남은 일수·하루 처리량", func
   assert.strictEqual(cd.workdaysLeft, 32); assert.strictEqual(cd.perWorkday, Math.ceil(270 / 32));
   assert.strictEqual(cd.onTrack, false); // 기간 18% 경과·처리 10%
 });
-var wk = F.report.weekly(st, { now: NOW, countdown: cd });
-t("주간 보고서: 기간 월~오늘, 개조식 문안, 표 24행", function () {
-  assert.strictEqual(wk.period.from, "2026-10-26"); assert.ok(/^복지 사각지대 발굴 주간/.test(wk.text));
+// 읍면동 담당자 보고 = «자기 동» 기준(현장 현실성, 10-29). 시군구 집계는 수요 보드가 읍면동별로 보여 준다.
+var HOME = F.report.homeArea(HH);
+var stHome = F.report.aggregate({ households: HH, requests: reqs2.concat([req("R5", { region: HOME })]), attempts: att2, links: links, now: NOW, area: HOME });
+var wk = F.report.weekly(stHome, { now: NOW, countdown: cd });
+t("주간 보고서(자기 동): 기간 월~오늘, 동 이름 제목, 개조식 문안, 동 지표 표 8행", function () {
+  assert.strictEqual(HOME, HH[0].area);
+  assert.strictEqual(wk.period.from, "2026-10-26"); assert.ok(new RegExp("^" + HOME + " 복지 사각지대 발굴 주간").test(wk.text));
   assert.ok(/□ 추진 현황/.test(wk.text) && /○ 발굴 명단 300가구/.test(wk.text)); assert.ok(/추정/.test(wk.text));
-  assert.strictEqual(wk.table.rows.length, D.areas.length);
+  assert.ok(/□ 현장 후속 업무/.test(wk.text)); assert.strictEqual(wk.table.rows.length, 8);
+  assert.strictEqual(stHome.requests.total, 1); // 다른 동 주민 신호(함창읍 4건)는 자기 동 보고에서 빠진다
+});
+t("시군구 보고(동 지정 없음)는 읍면동별 표", function () {
+  var wk2 = F.report.weekly(st, { now: NOW });
+  assert.strictEqual(wk2.table.head[0], "읍면동"); assert.strictEqual(wk2.table.rows.length, st.byArea.length);
 });
 t("월간 보고서: 기간 1일~오늘", function () { assert.strictEqual(F.report.monthly(st, { now: NOW }).period.from, "2026-10-01"); });
 
@@ -179,7 +188,7 @@ var gp = F.linkGap.build({ households: HH, now: NOW,
   links: [{ id: "L1", householdId: HH[6].id, at: "2026-10-01T10:00:00" }],
   requests: [req("R9", { status: "seen", history: [{ at: "2026-10-23T10:00:00", status: "seen" }] })] });
 t("상담 뒤 연계 없음 1·확인 뒤 멈춤 1·연계 뒤 결과 미확인 1", function () {
-  assert.deepStrictEqual(gp.stages.map(function (s) { return s.items.length; }), [1, 1, 1]); assert.strictEqual(gp.total, 3);
+  assert.deepStrictEqual(gp.stages.map(function (s) { return s.items.length; }), [1, 1, 1, 0]); assert.strictEqual(gp.total, 3);
   assert.strictEqual(F.linkGap.build({ households: HH, now: NOW, links: [{ id: "L1", householdId: HH[6].id, at: "2026-10-01T10:00:00" }], outcomes: F.linkGap.markOutcome({}, "L1", "선정") }).total, 0);
 });
 console.log("⑫ 요청 답변 초안");

@@ -61,7 +61,8 @@
     consults: "daeum.officer.consults",   // ④ 상담 초안 [{id,householdId,at,fields}]
     safety: "daeum.officer.safety",       // ⑨ 안전 방문 {flags:{id:{on,reason,at}}, visits:[{id,householdId,buddy,startAt,dueAt,backAt}]}
     entry: "daeum.officer.entry",         // ⑩ 강제개문·긴급 조치 기록 [{householdId,step,note,at}]
-    outcomes: "daeum.officer.outcomes"    // ⑪ 연계 결과 확인 {linkId:{result,at}}
+    outcomes: "daeum.officer.outcomes",   // ⑪ 연계 결과 확인 {linkId:{result:"applied"|"decided"|"not_applied",at}}
+    handoff: "daeum.officer.handoff"      // S9h-④ 행복이음으로 옮긴 시각 {householdId: iso}
   };
   function lsGet(k, d) { try { var v = root.localStorage && root.localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function lsSet(k, v) { try { root.localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
@@ -104,9 +105,23 @@
   var DUE = { urgent: 1, normal: 3, soonDays: 1 };
   function requestDue(r) { return addWorkdays(new Date(r.createdAt), r.urgent ? DUE.urgent : DUE.normal); }
   function isOpen(r) { return r && r.status !== "done" && r.status !== "cancelled"; }
+  // ── 주민 신호 종류(S9h C안: 주민 창구 = «이웃 제보·도움 요청 → 방문 순서 반영» 입구) ──
+  // self = 본인 요청 · family = 가족이 대신 · neighbor = 이웃이 걱정된다고 알림(r.signal 이 있으면 그것을 따른다)
+  function signalOf(r) {
+    if (!r) return "self";
+    if (r.signal === "self" || r.signal === "family" || r.signal === "neighbor") return r.signal;
+    var p = r.proxy || {};
+    if (!p.isProxy) return "self";
+    return /이웃|통장|이장|집주인|관리/.test(p.relation || "") ? "neighbor" : "family";
+  }
+  var SIGNAL_TEXT = { self: "주민이 직접 도움 요청", family: "가족이 대신 도움 요청", neighbor: "이웃이 걱정된다고 알림" };
+  var SIGNAL_SHORT = { self: "도움 요청", family: "가족 대신 요청", neighbor: "이웃 알림" };
+  function signalText(r) { return SIGNAL_TEXT[signalOf(r)] + (r && r.urgent ? "(긴급 낱말)" : ""); }
+  F.signals = { of: signalOf, text: signalText, TEXT: SIGNAL_TEXT, SHORT: SIGNAL_SHORT };
   function reqLabel(r) {
-    var who = r.proxy && r.proxy.isProxy ? " (" + (r.proxy.relation || "가족") + " 대신)" : "";
-    return (r.displayName ? r.displayName + " " : "") + "요청 " + r.id + who;
+    var k = signalOf(r);
+    var who = k === "family" ? " (" + (r.proxy.relation || "가족") + " 대신)" : k === "neighbor" ? (r.place ? " · " + String(r.place).slice(0, 20) : "") : "";
+    return (r.displayName && k !== "neighbor" ? r.displayName + " " : "") + SIGNAL_SHORT[k] + " " + r.id + who;
   }
 
   // ── ③ 방문·연락 기록 → 재시도 제안 ──────────────────────
@@ -158,10 +173,12 @@
     var visitsFailed = mine.filter(function (t) { return t.channel === "visit" && t.result === "no_answer"; }).length;
     var tried = uniq(mine.map(function (t) { return slotOf(t.at); }));
     var slot = SLOTS.filter(function (s) { return tried.indexOf(s) < 0; })[0] || SLOTS[(SLOTS.indexOf(slotOf(last.at)) + 1) % 3];
-    var gap = Math.min(out.failed, 3); // 1·2·3 영업일 간격으로 늘림(가정)
-    var channel = last.result === "wrong_contact" ? "visit" : last.channel === "phone" && out.failed >= 2 ? "visit" : last.channel;
+    var gap = last.channel === "ai" ? 1 : Math.min(out.failed, 3); // 1·2·3 영업일 간격으로 늘림(가정)
+    // 정보원 AI 초기상담 전화(채널 "ai")가 못 닿았으면 담당자 전화를 한 번 더 걸기보다 방문으로 넘긴다(현행 절차: AI 전화 → 심층상담·방문)
+    var channel = last.result === "wrong_contact" || last.channel === "ai" ? "visit" : last.channel === "phone" && out.failed >= 2 ? "visit" : last.channel;
     var why = last.result === "refused" ? "거부 — 시간을 두고 다른 담당자·이웃 통해 다시 권유"
       : last.result === "wrong_contact" ? "연락처·주소 틀림 — 방문으로 실거주 확인"
+      : last.channel === "ai" ? "AI 초기상담 전화 안 닿음 — 방문으로 확인"
       : "부재 " + out.failed + "회 — 안 해 본 «" + slot + "» 시간대로";
     var nd = addWorkdays(last.at, last.result === "refused" ? 5 : gap);
     if (nd < startOfDay(now)) nd = startOfDay(now); // 이미 지난 제안일은 오늘로 당김
@@ -193,7 +210,8 @@
 
       var newItems = reqs.filter(function (r) { return r.status === "new"; }).map(function (r) {
         return { id: r.id, kind: "request", requestId: r.id, label: reqLabel(r), area: r.region || "미상", urgent: !!r.urgent,
-          channel: r.contactPref || "phone", why: r.urgent ? "긴급 낱말 있음 — 오늘 먼저" : "국민이 직접 요청", due: ymd(requestDue(r)) };
+          channel: signalOf(r) === "neighbor" ? "visit" : r.contactPref || "phone",
+          why: r.urgent ? "긴급 낱말 있음 — 오늘 먼저" : signalOf(r) === "neighbor" ? "이웃 알림 — 찾아가 실거주·안부 확인" : SIGNAL_TEXT[signalOf(r)], due: ymd(requestDue(r)) };
       }).sort(function (a, b) { return (b.urgent - a.urgent) || (a.due < b.due ? -1 : 1); });
 
       var dueItems = reqs.filter(function (r) { return daysBetween(now, requestDue(r)) <= DUE.soonDays; }).map(function (r) {
@@ -216,7 +234,7 @@
       var stops = [], seen = {};
       function push(s) { if (!seen[s.id]) { seen[s.id] = 1; stops.push(s); } }
       reqs.forEach(function (r) {
-        if (r.contactPref !== "visit") return;
+        if (r.contactPref !== "visit" && signalOf(r) !== "neighbor") return;
         var a = areaC[r.region] || { x: 0, y: 0 };
         push({ id: r.id, label: reqLabel(r), area: r.region || "미상", kind: "request", x: a.x, y: a.y });
       });
@@ -228,7 +246,7 @@
         date: today,
         counts: { newRequests: newItems.length, dueSoon: dueItems.length, revisits: revisit.length, stops: stops.length },
         sections: [
-          { key: "new", title: "새 요청", hint: "국민 창구에서 들어온 요청", items: newItems },
+          { key: "new", title: "새 주민 신호", hint: "주민 창구로 들어온 도움 요청·이웃 알림", items: newItems },
           { key: "due", title: "기한 임박", hint: "처리 기한(시연 설정: 긴급 1·일반 3영업일) 하루 이내·지남", items: dueItems },
           { key: "revisit", title: "재방문·재연락", hint: "지난 시도 결과로 오늘 다시 할 집", items: revisit },
           { key: "route", title: "오늘 동선", hint: "읍면별로 묶고 가까운 순", items: route.order }
@@ -247,8 +265,8 @@
       var reqByHH = {}; (data.requests || []).filter(isOpen).forEach(function (r) { if (r.householdId) (reqByHH[r.householdId] = reqByHH[r.householdId] || []).push(r); });
       var items = hh.map(function (h, i) {
         var sig = [];
-        (reqByHH[h.id] || []).forEach(function (r) { sig.push({ kind: "request", text: (r.proxy && r.proxy.isProxy ? "가족·이웃이 대신 도움 요청" : "주민이 직접 도움 요청") + (r.urgent ? "(긴급 낱말)" : "") }); });
-        if (h.request && !reqByHH[h.id]) sig.push({ kind: "request", text: (h.request.proxy && h.request.proxy.isProxy ? "가족·이웃이 대신 도움 요청" : "주민이 직접 도움 요청") + (h.request.urgent ? "(긴급 낱말)" : "") });
+        (reqByHH[h.id] || []).forEach(function (r) { sig.push({ kind: "request", text: signalText(r) }); });
+        if (h.request && !reqByHH[h.id]) sig.push({ kind: "request", text: signalText(h.request) });
         tips.filter(function (t) { return t.householdId === h.id; }).forEach(function (t) { sig.push({ kind: "tip", text: (t.from || "이웃") + " 제보: " + String(t.text || "").slice(0, 40) }); });
         var s = suggestNext(attempts, h.id, data.now);
         if (s.tries && !s.closed && s.failed) sig.push({ kind: "history", text: "지난 시도 " + s.failed + "회 못 만남 — 재시도 " + (s.next ? s.next.date : "") });
@@ -459,10 +477,14 @@
     }
   };
 
-  // ── ⑪ 연계 누락 보드 (상담 → 연계 → 결과 확인 단계에서 멈춘 집) ───────
-  var GAP = { afterLink: 14, afterSeen: 3 }; // 시연 기본값: 연계 뒤 14일·요청 확인 뒤 3영업일
+  // ── ⑪ 연계 누락·미신청 보드 (상담 → 안내 → 신청 → 결정, 어디서 멈췄나) ───────
+  // 현장 고충 5: 위기가구 서비스 연계율 24.9%(2021), 예측 63.3만 → 수급 22.8만(01_리서치/현행_위기가구_발굴절차.md §6).
+  // 행복이음은 연계율을 «집계»하지만, 담당자 개인의 «안내했는데 신청 안 한 집» 알림은 공개 자료에서 확인되지 않는다(행복이음_기능_대조.md §3).
+  var GAP = { afterLink: 14, afterSeen: 3, afterApply: 30 }; // 시연 기본값: 안내 뒤 14일·요청 확인 뒤 3영업일·신청 뒤 30일
+  var OUTCOME = { applied: "신청함", decided: "결정 확인", not_applied: "안 하기로 함" };
+  function outcomeKey(o) { if (!o) return null; var r = o.result; return r === "applied" || r === "not_applied" ? r : "decided"; } // 옛 값(«확인»·«선정»)은 결정 확인으로 본다
   F.linkGap = {
-    GAP: GAP,
+    GAP: GAP, OUTCOME: OUTCOME,
     /** d = {households, requests, attempts, links, outcomes, now} */
     build: function (d) {
       var now = d.now ? new Date(d.now) : new Date();
@@ -470,6 +492,7 @@
       var links = d.links || [], outc = d.outcomes || {};
       var linked = {}; links.forEach(function (l) { linked[l.householdId] = 1; });
       function L(id) { var h = hh[id]; return h ? { label: h.label, area: h.area } : { label: id, area: "" }; }
+      function svc(l) { return (l.serviceNames || l.serviceIds || []).slice(0, 3).join(", "); }
       var last = {}; (d.attempts || []).slice().sort(function (a, b) { return a.at < b.at ? -1 : 1; }).forEach(function (t) { last[t.householdId] = t; });
       var a = Object.keys(last).filter(function (id) { return last[id].result === "met" && !linked[id]; }).map(function (id) {
         var days = Math.max(0, daysBetween(last[id].at, now));
@@ -477,26 +500,195 @@
       });
       var b = links.filter(function (l) { return !outc[l.id] && daysBetween(l.at, now) >= GAP.afterLink; }).map(function (l) {
         var days = daysBetween(l.at, now);
-        return { id: l.householdId, linkId: l.id, label: l.label || L(l.householdId).label, area: l.area || L(l.householdId).area, days: days, why: "연계 " + days + "일 지남 — 신청·결정 결과 확인 안 함" };
+        return { id: l.householdId, linkId: l.id, label: l.label || L(l.householdId).label, area: l.area || L(l.householdId).area, days: days,
+          services: svc(l), why: "안내 " + days + "일 지남 — 신청했는지 확인 안 함" + (svc(l) ? " (" + svc(l) + ")" : "") };
+      });
+      var e = links.filter(function (l) { var o = outc[l.id]; return o && outcomeKey(o) === "applied" && daysBetween(o.at, now) >= GAP.afterApply; }).map(function (l) {
+        var days = daysBetween(outc[l.id].at, now);
+        return { id: l.householdId, linkId: l.id, label: l.label || L(l.householdId).label, area: l.area || L(l.householdId).area, days: days,
+          services: svc(l), why: "신청 " + days + "일 지남 — 선정·탈락 결과 확인 안 함" };
       });
       var c = (d.requests || []).filter(function (r) { return r.status === "seen" || r.status === "visiting"; }).map(function (r) {
         var hs = (r.history || []).slice(-1)[0], x = startOfDay(hs ? hs.at : r.createdAt), wd = 0, end = startOfDay(now);
         while (x < end) { x = new Date(x.getTime() + DAY); if (x.getDay() % 6) wd++; }
-        return { id: r.id, requestId: r.id, label: (r.displayName ? r.displayName + " " : "") + "요청 " + r.id, area: r.region || "", days: wd,
+        return { id: r.id, requestId: r.id, label: reqLabel(r), area: r.region || "", days: wd,
           why: "«" + (r.status === "seen" ? "확인" : "방문 예정") + "» 뒤 " + wd + "영업일 변화 없음" };
       }).filter(function (x) { return x.days >= GAP.afterSeen; });
+      // 서비스별 «안내했는데 신청 안 함»(결과 미확인 14일 이상·안 하기로 함) — 어떤 사업이 새는지 본다
+      var bySvc = {};
+      links.forEach(function (l) {
+        var k = outcomeKey(outc[l.id]); if (k === "applied" || k === "decided") return;
+        if (!k && daysBetween(l.at, now) < GAP.afterLink) return;
+        (l.serviceNames || l.serviceIds || []).forEach(function (n) { bySvc[n] = (bySvc[n] || 0) + 1; });
+      });
       function by(p, q2) { return q2.days - p.days; }
       return {
         stages: [
           { key: "met_nolink", label: "상담했는데 연계 없음", items: a.sort(by) },
-          { key: "req_stalled", label: "요청 확인 뒤 멈춤", items: c.sort(by) },
-          { key: "link_nocheck", label: "연계했는데 결과 확인 안 함", items: b.sort(by) }
+          { key: "req_stalled", label: "주민 신호 확인 뒤 멈춤", items: c.sort(by) },
+          { key: "link_nocheck", label: "안내했는데 신청 확인 안 함", items: b.sort(by) },
+          { key: "applied_nodecision", label: "신청했는데 결과 확인 안 함", items: e.sort(by) }
         ],
-        total: a.length + b.length + c.length,
-        note: "멈춤 기준(시연 설정): 요청 확인 뒤 " + GAP.afterSeen + "영업일 · 연계 뒤 " + GAP.afterLink + "일. 상담 뒤 연계 없음은 바로 표시합니다."
+        total: a.length + b.length + c.length + e.length,
+        notApplied: Object.keys(bySvc).map(function (n) { return { name: n, n: bySvc[n] }; }).sort(function (x, y) { return y.n - x.n; }),
+        note: "멈춤 기준(시연 설정): 신호 확인 뒤 " + GAP.afterSeen + "영업일 · 안내 뒤 " + GAP.afterLink + "일 · 신청 뒤 " + GAP.afterApply +
+          "일. 선정·탈락은 소관 기관이 결정하고, 여기서는 담당자가 «확인했는지»만 챙깁니다."
       };
     },
+    /** result: "applied"(신청함) | "decided"(결정 확인) | "not_applied"(안 하기로 함). 옛 값은 결정 확인으로 읽는다 */
     markOutcome: function (outcomes, linkId, result, at) { var o = Object.assign({}, outcomes || {}); o[linkId] = { result: result, at: new Date(at || Date.now()).toISOString() }; return o; }
+  };
+
+  var CH_TXT = { visit: "방문", phone: "전화", center: "내방", ai: "AI 전화" };
+
+  // ── S9h-① 하루 동선 1장 (A4 한 장: 순서·예상 시각·왜 이 집·지난 시도·주의·부재면 다음 시도·대기 방문) ──
+  // 현장 고충 3(1인당 45.2→113.4건, «가가호호 방문이 사실상 어렵다») · 고충 2(부재·연락두절). 행복이음 모바일은 조회·기록·신청이고
+  // 일정·동선 기능은 공개 자료에서 확인되지 않는다(행복이음_기능_대조.md §2-3). 정식 기록은 행복이음에, 이 장은 «나가기 전 한 장».
+  F.daySheet = {
+    /** d = {start, end, km, isRoad, ret, stops:[{id, arrive, leave, lunchBefore}], rows:{id:{household, factors, signals}},
+     *       candidates:[{household, signals}] (대기 후보), attempts, safety, tips, now} */
+    build: function (d) {
+      var now = d.now ? new Date(d.now) : new Date(), rows = d.rows || {}, att = d.attempts || [];
+      var inRoute = {}; (d.stops || []).forEach(function (s) { inRoute[s.id] = 1; });
+      var areas = {};
+      var stops = (d.stops || []).map(function (s, i) {
+        var r = rows[s.id] || {}, h = r.household || { id: s.id, label: s.id };
+        areas[h.area] = 1;
+        var c = F.visitCard.build({ household: h, factors: r.factors, signals: r.signals, attempts: att, safety: d.safety, tips: d.tips, now: now });
+        // 부재일 때 다음 시도: 지금 기록에 «도착 시각 부재»를 하나 더해 계산(가정)
+        var at = new Date(now), hm = String(s.arrive || "10:00").split(":"); at.setHours(+hm[0] || 10, +hm[1] || 0, 0, 0);
+        var ifAbsent = suggestNext(att.concat([{ householdId: h.id, channel: "visit", result: "no_answer", at: at.toISOString() }]), h.id, now);
+        var lastTry = c.tries.length ? c.tries[c.tries.length - 1] : null;
+        return {
+          no: i + 1, id: h.id, time: (s.arrive || "") + (s.leave ? "~" + s.leave : ""), lunchBefore: !!s.lunchBefore,
+          label: h.label || h.id, area: h.area || "", members: c.members,
+          why: c.why.slice(0, 2), lastTry: lastTry ? lastTry.at + " " + (CH_TXT[lastTry.channel] || "") + " " + lastTry.result : "첫 방문",
+          twoPerson: c.twoPerson, cautions: c.cautions.filter(function (x) { return !/^2인 방문/.test(x); }).slice(0, 2),
+          bring: c.recommend.slice(0, 3),
+          ifAbsent: ifAbsent.escalate ? "안내문 남기고 통반장·이웃 간접 확인으로 전환"
+            : ifAbsent.next ? "안내문 남김 → 다음 " + ifAbsent.next.date.slice(5) + " " + ifAbsent.next.slot + " " + (CH_TXT[ifAbsent.next.channel] || "") : ""
+        };
+      });
+      // 대기 방문: 재시도 날이 됐거나 지역 신호가 있는 집 중 같은 동네 먼저(부재로 시간이 남을 때 들른다)
+      var today = ymd(now), standby = [];
+      (d.candidates || []).forEach(function (x) {
+        var h = x.household; if (!h || inRoute[h.id] || standby.length >= 8) return;
+        var s = suggestNext(att, h.id, now);
+        var due = s.tries && !s.closed && s.next && s.next.date <= today;
+        var sig = (x.signals || []).filter(function (g) { return g.kind !== "history"; })[0];
+        if (!due && !sig) return;
+        standby.push({ id: h.id, label: h.label, area: h.area, near: areas[h.area] ? 1 : 0, why: due ? s.next.why : sig.text });
+      });
+      standby.sort(function (p, q2) { return q2.near - p.near; }); standby = standby.slice(0, 4);
+      var two = stops.filter(function (x) { return x.twoPerson; }).length;
+      var summary = "방문 " + stops.length + "곳 · 출발 " + (d.start || "09:30") + (d.end ? " · " + (d.ret ? "복귀 " : "마침 ") + d.end : "") +
+        (d.km != null ? " · 이동 " + (+d.km).toFixed(1) + "km(" + (d.isRoad ? "도로" : "근사") + ")" : "") + (two ? " · 2인 방문 " + two + "곳" : "");
+      var lines = [ymd(now) + " 하루 방문 동선 — " + summary, ""];
+      stops.forEach(function (x) {
+        if (x.lunchBefore) lines.push("  (점심)");
+        lines.push(x.no + ". " + x.time + " " + x.label + " · " + x.area + (x.twoPerson ? " [2인 방문]" : ""));
+        if (x.why.length) lines.push("   왜: " + x.why.join(" / "));
+        lines.push("   지난 시도: " + x.lastTry + (x.bring.length ? " · 안내할 것(가능성): " + x.bring.join(", ") : ""));
+        if (x.cautions.length) lines.push("   주의: " + x.cautions.join(" / "));
+        if (x.ifAbsent) lines.push("   부재면: " + x.ifAbsent);
+      });
+      if (standby.length) { lines.push("", "부재로 시간이 남으면 들를 집"); standby.forEach(function (x) { lines.push(" - " + x.label + " · " + x.area + " — " + x.why); }); }
+      lines.push("", "※ 방문 시작·귀청 확인은 «방문·연락» 화면에서 누릅니다. 상담·조사 결과의 정식 기록은 행복이음에 합니다.");
+      return { date: ymd(now), title: ymd(now) + " 하루 방문 동선", summary: summary, stops: stops, standby: standby, text: lines.join("\n"),
+        note: "예상 시각은 " + (d.isRoad ? "도로 경로" : "직선거리 근사") + " 기준입니다. 자격은 «가능성» 표시일 뿐 선정 결정이 아닙니다. 가구는 시연용 가상 자료입니다." };
+    }
+  };
+
+  // ── S9h-② 시도 이력 한 줄 요약 · 며칠치 재시도 일정 ─────────────────────
+  F.contacts.CHANNELS = CH_TXT;
+  /** 한 집의 시도 이력: 시간대별로 무엇을 해 봤는지(같은 시간대 반복 부재를 피하려고) */
+  F.contacts.timeline = function (attempts, householdId) {
+    var mine = (attempts || []).filter(function (t) { return t.householdId === householdId; }).sort(function (a, b) { return a.at < b.at ? -1 : 1; });
+    var bySlot = { "오전": [], "오후": [], "저녁": [] };
+    mine.forEach(function (t) { bySlot[slotOf(t.at)].push((CH_TXT[t.channel] || t.channel) + " " + (RESULTS[t.result] || t.result)); });
+    var items = mine.map(function (t) { return { at: ymd(t.at).slice(5) + " " + slotOf(t.at), channel: CH_TXT[t.channel] || t.channel, result: RESULTS[t.result] || t.result, note: t.note || "" }; });
+    var line = SLOTS.map(function (k) { return k + " " + (bySlot[k].length ? bySlot[k].length + "회(" + bySlot[k][bySlot[k].length - 1] + ")" : "안 해 봄"); }).join(" · ");
+    return { tries: mine.length, items: items, bySlot: bySlot, line: line };
+  };
+  /** 오늘부터 days 영업일치 재시도 일정(지난 제안일은 오늘로) → [{date, label, items:[{id,label,area,slot,channel,why,escalate,overdue}]}] */
+  F.contacts.plan = function (attempts, households, now, days) {
+    now = now ? new Date(now) : new Date(); days = days || 5;
+    var byId = {}; (households || []).forEach(function (h) { byId[h.id] = h; });
+    var dates = [startOfDay(now)]; while (dates.length < days) dates.push(addWorkdays(dates[dates.length - 1], 1));
+    var W = ["일", "월", "화", "수", "목", "금", "토"], today = ymd(now);
+    var out = dates.map(function (dt, i) { return { date: ymd(dt), label: i === 0 ? "오늘" : ymd(dt).slice(5) + " (" + W[dt.getDay()] + ")", items: [] }; });
+    uniq((attempts || []).map(function (t) { return t.householdId; })).forEach(function (id) {
+      var s = suggestNext(attempts, id, now); if (s.closed || !s.next) return;
+      var day = s.next.date <= today ? out[0] : out.filter(function (x) { return x.date === s.next.date; })[0];
+      if (!day) return; // 범위 밖
+      var h = byId[id] || {};
+      day.items.push({ id: id, label: h.label || id, area: h.area || "", slot: s.next.slot, channel: s.next.channel, why: s.next.why, escalate: s.escalate, overdue: s.next.date < today });
+    });
+    var ORD = { "오전": 0, "오후": 1, "저녁": 2 };
+    out.forEach(function (x) { x.items.sort(function (p, q2) { return (q2.overdue - p.overdue) || ORD[p.slot] - ORD[q2.slot]; }); });
+    return out;
+  };
+
+  // ── S9h-④ 행복이음으로 «나가는 것»: 입력 순서대로 정리한 초안(복사·인쇄·파일) ─────────
+  // ⚠️ 현실 제약: 행복이음은 업무망(행정망) 안, 닿음 시제품은 인터넷 PC·폰 → 망분리 때문에 같은 PC에서 «복사→붙여넣기»가 안 될 수 있다.
+  //    그래서 ①같은 망에 설치해 운영할 때 복사 ②한 장 인쇄해 보고 입력 ③파일 내려받기 → 기관이 허용한 자료 전송(망연계) 경로, 세 길을 둔다.
+  //    항목 이름·순서는 행복이음 실제 화면을 보지 못해 «상담·조사 기록에 흔히 들어가는 순서»로 추정했다(미대조 — 행복이음_기능_대조.md §5).
+  //    «들어오는 것»(명단 불러오기)은 S9f에서, 직접 API 연계는 «향후 구상»으로만 적는다.
+  var HANDOFF = [
+    ["subject", "대상 가구(읍면동)"], ["consultAt", "상담·조사 일시"], ["method", "상담 방법"], ["tries", "방문·연락 시도 이력"],
+    ["main", "주요 호소(상담 내용 요약)"], ["needs", "욕구 영역"], ["situation", "가구 상황"], ["urgent", "긴급 여부"],
+    ["action", "조치·서비스 연계"], ["result", "연계 결과(신청·결정)"], ["notEligible", "비해당 사유"], ["plan", "향후 계획"]
+  ];
+  F.handoff = {
+    FIELDS: HANDOFF,
+    FUTURE: "향후 구상: 행복이음과 직접 주고받는 연계(API)는 업무망 분리 해결·개인정보 처리 법적 근거·보건복지부·사회보장정보원 승인이 모두 갖춰져야 가능합니다. 시제품은 복사·인쇄·파일까지만 합니다.",
+    NOTE: "행복이음에 옮겨 적기 위한 초안입니다. 항목 이름·순서는 실제 입력 화면과 대조 전(추정)이며, 입력·확정은 담당 공무원이 합니다. 망분리 환경에서는 인쇄해 보고 입력하거나 기관이 허용한 자료 전송 경로로 파일을 옮기세요.",
+    /** d = {household:{id,label,area}, attempts, consults:[{householdId,at,fields}], links, outcomes, plan?, now} */
+    build: function (d) {
+      var h = d.household || {}, id = h.id;
+      var tl = F.contacts.timeline(d.attempts, id);
+      var cs = (d.consults || []).filter(function (c) { return c.householdId === id; }).sort(function (a, b) { return a.at < b.at ? 1 : -1; })[0];
+      var cf = {}; ((cs && cs.fields) || []).forEach(function (f) { cf[f.key] = f.value; });
+      var lk = (d.links || []).filter(function (l) { return l.householdId === id; });
+      var outc = d.outcomes || {};
+      var last = (d.attempts || []).filter(function (t) { return t.householdId === id; }).sort(function (a, b) { return a.at < b.at ? 1 : -1; })[0] || null;
+      var nx = suggestNext(d.attempts, id, d.now);
+      var v = {
+        subject: (h.label || id || "") + (h.area ? " · " + h.area : ""),
+        consultAt: cf.consultAt || (last ? ymd(last.at) : ""),
+        method: cf.method || (last ? CH_TXT[last.channel] || "" : ""),
+        tries: tl.items.map(function (t) { return t.at + " " + t.channel + " " + t.result + (t.note ? "(" + t.note + ")" : ""); }).join(" / "),
+        main: cf.main || "", needs: cf.needs || "", situation: cf.situation || "", urgent: cf.urgent || "",
+        action: lk.length ? "서비스 안내: " + uniq([].concat.apply([], lk.map(function (l) { return l.serviceNames || l.serviceIds || []; }))).join(", ") : cf.action || "",
+        result: lk.map(function (l) { var o = outc[l.id]; return o ? (OUTCOME[outcomeKey(o)] || o.result) + " " + ymd(o.at) : "결과 확인 전"; }).join(" / "),
+        notEligible: last && last.result === "not_eligible" ? labelOf(NON_ELIGIBLE_REASONS, last.reason) + (last.note ? "(" + last.note + ")" : "") : "",
+        plan: d.plan || (!last ? cf.plan || "" : nx.closed ? nx.closedWhy : nx.next ? "다음 시도 " + nx.next.date + " " + nx.next.slot + " " + (CH_TXT[nx.next.channel] || "") + " — " + nx.next.why : "")
+      };
+      var fields = HANDOFF.map(function (f) { return { key: f[0], label: f[1], value: v[f[0]] || "" }; });
+      return { id: id, fields: fields, filled: fields.filter(function (f) { return f.value; }).length,
+        text: fields.map(function (f) { return "[" + f.label + "] " + (f.value || "(해당 없음·직접 입력)"); }).join("\n"), note: F.handoff.NOTE };
+    },
+    /** 기록이 있는 집 전부 → {items, pending, csv}. sent(id별 마지막으로 옮긴 시각)보다 새 기록이 있으면 pending */
+    batch: function (d) {
+      var hh = {}; (d.households || []).forEach(function (h) { hh[h.id] = h; });
+      var all = (d.attempts || []).concat(d.consults || [], d.links || []);
+      var ids = uniq(all.map(function (x) { return x.householdId; }).filter(Boolean));
+      var sent = d.sent || {}, outc = d.outcomes || {};
+      function lastAt(id) {
+        var t = ""; all.forEach(function (x) { if (x.householdId === id && x.at > t) t = x.at; });
+        (d.links || []).forEach(function (l) { var o = outc[l.id]; if (l.householdId === id && o && o.at > t) t = o.at; });
+        return t;
+      }
+      var items = ids.map(function (id) {
+        var b = F.handoff.build(Object.assign({}, d, { household: hh[id] || { id: id, label: id } }));
+        b.label = (hh[id] || {}).label || id; b.area = (hh[id] || {}).area || ""; b.updatedAt = lastAt(id);
+        b.pending = !sent[id] || sent[id] < b.updatedAt; return b;
+      }).sort(function (x, y) { return (y.pending - x.pending) || (x.updatedAt < y.updatedAt ? 1 : -1); });
+      function cell(x) { x = String(x == null ? "" : x); return /[",\r\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }
+      var csv = [HANDOFF.map(function (f) { return cell(f[1]); }).join(",")].concat(items.map(function (b) { return b.fields.map(function (f) { return cell(f.value); }).join(","); })).join("\r\n");
+      return { items: items, pending: items.filter(function (b) { return b.pending; }).length, csv: csv };
+    },
+    markSent: function (sent, ids, at) { var o = Object.assign({}, sent || {}), t = new Date(at || Date.now()).toISOString(); (ids || []).forEach(function (id) { o[id] = t; }); return o; }
   };
 
   // ── ⑫ 국민 요청 답변 초안 (전화 대본·문자 문안 — 발송은 사람) ──────────

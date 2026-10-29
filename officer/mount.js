@@ -43,14 +43,24 @@
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).catch(fb); else fb();
     say("복사했습니다. 붙여 넣을 곳에서 Ctrl+V 하세요."); haptic("success");
   }
-  var CH = { visit: "방문", phone: "전화", center: "내방" };
+  var CH = { visit: "방문", phone: "전화", center: "내방", ai: "AI 초기상담 결과" };
+  function esc(x) { return String(x == null ? "" : x).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function download(name, text, type) {
+    var blob = new Blob(["﻿" + text], { type: (type || "text/csv") + ";charset=utf-8" }); // 한글 엑셀이 깨지지 않게 BOM
+    var a = h("a", { href: URL.createObjectURL(blob), download: name }); document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    say("파일을 내려받았습니다 — " + name); haptic("success");
+  }
+  // 읍면동 담당자 화면·보고 = «자기 동» 기준(현장 현실성 10-29). 시군구 전체는 아래 수요 보드(읍면 × 서비스)가 보여 준다.
+  function homeArea() { return F.report && F.report.homeArea ? F.report.homeArea(households()) : null; }
 
   // ── 공통 입력 묶음 ─────────────────────────────────────
   function households() { return O.rows().map(function (r) { return r.h; }); }
   function base(now) {
     var D = O.data();
     return { households: households(), areas: D.areas, office: D.meta.office, requests: REQ.list(),
-      attempts: st("attempts", []), tips: st("tips", []), picked: O.picked(), links: O.links(), now: now || new Date() };
+      attempts: st("attempts", []), tips: st("tips", []), picked: O.picked(), links: O.links(),
+      outcomes: st("outcomes", {}), consults: st("consults", []), now: now || new Date() };
   }
 
   // ── ① 오늘 할 일 ───────────────────────────────────────
@@ -91,8 +101,7 @@
     var box = clear($("todayRoute")), R = t.route;
     if (!R.order.length) box.appendChild(h("p", { class: "d-slot", text: "가구 명단에서 방문할 집을 담으면 동선을 묶어 드립니다." }));
     else {
-      box.appendChild(h("p", { class: "small", text: "방문 " + R.order.length + "곳 · 이동 " + R.km.toFixed(1) + "km(추정) · 명단 순서보다 " +
-        Math.max(0, R.naiveKm - R.km).toFixed(1) + "km 짧음 · 예상 " + (R.minutes / 60).toFixed(1) + "시간" }));
+      box.appendChild(h("p", { class: "small", text: "방문 " + R.order.length + "곳 · 이동 " + R.km.toFixed(1) + "km(추정) · 예상 " + (R.minutes / 60).toFixed(1) + "시간" }));
       var ol = h("ol", { class: "slot-list" }), lastA = null;
       R.order.slice(0, 8).forEach(function (s, i) {
         ol.appendChild(h("li", null, [h("span", { class: "num", text: String(i + 1) }), " ", h("span", { class: "grow", text: s.label }),
@@ -100,21 +109,43 @@
           O.row(s.id) ? h("div", { class: "acts" }, [btn("방문 전 카드", function () { openCard(s.id); })]) : null]));
         lastA = s.area;
       });
-      if (R.order.length > 8) ol.appendChild(h("li", { class: "small", text: "외 " + (R.order.length - 8) + "곳 — «경로대로 출발»에서 전부 봅니다" }));
+      if (R.order.length > 8) ol.appendChild(h("li", { class: "small", text: "외 " + (R.order.length - 8) + "곳 — «지도에서 경로 보기»에서 전부 봅니다" }));
       box.appendChild(ol);
+      box.appendChild(sheetActs());
     }
+    renderTodayGaps();
     var go = q($("tab-today"), 'a[href="#route"]');
     if (go && !go._m) { go._m = 1; go.addEventListener("click", function () { if (lastToday) O.setPicked(lastToday.route.order.map(function (s) { return s.id; })); }); }
-    // 밤사이 자동 처리(타임라인)
+    // 닿음이 미리 정리한 일(타임라인)
     var auto = clear($("todayAuto"));
     var lines = [
-      "가구 명단 " + O.rows().length + "곳을 지역 신호(주민 요청·이웃 제보·지난 시도) 순으로 다시 놓았습니다",
-      "국민 요청 " + c.newRequests + "건의 처리 기한을 계산했습니다(긴급 1·일반 3영업일, 시연 설정)",
+      "가구 명단 " + O.rows().length + "곳을 지역 신호(주민 요청·이웃 알림·제보·지난 시도) 순으로 다시 놓았습니다(최종 순서는 담당자)",
+      "새 주민 신호 " + c.newRequests + "건의 처리 기한을 계산했습니다(긴급 1·일반 3영업일, 시연 설정)",
       "지난 시도 결과로 재방문·재연락 " + c.revisits + "건의 날짜·시간대를 제안했습니다",
-      c.stops ? "오늘 방문 " + c.stops + "곳을 읍면별로 묶어 " + Math.max(0, R.naiveKm - R.km).toFixed(1) + "km 줄였습니다(추정)" : "오늘 방문이 정해지지 않아 동선은 비워 두었습니다"
+      c.stops ? "오늘 방문 " + c.stops + "곳을 읍면별로 묶어 방문 순서를 짰습니다(총 이동 " + R.km.toFixed(1) + "km, 추정)" : "오늘 방문이 정해지지 않아 동선은 비워 두었습니다"
     ];
     if (F.safety) { var od = F.safety.overdue(st("safety", {}), new Date()); if (od.length) lines.unshift("⚠ 귀청 확인이 늦은 방문 " + od.length + "건 — 팀장 확인 필요"); }
     lines.forEach(function (l) { auto.appendChild(h("li", { text: l })); });
+  }
+
+  // 오늘 할 일 «③ 연계 누락» — 4단계 멈춘 집 수(흐름 순서). 자세한 목록은 연계·보고서 화면
+  var GAP_ORDER = ["req_stalled", "met_nolink", "link_nocheck", "applied_nodecision"];
+  var GAP_SHORT = { req_stalled: ["주민 신호", "확인 뒤 멈춤"], met_nolink: ["상담", "연계 없음"], link_nocheck: ["안내", "신청 확인 안 함"], applied_nodecision: ["신청", "결정 확인 안 함"] };
+  function gapData() {
+    var g = F.linkGap.build(Object.assign({}, base(), { outcomes: st("outcomes", {}) }));
+    g.stages = g.stages.slice().sort(function (a, b) { return GAP_ORDER.indexOf(a.key) - GAP_ORDER.indexOf(b.key); });
+    return g;
+  }
+  function renderTodayGaps() {
+    var ol = clear($("todayGaps")); if (!ol) return;
+    if (!F.linkGap) { ol.appendChild(empty("연계 누락 계산 기능이 없습니다.")); return; }
+    var g = gapData();
+    $("kpiGap").textContent = g.total;
+    g.stages.forEach(function (s) {
+      var n = s.items.length, nm = GAP_SHORT[s.key] || [s.label, ""];
+      ol.appendChild(h("li", { class: n ? "on" : null }, [h("span", { class: "gs-k" }, [h("b", { text: nm[0] }), h("span", { class: "small", text: nm[1] })]),
+        h("b", { class: "num gs-n", text: String(n) }), h("span", { class: "sr", text: "곳" })]));
+    });
   }
 
   // ── ② 가구 명단 머리(지역 신호 요약·이웃 제보 넣기) ───────
@@ -161,7 +192,7 @@
     if (!form._built) {
       form._built = 1; clear(form);
       var sel = h("select", { id: "cHouse", onchange: function () { curHouse = this.value; renderContacts(); } });
-      var chs = h("fieldset", { class: "bar" }, [h("legend", { class: "sr", text: "연락 방법" })].concat(["visit", "phone"].map(function (k, i) {
+      var chs = h("fieldset", { class: "bar" }, [h("legend", { class: "sr", text: "연락 방법" })].concat(["visit", "phone", "ai"].map(function (k, i) {
         return h("label", null, [h("input", { type: "radio", name: "cCh", value: k, checked: i === 0, "data-h": "selection" }), " " + CH[k]]);
       })));
       var res = h("div", { class: "rep-acts", role: "group", "aria-label": "시도 결과 한 번 누르기" });
@@ -174,7 +205,7 @@
       form.appendChild(h("label", null, ["가구 ", sel]));
       form.appendChild(chs);
       form.appendChild(h("label", null, ["메모(선택) ", h("input", { id: "cNote", type: "text", maxlength: "120", placeholder: "예) 문 앞 안내문 남김" })]));
-      form.appendChild(h("p", { class: "small", text: "결과를 누르면 바로 저장되고 다음 시도 일정이 나옵니다." }));
+      form.appendChild(h("p", { class: "small", text: "결과를 누르면 바로 저장되고 다음 시도 일정이 나옵니다. 정보원 AI 초기상담 전화 결과(안 닿음 등)도 «AI 초기상담 결과»로 남기면 방문 일정으로 이어집니다." }));
       form.appendChild(res); form.appendChild(reasons);
       form.appendChild(h("div", { id: "safetyRoot" }));
       form.appendChild(h("p", { id: "mountStatus", class: "small", role: "status", "aria-live": "polite" }));
@@ -192,17 +223,22 @@
     var hh = {}; att.forEach(function (t) { hh[t.householdId] = 1; });
     var list = Object.keys(hh).map(function (id) { return { id: id, s: F.contacts.suggestNext(att, id) }; })
       .sort(function (a, b) { return (a.s.closed - b.s.closed) || ((a.s.next && a.s.next.date) < (b.s.next && b.s.next.date) ? -1 : 1); });
-    if (!list.length) { log.appendChild(h("p", { class: "d-slot", text: "아직 기록이 없습니다. 왼쪽에서 결과를 한 번 누르면 여기에 쌓입니다." })); return; }
+    if (!list.length) { if ($("planRoot")) $("planRoot").hidden = true; log.appendChild(h("p", { class: "d-slot", text: "아직 기록이 없습니다. 결과를 한 번 누르면 여기에 쌓이고, 위에 닷새치 재시도 일정이 생깁니다." })); return; }
+    renderPlan(log, att);
     var ol = h("ol", { class: "slot-list" });
     list.forEach(function (x) {
       var r = O.row(x.id), s = x.s, lbl = r ? r.h.label + " · " + r.h.area : x.id;
       var line = s.closed ? s.closedWhy : s.next.date.slice(5) + " " + s.next.slot + " " + (CH[s.next.channel] || "") + " — " + s.next.why;
       var body = h("div", { class: "grow" }, [h("b", { text: lbl }), " ",
         h("span", { class: "d-tag " + (s.closed ? "pos" : s.escalate ? "warn" : "acc"), text: s.closed ? "끝남" : s.escalate ? "간접 확인" : "다음 시도" }),
-        h("div", { class: "small", text: "시도 " + s.tries + "회 · " + line })]);
+        h("div", { class: "small", text: "시도 " + s.tries + "회 · " + line }),
+        h("div", { class: "small", text: "시간대: " + F.contacts.timeline(att, x.id).line })]);
       if (s.escalate) body.appendChild(h("ul", { class: "small" }, s.checklist.map(function (c) { return h("li", { text: c }); })));
       var li = h("li", null, [body]);
-      if (!s.closed) li.appendChild(h("div", { class: "acts" }, [btn("이 집 기록", function () { curHouse = x.id; renderContacts(); $("cHouse").focus(); })]));
+      var acts = h("div", { class: "acts" });
+      if (!s.closed) acts.appendChild(btn("이 집 기록", function () { curHouse = x.id; renderContacts(); $("cHouse").focus(); }));
+      if (F.handoff) acts.appendChild(btn("행복이음에 옮길 초안", function () { toggleHandoff(li, x.id); }));
+      li.appendChild(acts);
       ol.appendChild(li);
     });
     log.appendChild(ol);
@@ -223,13 +259,13 @@
     });
     slot.appendChild(dl);
     slot.appendChild(h("div", { class: "rep-acts" }, [
-      btn("행복이음 입력 초안 복사", function () { copy(dr.copyText); }, "ghost", "success"),
+      btn("행복이음에 옮길 초안 복사", function () { copy(dr.copyText); }, "ghost", "success"),
       btn("사례관리 서식 복사", function () { copy(dr.caseText || "(욕구 영역을 찾지 못했습니다)"); }, "ghost", "success")
     ]));
     var cf = dr.caseForm.filter(function (c) { return c.finding; });
     if (cf.length) slot.appendChild(h("details", null, [h("summary", { text: "사례관리 욕구 영역 " + cf.length + "곳" }),
       h("ul", { class: "small" }, cf.map(function (c) { return h("li", { text: c.domain + ": " + c.finding }); }))]));
-    slot.appendChild(h("p", { class: "note", text: dr.note }));
+    slot.appendChild(h("p", { class: "note", text: dr.note + " 정식 기록은 행복이음(모바일 행복이음 포함)에 하며, 이 초안은 행복이음 상담 요약 기능이 정식 도입되기 전(2028 계획)까지 입력을 돕는 가교입니다. 시도 이력·연계 결과까지 합친 묶음은 «연계·보고서 → 행복이음에 옮길 초안»에 있습니다." }));
     slot.appendChild(h("p", { id: "mountStatus2", class: "small", role: "status" }));
   }
 
@@ -247,12 +283,14 @@
   }
   function renderStats() {
     var root = $("statsRoot"); if (!root) return;
-    var b = base(), S = F.report.aggregate(b), H = S.households, Q = S.requests;
+    var b = base(), home = homeArea(), S = F.report.aggregate(Object.assign({}, b, { area: home })), H = S.households, Q = S.requests;
     lastStats = S;
     var dash = clear(q(root, '[data-slot="dashboard"]'));
+    dash.appendChild(h("p", { class: "small", text: (home ? home + " 기준(자기 동)" : "전체") + " · 닿음 보조 집계 — 공식 실적은 행복이음 기준으로 대조하세요. 시군구 전체는 아래 수요 보드에 있습니다." }));
     dash.appendChild(h("div", { class: "kpis" }, [
       kpi("발굴 명단", H.total, "가구"), kpi("접촉", H.contacted, H.total ? Math.round(H.contacted / H.total * 100) + "%" : ""),
-      kpi("만남·상담", H.met, "가구"), kpi("비해당", H.nonEligible, "가구"), kpi("국민 요청", Q.total, "긴급 " + Q.urgent), kpi("연계", S.links.total, S.links.households + "가구")
+      kpi("만남·상담", H.met, "가구"), kpi("비해당", H.nonEligible, "가구"), kpi("주민 신호", Q.total, "긴급 " + Q.urgent),
+      kpi("오늘 재시도", S.followUp ? S.followUp.retryDue : "—", "가구"), kpi("연계", S.links.total, S.links.households + "가구")
     ]));
     dash.appendChild(h("h4", { text: "요청 처리 단계" }));
     dash.appendChild(rankList(S.funnel.map(function (f) { return { label: f.label, n: f.n }; }), S.funnel[0].n));
@@ -265,6 +303,7 @@
     dl.appendChild(h("p", { class: "small", text: cd.message }));
     dl.appendChild(h("p", { class: "note", text: "출처: " + cd.round.source + " · 명단은 가상 가구" }));
     if (F.linkGap) renderGaps(b);
+    if (F.handoff) renderHandoff(b);
     renderReportActs();
   }
   function renderReportActs() {
@@ -277,7 +316,8 @@
   var lastReport = null;
   function makeReport(kind) {
     if (!lastStats) renderStats();
-    var rep = F.report[kind](lastStats, { countdown: lastCd, office: "상주시 ○○ 행정복지센터 맞춤형복지팀(시연)" });
+    var home = lastStats.scope;
+    var rep = F.report[kind](lastStats, { countdown: lastCd, office: "상주시 " + (home || "○○") + " 행정복지센터 맞춤형복지팀(시연)" });
     lastReport = rep;
     var pv = clear(q($("reportRoot"), '[data-slot="preview"]'));
     pv.appendChild(h("h4", { text: rep.title }));
@@ -410,23 +450,153 @@
   // ── ⑪ 연계 누락 보드 ───────────────────────────────────
   function renderGaps(b) {
     var root = $("gapRoot"); if (!root) return;
-    var g = F.linkGap.build(Object.assign({}, b, { outcomes: st("outcomes", {}) }));
+    var g = gapData();
     var slot = clear(q(root, '[data-slot="gaps"]'));
     slot.appendChild(h("p", { class: "small", text: g.total ? "멈춘 집 " + g.total + "곳 — 오래 멈춘 순" : "멈춘 집이 없습니다." }));
-    var grid = h("div", { class: "today-grid" });
-    g.stages.forEach(function (s) {
+    var grid = h("ol", { class: "gap4", "aria-label": "연계 단계별 멈춘 집(흐름 순서)" });
+    g.stages.forEach(function (s, si) {
       var ol = h("ol", { class: "slot-list" });
       if (!s.items.length) ol.appendChild(empty("없음"));
       s.items.slice(0, 6).forEach(function (it) {
         var acts = h("div", { class: "acts" });
         if (s.key === "met_nolink") acts.appendChild(btn("상담 기록", function () { O.openRecord(it.id); }));
-        if (s.key === "link_nocheck") acts.appendChild(btn("결과 확인함", function () { put("outcomes", F.linkGap.markOutcome(st("outcomes", {}), it.linkId, "확인")); haptic("success"); renderStats(); }));
+        var mark = function (res, msg) { return function () { put("outcomes", F.linkGap.markOutcome(st("outcomes", {}), it.linkId, res)); haptic("success"); say(msg); renderStats(); }; };
+        if (s.key === "link_nocheck") { acts.appendChild(btn("신청함", mark("applied", "«신청함»으로 남겼습니다. 결정 결과를 " + F.linkGap.GAP.afterApply + "일 뒤에 다시 챙깁니다."))); acts.appendChild(btn("안 하기로 함", mark("not_applied", "«안 하기로 함»으로 남겼습니다."))); }
+        if (s.key === "applied_nodecision") acts.appendChild(btn("결정 결과 확인함", mark("decided", "결정 결과 확인을 남겼습니다.")));
         if (s.key === "req_stalled") acts.appendChild(btn("방문 예정으로", function () { REQ.setStatus(it.requestId, "visiting", "officer", "연계 누락 보드"); O.refresh(); }));
+        if (s.key !== "req_stalled") acts.appendChild(btn("이 집 다음 시도", function () { goContacts(it.id); }));
         ol.appendChild(h("li", null, [h("div", { class: "grow" }, [h("b", { text: it.label }), h("div", { class: "small", text: (it.area ? it.area + " · " : "") + it.why })]), acts]));
       });
-      grid.appendChild(h("article", { class: "pane d-card" }, [h("h3", null, [h("span", { class: "d-tag " + (s.items.length ? "warn" : "pos"), text: String(s.items.length) }), s.label]), ol]));
+      var nm = GAP_SHORT[s.key] || [s.label, ""];
+      grid.appendChild(h("li", { class: "gcol" + (s.items.length ? " on" : "") }, [h("h4", null, [h("span", { class: "gstep num", "aria-hidden": "true", text: String(si + 1) }),
+        h("span", { class: "grow" }, [h("b", { text: nm[0] + " 다음" }), h("span", { class: "small", text: s.label })]),
+        h("span", { class: "d-tag " + (s.items.length ? "warn" : "pos"), text: s.items.length + "곳" })]), ol]));
     });
     slot.appendChild(grid);
+    if (g.notApplied.length) {
+      slot.appendChild(h("h4", { text: "안내했는데 신청 안 한 서비스" }));
+      slot.appendChild(rankList(g.notApplied.slice(0, 6).map(function (x) { return { label: x.name, n: x.n }; }), 0));
+    }
     slot.appendChild(h("p", { class: "note", text: g.note }));
   }
+
+  // ── S9h-④ 행복이음으로 옮길 기록 (통계·보고서 화면, 연계 누락 보드 아래) ─────────
+  function toggleHandoff(li, id) {
+    var old = q(li, ".handoff"); if (old) { old.remove(); return; }
+    var r = O.row(id), b = F.handoff.build(Object.assign(base(), { household: r ? r.h : { id: id, label: id } }));
+    li.appendChild(handoffBox(b, r ? r.h.label : id));
+  }
+  function handoffBox(b, title) {
+    var dl = h("dl", { class: "result" });
+    b.fields.forEach(function (f) { dl.appendChild(h("dt", { text: f.label })); dl.appendChild(h("dd", null, [f.value || h("span", { class: "muted", text: "(해당 없음·직접 입력)" })])); });
+    return h("div", { class: "handoff hinfo", role: "region", "aria-label": title + " 행복이음에 옮길 초안" }, [dl,
+      h("div", { class: "rep-acts" }, [btn("초안 복사(같은 망에서)", function () { copy(b.text); }, "ghost", "success"),
+        btn("인쇄해 보고 입력", function () { printHandoff([b], title + " 행복이음에 옮길 초안"); }, "ghost", "light")]),
+      h("p", { class: "note", text: b.note })]);
+  }
+  function printHandoff(items, title) {
+    var body = items.map(function (b) {
+      return "<h2>□ " + esc(b.label || b.fields[0].value) + "</h2><table><tbody>" + b.fields.map(function (f) { return "<tr><th>" + esc(f.label) + "</th><td>" + esc(f.value || "(해당 없음·직접 입력)") + "</td></tr>"; }).join("") + "</tbody></table>";
+    }).join("");
+    printReport({ title: title, printedAt: new Date().toLocaleString("ko-KR"), sections: [], table: { head: [], rows: [] }, note: F.handoff.NOTE, raw: body });
+  }
+  function renderHandoff(b) {
+    var tab = $("tab-board"); if (!tab) return;
+    var root = $("handoffRoot");
+    if (!root) { // 최소 마크업만(배치·꾸밈은 미르 손질 몫)
+      root = h("div", { class: "panel d-card", id: "handoffRoot", "data-feature": "handoff" });
+      var after = $("gapRoot"); if (after && after.parentNode) after.parentNode.insertBefore(root, after.nextSibling); else tab.appendChild(root);
+    }
+    clear(root);
+    var bt = F.handoff.batch(Object.assign({}, b, { sent: st("handoff", {}) }));
+    root.appendChild(h("h3", null, ["행복이음에 옮길 초안 ", h("small", { class: "tag", text: "시도 이력·상담·연계 결과를 행복이음 입력 순서(12칸)대로" })]));
+    root.appendChild(h("p", { class: "small", text: bt.items.length ? "기록이 있는 집 " + bt.items.length + "곳 · 아직 안 옮긴 집 " + bt.pending + "곳" : "아직 옮길 기록이 없습니다. 방문·연락 결과나 상담 기록을 남기면 여기에 모입니다." }));
+    if (bt.items.length) {
+      var ol = h("ol", { class: "slot-list" });
+      bt.items.slice(0, 8).forEach(function (it) {
+        var li = h("li", null, [h("div", { class: "grow" }, [h("b", { text: it.label }), " ", h("span", { class: "d-tag " + (it.pending ? "warn" : "pos"), text: it.pending ? "옮길 것" : "옮김" }),
+          h("div", { class: "small", text: (it.area ? it.area + " · " : "") + "채운 칸 " + it.filled + "/" + it.fields.length })])]);
+        li.appendChild(h("div", { class: "acts" }, [btn("보기", function () { var o = q(li, ".handoff"); if (o) o.remove(); else li.appendChild(handoffBox(it, it.label)); })]));
+        ol.appendChild(li);
+      });
+      if (bt.items.length > 8) ol.appendChild(h("li", { class: "small", text: "외 " + (bt.items.length - 8) + "곳 — 파일에는 전부 들어갑니다" }));
+      root.appendChild(ol);
+      var pend = bt.items.filter(function (x) { return x.pending; });
+      root.appendChild(h("div", { class: "rep-acts" }, [
+        btn("파일 내려받기(CSV)", function () { download("행복이음_옮길초안_" + F.util.ymd(new Date()).replace(/-/g, "") + ".csv", bt.csv); }, "ghost", "success"),
+        btn("옮길 것 인쇄", function () { printHandoff(pend.length ? pend : bt.items, "행복이음에 옮길 초안 " + F.util.ymd(new Date())); }, "ghost", "light"),
+        btn("다 옮겼다고 표시", function () { put("handoff", F.handoff.markSent(st("handoff", {}), pend.map(function (x) { return x.id; }))); say("옮긴 것으로 표시했습니다. 새 기록이 생기면 다시 «옮길 것»이 됩니다."); renderStats(); }, "ghost", "light")
+      ]));
+    }
+    root.appendChild(h("p", { id: "mountStatus4", class: "small", role: "status", "aria-live": "polite" }));
+    root.appendChild(h("p", { class: "note", text: F.handoff.NOTE }));
+    root.appendChild(h("p", { class: "note", text: F.handoff.FUTURE + " 명단 «불러오기»(들어오는 것)는 다음 단계에서 붙입니다." }));
+  }
+
+  // ── S9h-② 닷새치 재시도 일정 (방문·연락 화면 «시도 기록과 다음 일정» 맨 위) ─────────
+  function renderPlan(log, att) {
+    var root = $("planRoot"), slot = root ? clear(q(root, '[data-slot="plan"]')) : null;
+    var pl = F.contacts.plan(att, households(), new Date(), 5);
+    var n = pl.reduce(function (a, d) { return a + d.items.length; }, 0);
+    if (root) root.hidden = !n;
+    if (!n) return;
+    var grid = h("div", { class: "days5", role: "list", "aria-label": "닷새치 재시도 일정" });
+    pl.forEach(function (d) {
+      var ol = h("ol", { class: "slot-list" });
+      if (!d.items.length) ol.appendChild(empty("없음"));
+      d.items.slice(0, 5).forEach(function (x) {
+        ol.appendChild(h("li", null, [h("div", { class: "grow" }, [h("b", { text: x.slot + " " + (CH[x.channel] || "") + " · " + x.label }),
+          x.overdue ? h("span", { class: "d-tag warn", text: "밀림" }) : null, x.escalate ? h("span", { class: "d-tag neg", text: "간접 확인" }) : null,
+          h("div", { class: "small", text: x.why })]), h("div", { class: "acts" }, [btn("기록", function () { curHouse = x.id; renderContacts(); $("cHouse").focus(); })])]));
+      });
+      if (d.items.length > 5) ol.appendChild(h("li", { class: "small", text: "외 " + (d.items.length - 5) + "곳" }));
+      grid.appendChild(h("section", { class: "day" + (d.items.length ? "" : " is-empty"), role: "listitem" }, [h("h4", null, [d.label + " ", h("span", { class: "d-tag " + (d.items.length ? "acc" : "pos"), text: d.items.length + "곳" })]), ol]));
+    });
+    if (slot) slot.appendChild(grid);
+    else { log.appendChild(h("h4", { text: "닷새치 재시도 일정 — 안 해 본 시간대로 배치(공휴일 미반영)" })); log.appendChild(grid); }
+  }
+
+  // ── S9h-① 하루 동선 1장 (오늘 할 일 «오늘 동선 묶음»·방문 경로 화면) ─────────
+  function sheetData() {
+    var RP = window.DaeumRoutePlan, D = O.data(), R = O.route ? O.route() : null, d;
+    if (R && R.order && R.order.length) {
+      d = { start: R.start, end: R.end, km: R.km, isRoad: R.isRoad, ret: R.ret,
+        stops: R.order.map(function (id, i) { var x = R.rows[i] || {}; return { id: id, arrive: x.arrive, leave: x.leave, lunchBefore: x.lunchBefore }; }) };
+    } else {
+      var order = ((lastToday && lastToday.route.order) || []).map(function (s) { return O.row(s.id); }).filter(Boolean);
+      var pts = order.map(function (r) { return { id: r.h.id, x: r.h.x, y: r.h.y }; });
+      var sch = RP ? RP.schedule(pts, RP.approxLegs(pts, D.meta.office, true), { start: "09:30", ret: true }) : { rows: [] };
+      d = { start: "09:30", end: sch.end, km: sch.km, isRoad: false, ret: true,
+        stops: pts.map(function (p, i) { var x = sch.rows[i] || {}; return { id: p.id, arrive: x.arrive, leave: x.leave, lunchBefore: x.lunchBefore }; }) };
+    }
+    var rows = {}; d.stops.forEach(function (s) { var r = O.row(s.id); if (r) rows[s.id] = { household: r.h, factors: r.factors, signals: r.signals }; });
+    d.rows = rows;
+    d.candidates = O.rows().slice(0, 80).map(function (r) { return { household: r.h, signals: r.signals }; });
+    d.attempts = st("attempts", []); d.safety = st("safety", {}); d.tips = st("tips", []);
+    return F.daySheet.build(d);
+  }
+  function printSheet() {
+    var sh = sheetData();
+    if (!sh.stops.length) { say("담은 가구가 없습니다. 가구 명단에서 방문할 집을 먼저 담아 주세요."); return; }
+    var body = "<p>" + esc(sh.summary) + "</p><table><thead><tr><th>순</th><th>시각</th><th>집·사유</th><th>지난 시도 / 안내할 것(가능성)</th><th>주의 / 부재면</th></tr></thead><tbody>" +
+      sh.stops.map(function (x) {
+        return (x.lunchBefore ? "<tr><td colspan=\"5\">점심</td></tr>" : "") + "<tr><td>" + x.no + "</td><td>" + esc(x.time) + "</td><td><b>" + esc(x.label) + "</b> · " + esc(x.area) +
+          (x.twoPerson ? " <b>[2인 방문]</b>" : "") + "<br>" + esc(x.members) + (x.why.length ? "<br>" + esc(x.why.join(" / ")) : "") + "</td><td>" + esc(x.lastTry) +
+          (x.bring.length ? "<br>" + esc(x.bring.join(", ")) : "") + "</td><td>" + esc(x.cautions.join(" / ")) + (x.ifAbsent ? "<br>부재면: " + esc(x.ifAbsent) : "") + "</td></tr>";
+      }).join("") + "</tbody></table>" +
+      (sh.standby.length ? "<h2>□ 부재로 시간이 남으면 들를 집</h2><ul>" + sh.standby.map(function (x) { return "<li>" + esc(x.label + " · " + x.area + " — " + x.why) + "</li>"; }).join("") + "</ul>" : "") +
+      "<p>※ 방문 시작·귀청 확인은 «방문·연락» 화면에서 누릅니다. 상담·조사 결과의 정식 기록은 행복이음에 합니다.</p>";
+    printReport({ title: sh.title, printedAt: new Date().toLocaleString("ko-KR"), sections: [], table: { head: [], rows: [] }, note: sh.note, raw: body });
+  }
+  function sheetActs() {
+    return h("div", { class: "rep-acts" }, [btn("하루 동선 1장 인쇄", printSheet, "ghost", "medium"),
+      btn("하루 동선 문안 복사", function () { copy(sheetData().text); }, "ghost", "success")]);
+  }
+  // 방문 경로 화면: 안내 줄 아래에 같은 단추(한 번만 붙인다)
+  document.addEventListener("daeum:officer-show", function (e) {
+    if (e.detail.tab !== "route") return;
+    var anchor = document.querySelector(".route-side .route-hint") || $("routeRoad"); if (!anchor || $("sheetActs")) return;
+    var a = sheetActs(); a.id = "sheetActs"; anchor.parentNode.insertBefore(a, anchor);
+  });
+
 })();

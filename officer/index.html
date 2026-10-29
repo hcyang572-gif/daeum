@@ -23,7 +23,7 @@
     <a href="#list" data-tab="list" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="17.5" r="1"/></svg><span>가구 명단</span><em class="num" id="navList"></em></a>
     <a href="#contacts" data-tab="contacts" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><span>방문·연락</span></a>
     <a href="#record" data-tab="record" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록</span></a>
-    <a href="#board" data-tab="board" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>통계·보고서</span></a>
+    <a href="#board" data-tab="board" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>연계·보고서</span></a>
   </nav>
   <div class="me"><i aria-hidden="true"></i><div><b>담당 주무관</b>맞춤형복지팀(시연)</div></div>
 </aside>
@@ -46,32 +46,45 @@
         <div><p class="d" id="todayDate"></p><h2>오늘 찾아갈 집</h2></div>
         <div class="n num" id="todayCount" aria-live="polite">0<small>가구</small></div>
       </div>
-      <div class="kpis">
-        <div class="kpi d-card d-lift" data-slot="kpi-requests"><span>새 국민 요청</span><b class="num" id="kpiReq">—</b><em>읽지 않은 요청</em></div>
-        <div class="kpi d-card d-lift" data-slot="kpi-due"><span>기한 임박</span><b class="num" id="kpiDue">—</b><em>처리 기한 3일 이내</em></div>
-        <div class="kpi d-card d-lift" data-slot="kpi-revisit"><span>다시 찾아갈 집</span><b class="num" id="kpiRevisit">—</b><em>부재·재시도 예정</em></div>
+      <div class="kpis k4">
+        <a class="kpi d-card d-lift" href="#contacts" data-slot="kpi-revisit" data-h="light"><span>다시 찾아갈 집</span><b class="num" id="kpiRevisit">—</b><em>부재·재시도 예정</em></a>
+        <a class="kpi d-card d-lift" href="#board" data-slot="kpi-gap" data-h="light"><span>연계 누락</span><b class="num" id="kpiGap">—</b><em>안내·신청·결정에서 멈춘 집</em></a>
+        <div class="kpi d-card" data-slot="kpi-requests"><span>새 주민 신호</span><b class="num" id="kpiReq">—</b><em>읽지 않은 이웃 알림·요청</em></div>
+        <div class="kpi d-card" data-slot="kpi-due"><span>기한 임박</span><b class="num" id="kpiDue">—</b><em>처리 기한 하루 이내·지남(시연 설정)</em></div>
       </div>
-      <div class="today-grid">
+
+      <!-- 공무원 특화 3개(S9h) — 첫 화면 주인공: 하루 동선 · 시도 이력→재시도 · 연계 누락 -->
+      <h2 class="sec-h" id="h-feat">닿음이 맡는 일</h2>
+      <div class="today-grid feat3" role="list" aria-labelledby="h-feat">
+        <article class="pane d-card feat" role="listitem" aria-labelledby="h-route">
+          <h3 id="h-route"><span class="fno num" aria-hidden="true">1</span>하루 동선<small>방문 순서·시각표·1장 인쇄</small></h3>
+          <div id="todayRoute" data-slot="route"><p class="d-slot">담은 가구로 방문 순서를 묶는 중입니다.</p></div>
+          <a class="d-btn d-btn-p" href="#route" data-h="medium"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg>지도에서 경로 보기</a>
+        </article>
+        <article class="pane d-card feat" role="listitem" aria-labelledby="h-rev">
+          <h3 id="h-rev"><span class="fno num" aria-hidden="true">2</span>다시 찾아갈 집<small>시도 이력 → 안 해 본 시간대로 재시도</small></h3>
+          <ol class="slot-list" id="todayRevisit" data-slot="revisit"><li class="d-slot">재시도 일정을 불러오는 중입니다.</li></ol>
+          <a class="ghost btnlike more" href="#contacts" data-h="light">닷새치 재시도 일정 보기</a>
+        </article>
+        <article class="pane d-card feat" role="listitem" aria-labelledby="h-gap">
+          <h3 id="h-gap"><span class="fno num" aria-hidden="true">3</span>연계 누락<small>상담 → 안내 → 신청 → 결정에서 멈춘 집</small></h3>
+          <ol class="gap-steps" id="todayGaps" data-slot="gaps"><li class="d-slot">멈춘 단계를 찾는 중입니다.</li></ol>
+          <a class="ghost btnlike more" href="#board" data-h="light">연계 누락 보드 열기</a>
+        </article>
+      </div>
+
+      <div class="today-grid sub">
         <article class="pane d-card" aria-labelledby="h-req">
-          <h3 id="h-req"><span class="d-tag acc">요청</span>새로 들어온 국민 요청</h3>
-          <ol class="slot-list" id="todayRequests" data-slot="requests"><li class="d-slot">새 요청을 불러오는 중입니다.</li></ol>
+          <h3 id="h-req"><span class="d-tag acc">신호</span>새로 들어온 주민 신호</h3>
+          <ol class="slot-list" id="todayRequests" data-slot="requests"><li class="d-slot">새 신호를 불러오는 중입니다.</li></ol>
         </article>
         <article class="pane d-card" aria-labelledby="h-due">
           <h3 id="h-due"><span class="d-tag warn">기한</span>기한이 다가오는 일</h3>
           <ol class="slot-list" id="todayDue" data-slot="due"><li class="d-slot">처리 기한을 계산하는 중입니다.</li></ol>
         </article>
-        <article class="pane d-card" aria-labelledby="h-rev">
-          <h3 id="h-rev"><span class="d-tag neg">재방문</span>다시 찾아갈 집</h3>
-          <ol class="slot-list" id="todayRevisit" data-slot="revisit"><li class="d-slot">재시도 일정을 불러오는 중입니다.</li></ol>
-        </article>
-        <article class="pane d-card" aria-labelledby="h-route">
-          <h3 id="h-route"><span class="d-tag pos">동선</span>오늘 동선 묶음</h3>
-          <div id="todayRoute" data-slot="route"><p class="d-slot">담은 가구로 방문 순서를 묶는 중입니다.</p></div>
-          <a class="d-btn d-btn-p" href="#route" data-h="medium"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg>경로대로 출발</a>
-        </article>
         <article class="pane d-card tl" aria-labelledby="h-auto">
-          <h3 id="h-auto" class="cnum">밤사이 자동 처리</h3>
-          <ol class="slot-list" id="todayAuto" data-slot="auto"><li class="d-slot">자동 처리 기록을 불러오는 중입니다.</li></ol>
+          <h3 id="h-auto" class="cnum">닿음이 미리 정리한 일</h3>
+          <ol class="slot-list" id="todayAuto" data-slot="auto"><li class="d-slot">정리한 일을 불러오는 중입니다.</li></ol>
         </article>
       </div>
     </section>
@@ -87,13 +100,14 @@
             <label>표시 <select id="fTop"><option>15</option><option selected>30</option><option>60</option><option value="300">전체</option></select></label>
             <label>경로에 담을 수 <input id="fPick" type="number" min="1" max="30" value="12"></label>
             <button id="btnPickTop" class="ghost" data-h="light">앞 순서로 다시 담기</button>
-            <button id="btnDemoReq" class="ghost" title="국민 창구가 아직 없을 때 흐름 확인용" data-h="light">시연용 국민 요청 1건 넣기</button>
+            <button id="btnDemoReq" class="ghost" title="주민 창구가 아직 없을 때 흐름 확인용" data-h="light">시연용 주민 신호 1건 넣기</button>
           </div>
         </details>
         <span class="spacer"></span>
         <a class="ghost btnlike" href="#route" data-h="light">방문 경로 보기</a>
       </div>
       <div class="households" data-feature="households" id="householdsSignals"></div>
+      <p class="src-line"><span class="d-tag acc">출처</span>행복이음으로 통보된 위기가구 명단(시연용 가상 데이터)</p>
       <div class="summary" id="listSummary"></div>
       <div class="tbl d-card">
         <table class="grid" id="listTable">
@@ -131,12 +145,16 @@
           <ol id="routeList" class="route-list"></ol>
         </div>
       </div>
-      <p class="note">순서 후보는 «가까운 곳부터 + 구간 뒤집기 다듬기»(직선거리 × 1.3 근사)로 만들고, «도로 기준으로 순서 짜기»를 누르면 후보마다 네이버 길찾기(Directions 15) 실제 도로 시간을 받아 가장 짧은 순서를 고릅니다. 같은 가구·순서는 다시 묻지 않습니다(7일 보관). 도로 결과가 없을 때 이동 시간은 평균 시속 40km 어림입니다. 가구 위치는 모두 가상이며 읍면동 중심 근처의 대략 위치입니다.</p>
+      <p class="note">순서 후보는 «가까운 곳부터 + 구간 뒤집기 다듬기»(직선거리 × 1.3 근사)로 만들고, «도로 기준으로 순서 짜기»를 누르면 후보마다 네이버 길찾기(Directions 15) 실제 도로 시간을 받아 가장 짧은 순서를 고릅니다. 같은 가구·순서는 다시 묻지 않습니다(7일 보관). 도로 결과가 없을 때 이동 시간은 평균 시속 40km 어림입니다. 가구 위치는 모두 가상이며 한 읍면동(남원동) 범위 안의 대략 위치입니다.</p>
     </section>
 
     <!-- ③ 방문·연락 기록 — ⚙️ 파로 features.js 가 #contactsRoot 를 채운다 -->
     <section id="tab-contacts" class="tab" data-feature="contacts" hidden>
       <p class="lead">방문·전화 시도와 결과를 한 번 눌러 남기면, 다음 시도 일정과 비해당 사유가 저절로 정리됩니다.</p>
+      <article class="pane d-card feat plan" id="planRoot" aria-labelledby="h-plan" hidden>
+        <h3 id="h-plan"><span class="fno num" aria-hidden="true">2</span>닷새치 재시도 일정<small>안 해 본 시간대로 배치 · 공휴일 미반영</small></h3>
+        <div data-slot="plan"></div>
+      </article>
       <div class="contacts-grid">
         <article class="pane d-card" aria-labelledby="h-cnew">
           <h3 id="h-cnew">기록 남기기</h3>
@@ -151,10 +169,11 @@
 
     <!-- ④ 상담 기록 -->
     <section id="tab-record" class="tab" hidden>
+      <p class="bridge" role="note"><b>정식 상담 기록은 행복이음(모바일 행복이음 포함)에 합니다.</b> 이 화면의 받아쓰기·요약은 행복이음 상담 요약 기능이 정식 도입(2028 계획)되기 전까지 입력을 돕는 다리이며, 결과는 «행복이음에 옮길 초안»으로만 나옵니다.</p>
       <div class="bar d-card">
         <label>상담 가구 <select id="recHouse"></select></label>
         <button id="btnSample" class="ghost" data-h="light">가상 상담 대본 넣기</button>
-        <button id="btnMic" class="ghost mic" data-h="light"><span class="dot" aria-hidden="true"></span>음성으로 받아쓰기</button>
+        <button id="btnMic" class="ghost mic" data-h="light"><span class="dot" aria-hidden="true"></span>받아쓰기(입력 보조)</button>
         <span id="micState" class="stat" role="status"></span>
       </div>
       <div class="rec-wrap">
@@ -162,9 +181,9 @@
           <h3>상담 내용</h3>
           <div id="recHouseInfo" class="hinfo"></div>
           <label for="recText" class="sr">상담 내용</label>
-          <textarea id="recText" rows="12" placeholder="상담 내용을 적거나 «음성으로 받아쓰기»를 누르세요."></textarea>
+          <textarea id="recText" rows="12" placeholder="상담 내용을 적거나 «받아쓰기(입력 보조)»를 누르세요."></textarea>
           <p class="note">음성 받아쓰기는 브라우저의 음성인식을 씁니다. 온라인 인식이라 음성이 브라우저 제공사 서버로 전송될 수 있습니다. 실제 상담에 쓰려면 기관 내부 인식기로 바꿔야 합니다.</p>
-          <button id="btnSummarize" class="primary" data-h="medium">요약하고 연계 추천 받기</button>
+          <button id="btnSummarize" class="ghost" data-h="medium">행복이음에 옮길 초안 만들기(요약·연계 후보)</button>
         </div>
         <div class="panel d-card">
           <h3>요약</h3>
@@ -174,15 +193,22 @@
           <ul id="linkList" class="links"></ul>
         </div>
       </div>
-      <!-- 행복이음 입력 초안·사례관리 서식 — ⚙️ 파로 features.js 가 채운다 -->
+      <!-- 행복이음에 옮길 초안·사례관리 서식 — ⚙️ 파로 features.js 가 채운다 -->
       <div class="panel d-card" id="consultForms" data-feature="consult">
-        <h3>행복이음 입력 초안 · 사례관리 서식</h3>
+        <h3>행복이음에 옮길 초안 · 사례관리 서식</h3>
         <div data-slot="forms"><p class="d-slot">요약을 받으면 입력 초안과 서식이 여기에 채워집니다.</p></div>
       </div>
     </section>
 
     <!-- ⑤ 통계·보고서 -->
     <section id="tab-board" class="tab" hidden>
+      <!-- ⑪ 연계 누락 보드(주인공) — ⚙️ 파로 mount.js 가 채운다. 4칸 = 주민 신호 → 상담 → 안내 → 신청 다음에서 멈춘 집 -->
+      <div class="panel d-card feat" id="gapRoot" data-feature="link-gaps">
+        <h3><span class="fno num" aria-hidden="true">3</span>연계 누락 보드 <small class="tag">상담 → 안내 → 신청 → 결정에서 멈춘 집</small></h3>
+        <div data-slot="gaps"><p class="d-slot">멈춘 단계를 찾는 중입니다.</p></div>
+      </div>
+      <!-- 행복이음에 옮길 초안(나가는 것) — ⚙️ 파로 mount.js 가 채운다 -->
+      <div class="panel d-card" id="handoffRoot" data-feature="handoff"></div>
       <div class="stats-top">
         <div class="panel d-card" id="statsRoot" data-feature="stats">
           <h3>현황 대시보드 <small class="tag">이번 차수</small></h3>
@@ -190,7 +216,7 @@
           <div data-slot="deadline"></div>
         </div>
         <div class="panel d-card" id="reportRoot" data-feature="report">
-          <h3>보고서 자동 생성</h3>
+          <h3>보조 집계</h3>
           <p class="note">주간·월간 보고서를 인쇄·PDF·한글 붙여넣기용 문안으로 만듭니다.</p>
           <div class="rep-acts" data-slot="actions">
             <button type="button" class="ghost" data-report="weekly" data-h="light" disabled>주간 보고서</button>
@@ -199,16 +225,11 @@
           <div data-slot="preview"></div>
         </div>
       </div>
-      <!-- ⑪ 연계 누락 보드 — ⚙️ 파로 mount.js 가 채운다 -->
-      <div class="panel d-card" id="gapRoot" data-feature="link-gaps">
-        <h3>연계 누락 보드 <small class="tag">상담 → 연계 → 결과 확인에서 멈춘 집</small></h3>
-        <div data-slot="gaps"><p class="d-slot">멈춘 단계를 찾는 중입니다.</p></div>
-      </div>
-      <p class="note">«물었는데 아직 신청하지 않은» 수요입니다. 문의·신청 수는 가상 값이고, 이 브라우저의 국민 요청과 연계 저장 건이 더해집니다.</p>
       <div class="panel d-card real" id="regionStat">
         <h3>상주시 실제 현황 <small class="tag">공개 통계 · 실제 값</small></h3>
         <p class="muted">불러오는 중…</p>
       </div>
+      <p class="note">아래는 «물었는데 아직 신청하지 않은» 수요입니다. 문의·신청 수는 가상 값이고, 이 브라우저의 주민 신호와 연계 저장 건이 더해집니다.</p>
       <div class="board-wrap">
         <div class="panel d-card"><h3>서비스별 미신청</h3><ul id="rankSvc" class="rank"></ul></div>
         <div class="panel d-card"><h3>읍면별 미신청</h3><ul id="rankArea" class="rank"></ul></div>

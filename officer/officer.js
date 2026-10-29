@@ -63,7 +63,7 @@
     D.traits.forEach(function (d) {
       if (t[d.key]) f.push({ key: d.key, name: d.name, pts: weights[d.key], reason: d.reason, kind: "특성" });
     });
-    if (h.request) f.unshift({ key: "request", name: "국민 요청", pts: REQUEST_BONUS, reason: "본인 또는 보호자가 도움을 요청했습니다", kind: "요청" });
+    if (h.request) f.unshift({ key: "request", name: "주민 신호", pts: REQUEST_BONUS, reason: FX.signals ? FX.signals.text(h.request).replace("(긴급 낱말)", "") + "(주민 창구)" : "본인 또는 보호자가 도움을 요청했습니다", kind: "요청" });
     if (h.request && h.request.urgent) f.unshift({ key: "request_urgent", name: "요청 속 위기 표현", pts: URGENT_BONUS, reason: "요청 문장에 위기·마음 건강 표현이 있습니다", kind: "요청" });
     f.sort(function (a, b) { return b.pts - a.pts; });
     var total = f.reduce(function (s, x) { return s + x.pts; }, 0);
@@ -96,9 +96,10 @@
       REQ_HINT.forEach(function (h) { if (h[0].test(s)) ind[h[1]] = true; });
       var ang = (i * 2.399) % (2 * Math.PI);
       var id = String(r.id || "REQ-" + (i + 1));
-      var who = r.proxy && r.proxy.isProxy ? " (" + (r.proxy.relation || "가족") + " 대신 요청)" : "";
+      var sk = FX.signals ? FX.signals.of(r) : "self";
+      var who = sk === "family" ? " (" + (r.proxy.relation || "가족") + " 대신 요청)" : sk === "neighbor" && r.place ? " · " + String(r.place).slice(0, 20) : "";
       return {
-        id: id, label: "국민 요청 " + id + who, area: a.name, areaCode: a.code,
+        id: id, label: (FX.signals ? FX.signals.SHORT[sk] : "주민 신호") + " " + id + who, area: a.name, areaCode: a.code,
         x: +(a.x + 1.2 * Math.cos(ang)).toFixed(2), y: +(a.y + 1.2 * Math.sin(ang)).toFixed(2),
         members: [{ role: "본인", age: 0 }], single: false, disability: false, daysSinceContact: 0,
         indicators: ind, request: r, matched: reqMatchedIds(r)
@@ -152,7 +153,7 @@
       });
       pk.appendChild(cb); td0.appendChild(pk); tr.appendChild(td0);
       tr.appendChild(el("td", "num c-rank", r.rank < 10 ? "0" + r.rank : r.rank));
-      var tdL = el("td", "c-name"); tdL.appendChild(el("b", null, r.h.label)); if (hasReq) tdL.appendChild(el("span", "tag req", "국민 요청"));
+      var tdL = el("td", "c-name"); tdL.appendChild(el("b", null, r.h.label)); if (hasReq) tdL.appendChild(el("span", "tag req", "주민 신호"));
       tdL.appendChild(el("span", "small area-sm", r.h.area)); tr.appendChild(tdL);
       tr.appendChild(el("td", "c-area", r.h.area));
       // 순서 고정(담당자 결정) — 점수 칸·막대는 없앴다
@@ -180,7 +181,7 @@
     var reqN = rows.filter(function (r) { return (r.signals || []).some(function (x) { return x.kind === "request"; }); }).length;
     var sigN = rows.filter(function (r) { return r.group === "signal"; }).length;
     $("listSummary").textContent = "발굴 명단 " + rows.length + "곳(전체 가상 가구 " + D.households.length +
-      "곳) · 지역 신호 있음 " + sigN + "곳 · 국민 요청 " + reqN + "곳 · 경로에 담은 가구 " + picked.length + "곳";
+      "곳) · 지역 신호 있음 " + sigN + "곳 · 주민 신호 " + reqN + "곳 · 경로에 담은 가구 " + picked.length + "곳";
   }
   function initWeights(force) {
     var saved = force ? null : lsGet(LS_W, null);
@@ -299,25 +300,36 @@
   }
   function drawSvg(order, ret) {
     var m = $("map"); m.textContent = "";
+    // 가구가 한 읍면동(남원동) 안에 모여 있으므로 보기 틀을 «시청 + 가구» 범위에 맞춘다(S9c, 10-30 미르)
+    var xs = [D.meta.office.x], ys = [-D.meta.office.y];
+    D.households.forEach(function (h) { xs.push(h.x); ys.push(-h.y); });
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    var span = Math.max(x1 - x0, (y1 - y0) * 54 / 46, 4), pad = span * 0.14, W = span + pad * 2, H = W * 46 / 54;
+    var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, vx = cx - W / 2, vy = cy - H / 2, k = W / 54;
+    m.setAttribute("viewBox", [vx, vy, W, H].map(function (v) { return +v.toFixed(3); }).join(" "));
+    m.style.setProperty("--k", k.toFixed(4));
     D.areas.forEach(function (a) {
-      m.appendChild(svg("circle", { cx: a.x, cy: -a.y, r: a.kind === "동" ? 1.2 : a.kind === "읍" ? 2.6 : 3.2, class: "area" }));
-      m.appendChild(svg("text", { x: a.x, y: -a.y - (a.code === "A" ? 3.8 : 5.4), class: "alabel" }, a.name));
+      if (a.x < vx - 2 || a.x > vx + W + 2 || -a.y < vy - 2 || -a.y > vy + H + 2) return;
+      m.appendChild(svg("circle", { cx: a.x, cy: -a.y, r: (a.kind === "동" ? 1.2 : a.kind === "읍" ? 2.6 : 3.2) * k * 1.6, class: "area" }));
+      m.appendChild(svg("text", { x: a.x, y: -a.y - 2.6 * k, class: "alabel" }, a.name));
     });
-    D.households.forEach(function (h) { m.appendChild(svg("circle", { cx: h.x, cy: -h.y, r: 0.25, class: "hh" })); });
+    D.households.forEach(function (h) { m.appendChild(svg("circle", { cx: h.x, cy: -h.y, r: 0.25 * k, class: "hh" })); });
     var pts = [D.meta.office].concat(order.map(function (s) { return s.h; }));
     if (ret && order.length) pts.push(D.meta.office);
     m.appendChild(svg("polyline", { points: pts.map(function (p) { return p.x + "," + (-p.y); }).join(" "), class: "path" }));
-    m.appendChild(svg("rect", { x: -0.9, y: -0.9, width: 1.8, height: 1.8, class: "office" }));
-    m.appendChild(svg("text", { x: 0, y: 2.4, class: "olabel" }, "시청"));
+    var ox = D.meta.office.x, oy = -D.meta.office.y;
+    m.appendChild(svg("rect", { x: ox - 0.9 * k, y: oy - 0.9 * k, width: 1.8 * k, height: 1.8 * k, class: "office" }));
+    m.appendChild(svg("text", { x: ox, y: oy + 2.4 * k, class: "olabel" }, "시청"));
     order.forEach(function (s, i) {
       var g = svg("g", { class: "stop" + (s.h.request ? " req" : "") });
-      g.appendChild(svg("circle", { cx: s.h.x, cy: -s.h.y, r: 0.95 }));
-      g.appendChild(svg("text", { x: s.h.x, y: -s.h.y + 0.42 }, i + 1));
+      g.appendChild(svg("circle", { cx: s.h.x, cy: -s.h.y, r: 0.95 * k }));
+      g.appendChild(svg("text", { x: s.h.x, y: -s.h.y + 0.42 * k }, i + 1));
       g.appendChild(svg("title", {}, (i + 1) + ". " + s.h.label + " · " + s.h.area));
       m.appendChild(g);
     });
-    m.appendChild(svg("line", { x1: -22, y1: 22, x2: -17, y2: 22, class: "scale" }));
-    m.appendChild(svg("text", { x: -19.5, y: 21.2, class: "olabel" }, "직선 5km"));
+    var km = W > 20 ? 5 : 1, sx = vx + 2 * k, sy = vy + H - 2 * k;
+    m.appendChild(svg("line", { x1: sx, y1: sy, x2: sx + km, y2: sy, class: "scale" }));
+    m.appendChild(svg("text", { x: sx + km / 2, y: sy - 0.8 * k, class: "olabel" }, "직선 " + km + "km"));
   }
   var MAP_WHY = { auth: "지도 인증 실패", network: "지도 서버 연결 실패", timeout: "응답 늦음", "no-key": "지도 키 없음", "no-api": "지도 기능 없음" };
   function showMap(naverOk) { $("nmap").hidden = !naverOk; $("map").hidden = naverOk; }
@@ -341,6 +353,7 @@
     if (st && st.status === "fail" && rr.textContent.indexOf("네이버 지도") < 0)
       rr.textContent += " 네이버 지도를 불러오지 못해 단순 지도로 보여 드립니다(" + (MAP_WHY[st.reason] || st.reason) + ").";
   }
+  var lastRoute = null;
   function renderRoute() {
     var ret = $("routeReturn").checked;
     var order = routeStops(ret), road = roadFor(order, ret);
@@ -349,10 +362,11 @@
     var legs = isRoad ? road.legs : RP.approxLegs(order.map(stopPt), D.meta.office, ret);
     var sch = RP.schedule(order.map(function (r) { return { id: r.h.id }; }), legs,
       { start: $("routeStart").value, consultMin: +$("routeConsult").value, lunch: $("routeLunch").checked ? undefined : null, ret: ret });
+    lastRoute = { order: order.map(function (r) { return r.h.id; }), rows: sch.rows, end: sch.end, km: sch.km, isRoad: isRoad, ret: ret, start: $("routeStart").value };
     var naive = pathKm(order.slice().sort(function (a, b) { return a.rank - b.rank; }), ret);
     $("routeStat").textContent = order.length
       ? "방문 " + order.length + "곳 · 이동 " + sch.km.toFixed(1) + "km " + (isRoad ? "(도로)" : "(근사)") + " · 이동 " + sch.travelMin + "분 · 상담 " + sch.consultMin + "분 · " +
-        (ret ? "복귀 " : "마침 ") + sch.end + (isRoad ? "" : " · 명단 순서보다 " + Math.max(0, naive - sch.km).toFixed(1) + "km 짧음")
+        (ret ? "복귀 " : "마침 ") + sch.end
       : "명단에서 방문할 가구를 담아 주세요.";
     var rr = $("routeRoad");
     rr.textContent = roadMsg.text || (isRoad ? "도로 경로(네이버 길찾기) 기준 시각표입니다." : "지금은 직선거리 근사 순서·시간입니다. «도로 기준으로 순서 짜기»를 누르면 실제 도로 시간으로 다시 짭니다.");
@@ -471,7 +485,7 @@
   }
   function micBtn(on) {
     var b = $("btnMic"); b.setAttribute("aria-pressed", String(on));
-    b.innerHTML = '<span class="dot" aria-hidden="true"></span>' + (on ? "받아쓰기 멈추기" : "음성으로 받아쓰기");
+    b.innerHTML = '<span class="dot" aria-hidden="true"></span>' + (on ? "받아쓰기 멈추기" : "받아쓰기(입력 보조)");
   }
   function summarize() {
     var r = rowById($("recHouse").value); if (!r) return;
@@ -595,7 +609,7 @@
   // ── 탭·초기화 ──────────────────────────────────────────
   // 화면 이름(머리띠 제목) — 경로는 «오늘 할 일»의 동선 묶음에서 들어온다
   var TABS = { today: ["오늘 할 일", "오늘 할 일", "today"], list: ["가구 명단", "가구 명단 · 지역 신호 순", "list"], route: ["오늘 할 일", "방문 경로", "today"],
-    contacts: ["방문·연락", "방문·연락 기록", "contacts"], record: ["상담 기록", "상담 기록", "record"], board: ["통계·보고서", "현황 통계와 보고서", "board"] };
+    contacts: ["방문·연락", "방문·연락 기록", "contacts"], record: ["상담 기록", "상담 기록", "record"], board: ["연계·보고서", "연계 누락 · 행복이음 초안 · 보고서", "board"] };
   var lastTab = "";
   function show() {
     var tab = (location.hash || "#today").slice(1);
@@ -629,7 +643,7 @@
   }
   function renderToday() {
     var d = new Date(), W = "일월화수목금토";
-    $("todayDate").textContent = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + W.charAt(d.getDay()) + "요일 · 밤사이 " + D.households.length.toLocaleString() + "가구를 살펴 순서를 정했어요";
+    $("todayDate").textContent = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + W.charAt(d.getDay()) + "요일 · 닿음이 " + D.households.length.toLocaleString() + "가구를 지역 신호 순으로 미리 정리했어요";
   }
   function loadServices() {
     // 국민 창구가 만든 서비스 목록이 있으면 합친다(없으면 내장 목록만)
@@ -656,20 +670,21 @@
           (AI.needsFromRule ? AI.needsFromRule(s.rule) : []).forEach(function (t) { if (tags.indexOf(t) < 0) tags.push(t); });
           SERVICES.push({ id: s.id, name: s.name || s.id, org: s.provider || s.org || "", tags: tags, rule: s.rule }); added++;
         });
-        if (added) servicesSource = "내장 12종 + 국민 창구 목록 " + added + "종(" + used + ")";
+        if (added) servicesSource = "내장 12종 + 주민 창구 목록 " + added + "종(" + used + ")";
       }).catch(function () { /* 아직 없음 */ });
   }
   function demoRequest() {
     var samples = [
       { proxy: { isProxy: true, relation: "어머니" }, situation: "시골에 혼자 계신 어머니 집 보일러가 고장 나서 추운데 가스비도 밀렸어요", ids: ["S04", "S05"], region: "화남면", tags: ["alone", "energy", "senior"] },
       { proxy: { isProxy: false, relation: "" }, situation: "공장 일을 그만두고 월세가 두 달 밀렸어요", ids: ["S03", "S07", "S02"], region: "남원동", tags: ["unemployed", "housing"] },
-      { proxy: { isProxy: true, relation: "아버지" }, situation: "아버지가 병원비 때문에 약을 끊으셨어요", ids: ["S06", "S02"], region: "함창읍", tags: ["sick", "lowIncome"] }
+      { proxy: { isProxy: true, relation: "아버지" }, situation: "아버지가 병원비 때문에 약을 끊으셨어요", ids: ["S06", "S02"], region: "함창읍", tags: ["sick", "lowIncome"] },
+      { proxy: { isProxy: true, relation: "이웃" }, signal: "neighbor", place: "골목 끝 파란 대문 집", situation: "옆집 할머니 댁 우편물이 일주일째 쌓여 있고 밤에 불이 안 켜져요", ids: [], region: "남원동", tags: ["alone", "senior"] }
     ];
     var s = samples[REQ.list().length % samples.length];
     var same = rows.filter(function (r) { return r.h.area === s.region && !r.h.request; })[0];
     REQ.add({
       householdId: same ? same.h.id : null,
-      region: s.region, contactPref: "visit", displayName: "시연 요청", proxy: s.proxy,
+      region: s.region, contactPref: "visit", displayName: s.signal ? "" : "시연 요청", proxy: s.proxy, signal: s.signal, place: s.place,
       subject: { age: null, ageBand: null, tags: s.tags, childAges: [] },
       situation: s.situation, summary: "",
       matched: s.ids.map(function (id) { var x = svcById(id); return { id: id, name: x ? x.name : id, reason: "" }; }),
@@ -693,6 +708,8 @@
     setPicked: function (ids) { picked = (ids || []).filter(function (id) { return rowById(id); }); lsSet(LS_PICK, picked); renderNav(); },
     services: function () { return SERVICES; },
     links: function () { return lsGet(LS_LINK, []); },
+    // 방문 경로 화면에서 마지막으로 짠 시각표(담은 가구가 그 뒤 바뀌었으면 null — 하루 동선 1장은 근사로 다시 짠다)
+    route: function () { return lastRoute && lastRoute.order.slice().sort().join() === picked.slice().sort().join() ? lastRoute : null; },
     memberText: memberText,
     refresh: function () { rebuild(); show(); },
     openRecord: function (id) { location.hash = "#record"; setTimeout(function () { if (rowById(id)) { fillRecHouses(); var sel = $("recHouse"); if (![].some.call(sel.options, function (o) { return o.value === id; })) { var r = rowById(id), o = el("option", null, r.h.label + " · " + r.h.area); o.value = id; sel.appendChild(o); } sel.value = id; showHouseInfo(); } }, 0); }

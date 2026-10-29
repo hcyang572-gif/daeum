@@ -47,9 +47,13 @@
 
   function aggregate(d) {
     d = d || {};
-    var from = d.from || null, to = d.to || null;
-    var hh = d.households || [], reqs = d.requests || [], links = d.links || [];
-    var attempts = (d.attempts || []).filter(function (t) { return !from && !to || inRange(t.at, from, to); });
+    var from = d.from || null, to = d.to || null, area = d.area || null;
+    // area 를 주면 그 읍면동만 센다(읍면동 담당자 보고 = «자기 동» 기준). 없으면 시군구 전체(수요 보드).
+    var hh = (d.households || []).filter(function (h) { return !area || h.area === area; });
+    var inArea = {}; hh.forEach(function (h) { inArea[h.id] = 1; });
+    var reqs = (d.requests || []).filter(function (r) { return !area || r.region === area; });
+    var links = (d.links || []).filter(function (l) { return !area || l.area === area || inArea[l.householdId]; });
+    var attempts = (d.attempts || []).filter(function (t) { return (!area || inArea[t.householdId]) && (!from && !to || inRange(t.at, from, to)); });
     var lastBy = {};
     (d.attempts || []).slice().sort(function (a, b) { return a.at < b.at ? -1 : 1; }).forEach(function (t) { if (!to || inRange(t.at, null, to)) lastBy[t.householdId] = t; });
     var contactedIds = {}; attempts.forEach(function (t) { contactedIds[t.householdId] = 1; });
@@ -77,11 +81,20 @@
     hh.forEach(function (h) { var a = A(h.area); a.households++; if (contactedIds[h.id]) a.contacted++; });
     R.forEach(function (r) { if (r.status !== "cancelled") A(r.region || "미상").requests++; });
     L.forEach(function (l) { A(l.area || "미상").links++; });
+    // 현장 후속 업무(S9h): 재시도 예정·간접 확인 전환·연계 누락 — features.js 가 함께 실렸을 때만
+    var follow = null;
+    if (F.contacts && F.contacts.suggestNext && F.linkGap) {
+      var now = d.now ? new Date(d.now) : new Date(), today = ymd(now), retry = 0, esc = 0;
+      Object.keys(lastBy).forEach(function (id) { if (!inArea[id]) return; var s2 = F.contacts.suggestNext(d.attempts, id, now); if (!s2.closed && s2.next) { if (s2.next.date <= today) retry++; if (s2.escalate) esc++; } });
+      var g = F.linkGap.build({ households: hh, requests: reqs, attempts: (d.attempts || []).filter(function (t) { return inArea[t.householdId]; }), links: links, outcomes: d.outcomes, now: now });
+      follow = { retryDue: retry, escalate: esc, gaps: g.total, notApplied: g.notApplied.slice(0, 3) };
+    }
     var byResult = {}; attempts.forEach(function (t) { byResult[t.result] = (byResult[t.result] || 0) + 1; });
     var live = R.filter(function (r) { return r.status !== "cancelled"; });
     function reached(st) { var ord = ["new", "seen", "visiting", "done"]; return live.filter(function (r) { return ord.indexOf(r.status) >= ord.indexOf(st); }).length; }
     return {
-      period: { from: from ? ymd(from) : null, to: to ? ymd(to) : null },
+      period: { from: from ? ymd(from) : null, to: to ? ymd(to) : null }, scope: area,
+      followUp: follow,
       households: { total: hh.length, contacted: contacted, notContacted: hh.length - contacted, met: met, nonEligible: nonE, closed: closed, pending: hh.length - closed },
       nonEligibleBy: NE.map(function (x) { return { key: x[0], label: x[1], n: neBy[x[0]] || 0 }; }).filter(function (x) { return x.n; }),
       requests: { total: R.length, byStatus: byStatus, urgent: R.filter(function (r) { return r.urgent; }).length,
@@ -124,31 +137,48 @@
       ? { from: ymd(mondayOf(now)), to: ymd(now) }
       : { from: ymd(new Date(now.getFullYear(), now.getMonth(), 1)), to: ymd(now) });
     var H = stats.households, Q = stats.requests, Lk = stats.links, cd = o.countdown;
-    var office = o.office || "○○ 읍면동 맞춤형복지팀";
+    var scope = stats.scope || o.area || null;
+    var office = o.office || (scope ? scope + " 행정복지센터 맞춤형복지팀" : "○○ 읍면동 맞춤형복지팀");
     var name = kind === "weekly" ? "주간" : "월간";
     var sections = [];
     sections.push({ heading: "추진 현황", lines: [
       "발굴 명단 " + num(H.total) + "가구 중 " + num(H.contacted) + "가구 접촉(" + (H.total ? Math.round(H.contacted / H.total * 100) : 0) + "%), 만남·상담 " + num(H.met) + "가구, 비해당 " + num(H.nonEligible) + "가구",
-      "국민 도움 요청 " + num(Q.total) + "건(긴급 " + Q.urgent + "·대신 요청 " + Q.proxy + ") — 완료 " + Q.byStatus.done + ", 진행 " + (Q.byStatus.seen + Q.byStatus.visiting) + ", 미확인 " + Q.byStatus["new"] + (Q.avgDays != null ? ", 평균 처리 " + Q.avgDays + "일" : ""),
+      "주민 신호(도움 요청·이웃 알림) " + num(Q.total) + "건(긴급 " + Q.urgent + "·대신·이웃 " + Q.proxy + ") — 완료 " + Q.byStatus.done + ", 진행 " + (Q.byStatus.seen + Q.byStatus.visiting) + ", 미확인 " + Q.byStatus["new"] + (Q.avgDays != null ? ", 평균 처리 " + Q.avgDays + "일" : ""),
       "서비스 연계 " + num(Lk.total) + "건(" + Lk.households + "가구)" + (Lk.byService.length ? " — 많은 순: " + Lk.byService.slice(0, 3).map(function (s) { return s.name + " " + s.n; }).join(", ") : "")
     ] });
     if (stats.nonEligibleBy.length) sections.push({ heading: "비해당 사유", lines: stats.nonEligibleBy.map(function (x) { return x.label + " " + x.n + "가구"; }) });
+    var fu = stats.followUp;
+    if (fu) sections.push({ heading: "현장 후속 업무", lines: [
+      "오늘까지 다시 찾아가거나 연락할 집 " + fu.retryDue + "가구" + (fu.escalate ? "(방문 3회 부재로 간접 확인 전환 " + fu.escalate + ")" : ""),
+      "연계 누락(상담 뒤 연계 없음·신청/결과 확인 안 함 등) " + fu.gaps + "곳" + (fu.notApplied.length ? " — 안내 후 신청 안 한 서비스: " + fu.notApplied.map(function (x) { return x.name + " " + x.n; }).join(", ") : "")
+    ] });
     if (cd) sections.push({ heading: "차수 마감 역산(" + cd.round.label + ")", lines: [cd.message, "출처: " + cd.round.source] });
-    var hot = stats.byArea.filter(function (a) { return a.requests; }).slice(0, 3);
+    var hot = scope ? [] : stats.byArea.filter(function (a) { return a.requests; }).slice(0, 3);
     if (hot.length) sections.push({ heading: "요청이 많은 읍면동", lines: hot.map(function (a) { return a.area + " 요청 " + a.requests + "건 · 접촉 " + a.contacted + "/" + a.households + "가구"; }) });
     var next = [];
     if (Q.byStatus["new"]) next.push("미확인 요청 " + Q.byStatus["new"] + "건 우선 확인");
     if (cd && !cd.onTrack) next.push("차수 진도 보완 — 하루 " + cd.perWorkday + "가구 목표");
     if (H.notContacted) next.push("미접촉 " + num(H.notContacted) + "가구 방문 동선 편성");
     sections.push({ heading: "다음 " + (kind === "weekly" ? "주" : "달") + " 계획", lines: next.length ? next : ["특이사항 없음"] });
-    var table = { head: ["읍면동", "명단 가구", "접촉", "국민 요청", "연계"],
+    // 표: 읍면동 보고(scope)면 자기 동 지표 표, 시군구 보고면 읍면동별 표
+    var table = scope ? { head: ["구분", "값", "비고"], rows: [
+        ["발굴 명단", H.total + "가구", stats.period.from ? "기간 " + stats.period.from + "~" : "이번 차수"],
+        ["접촉(방문·전화 시도)", H.contacted + "가구", (H.total ? Math.round(H.contacted / H.total * 100) : 0) + "%"],
+        ["만남·상담", H.met + "가구", ""],
+        ["비해당", H.nonEligible + "가구", stats.nonEligibleBy.length ? stats.nonEligibleBy[0].label + " 최다" : ""],
+        ["미접촉", H.notContacted + "가구", ""],
+        ["주민 신호(요청·이웃 알림)", Q.total + "건", "미확인 " + Q.byStatus["new"]],
+        ["서비스 연계", Lk.total + "건", Lk.households + "가구"],
+        ["연계 누락", (fu ? fu.gaps : "-") + "곳", "멈춘 단계 확인"]
+      ] } : { head: ["읍면동", "명단 가구", "접촉", "주민 신호", "연계"],
       rows: stats.byArea.map(function (a) { return [a.area, a.households, a.contacted, a.requests, a.links]; }) };
-    var title = "복지 사각지대 발굴 " + name + " 추진 보고 (" + p.from + " ~ " + p.to + ")";
+    var title = (scope ? scope + " " : "") + "복지 사각지대 발굴 " + name + " 추진 보고 (" + p.from + " ~ " + p.to + ")";
     var text = [title, office + " · 작성 " + ymd(now), ""].concat(sections.map(function (s, i) {
       return ["□ " + s.heading].concat(s.lines.map(function (l) { return "  ○ " + l; })).join("\n");
     })).join("\n") + "\n\n※ 가구는 시연용 가상 자료, «추정» 표시는 가정값에 따른 값입니다.";
     return { kind: kind, title: title, period: p, printedAt: ymd(now) + " " + pad(now.getHours()) + ":" + pad(now.getMinutes()),
-      sections: sections, table: table, text: text, note: "숫자는 report.aggregate() 한 곳에서 셉니다. 보고서 문안은 규칙 기반(AI 미사용)." };
+      sections: sections, table: table, text: text, scope: scope,
+      note: "닿음 보조 집계입니다(숫자는 report.aggregate() 한 곳에서 셈, AI 미사용). 공식 실적은 행복이음 기준으로 대조하세요." };
   }
 
   F.report = {
@@ -156,6 +186,8 @@
     aggregate: aggregate, countdown: countdown,
     weekly: function (stats, o) { return makeReport("weekly", stats, o); },
     monthly: function (stats, o) { return makeReport("monthly", stats, o); },
+    /** 읍면동 담당자의 «자기 동»: 명단 가구가 가장 많은 읍면동 */
+    homeArea: function (households) { var n = {}, best = null; (households || []).forEach(function (h) { n[h.area] = (n[h.area] || 0) + 1; if (!best || n[h.area] > n[best]) best = h.area; }); return best; },
     currentRound: function (now) { var t = ymd(now || new Date()); return ROUNDS.filter(function (r) { return r.start <= t && t <= r.end; })[0] || ROUNDS[ROUNDS.length - 1]; }
   };
   return F;

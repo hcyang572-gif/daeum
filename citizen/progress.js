@@ -69,11 +69,28 @@
     { key: "new", label: "요청 접수", say: "요청이 잘 들어갔어요. 담당자가 곧 확인해요." },
     { key: "seen", label: "담당자 확인", say: "담당 공무원이 내용을 읽고 맞는 도움을 찾고 있어요." },
     { key: "visiting", label: "방문·상담", say: "담당자가 연락하거나 찾아가 이야기를 들어요." },
-    { key: "done", label: "연계 완료", say: "도움을 이어 드렸어요. 더 필요하면 다시 요청하세요." }
+    { key: "done", label: "연계 완료", say: "도움을 이어 드렸어요. 신청한 급여의 처리 상태는 복지로 «신청 현황»에서 보실 수 있어요." }
   ];
   var IDX = { "new": 0, seen: 1, visiting: 2, done: 3 };
+  // 이웃 알림은 알린 사람에게 «접수·확인»까지만 보인다 — 그 집의 상담·지원 내용은 남의 개인정보라서(현장 원칙).
+  var NB_STEPS = [
+    { key: "new", label: "알림 접수", say: "알림이 잘 들어갔어요. 담당자가 곧 확인해요." },
+    { key: "seen", label: "담당자 확인", say: "담당 공무원이 확인했어요. 그 집의 상담·지원 내용은 개인정보라 알려 드리지 않아요. 고맙습니다." }
+  ];
+  function isNeighbor(r) { return r.signal === "neighbor" || !!(r.proxy && r.proxy.isProxy && /이웃|통장|이장|집주인/.test(r.proxy.relation || "")); }
+  function ofNeighbor(r, now) {
+    var hist = r.history || [], cancelled = r.status === "cancelled", cur = r.status === "new" ? 0 : 1;
+    var seenAt = (hist.filter(function (x) { return x.status !== "new"; })[0] || {}).at;
+    var steps = NB_STEPS.map(function (s, i) { return { key: s.key, label: s.label, say: s.say, at: stamp(i === 0 ? r.createdAt : seenAt), state: i < cur ? "done" : i === cur ? (i === 1 ? "done" : "current") : "todo" }; });
+    return { id: r.id, title: "이웃 알림" + (r.place ? " · " + String(r.place).slice(0, 20) : ""), cancelled: cancelled, finished: cur === 1,
+      current: { key: NB_STEPS[cur].key, label: NB_STEPS[cur].label, say: NB_STEPS[cur].say }, steps: steps,
+      lastUpdate: stamp(hist.length ? hist[hist.length - 1].at : r.createdAt),
+      waitedDays: Math.max(0, Math.floor((now - new Date(r.createdAt)) / 86400000)),
+      contactLine: (r.region ? r.region + " 행정복지센터 담당자가 " : "담당자가 ") + "그 집을 찾아가 살펴봅니다" };
+  }
   function of(r, now) {
     now = now ? new Date(now) : new Date();
+    if (isNeighbor(r)) return ofNeighbor(r, now);
     var hist = r.history || [], cancelled = r.status === "cancelled";
     var cur = cancelled ? -1 : (IDX[r.status] != null ? IDX[r.status] : 0);
     var steps = STEPS.map(function (s, i) {

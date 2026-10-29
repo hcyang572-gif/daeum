@@ -1,11 +1,13 @@
-/* 닿음 국민 창구 — ① 상황 말하기 → ② 서비스 카드 → ③ 도움 요청 → ④ 접수 */
+/* 닿음 주민 창구 — S9h C안(10-29): «이웃 알림·도움 요청 → 읍면동 공무원 방문 순서에 반영»하는 신호 입구가 주인공.
+   ① 알리기(이웃·가족·본인) → ③ 보내기 → ④ 접수. ② 서비스 카드(복지 찾기)는 복지로와 겹치므로 보조 길로만 둔다. */
 (function () {
   "use strict";
   var C = window.DAEUM_CONFIG || {};
   var $ = function (id) { return document.getElementById(id); };
-  var S = { proxy: false, relation: "", chips: {}, catalog: null, result: null, input: null };
+  var S = { proxy: true, who: "neighbor", relation: "이웃", chips: {}, catalog: null, result: null, input: null };
 
   var EXAMPLES = [
+    { title: "옆집 어르신이 걱정돼요", who: "neighbor", text: "옆집 할머니 댁 우편물이 일주일째 쌓여 있고 밤에도 불이 안 켜져요. 혼자 사시는데 요즘 통 안 보이세요." },
     { title: "혼자 사는 80대 어르신", proxy: false, text: "82살이고 혼자 살아요. 무릎이 아파서 병원 다니기가 힘들고, 겨울에 난방비가 걱정이에요." },
     { title: "실직한 40대 한부모", proxy: false, text: "40대인데 지난달 회사에서 권고사직을 당했어요. 혼자 초등학생 아이 둘을 키우고 있어서 생활비가 막막합니다." },
     { title: "자녀가 부모님 대신", proxy: true, relation: "어머니", text: "어머니가 78세이신데 시골에서 혼자 지내세요. 요즘 자꾸 깜빡하시고, 기초연금은 받고 계신지 모르겠어요." }
@@ -42,7 +44,7 @@
   var STEPS = ["ask", "result", "request", "done", "checklist", "progress"];
   function show(step, focus) {
     if (STEPS.indexOf(step) < 0) step = "ask";
-    if (((step === "result" || step === "request" || step === "checklist") && !S.result) || (step === "done" && !S.done)) step = "ask";
+    if (((step === "result" || step === "checklist") && !S.result) || (step === "request" && !S.input) || (step === "done" && !S.done)) step = "ask";
     STEPS.forEach(function (s) { $("step-" + s).hidden = s !== step; });
     if (step === "checklist") renderChecklist();
     if (step === "progress") renderProgress();
@@ -55,15 +57,22 @@
   window.addEventListener("hashchange", function () { show((location.hash || "#ask").slice(1)); });
 
   // ── ① 상황 말하기 ──
-  function setProxy(on) {
-    S.proxy = on;
-    document.querySelectorAll(".who-btn").forEach(function (b) { b.setAttribute("aria-checked", String((b.dataset.proxy === "1") === on)); });
-    $("relation-wrap").hidden = !on;
-    $("situation-label").textContent = on ? "가족분의 상황" : "상황";
-    $("situation").placeholder = on
-      ? "예) 어머니가 78세이신데 혼자 지내세요. 요즘 자꾸 깜빡하세요."
+  // who: "neighbor"(이웃이 걱정돼요) | "family"(가족 일) | "self"(제 일). setProxy(true/false)는 옛 호출 호환
+  var WHO_BY_KEY = { "2": "neighbor", "1": "family", "0": "self" };
+  function setProxy(who) {
+    if (who === true) who = "family"; else if (who === false) who = "self";
+    S.who = who; S.proxy = who !== "self";
+    document.querySelectorAll(".who-btn").forEach(function (b) { b.setAttribute("aria-checked", String(WHO_BY_KEY[b.dataset.proxy] === who)); });
+    $("relation-wrap").hidden = who !== "family";
+    $("situation-label").textContent = who === "neighbor" ? "걱정되는 모습" : who === "family" ? "가족분의 상황" : "상황";
+    $("situation").placeholder = who === "neighbor"
+      ? "예) 옆집 할머니 댁 우편물이 며칠째 쌓여 있고 인기척이 없어요."
+      : who === "family" ? "예) 어머니가 78세이신데 혼자 지내세요. 요즘 자꾸 깜빡하세요."
       : "예) 82살이고 혼자 살아요. 무릎이 아파 병원 다니기가 힘들어요.";
+    // 이웃 일로 «받을 서비스 찾기»는 맞지 않는다(남의 자격을 대신 따지는 셈) — 보조 길을 숨긴다
+    $("find").hidden = who === "neighbor";
   }
+  function relation() { return S.who === "neighbor" ? "이웃" : S.who === "family" ? $("relation").value : ""; }
   function buildChips() {
     var box = $("chips");
     DaeumAI.chips.forEach(function (c) {
@@ -86,7 +95,7 @@
       b.querySelector("b").textContent = ex.title;
       b.querySelector("span").textContent = ex.text;
       b.addEventListener("click", function () {
-        setProxy(!!ex.proxy);
+        setProxy(ex.who || !!ex.proxy);
         if (ex.relation) $("relation").value = ex.relation;
         $("situation").value = ex.text;
         $("situation").focus();
@@ -128,18 +137,29 @@
     });
   }
 
-  function find() {
+  function readInput() {
     var text = $("situation").value.trim();
     var chips = Object.keys(S.chips).filter(function (k) { return S.chips[k]; });
     $("ask-error").hidden = true;
     if (text.length < 4 && !chips.length) {
       $("ask-error").textContent = "상황을 조금만 더 적어 주시거나, 해당하는 것을 눌러 주세요.";
-      $("ask-error").hidden = false; ui("error"); return;
+      $("ask-error").hidden = false; ui("error"); return null;
     }
+    return { text: text, chips: chips, proxy: { isProxy: S.proxy, relation: relation() } };
+  }
+  // 주인공 길: 서비스 찾기 없이 바로 담당 공무원에게 알린다(AI 호출 없음 — 긴급 낱말·나이는 규칙으로만 읽는다)
+  function toSignal() {
+    var input = readInput(); if (!input) return;
+    S.input = input; S.result = null; S.done = null;
+    openRequest();
+  }
+  function find() {
+    var input = readInput(); if (!input) return;
+    var text = input.text, chips = input.chips;
     if (!S.catalog) { $("ask-error").textContent = "서비스 목록을 아직 읽지 못했어요. 잠시 뒤 다시 눌러 주세요."; $("ask-error").hidden = false; return; }
     var btn = $("find"); btn.disabled = true; $("find-label").textContent = "찾고 있어요…";
     var stopFinding = finding();
-    S.input = { text: text, chips: chips, proxy: { isProxy: S.proxy, relation: S.proxy ? $("relation").value : "" } };
+    S.input = input;
     DaeumAI.recommend(S.input, S.catalog).then(function (res) {
       return stopFinding().then(function () {
         S.result = res; S.done = null;
@@ -150,7 +170,7 @@
     }).catch(function () {
       stopFinding();
       $("ask-error").textContent = "찾는 중에 문제가 생겼어요. 다시 눌러 주세요."; $("ask-error").hidden = false; ui("error");
-    }).then(function () { btn.disabled = false; $("find-label").textContent = "받을 수 있는 도움 찾기"; });
+    }).then(function () { btn.disabled = false; $("find-label").textContent = "받을 수 있는 도움 먼저 살펴보기"; });
   }
   function ui(kind) { if (window.DaeumUI) DaeumUI.haptic(kind); }
   // 찾는 중 덮개 — 단계 문구 3개를 차례로 켜고, 최소 1.1초는 보여 준다(움직임 줄이기면 바로 닫음)
@@ -256,12 +276,19 @@
 
   // ── ③ 도움 요청 ──
   function openRequest() {
-    var r = S.result, p = r.profile, box = $("req-preview");
+    var r = S.result, box = $("req-preview"), nb = S.who === "neighbor";
     box.innerHTML = "";
-    var who = S.input.proxy.isProxy ? S.input.proxy.relation + "의 일(대신 요청)" : "본인";
+    var who = nb ? "이웃(걱정되는 집 알림)" : S.input.proxy.isProxy ? S.input.proxy.relation + "의 일(대신 요청)" : "본인";
     box.appendChild(el("p", null, "누구: " + who));
-    box.appendChild(el("p", null, "상황: " + (S.input.text || "(고른 항목만)")));
-    box.appendChild(el("p", null, "찾은 서비스: " + (r.items.map(function (i) { return i.service.name; }).join(", ") || "없음")));
+    box.appendChild(el("p", null, (nb ? "걱정되는 모습: " : "상황: ") + (S.input.text || "(고른 항목만)")));
+    if (r) box.appendChild(el("p", null, "살펴본 서비스: " + (r.items.map(function (i) { return i.service.name; }).join(", ") || "없음")));
+    $("req-h").innerHTML = nb ? "걱정되는 이웃을<br>알려요" : "담당 공무원에게<br>도움을 요청해요";
+    $("req-lead").textContent = nb ? "담당 공무원이 그 집을 찾아가 안부와 사정을 살핍니다." : "읍면동 복지 담당 공무원이 내용을 보고 연락하거나 찾아갑니다.";
+    $("region-what").textContent = nb ? "그 집이 있는 곳" : "사시는 곳";
+    $("place-wrap").hidden = !nb;
+    $("contact-wrap").hidden = nb;
+    $("name-label").textContent = nb ? "알려 주시는 분 이름(선택·가명 가능)" : "부르실 이름(가명 가능)";
+    $("req-back").setAttribute("data-go", r ? "result" : "ask");
     $("req-error").hidden = true;
     $("consent").checked = false;
     go("request");
@@ -269,19 +296,22 @@
   function submitRequest(e) {
     e.preventDefault();
     if (!$("consent").checked) { $("req-error").textContent = "동의에 체크해 주셔야 요청을 보낼 수 있어요."; $("req-error").hidden = false; $("consent").focus(); ui("error"); return; }
-    var r = S.result, p = r.profile;
+    var r = S.result, nb = S.who === "neighbor";
+    var p = r ? r.profile : DaeumAI.analyze(S.input); // 서비스 찾기를 안 거쳤으면 규칙으로만(나이·긴급 낱말)
     var rec = DaeumRequests.add({
+      signal: S.who,
+      place: nb ? $("place").value.trim().slice(0, 40) : "",
       region: $("region").value,
-      contactPref: (document.querySelector('input[name="contact"]:checked') || {}).value || "visit",
+      contactPref: nb ? "visit" : (document.querySelector('input[name="contact"]:checked') || {}).value || "visit",
       displayName: $("display-name").value.trim().slice(0, 20),
       proxy: { isProxy: S.input.proxy.isProxy, relation: S.input.proxy.relation },
       subject: { age: p.age, ageBand: p.ageBand, tags: p.tags, childAges: p.childAges },
       situation: S.input.text,
-      summary: r.summary,
-      matched: r.items.map(function (i) { return { id: i.service.id, name: i.service.name, reason: i.reason }; }),
-      urgent: !!r.urgent,
+      summary: r ? r.summary : "",
+      matched: r ? r.items.map(function (i) { return { id: i.service.id, name: i.service.name, reason: i.reason }; }) : [],
+      urgent: !!(r ? r.urgent : p.urgent),
       householdId: null, // 공무원이 발굴 명단의 가구와 이으면 채운다(시연: 공무원 창구 «시연용 국민 요청 넣기»가 같은 읍면 가구와 잇는다)
-      mode: r.mode,
+      mode: r ? r.mode : "rules",
       consent: { agreed: true, at: new Date().toISOString(), text: $("consent-text").textContent }
     });
     if (!rec) { $("req-error").textContent = "이 브라우저에 저장하지 못했어요(사생활 보호 모드일 수 있어요). 129로 전화해 주세요."; $("req-error").hidden = false; return; }
@@ -289,15 +319,19 @@
     if (FX.progress) FX.progress.remember(rec.id);
     if (FX.checklist) FX.checklist.save(rec.id, FX.checklist.load("draft"));
     $("req-id").textContent = rec.id;
+    $("done-h").textContent = nb ? "알려 주셔서 고맙습니다" : "잘 받았습니다";
+    $("done-say").innerHTML = nb
+      ? "담당 공무원이 그 집을 찾아가는 순서에 반영합니다. 지금 위험해 보이면 <a href=\"tel:112\">112</a>·<a href=\"tel:119\">119</a>로 먼저 연락해 주세요."
+      : "담당 공무원이 확인하면 고르신 방법으로 연락드립니다. 급하시면 <a href=\"tel:129\">129</a>로 전화해 주세요.";
     go("done");
     ui("success");
   }
 
   function reset() {
-    S.result = null; S.done = null; S.chips = {};
-    $("situation").value = ""; $("display-name").value = "";
+    S.result = null; S.done = null; S.input = null; S.chips = {};
+    $("situation").value = ""; $("display-name").value = ""; $("place").value = "";
     document.querySelectorAll(".chip").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
-    setProxy(false);
+    setProxy("neighbor");
     go("ask");
   }
 
@@ -331,7 +365,7 @@
     var root = $("progress-root"); if (!root || !FX.progress) return;
     var list = FX.progress.mine(DaeumRequests.list(), FX.progress.myIds());
     root.innerHTML = "";
-    if (!list.length) { root.appendChild(el("p", "d-slot", "이 기기에서 보낸 요청이 아직 없어요. 상황을 말씀하시고 «담당 공무원에게 도움 요청»을 누르면 여기서 진행을 볼 수 있어요.")); return; }
+    if (!list.length) { root.appendChild(el("p", "d-slot", "이 기기에서 보낸 알림이 아직 없어요. 첫 화면에서 «담당 공무원에게 알리기»를 누르면 여기서 확인할 수 있어요.")); return; }
     list.forEach(function (p) {
       var card = el("article", "card d-card");
       card.appendChild(el("h2", null, p.title));
@@ -363,15 +397,16 @@
     $("consent-text").textContent = $("consent-text").textContent.replace("상주시", C.regionName || "상주시");
     (C.regions || []).forEach(function (r) { var o = document.createElement("option"); o.textContent = r; $("region").appendChild(o); });
 
-    document.querySelectorAll(".who-btn").forEach(function (b) { b.addEventListener("click", function () { setProxy(b.dataset.proxy === "1"); }); });
+    document.querySelectorAll(".who-btn").forEach(function (b) { b.addEventListener("click", function () { setProxy(WHO_BY_KEY[b.dataset.proxy]); }); });
     document.querySelectorAll("[data-go]").forEach(function (b) {
       b.addEventListener("click", function () { b.dataset.go === "new" ? reset() : go(b.dataset.go); });
     });
     $("find").addEventListener("click", find);
+    $("to-signal").addEventListener("click", toSignal);
     $("checklist-print").addEventListener("click", function () { window.print(); });
     $("to-request").addEventListener("click", openRequest);
     $("req-form").addEventListener("submit", submitRequest);
-    buildChips(); buildExamples(); setupVoice(); setProxy(false);
+    buildChips(); buildExamples(); setupVoice(); setProxy("neighbor");
 
     loadCatalog().then(function (d) { S.catalog = d; }).catch(function (e) {
       $("ask-error").textContent = "서비스 목록을 읽지 못했어요. 새로고침해 주세요. (" + e.message + ")"; $("ask-error").hidden = false;

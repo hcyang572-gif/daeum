@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>닿음</title>
-<meta name="description" content="국민이 묻고, 공무원이 찾아간다 — 복지 창구 시제품">
+<meta name="description" content="주민이 알리고, 공무원이 찾아간다 — 찾아가는 복지 업무 도구 시제품">
 <meta name="theme-color" content="#F4F4F8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0A12" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%237B70E2%27/%3E%3Cstop offset=%271%27 stop-color=%27%234236A8%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2715%27 fill=%27url(%23g)%27/%3E%3C/svg%3E">
@@ -25,7 +25,7 @@
   .door { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--sp-5); padding: var(--sp-6); min-height: 9rem; text-decoration: none; color: var(--ink); }
   .door .ic { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; color: var(--on-acc); background: var(--enamel); box-shadow: var(--enamel-sh); }
   .door .ic svg { width: 30px; height: 30px; }
-  .door.officer .ic { color: var(--acc-ink); background: var(--well); box-shadow: var(--well-sh); }
+  .door.citizen .ic { color: var(--acc-ink); background: var(--well); box-shadow: var(--well-sh); }
   .door strong { display: block; font-size: var(--fs-h2); font-weight: var(--fw-h); letter-spacing: -.04em; line-height: 1.25; margin-top: 2px; }
   .door span { display: block; color: var(--ink2); font-size: var(--fs-b); line-height: 1.55; margin-top: var(--sp-1); }
   .door .go { color: var(--ink2); }
@@ -38,22 +38,22 @@
 <main>
   <div class="logo d-rise"><i aria-hidden="true"></i>상주시 복지 창구</div>
   <div class="hero">
-    <p class="cnum d-rise" style="--d:1">AI 복지 상담 · 찾아가는 복지</p>
+    <p class="cnum d-rise" style="--d:1">찾아가는 복지 · 담당 공무원 업무 도구</p>
     <h1 class="name d-rise" style="--d:2">닿음</h1>
-    <p class="line d-rise" style="--d:3">국민이 묻고, 공무원이 찾아갑니다.</p>
+    <p class="line d-rise" style="--d:3">주민이 알리고, 공무원이 찾아갑니다.</p>
     <p class="note d-rise" style="--d:4">상주시 적용 예시 · 가구 정보는 모두 가상</p>
   </div>
   <nav class="doors" aria-label="창구 선택">
-    <a class="door citizen d-card d-lift d-rise" style="--d:5" href="citizen/index.html" data-h="light">
-      <span class="ic" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></span>
-      <div><span class="cnum">국민</span><strong>내 복지 찾기</strong>
-      <span>상황을 말하면 받을 수 있는 도움과 신청할 곳을 알려 드립니다. 가족을 대신해 물어도 됩니다.</span></div>
-      <svg class="d-ico go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
-    </a>
-    <a class="door officer d-card d-lift d-rise" style="--d:6" href="officer/index.html" data-h="light">
+    <a class="door officer d-card d-lift d-rise" style="--d:5" href="officer/index.html" data-h="light">
       <span class="ic" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1Z"/></svg></span>
       <div><span class="cnum">공무원</span><strong>공무원 창구</strong>
-      <span>오늘 할 일과 찾아갈 집, 방문 순서와 상담 기록 초안을 한 화면에서 봅니다.</span></div>
+      <span>하루 방문 동선, 부재 가구 재시도 일정, 연계 누락 확인과 행복이음에 옮길 초안을 한 화면에서 챙깁니다.</span></div>
+      <svg class="d-ico go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+    </a>
+    <a class="door citizen d-card d-lift d-rise" style="--d:6" href="citizen/index.html" data-h="light">
+      <span class="ic" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></span>
+      <div><span class="cnum">주민</span><strong>이웃·도움 알리기</strong>
+      <span>걱정되는 이웃이나 힘든 사정을 알리면 읍면동 담당 공무원의 방문 순서에 반영됩니다. 복지 서비스 찾기·신청은 복지로에서 합니다.</span></div>
       <svg class="d-ico go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
     </a>
   </nav>
