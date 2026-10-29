@@ -5,43 +5,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>닿음</title>
 <meta name="description" content="국민이 묻고, 공무원이 찾아간다 — 복지 창구 시제품">
-<meta name="theme-color" content="#13655d">
+<meta name="theme-color" content="#F4F4F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%237B70E2%27/%3E%3Cstop offset=%271%27 stop-color=%27%234236A8%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2715%27 fill=%27url(%23g)%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="shared/tokens.css">
 <style>
-  body { min-height: 100vh; display: flex; flex-direction: column; }
-  main { flex: 1; width: 100%; max-width: 760px; margin: 0 auto; padding: 48px 16px 32px; }
-  .name { font-size: 44px; font-weight: 800; color: var(--brand); letter-spacing: -0.03em; margin: 0; }
-  .line { font-size: clamp(20px, 5vw, 24px); font-weight: 700; letter-spacing: -0.02em; margin: 8px 0 36px; }
-  .note { font-size: 14px; margin: -24px 0 28px; opacity: .8; }
-  .doors { display: grid; gap: 16px; }
-  .door { display: block; text-decoration: none; color: var(--ink); background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px 22px; min-height: 120px; }
-  .door { transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
-  .door:hover, .door:focus-visible { border-color: var(--brand); box-shadow: var(--shadow-lg); outline: none; }
-  .door:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .door strong { display: block; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
-  .door span { display: block; color: var(--ink-soft); font-size: 18px; line-height: 1.55; }
-  .door.citizen strong { color: var(--brand); }
-  .door.officer strong { color: var(--accent-strong); }
-  footer { max-width: 760px; width: 100%; margin: 0 auto; padding: 16px; font-size: var(--fs-small); color: var(--ink-soft); border-top: 1px solid var(--line); }
-  @media (min-width: 640px) { .doors { grid-template-columns: 1fr 1fr; } }
+  body { display: flex; flex-direction: column; }
+  main { flex: 1; width: 100%; max-width: 64rem; margin: 0 auto; padding: clamp(var(--sp-10), 9vh, 6rem) var(--sp-4) var(--sp-10); }
+  .logo { display: inline-flex; align-items: center; gap: var(--sp-3); font-size: var(--fs-b); font-weight: var(--fw-b); color: var(--ink2); }
+  .logo i { width: 28px; height: 28px; border-radius: 50%; flex: none;
+    background: radial-gradient(60% 60% at 35% 30%, rgba(255,255,255,.9), transparent 60%), conic-gradient(from 200deg, var(--acc-hi), #86A6D8, #B0617B, var(--acc-hi));
+    box-shadow: inset 0 0 0 .5px rgba(0,0,0,.15), 0 2px 10px -2px color-mix(in srgb, var(--acc) 70%, transparent); }
+  .hero { display: grid; gap: var(--sp-4); margin: var(--sp-8) 0 var(--sp-10); }
+  .name { margin: 0; font-size: clamp(4rem, 15vw, 7.5rem); font-weight: var(--fw-h); letter-spacing: -.06em; line-height: .95; padding-bottom: .06em;
+    background: linear-gradient(180deg, var(--ink) 35%, color-mix(in srgb, var(--ink) 50%, var(--acc))); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .line { margin: 0; font-size: clamp(1.25rem, 4.4vw, 1.625rem); font-weight: var(--fw-b); letter-spacing: -.035em; line-height: 1.4; }
+  .note { margin: 0; font-size: var(--fs-s); color: var(--ink2); }
+  .doors { display: grid; gap: var(--sp-4); }
+  .door { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--sp-5); padding: var(--sp-6); min-height: 9rem; text-decoration: none; color: var(--ink); }
+  .door .ic { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; color: var(--on-acc); background: var(--enamel); box-shadow: var(--enamel-sh); }
+  .door .ic svg { width: 30px; height: 30px; }
+  .door.officer .ic { color: var(--acc-ink); background: var(--well); box-shadow: var(--well-sh); }
+  .door strong { display: block; font-size: var(--fs-h2); font-weight: var(--fw-h); letter-spacing: -.04em; line-height: 1.25; margin-top: 2px; }
+  .door span { display: block; color: var(--ink2); font-size: var(--fs-b); line-height: 1.55; margin-top: var(--sp-1); }
+  .door .go { color: var(--ink2); }
+  footer { max-width: 64rem; width: 100%; margin: 0 auto; padding: var(--sp-5) var(--sp-4) var(--sp-8); font-size: var(--fs-xs); color: var(--ink2); border-top: 1px solid var(--hair); }
+  @media (min-width: 720px) { .doors { grid-template-columns: 1fr 1fr; } .door { grid-template-columns: 1fr auto; align-content: start; min-height: 15rem; } .door .ic { grid-column: 1 / -1; margin-bottom: var(--sp-4); } }
 </style>
 </head>
 <body>
+<div class="d-aura" aria-hidden="true"></div>
 <main>
-  <p class="name">닿음</p>
-  <p class="line">국민이 묻고, 공무원이 찾아갑니다.</p>
-  <p class="note">상주시 적용 예시 · 가구 정보는 모두 가상</p>
+  <div class="logo d-rise"><i aria-hidden="true"></i>상주시 복지 창구</div>
+  <div class="hero">
+    <p class="cnum d-rise" style="--d:1">AI 복지 상담 · 찾아가는 복지</p>
+    <h1 class="name d-rise" style="--d:2">닿음</h1>
+    <p class="line d-rise" style="--d:3">국민이 묻고, 공무원이 찾아갑니다.</p>
+    <p class="note d-rise" style="--d:4">상주시 적용 예시 · 가구 정보는 모두 가상</p>
+  </div>
   <nav class="doors" aria-label="창구 선택">
-    <a class="door citizen" href="citizen/index.html">
-      <strong>내 복지 찾기</strong>
-      <span>상황을 말하면 받을 수 있는 도움과 신청할 곳을 알려 드립니다. 가족을 대신해 물어도 됩니다.</span>
+    <a class="door citizen d-card d-lift d-rise" style="--d:5" href="citizen/index.html" data-h="light">
+      <span class="ic" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></span>
+      <div><span class="cnum">국민</span><strong>내 복지 찾기</strong>
+      <span>상황을 말하면 받을 수 있는 도움과 신청할 곳을 알려 드립니다. 가족을 대신해 물어도 됩니다.</span></div>
+      <svg class="d-ico go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
     </a>
-    <a class="door officer" href="officer/index.html">
-      <strong>공무원 창구</strong>
-      <span>도움 요청과 발굴 명단을 보고, 오늘 찾아갈 집과 순서를 정합니다.</span>
+    <a class="door officer d-card d-lift d-rise" style="--d:6" href="officer/index.html" data-h="light">
+      <span class="ic" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1Z"/></svg></span>
+      <div><span class="cnum">공무원</span><strong>공무원 창구</strong>
+      <span>오늘 할 일과 찾아갈 집, 방문 순서와 상담 기록 초안을 한 화면에서 봅니다.</span></div>
+      <svg class="d-ico go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
     </a>
   </nav>
 </main>
 <footer>상주시 적용 예시 시제품 · 가구 정보는 모두 가상 · 공개 데이터와 합성(가상) 데이터만 씁니다 · 실제 개인정보 없음</footer>
+<script src="shared/ui.js"></script>
 </body>
 </html>

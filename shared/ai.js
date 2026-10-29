@@ -131,11 +131,53 @@
     };
   }
 
+  // ── 대상 한정 관문(S9b-2, 10-29) ─────────────────────────
+  // 이름이 «특정 피해자·특정 신분»을 가리키는 사업은 말 속에 그 사정이 «직접» 나올 때만 추천한다.
+  // 원인: 일반 욕구 꼬리표(채무·실직·돌봄·위기)만으로 «성매매 방지 및 피해자 지원»(rule any:debt)·«출소자 취업지원»(any:unemployed)이
+  //       뜨거나, 공무원 창구가 본문 «의료·법률·직업훈련·자활» 낱말로 생계·일자리 꼬리표를 붙여 실직 가구에 성매매 피해 지원을 냈다.
+  var GATES = [
+    [/성매매/, /성매매|성착취|성매수|성 ?구매/],
+    [/성폭력/, /성폭력|성추행|성폭행|강간|성범죄|몹쓸 짓/],
+    [/가정폭력|폭력 ?피해/, /폭력|때리|때려|맞았|맞아|맞고|폭행|위협|스토킹/],
+    [/범죄 ?피해/, /범죄|폭행|때리|때려|강도|사기를 당|사기 피해|피해를 당|스토킹/],
+    [/자동차 ?사고|교통 ?사고/, /교통사고|교통 사고|자동차 ?사고|차 사고|차에 치|사고로/],
+    [/원폭/, /원폭|피폭|히로시마|나가사키/],
+    [/한센/, /한센/],
+    [/납북/, /납북/],
+    [/북한이탈|탈북/, /북한|탈북/],
+    [/노숙/, /노숙|거리에서 자|길에서 자|역에서 자|잘 곳이 없|머물 곳이 없/],
+    [/중독/, /중독|알코올|술을 끊|술 때문|도박|마약/],
+    [/출소|교정|보호관찰|수형/, /출소|교도소|수감|복역|보호관찰|형을 살/],
+    [/자립준비|보호종료/, /보육원|시설에서 나|보호종료|자립준비|그룹홈|위탁 ?가정/],
+    [/보훈|유공자|참전|고엽제|제대군인|독립유공/, /보훈|유공자|참전|고엽제|제대군인|장기복무|독립운동/],
+    [/산재/, /산재|일하다 다|작업 ?중 ?다|공장에서 다|업무 ?중 ?다|현장에서 다/],
+    [/결혼이민|다문화|외국인|이주민/, /다문화|결혼이민|외국인|이주|베트남|필리핀|캄보디아|중국에서 왔|귀화/],
+    [/입양|가정위탁/, /입양|위탁/]
+  ];
+  /** 이 서비스를 이 말에 추천해도 되나 — 관문에 걸리는 이름인데 말에 그 사정이 없으면 false */
+  function gateOk(svc, text) {
+    var n = (svc && svc.name) || "", t = String(text || "");
+    // 이름이 여러 대상을 함께 가리키면(«가정폭력·성폭력 등 폭력 피해자») 그중 하나의 사정만 나와도 된다
+    var hit = false;
+    for (var i = 0; i < GATES.length; i++) if (GATES[i][0].test(n)) { if (GATES[i][1].test(t)) return true; hit = true; }
+    return !hit;
+  }
+  // 공무원 창구 욕구 범주 ← 서비스 규칙(rule) 꼬리표. boost(가점용)는 쓰지 않는다 — 본문 낱말로 범주를 붙이지 않기 위함
+  var RULE_TO_NEED = { lowIncome: ["생계"], crisis: ["긴급", "생계"], food: ["생계"], unemployed: ["일자리"], sick: ["의료"], housing: ["주거"],
+    energy: ["에너지"], alone: ["돌봄"], careNeed: ["돌봄"], dementia: ["돌봄", "의료"], senior: ["돌봄"], disability: ["장애"],
+    child: ["아동"], infant: ["아동"], singleParent: ["아동", "생계"], debt: ["금융·채무"], mental: ["정신건강"], violence: ["긴급"], pregnancy: ["의료"] };
+  function needsFromRule(rule) {
+    var r = rule || {}, out = [];
+    ["req", "all", "any", "name"].forEach(function (k) { (r[k] || []).forEach(function (t) { (RULE_TO_NEED[t] || []).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); }); }); });
+    return out;
+  }
+
   function tagSet(p) { var s = {}; p.tags.forEach(function (t) { s[t] = true; }); return s; }
 
   /** 서비스 하나를 프로필에 대 본다 → null(해당 없음) 또는 {score, reasons, ageNote} */
-  function judge(svc, p, T) {
+  function judge(svc, p, T, text) {
     var r = svc.rule || {};
+    if (!gateOk(svc, text)) return null;
     var reasons = [], score = 0, ageNote = "";
     var waived = (r.ageAlt || []).some(function (t) { return T[t]; });
     if (r.ageMin != null || r.ageMax != null) {
@@ -184,10 +226,10 @@
     return s;
   }
 
-  function matchRules(p, catalog, limit) {
+  function matchRules(p, catalog, limit, text) {
     var T = tagSet(p), out = [];
     (catalog.services || []).forEach(function (svc) {
-      var j = judge(svc, p, T);
+      var j = judge(svc, p, T, text);
       if (j) out.push({ service: svc, score: j.score, reason: ruleReason(svc, j) });
     });
     out.sort(function (a, b) { return b.score - a.score || a.service.id.localeCompare(b.service.id); });
@@ -261,14 +303,14 @@
     if (window.console) console.info("[닿음 AI] " + tag + " 보낸 서비스 " + sent + "건 · 입력 토큰 " + (u ? u.input_tokens : "?") + " · 출력 토큰 " + (u ? u.output_tokens : "?"));
   }
   /** 응답 picks 를 목록(byId)에 있는 것만 남긴다 */
-  function keepKnown(ans, byId, max) {
-    return ((ans && ans.picks) || []).filter(function (p) { return p && typeof p.id === "string" && byId[p.id]; }).slice(0, max || 8);
+  function keepKnown(ans, byId, max, text) {
+    return ((ans && ans.picks) || []).filter(function (p) { return p && typeof p.id === "string" && byId[p.id] && gateOk(byId[p.id], text); }).slice(0, max || 8);
   }
 
   function callEdge(input, profile, catalog) {
     // 규칙 관련도 순(맞는 것 → 위기 상담전화 → 나머지 원래 순서) 상위만 보낸다 — 전체 목록을 통째로 보내지 않는다
     var all = catalog.services || [];
-    var ranked = matchRules(profile, catalog, all.length).map(function (r) { return r.service.id; });
+    var ranked = matchRules(profile, catalog, all.length, input.text).map(function (r) { return r.service.id; });
     all.forEach(function (s) { if (s.urgent && ranked.indexOf(s.id) < 0) ranked.push(s.id); });
     // 태그 규칙에 안 걸리는 서비스(보훈·창업 등)도 문장 낱말이 이름·대상에 겹치면 그다음 순서로 올린다
     var stems = unique((String(input.text || "").match(/[가-힣A-Za-z]{2,}/g) || []).map(function (w) { return w.slice(0, 2); }))
@@ -296,7 +338,7 @@
 
   function recommend(input, catalog) {
     var profile = analyze(input);
-    var rules = matchRules(profile, catalog, 10);
+    var rules = matchRules(profile, catalog, 10, input.text);
     var base = { profile: profile, urgent: profile.urgent };
     var c = cfg();
     if (!c.aiEndpoint) {
@@ -306,7 +348,7 @@
     var byId = {};
     (catalog.services || []).forEach(function (s) { byId[s.id] = s; });
     return callEdge(input, profile, catalog).then(function (ans) {
-      var items = keepKnown(ans, byId, 8).map(function (p, i) {
+      var items = keepKnown(ans, byId, 8, input.text).map(function (p, i) {
         var svc = byId[p.id];
         var reason = String(p.reason || "").slice(0, 200);
         if (svc.means_tested && reason.indexOf("소득") < 0) reason += " 최종 여부는 소득·재산 확인 뒤 정해집니다.";
@@ -364,7 +406,7 @@
     if (urgent) needs.unshift("긴급");
     needs = unique(needs);
     issues = unique(issues.concat(heard));
-    var svc = (ctx.services || []).map(function (s) {
+    var svc = (ctx.services || []).filter(function (s) { return gateOk(s, text); }).map(function (s) {
       var hit = (s.tags || []).filter(function (t) { return needs.indexOf(t) >= 0; });
       return { s: s, n: hit.length, hit: hit };
     }).filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 5);
@@ -386,7 +428,7 @@
     if (!cfg().aiEndpoint || !String(text || "").trim()) return Promise.resolve(r);
     var byId = {};
     (ctx.services || []).forEach(function (s) { byId[s.id] = s; });
-    var ranked = (ctx.services || []).map(function (s) {
+    var ranked = (ctx.services || []).filter(function (s) { return gateOk(s, text); }).map(function (s) {
       return { id: s.id, n: (s.tags || []).filter(function (t) { return r.needs.indexOf(t) >= 0; }).length };
     }).filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }).map(function (x) { return x.id; });
     var compact = topFirst(ctx.services || [], ranked, AI_MAX_SERVICES).map(function (s) {
@@ -399,7 +441,7 @@
       services: compact
     }).then(function (ans) {
       logUsage("공무원", ans, compact.length);
-      var picks = keepKnown(ans, byId, 8);
+      var picks = keepKnown(ans, byId, 8, text);
       if (!picks.length) throw new Error("AI 답에 목록 안의 서비스가 없음");
       var reasons = {};
       picks.forEach(function (p) { reasons[p.id] = String(p.reason || "").slice(0, 200); });
@@ -417,6 +459,7 @@
   window.DaeumAI = {
     recommend: recommend, analyze: analyze, matchRules: matchRules,
     summarize: summarize, ruleSummarize: ruleSummarize, needFromIndicator: NEED_FROM_INDICATOR,
+    gateOk: gateOk, needsFromRule: needsFromRule, GATES: GATES,
     chips: CHIPS, reasonLabel: REASON,
     mode: function () { return cfg().aiEndpoint ? "ai" : "rules"; }
   };

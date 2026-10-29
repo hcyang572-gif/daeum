@@ -39,10 +39,13 @@
   }
 
   // ── 화면 전환(해시 — 뒤로 가기 단추가 그대로 먹게) ──
-  var STEPS = ["ask", "result", "request", "done"];
+  var STEPS = ["ask", "result", "request", "done", "checklist", "progress"];
   function show(step, focus) {
-    if ((step === "result" && !S.result) || (step === "request" && !S.result) || (step === "done" && !S.done)) step = "ask";
+    if (STEPS.indexOf(step) < 0) step = "ask";
+    if (((step === "result" || step === "request" || step === "checklist") && !S.result) || (step === "done" && !S.done)) step = "ask";
     STEPS.forEach(function (s) { $("step-" + s).hidden = s !== step; });
+    if (step === "checklist") renderChecklist();
+    if (step === "progress") renderProgress();
     window.scrollTo(0, 0);
     if (focus !== false) { var h = document.querySelector("#step-" + step + " h1"); if (h) h.focus(); }
   }
@@ -65,7 +68,7 @@
     var box = $("chips");
     DaeumAI.chips.forEach(function (c) {
       var b = document.createElement("button");
-      b.type = "button"; b.className = "chip"; b.textContent = c[1];
+      b.type = "button"; b.className = "chip"; b.textContent = c[1]; b.setAttribute("data-h", "selection");
       b.setAttribute("aria-pressed", "false");
       b.addEventListener("click", function () {
         S.chips[c[0]] = !S.chips[c[0]];
@@ -78,7 +81,7 @@
     var box = $("examples");
     EXAMPLES.forEach(function (ex) {
       var b = document.createElement("button");
-      b.type = "button"; b.className = "example";
+      b.type = "button"; b.className = "example"; b.setAttribute("data-h", "selection");
       b.innerHTML = "<b></b><span></span>";
       b.querySelector("b").textContent = ex.title;
       b.querySelector("span").textContent = ex.text;
@@ -95,8 +98,13 @@
   // 음성 입력 — 브라우저 온라인 음성 인식(Web Speech API). 없는 브라우저는 단추를 숨긴다.
   function setupVoice() {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    var mic = $("mic"), note = $("mic-note");
-    if (!SR) { mic.hidden = true; note.textContent = "이 브라우저는 말로 입력을 지원하지 않아요. 글로 적어 주세요."; return; }
+    var mic = $("mic"), note = $("mic-note"), lab = $("mic-label");
+    function micState(on) {
+      mic.setAttribute("aria-pressed", String(on));
+      mic.setAttribute("aria-label", on ? "듣고 있어요. 누르면 멈춥니다" : "말로 하기");
+      lab.textContent = on ? "듣고 있어요 · 누르면 멈춤" : "눌러서 말하기";
+    }
+    if (!SR) { mic.hidden = true; lab.textContent = "글로 적어 주세요"; note.textContent = "이 브라우저는 말로 입력을 지원하지 않아요. 글로 적어 주세요."; return; }
     var rec = null, base = "";
     mic.addEventListener("click", function () {
       if (rec) { rec.stop(); return; }
@@ -112,10 +120,10 @@
       rec.onerror = function (e) {
         note.textContent = e.error === "not-allowed" ? "마이크 사용을 허용해 주셔야 말로 입력할 수 있어요." : "음성을 알아듣지 못했어요. 다시 눌러 주세요.";
       };
-      rec.onend = function () { rec = null; mic.textContent = "말로 하기"; mic.setAttribute("aria-pressed", "false"); };
+      rec.onend = function () { rec = null; micState(false); };
       try {
         rec.start();
-        mic.textContent = "듣고 있어요 · 누르면 멈춤"; mic.setAttribute("aria-pressed", "true");
+        micState(true);
       } catch (err) { rec = null; }
     });
   }
@@ -126,18 +134,37 @@
     $("ask-error").hidden = true;
     if (text.length < 4 && !chips.length) {
       $("ask-error").textContent = "상황을 조금만 더 적어 주시거나, 해당하는 것을 눌러 주세요.";
-      $("ask-error").hidden = false; return;
+      $("ask-error").hidden = false; ui("error"); return;
     }
     if (!S.catalog) { $("ask-error").textContent = "서비스 목록을 아직 읽지 못했어요. 잠시 뒤 다시 눌러 주세요."; $("ask-error").hidden = false; return; }
-    var btn = $("find"); btn.disabled = true; btn.textContent = "찾고 있어요…";
+    var btn = $("find"); btn.disabled = true; $("find-label").textContent = "찾고 있어요…";
+    var stopFinding = finding();
     S.input = { text: text, chips: chips, proxy: { isProxy: S.proxy, relation: S.proxy ? $("relation").value : "" } };
     DaeumAI.recommend(S.input, S.catalog).then(function (res) {
-      S.result = res; S.done = null;
-      renderResult(res);
-      go("result");
+      return stopFinding().then(function () {
+        S.result = res; S.done = null;
+        renderResult(res);
+        go("result");
+        ui(res.items.length ? "success" : "warning");
+      });
     }).catch(function () {
-      $("ask-error").textContent = "찾는 중에 문제가 생겼어요. 다시 눌러 주세요."; $("ask-error").hidden = false;
-    }).then(function () { btn.disabled = false; btn.textContent = "받을 수 있는 도움 찾기"; });
+      stopFinding();
+      $("ask-error").textContent = "찾는 중에 문제가 생겼어요. 다시 눌러 주세요."; $("ask-error").hidden = false; ui("error");
+    }).then(function () { btn.disabled = false; $("find-label").textContent = "받을 수 있는 도움 찾기"; });
+  }
+  function ui(kind) { if (window.DaeumUI) DaeumUI.haptic(kind); }
+  // 찾는 중 덮개 — 단계 문구 3개를 차례로 켜고, 최소 1.1초는 보여 준다(움직임 줄이기면 바로 닫음)
+  function finding() {
+    var box = $("finding"), lis = box.querySelectorAll("li"), t0 = Date.now(), i = 0, timer;
+    var quick = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    [].forEach.call(lis, function (li) { li.className = ""; });
+    box.hidden = false;
+    function step() { if (i < lis.length) { lis[i].className = "on"; i++; timer = setTimeout(step, 380); } }
+    step();
+    return function () {
+      var wait = quick ? 0 : Math.max(0, 1100 - (Date.now() - t0));
+      return new Promise(function (ok) { setTimeout(function () { clearTimeout(timer); box.hidden = true; ok(); }, wait); });
+    };
   }
 
   // ── ② 서비스 카드 ──
@@ -152,7 +179,7 @@
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   // 위기 상담전화 고정 카드 — AI 답과 상관없이 늘 맨 위(서비스 목록 밖의 고정 안내). 생명 > 폭력 피해 > 생계 순
   function hotCard(title, html) {
-    var li = el("li", "card is-urgent hotline");
+    var li = el("li", "card d-card is-urgent hotline");
     li.setAttribute("role", "alert");
     li.appendChild(el("h2", null, title));
     li.insertAdjacentHTML("beforeend", html);
@@ -173,6 +200,7 @@
   }
   function renderResult(res) {
     $("summary").textContent = res.summary;
+    $("result-count").textContent = res.items.length;
     $("mode-note").hidden = !res.notice;
     $("mode-note").textContent = res.notice || "";
     var pr = res.profile || {};
@@ -185,13 +213,14 @@
       : '갑자기 생계가 어려워졌다면 <a href="tel:129">129</a>(보건복지상담센터)로 바로 상담할 수 있어요. 긴급복지지원은 먼저 돕고 나중에 확인합니다.';
     if (res.mode === "rules" && C.aiEndpoint && window.DaeumNet) DaeumNet.noteAiDown(res.notice);
     var ol = $("cards"); ol.innerHTML = "";
-    hot.forEach(function (c) { ol.appendChild(c); });
+    hot.forEach(function (c, i) { c.style.setProperty("--d", i); ol.appendChild(c); });
     if (!res.items.length) {
       var li = el("li", "empty", "말씀만으로는 딱 맞는 서비스를 찾지 못했어요. 아래 «담당 공무원에게 도움 요청»을 누르시면 공무원이 직접 살펴봅니다.");
       ol.appendChild(li);
     }
-    res.items.forEach(function (it) {
-      var s = it.service, li = el("li", "card" + (s.urgent ? " is-urgent" : ""));
+    res.items.forEach(function (it, idx) {
+      var s = it.service, li = el("li", "card d-card svc" + (idx === 0 ? " first" : "") + (s.urgent ? " is-urgent" : ""));
+      li.style.setProperty("--d", hot.length + idx);
       li.appendChild(el("h2", null, s.name));
       var meta = el("p", "meta", s.provider + (s.dataset === "D4" ? " · 민간 지원" : ""));
       // «중앙»+«보건복지부»가 붙어 «중앙보건복지부»로 읽히지 않게: 전국 사업은 «전국», 꼬리표 뒤에 띄어쓰기
@@ -239,7 +268,7 @@
   }
   function submitRequest(e) {
     e.preventDefault();
-    if (!$("consent").checked) { $("req-error").textContent = "동의에 체크해 주셔야 요청을 보낼 수 있어요."; $("req-error").hidden = false; $("consent").focus(); return; }
+    if (!$("consent").checked) { $("req-error").textContent = "동의에 체크해 주셔야 요청을 보낼 수 있어요."; $("req-error").hidden = false; $("consent").focus(); ui("error"); return; }
     var r = S.result, p = r.profile;
     var rec = DaeumRequests.add({
       region: $("region").value,
@@ -251,13 +280,17 @@
       summary: r.summary,
       matched: r.items.map(function (i) { return { id: i.service.id, name: i.service.name, reason: i.reason }; }),
       urgent: !!r.urgent,
+      householdId: null, // 공무원이 발굴 명단의 가구와 이으면 채운다(시연: 공무원 창구 «시연용 국민 요청 넣기»가 같은 읍면 가구와 잇는다)
       mode: r.mode,
       consent: { agreed: true, at: new Date().toISOString(), text: $("consent-text").textContent }
     });
     if (!rec) { $("req-error").textContent = "이 브라우저에 저장하지 못했어요(사생활 보호 모드일 수 있어요). 129로 전화해 주세요."; $("req-error").hidden = false; return; }
     S.done = rec;
+    if (FX.progress) FX.progress.remember(rec.id);
+    if (FX.checklist) FX.checklist.save(rec.id, FX.checklist.load("draft"));
     $("req-id").textContent = rec.id;
     go("done");
+    ui("success");
   }
 
   function reset() {
@@ -266,6 +299,58 @@
     document.querySelectorAll(".chip").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
     setProxy(false);
     go("ask");
+  }
+
+  // ── ⑥ 신청 준비물 · ⑦ 내 요청 진행 상황 (계산은 progress.js, 여기서는 그리기만) ──
+  var FX = window.DaeumFeatures || {};
+  function renderChecklist() {
+    var root = $("checklist-root"); if (!root || !FX.checklist || !S.result) return;
+    var checked = FX.checklist.load("draft");
+    var c = FX.checklist.build(S.result.items.map(function (i) { return i.service; }), (S.catalog || {}).doc_sets, { proxy: S.input && S.input.proxy.isProxy, checked: checked });
+    root.innerHTML = "";
+    if (!c.total) { root.appendChild(el("p", "d-slot", "찾은 도움에 적힌 준비 서류가 없어요. 신분증을 챙기고 문의 전화로 확인하세요.")); return; }
+    var head = el("p", "lead"); head.innerHTML = '챙긴 서류 <strong class="num">' + c.done + "</strong> / " + c.total + (c.ready ? ' <span class="d-tag pos">다 챙겼어요</span>' : "");
+    root.appendChild(head);
+    var box = el("div", "req d-card"); box.setAttribute("role", "group"); box.setAttribute("aria-label", "준비 서류 목록");
+    c.items.forEach(function (it) {
+      var lab = el("label", "radio"), cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = it.checked; cb.setAttribute("data-h", "selection");
+      cb.addEventListener("change", function () { FX.checklist.save("draft", FX.checklist.toggle(FX.checklist.load("draft"), it.key)); renderChecklist(); if (FX.checklist.build && cb.checked) ui("light"); });
+      lab.appendChild(cb);
+      var t = el("span", null, it.text); t.appendChild(el("small", "note", " · " + it.forServices.slice(0, 2).join(", ") + (it.forServices.length > 2 ? " 외 " + (it.forServices.length - 2) + "가지" : ""))); lab.appendChild(t);
+      box.appendChild(lab);
+    });
+    root.appendChild(box);
+    root.appendChild(el("p", "note", c.tip));
+    var where = el("div", "always d-card"); where.appendChild(el("strong", null, "신청하는 곳"));
+    c.services.forEach(function (s) { where.appendChild(el("p", "note", s.name + " — " + (s.apply || "주소지 행정복지센터") + (s.contact ? " · 문의 " + s.contact : ""))); });
+    root.appendChild(where);
+    root.appendChild(el("p", "note", c.note));
+  }
+  function renderProgress() {
+    var root = $("progress-root"); if (!root || !FX.progress) return;
+    var list = FX.progress.mine(DaeumRequests.list(), FX.progress.myIds());
+    root.innerHTML = "";
+    if (!list.length) { root.appendChild(el("p", "d-slot", "이 기기에서 보낸 요청이 아직 없어요. 상황을 말씀하시고 «담당 공무원에게 도움 요청»을 누르면 여기서 진행을 볼 수 있어요.")); return; }
+    list.forEach(function (p) {
+      var card = el("article", "card d-card");
+      card.appendChild(el("h2", null, p.title));
+      var meta = el("p", "meta", "접수번호 " + p.id + " · " + p.waitedDays + "일째 · 마지막 변경 " + p.lastUpdate); card.appendChild(meta);
+      var now = el("p", "why"); now.appendChild(el("span", "d-tag " + (p.cancelled ? "warn" : p.finished ? "pos" : "acc"), p.current.label)); now.appendChild(document.createTextNode(" " + p.current.say)); card.appendChild(now);
+      var dl = el("dl");
+      p.steps.forEach(function (s) {
+        // 기호는 화면낭독기에 숨기고, 상태를 말로 읽힌다
+        var dt = el("dt");
+        dt.appendChild(el("span", null, s.state === "done" ? "✓ " : s.state === "current" ? "● " : "○ ")).setAttribute("aria-hidden", "true");
+        dt.appendChild(el("span", "sr-only", s.state === "done" ? "완료: " : s.state === "current" ? "진행 중: " : "아직: "));
+        dt.appendChild(document.createTextNode(s.label));
+        dl.appendChild(dt);
+        dl.appendChild(el("dd", null, s.at ? s.at : s.state === "todo" ? "아직" : "진행 중"));
+      });
+      card.appendChild(dl);
+      card.appendChild(el("p", "src", p.contactLine));
+      root.appendChild(card);
+    });
   }
 
   // ── 시작 ──
@@ -283,6 +368,7 @@
       b.addEventListener("click", function () { b.dataset.go === "new" ? reset() : go(b.dataset.go); });
     });
     $("find").addEventListener("click", find);
+    $("checklist-print").addEventListener("click", function () { window.print(); });
     $("to-request").addEventListener("click", openRequest);
     $("req-form").addEventListener("submit", submitRequest);
     buildChips(); buildExamples(); setupVoice(); setProxy(false);

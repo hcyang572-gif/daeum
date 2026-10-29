@@ -40,7 +40,7 @@
   function svcById(id) { for (var i = 0; i < SERVICES.length; i++) if (SERVICES[i].id === id) return SERVICES[i]; return null; }
   function areaByName(n) { for (var i = 0; i < D.areas.length; i++) if (D.areas[i].name === n) return D.areas[i]; return null; }
 
-  // ── 점수 ───────────────────────────────────────────────
+  // ── 명단 사유(정보원 위기 정보 → 문장·꼬리표, 순서에는 쓰지 않음) ───────────────────────────────────────────────
   function traitsOf(h) {
     var head = h.members[0].age, t = {};
     t.single_elderly = h.single && head >= 75;
@@ -86,8 +86,10 @@
   function reqRegion(r) { return r.region || ""; }
   function reqMatchedIds(r) { return (r.matched || []).map(function (m) { return m && m.id; }).filter(Boolean); }
   function activeRequests() { return REQ.list().filter(function (r) { return r && r.status !== "cancelled" && r.status !== "done"; }); }
+  var FX = window.DaeumFeatures;
   function requestRows() {
-    return activeRequests().map(function (r, i) {
+    // 명단 가구와 이어진 요청(householdId)은 그 가구의 «주민 요청» 신호로만 보이고, 따로 줄을 만들지 않는다
+    return activeRequests().filter(function (r) { return !r.householdId; }).map(function (r, i) {
       var a = areaByName(reqRegion(r)) || { name: reqRegion(r) || "미상", code: "R", x: 0, y: 0 };
       var ind = {}; D.indicators.forEach(function (d) { ind[d.key] = false; });
       var s = String(r.situation || "");
@@ -106,9 +108,14 @@
 
   function rebuild() {
     var all = D.households.concat(requestRows());
-    rows = all.map(function (h) { var s = score(h); return { h: h, total: s.total, factors: s.factors }; })
-      .filter(function (r) { return r.total > 0; })
-      .sort(function (a, b) { return b.total - a.total || a.h.id.localeCompare(b.h.id); });
+    // 명단 = 정보원이 내려 준 위기 정보가 있는 가구(점수는 매기지 않는다 — S6h·S9a-2 결정).
+    // 순서 = 담당자가 앞에 둔 집 → 지역 신호(주민 요청·이웃 제보·지난 시도)가 있는 집 → 원래 명단 순. 최종 결정은 담당자.
+    var listed = all.map(function (h) { var s = score(h); return { h: h, total: s.total, factors: s.factors }; })
+      .filter(function (r) { return r.total > 0; });
+    var byId = {}; listed.forEach(function (r) { byId[r.h.id] = r; });
+    var o = FX.households.order({ households: listed.map(function (r) { return r.h; }), requests: REQ.list(),
+      attempts: FX.store.get("attempts", []), tips: FX.store.get("tips", []), officerOrder: FX.store.get("order", []) });
+    rows = o.items.map(function (x) { var r = byId[x.id]; r.signals = x.signals; r.group = x.group; r.pinned = x.pinned; return r; });
     rows.forEach(function (r, i) { r.rank = i + 1; });
     // 담기 목록에서 사라진 가구 정리
     var ids = {}; rows.forEach(function (r) { ids[r.h.id] = 1; });
@@ -134,49 +141,46 @@
     var tb = $("listTable").tBodies[0];
     tb.textContent = "";
     list.forEach(function (r) {
-      var tr = el("tr", r.h.request ? "req" : "");
-      var td0 = el("td"), cb = el("input"); cb.type = "checkbox"; cb.checked = picked.indexOf(r.h.id) >= 0;
+      var hasReq = (r.signals || []).some(function (x) { return x.kind === "request"; });
+      var tr = el("tr", hasReq ? "req" : "");
+      var td0 = el("td", "c-pick"), pk = el("label", "pick"), cb = el("input"); cb.type = "checkbox"; cb.checked = picked.indexOf(r.h.id) >= 0; cb.setAttribute("data-h", "selection");
       cb.setAttribute("aria-label", r.h.label + " 경로에 담기");
       cb.addEventListener("change", function () {
         if (cb.checked) { if (picked.indexOf(r.h.id) < 0) picked.push(r.h.id); }
         else picked = picked.filter(function (x) { return x !== r.h.id; });
         lsSet(LS_PICK, picked); renderSummary();
       });
-      td0.appendChild(cb); tr.appendChild(td0);
-      tr.appendChild(el("td", "num", r.rank));
-      var tdL = el("td"); tdL.appendChild(el("b", null, r.h.label)); if (r.h.request) tdL.appendChild(el("span", "tag req", "국민 요청")); tr.appendChild(tdL);
-      tr.appendChild(el("td", null, r.h.area));
-      var tdS = el("td", "num score"); tdS.appendChild(el("b", null, r.total));
-      var bar = el("span", "sbar"); var fill = el("i"); fill.style.width = Math.min(100, r.total) + "%"; bar.appendChild(fill); tdS.appendChild(bar);
-      if (r.total >= 35) tdS.classList.add("hi"); else if (r.total >= 22) tdS.classList.add("mid");
-      tr.appendChild(tdS);
-      var tdW = el("td", "why");
+      pk.appendChild(cb); td0.appendChild(pk); tr.appendChild(td0);
+      tr.appendChild(el("td", "num c-rank", r.rank < 10 ? "0" + r.rank : r.rank));
+      var tdL = el("td", "c-name"); tdL.appendChild(el("b", null, r.h.label)); if (hasReq) tdL.appendChild(el("span", "tag req", "국민 요청"));
+      tdL.appendChild(el("span", "small area-sm", r.h.area)); tr.appendChild(tdL);
+      tr.appendChild(el("td", "c-area", r.h.area));
+      // 순서 고정(담당자 결정) — 점수 칸·막대는 없앴다
+      var tdS = el("td", "c-score"), pin = el("button", "ghost mini", r.pinned ? "고정 풀기" : "앞으로");
+      pin.type = "button"; pin.setAttribute("data-h", "light"); pin.setAttribute("aria-pressed", String(!!r.pinned));
+      pin.setAttribute("aria-label", r.h.label + (r.pinned ? " 앞 순서 고정 풀기" : " 명단 앞으로 옮기기"));
+      pin.addEventListener("click", function () { FX.store.set("order", FX.households.togglePin(FX.store.get("order", []), r.h.id)); rebuild(); renderList(); emit("show", { tab: "list" }); });
+      tdS.appendChild(pin); tr.appendChild(tdS);
+      var tdW = el("td", "why c-why");
+      if ((r.signals || []).length) {
+        var sg = el("div", "chips");
+        r.signals.forEach(function (x) { sg.appendChild(el("span", "chip r", (x.kind === "request" ? "요청 · " : x.kind === "tip" ? "제보 · " : "시도 · ") + x.text)); });
+        tdW.appendChild(sg);
+      }
       tdW.appendChild(el("div", null, reasonSentence(r.factors)));
       var chips = el("div", "chips");
-      r.factors.forEach(function (f) { chips.appendChild(el("span", "chip " + (f.kind === "특성" ? "t" : f.kind === "요청" ? "r" : "i"), f.name + " +" + f.pts)); });
+      r.factors.filter(function (f) { return f.kind !== "요청"; }).forEach(function (f) { chips.appendChild(el("span", "chip " + (f.kind === "특성" ? "t" : "i"), f.name)); });
       tdW.appendChild(chips); tr.appendChild(tdW);
-      tr.appendChild(el("td", "small", memberText(r.h)));
+      tr.appendChild(el("td", "small c-mem", memberText(r.h)));
       tb.appendChild(tr);
     });
     renderSummary();
   }
   function renderSummary() {
-    var reqN = rows.filter(function (r) { return r.h.request; }).length;
-    var hi = rows.filter(function (r) { return r.total >= 35; }).length;
-    $("listSummary").textContent = "위기 신호가 있는 가구 " + rows.length + "곳(전체 가상 가구 " + D.households.length +
-      "곳) · 35점 이상 " + hi + "곳 · 국민 요청 " + reqN + "건 · 경로에 담은 가구 " + picked.length + "곳";
-  }
-  function renderWeights() {
-    var g = $("weightGrid"); g.textContent = "";
-    D.indicators.concat(D.traits).forEach(function (d) {
-      var lab = el("label"); lab.appendChild(el("span", null, d.name + (d.key === "health_ins_arrears" ? "(개월당)" : "")));
-      var inp = el("input"); inp.type = "number"; inp.min = 0; inp.max = 30; inp.value = weights[d.key];
-      inp.addEventListener("change", function () { weights[d.key] = Math.max(0, +inp.value || 0); lsSet(LS_W, weights); rebuild(); renderList(); });
-      lab.appendChild(inp); g.appendChild(lab);
-    });
-    var reset = el("button", "ghost", "기본값으로"); reset.type = "button";
-    reset.addEventListener("click", function () { initWeights(true); renderWeights(); rebuild(); renderList(); });
-    g.appendChild(reset);
+    var reqN = rows.filter(function (r) { return (r.signals || []).some(function (x) { return x.kind === "request"; }); }).length;
+    var sigN = rows.filter(function (r) { return r.group === "signal"; }).length;
+    $("listSummary").textContent = "발굴 명단 " + rows.length + "곳(전체 가상 가구 " + D.households.length +
+      "곳) · 지역 신호 있음 " + sigN + "곳 · 국민 요청 " + reqN + "곳 · 경로에 담은 가구 " + picked.length + "곳";
   }
   function initWeights(force) {
     var saved = force ? null : lsGet(LS_W, null);
@@ -224,8 +228,8 @@
     var naive = pathKm(stops.slice().sort(function (a, b) { return a.rank - b.rank; }), ret);
     var hours = plan.km / KMH + stops.length * VISIT_MIN / 60;
     $("routeStat").textContent = stops.length
-      ? "방문 " + stops.length + "곳 · 이동 " + plan.km.toFixed(1) + "km(추정) · 점수 순으로 돌 때 " + naive.toFixed(1) +
-        "km → " + Math.max(0, naive - plan.km).toFixed(1) + "km 줄어듦 · 예상 " + hours.toFixed(1) + "시간"
+      ? "방문 " + stops.length + "곳 · 이동 " + plan.km.toFixed(1) + "km(추정) · 명단 순서대로 돌 때 " + naive.toFixed(1) +
+        "km → " + Math.max(0, naive - plan.km).toFixed(1) + "km 짧아짐 · 예상 " + hours.toFixed(1) + "시간"
       : "명단에서 방문할 가구를 담아 주세요.";
 
     var m = $("map"); m.textContent = "";
@@ -243,7 +247,7 @@
       var g = svg("g", { class: "stop" + (s.h.request ? " req" : "") });
       g.appendChild(svg("circle", { cx: s.h.x, cy: -s.h.y, r: 0.95 }));
       g.appendChild(svg("text", { x: s.h.x, y: -s.h.y + 0.42 }, i + 1));
-      var t = svg("title", {}, (i + 1) + ". " + s.h.label + " · " + s.h.area + " · " + s.total + "점"); g.appendChild(t);
+      var t = svg("title", {}, (i + 1) + ". " + s.h.label + " · " + s.h.area); g.appendChild(t);
       m.appendChild(g);
     });
     // 축척
@@ -257,8 +261,8 @@
       var li = el("li", "stop" + (s.h.request ? " req" : ""));
       li.appendChild(el("span", "no", i + 1));
       li.appendChild(el("b", null, s.h.label));
-      li.appendChild(el("span", "small", s.total + "점 · 앞 지점에서 " + dist(cur, s.h).toFixed(1) + "km"));
-      var go = el("button", "ghost mini", "상담 기록"); go.type = "button";
+      li.appendChild(el("span", "small", "앞 지점에서 " + dist(cur, s.h).toFixed(1) + "km"));
+      var go = el("button", "ghost mini", "상담 기록"); go.type = "button"; go.setAttribute("data-h", "light");
       go.addEventListener("click", function () { $("recHouse").value = s.h.id; location.hash = "#record"; });
       li.appendChild(go);
       ol.appendChild(li); cur = s.h;
@@ -270,7 +274,7 @@
   function fillRecHouses() {
     var sel = $("recHouse"), keep = sel.value; sel.textContent = "";
     var ids = picked.length ? picked : rows.slice(0, 20).map(function (r) { return r.h.id; });
-    ids.forEach(function (id) { var r = rowById(id); if (r) { var o = el("option", null, r.h.label + " · " + r.h.area + " · " + r.total + "점"); o.value = id; sel.appendChild(o); } });
+    ids.forEach(function (id) { var r = rowById(id); if (r) { var o = el("option", null, r.h.label + " · " + r.h.area); o.value = id; sel.appendChild(o); } });
     if (keep && rowById(keep)) {
       if (![].some.call(sel.options, function (o) { return o.value === keep; })) { var r = rowById(keep); var o = el("option", null, r.h.label + " · " + r.h.area); o.value = keep; sel.appendChild(o); }
       sel.value = keep;
@@ -312,8 +316,12 @@
       for (var i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) $("recText").value += (($("recText").value ? "\n" : "") + "주민: " + e.results[i][0].transcript.trim());
     };
     recog.onerror = function (e) { $("micState").textContent = "음성인식 오류: " + e.error; };
-    recog.onend = function () { recog = null; $("btnMic").textContent = "음성으로 받아쓰기"; if ($("micState").textContent === "듣는 중…") $("micState").textContent = "받아쓰기 끝"; };
-    recog.start(); $("btnMic").textContent = "받아쓰기 멈추기"; $("micState").textContent = "듣는 중…";
+    recog.onend = function () { recog = null; micBtn(false); if ($("micState").textContent === "듣는 중…") $("micState").textContent = "받아쓰기 끝"; };
+    recog.start(); micBtn(true); $("micState").textContent = "듣는 중…";
+  }
+  function micBtn(on) {
+    var b = $("btnMic"); b.setAttribute("aria-pressed", String(on));
+    b.innerHTML = '<span class="dot" aria-hidden="true"></span>' + (on ? "받아쓰기 멈추기" : "음성으로 받아쓰기");
   }
   function summarize() {
     var r = rowById($("recHouse").value); if (!r) return;
@@ -345,6 +353,8 @@
         out.appendChild(ul);
         out.appendChild(el("p", "small muted", "서비스 목록: " + servicesSource));
         $("btnLink").hidden = !(res.serviceIds || []).length;
+        emit("summary", { householdId: r.h.id, label: r.h.label, area: r.h.area, text: text, res: res,
+          services: (res.serviceIds || []).slice(0, 3).map(function (id) { var s = svcById(id); return s ? s.name : id; }) });
       });
   }
   function saveLink() {
@@ -354,12 +364,13 @@
     var links = lsGet(LS_LINK, []);
     links.unshift({ id: "L" + Date.now(), at: new Date().toISOString(), householdId: lastResult.row.h.id,
       label: lastResult.row.h.label, area: lastResult.row.h.area, serviceIds: ids, summary: lastResult.res.summary,
-      source: lastResult.res.source });
+      source: lastResult.res.source, serviceNames: ids.map(function (id) { var s = svcById(id); return s ? s.name : id; }) });
     lsSet(LS_LINK, links.slice(0, 200));
     var req = lastResult.row.h.request;
     if (req && req.id && req.status === "new") REQ.setStatus(req.id, "seen", "officer", "연계 후보 " + ids.length + "건 저장");
     $("btnLink").hidden = true;
     renderLinks();
+    emit("link", { householdId: lastResult.row.h.id });
   }
   function renderLinks() {
     var links = lsGet(LS_LINK, []), ul = $("linkList"); ul.textContent = "";
@@ -432,15 +443,43 @@
   }
 
   // ── 탭·초기화 ──────────────────────────────────────────
+  // 화면 이름(머리띠 제목) — 경로는 «오늘 할 일»의 동선 묶음에서 들어온다
+  var TABS = { today: ["오늘 할 일", "오늘 할 일", "today"], list: ["가구 명단", "가구 명단 · 지역 신호 순", "list"], route: ["오늘 할 일", "방문 경로", "today"],
+    contacts: ["방문·연락", "방문·연락 기록", "contacts"], record: ["상담 기록", "상담 기록", "record"], board: ["통계·보고서", "현황 통계와 보고서", "board"] };
+  var lastTab = "";
   function show() {
-    var tab = (location.hash || "#list").slice(1);
-    if (["list", "route", "record", "board"].indexOf(tab) < 0) tab = "list";
-    ["list", "route", "record", "board"].forEach(function (t) { $("tab-" + t).hidden = t !== tab; });
-    [].forEach.call(document.querySelectorAll(".tabs a"), function (a) { a.classList.toggle("on", a.dataset.tab === tab); });
+    var tab = (location.hash || "#today").slice(1);
+    if (!TABS[tab]) tab = "today";
+    Object.keys(TABS).forEach(function (t) { $("tab-" + t).hidden = t !== tab; });
+    [].forEach.call(document.querySelectorAll(".tabs a"), function (a) {
+      var on = a.dataset.tab === TABS[tab][2];
+      a.classList.toggle("on", on);
+      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    $("pageTitle").textContent = TABS[tab][1];
+    document.title = "닿음 · 공무원 창구 · " + TABS[tab][1];
+    if (lastTab && lastTab !== tab) window.scrollTo(0, 0);
+    lastTab = tab;
+    renderNav();
+    if (tab === "today") renderToday();
     if (tab === "list") renderList();
     if (tab === "route") renderRoute();
     if (tab === "record") { fillRecHouses(); renderLinks(); }
     if (tab === "board") renderBoard();
+    emit("show", { tab: tab });
+  }
+  // features 연결(mount.js)용 신호 — 화면이 바뀌거나 요약이 끝나면 알린다
+  function emit(kind, detail) {
+    try { document.dispatchEvent(new CustomEvent("daeum:officer-" + kind, { detail: detail || {} })); } catch (e) { /* 구형 브라우저 */ }
+  }
+  // 메뉴 숫자·오늘 할 일 머리(그리기만 — 칸 내용은 features.js 가 data-slot 에 채운다)
+  function renderNav() {
+    $("navToday").textContent = picked.length || "";
+    $("navList").textContent = rows.length ? rows.length.toLocaleString() : "";
+  }
+  function renderToday() {
+    var d = new Date(), W = "일월화수목금토";
+    $("todayDate").textContent = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + W.charAt(d.getDay()) + "요일 · 밤사이 " + D.households.length.toLocaleString() + "가구를 살펴 순서를 정했어요";
   }
   function loadServices() {
     // 국민 창구가 만든 서비스 목록이 있으면 합친다(없으면 내장 목록만)
@@ -459,11 +498,13 @@
           if (!s || !s.id || svcById(s.id)) return;
           var same = SERVICES.filter(function (b) { return normName(b.name) === normName(s.name); })[0];
           if (same) { same.citizenId = s.id; return; } // 같은 서비스는 내장 쪽 하나로(수요 보드 ID 유지)
+          // 욕구 범주 = 이름 낱말 + 국민 창구 규칙(rule) 꼬리표. 본문(대상·지원 내용) 낱말로는 붙이지 않는다
+          // (S9b-2: 본문 «의료·법률·직업훈련·자활» 때문에 실직 가구에 «성매매 방지 및 피해자 지원»이 붙던 원인)
           var tags = (s.tags || []).slice();
           function tagFrom(text) { Object.keys(TAG_WORDS).forEach(function (t) { if (tags.indexOf(t) < 0 && TAG_WORDS[t].test(text)) tags.push(t); }); }
           tagFrom(s.name || "");
-          if (!tags.length) tagFrom([s.target, s.support].join(" "));
-          SERVICES.push({ id: s.id, name: s.name || s.id, org: s.provider || s.org || "", tags: tags }); added++;
+          (AI.needsFromRule ? AI.needsFromRule(s.rule) : []).forEach(function (t) { if (tags.indexOf(t) < 0) tags.push(t); });
+          SERVICES.push({ id: s.id, name: s.name || s.id, org: s.provider || s.org || "", tags: tags, rule: s.rule }); added++;
         });
         if (added) servicesSource = "내장 12종 + 국민 창구 목록 " + added + "종(" + used + ")";
       }).catch(function () { /* 아직 없음 */ });
@@ -475,7 +516,9 @@
       { proxy: { isProxy: true, relation: "아버지" }, situation: "아버지가 병원비 때문에 약을 끊으셨어요", ids: ["S06", "S02"], region: "함창읍", tags: ["sick", "lowIncome"] }
     ];
     var s = samples[REQ.list().length % samples.length];
+    var same = rows.filter(function (r) { return r.h.area === s.region && !r.h.request; })[0];
     REQ.add({
+      householdId: same ? same.h.id : null,
       region: s.region, contactPref: "visit", displayName: "시연 요청", proxy: s.proxy,
       subject: { age: null, ageBand: null, tags: s.tags, childAges: [] },
       situation: s.situation, summary: "",
@@ -491,6 +534,19 @@
     if (want !== have && window.console) console.warn("[닿음] 읍면 불일치 — config.regions:", want, "/ households.json:", have);
   }
 
+  // mount.js 가 읽는 창구(상태는 여기 한 곳에만 있다)
+  window.DaeumOfficer = {
+    data: function () { return D; },
+    rows: function () { return rows; },
+    row: rowById,
+    picked: function () { return picked.slice(); },
+    setPicked: function (ids) { picked = (ids || []).filter(function (id) { return rowById(id); }); lsSet(LS_PICK, picked); renderNav(); },
+    services: function () { return SERVICES; },
+    links: function () { return lsGet(LS_LINK, []); },
+    memberText: memberText,
+    refresh: function () { rebuild(); show(); },
+    openRecord: function (id) { location.hash = "#record"; setTimeout(function () { if (rowById(id)) { fillRecHouses(); var sel = $("recHouse"); if (![].some.call(sel.options, function (o) { return o.value === id; })) { var r = rowById(id), o = el("option", null, r.h.label + " · " + r.h.area); o.value = id; sel.appendChild(o); } sel.value = id; showHouseInfo(); } }, 0); }
+  };
   function init() {
     var mode = AI.mode() === "ai" ? "ai" : "rule";
     $("aiMode").textContent = mode === "ai" ? "AI 연결됨" : "AI 연결 전 시연 모드";
@@ -505,7 +561,6 @@
     $("fTop").addEventListener("change", renderList);
     $("btnPickTop").addEventListener("click", function () { pickTop(); renderList(); });
     $("btnDemoReq").addEventListener("click", demoRequest);
-    $("btnWeights").addEventListener("click", function () { var f = $("formula"); f.open = true; $("weightGrid").hidden = false; renderWeights(); });
     $("routeReturn").addEventListener("change", renderRoute);
     $("recHouse").addEventListener("change", function () { showHouseInfo(); $("recText").value = ""; $("btnLink").hidden = true; });
     $("btnSample").addEventListener("click", function () { var r = rowById($("recHouse").value); if (r) $("recText").value = sampleScript(r); });

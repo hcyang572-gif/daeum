@@ -1,66 +1,182 @@
-/* 닿음 디자인 토큰 — 국민·공무원 창구 공통. 색·글자·간격·그림자는 여기서만 정한다.
-   S5c(10-29): 대비 보정(WCAG AA — 흰 글자 단추 4.5:1 이상, 입력칸 테두리 3:1), 글자·간격 단계, 다크 모드 단추 글자색 분리 */
+/* 닿음 디자인 토큰 — C 관제(밤 유리·정밀 숫자) 한 벌. 국민·공무원·보고서·인쇄 모든 화면이 여기 값만 쓴다(화면별 예외 색·임의 값 금지).
+   정본 시안: _design/시안_S9a_3방향.html .scr[data-dir="c"] (커밋 067e97d) · 출처·움직임 값: _design/TOKENS.md
+   S9b-1(10-29): 종전 청록·주황 토큰을 C 관제로 교체. 옛 이름(--brand·--surface 등)은 같은 값의 별칭으로만 남긴다. */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
+
 :root {
   color-scheme: light;
-  /* 바탕·글자 */
-  --bg: #f5f3ee;          /* 종이 같은 따뜻한 바탕 */
-  --bg-sunk: #ece8e0;     /* 표 머리·막대 바탕처럼 한 단계 들어간 면 */
-  --surface: #ffffff;
-  --ink: #1b2125;
-  --ink-soft: #525d66;    /* 바탕 대비 6:1 */
-  --line: #e1dcd2;        /* 카드 구분선(장식선) */
-  --line-strong: #8e877b; /* 입력칸·단추 테두리 — 바탕 대비 3:1 이상 */
-  /* 브랜드 */
-  --brand: #13655d;       /* 닿음 청록 — 신뢰 */
-  --brand-strong: #0e4f49;
-  --brand-soft: #e2f0ec;
-  --on-brand: #ffffff;
-  --accent: #b05a12;      /* 손 내미는 주황 — 흰 글자 대비 5.3:1(종전 #d9822b는 2.9:1이라 어르신이 읽기 어려웠다) */
-  --accent-strong: #8f480c;
-  --accent-soft: #fbeedd;
-  --on-accent: #ffffff;
-  /* 상태 */
-  --danger: #b3261e;      /* 위기 — 109·1366·129 */
-  --danger-soft: #fdecea;
-  --on-danger: #ffffff;
-  --warn: #8a5a00;        /* 글자로 쓸 때 4.5:1 이상 */
-  --ok: #2e7d4f;
-  /* 모양 */
-  --radius-lg: 16px;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow-sm: 0 1px 2px rgba(20, 24, 27, .06);
-  --shadow: 0 1px 2px rgba(20, 24, 27, .05), 0 2px 8px rgba(20, 24, 27, .05);
-  --shadow-lg: 0 2px 4px rgba(20, 24, 27, .05), 0 8px 24px rgba(20, 24, 27, .08);
-  /* 글자 */
-  --font: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --fs-body: 17px;        /* 국민 창구는 citizen.css에서 19px로 더 키운다 */
-  --fs-small: 14px;
-  --fw-bold: 700;
-  --fw-heavy: 800;
-  /* 간격(4px 단계) */
-  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
-  /* 움직임 — 상태 전환만, 꾸밈 움직임 없음 */
-  --ease: cubic-bezier(.2, .7, .2, 1);
-  --dur: 140ms;
+  /* ── 바탕·면 ── */
+  --pa: #F4F4F8; --pb: #ECECF2;                       /* 바탕 위→아래 */
+  --s1a: rgba(255,255,255,.86); --s1b: rgba(250,250,253,.8); /* 유리 카드 위→아래 */
+  --solid: #FFFFFF;                                   /* 유리 효과가 없을 때·입력칸 */
+  --ink: #15141F; --ink2: #575566;                    /* 본문 / 보조 글자(바탕 대비 7:1) */
+  --ink3: #8A8899;                                    /* 장식 전용 — 글자에 쓰지 않음(3.3:1) */
+  --hair: rgba(21,20,31,.08);                         /* 장식선 */
+  --edge: #8A8899;                                    /* 입력칸·단추 테두리(바탕 대비 3:1 이상) */
+  /* ── 주색 iris ── */
+  --acc: #5B4FD0; --acc-hi: #7B70E2; --acc-lo: #4236A8; --acc-ink: #4B3FBE; --acc-soft: #ECEAFA; --on-acc: #FFFFFF;
+  --acc-top: #6A5FDA;                                 /* 에나멜 단추 윗빛 — 흰 글자 4.5:1 유지 */
+  /* ── 상태 ── */
+  --pos: #29704F; --pos-soft: #E4F2EC;
+  --neg: #B0413E; --neg-soft: #F8E9E8; --on-neg: #FFFFFF;
+  --warn: #8A5A00; --warn-soft: #FBF1DC;
+  /* ── 재질: 윗변 빛·아랫변 그늘·그림자 3단·우물·유리 ── */
+  --hl: inset 0 1px 0 rgba(255,255,255,.9); --hlb: inset 0 -1px 0 rgba(21,20,31,.05);
+  --e1: 0 0 0 .5px rgba(21,20,31,.08), 0 1px 2px rgba(21,20,31,.06);
+  --e2: 0 0 0 .5px rgba(21,20,31,.08), 0 2px 4px -1px rgba(21,20,31,.06), 0 16px 36px -18px rgba(40,30,110,.25);
+  --e3: 0 0 0 .5px rgba(21,20,31,.09), 0 4px 10px -4px rgba(21,20,31,.1), 0 28px 60px -24px rgba(40,30,110,.35);
+  --well: linear-gradient(180deg, #E8E8EF, #EFEFF4);
+  --well-sh: inset 0 1px 2px rgba(21,20,31,.08), inset 0 0 0 .5px rgba(21,20,31,.06), 0 1px 0 rgba(255,255,255,.8);
+  --glass: rgba(255,255,255,.66); --glass-hl: rgba(255,255,255,.95); --glass-brd: rgba(21,20,31,.07);
+  --aura-o: .35;                                      /* 오로라 빛 번짐 세기 */
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .09 0 0 0 0 .07 0 0 0 0 .2 .09 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* ── 에나멜(주 단추·구슬) ── */
+  --enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.22), transparent 46%), linear-gradient(155deg, var(--acc-top), var(--acc) 52%, var(--acc-lo));
+  --enamel-sh: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 4px rgba(20,20,80,.25), 0 0 0 .5px color-mix(in srgb, var(--acc-lo) 70%, transparent), 1px 3px 6px -2px color-mix(in srgb, var(--acc) 45%, transparent), 3px 14px 28px -12px color-mix(in srgb, var(--acc) 60%, transparent);
+  --enamel-dn: inset 0 1px 0 rgba(255,255,255,.2), inset 0 1px 5px rgba(20,20,80,.42), 0 0 0 .5px color-mix(in srgb, var(--acc-lo) 70%, transparent), 0 1px 1px rgba(40,30,120,.3);
+  /* ── 모서리 ── */
+  --r: 22px;        /* 카드 */
+  --r-lg: 28px;     /* 큰 판·탭 띠 */
+  --rb: 14px;       /* 단추·입력칸 */
+  --r-sm: 10px;     /* 작은 꼬리표 */
+  --r-pill: 999px;
+  /* ── 글자 ── */
+  --f: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --num: "Manrope", "Pretendard Variable", Pretendard, "Malgun Gothic", sans-serif;
+  --fs-xs: .875rem;   /* 14 — 최소 글자 */
+  --fs-s: .9375rem;   /* 15 */
+  --fs-b: 1.0625rem;  /* 17 — 공무원 본문 */
+  --fs-l: 1.1875rem;  /* 19 — 국민 본문 */
+  --fs-h3: 1.3125rem; /* 21 */
+  --fs-h2: 1.625rem;  /* 26 */
+  --fs-h1: clamp(1.875rem, 6.4vw, 2.375rem); /* 30~38 */
+  --fw-m: 600; --fw-b: 700; --fw-h: 800;
+  /* ── 간격(4px 단계) ── */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px; --sp-14: 56px;
+  --tap: 44px;      /* 누르는 곳 최소 */
+  --tap-main: 60px; /* 주 단추 */
+  /* ── 움직임(우리가족 AuroraTiming) ── */
+  --c-std: cubic-bezier(.33,1,.68,1); --c-push: cubic-bezier(.32,.72,0,1); --c-spring: cubic-bezier(.34,1.12,.64,1); --c-exit: cubic-bezier(.32,0,.67,0);
+  --t-press: 70ms; --t-fast: 200ms; --t: 280ms; --t-push: 320ms; --t-slow: 640ms;
+
+  /* ── 옛 이름 별칭(같은 값) — 새 코드는 위 이름을 쓴다 ── */
+  --bg: var(--pa); --bg-sunk: #E8E8EF; --surface: var(--solid); --ink-soft: var(--ink2); --line: var(--hair); --line-strong: var(--edge);
+  --brand: var(--acc); --brand-strong: var(--acc-lo); --brand-soft: var(--acc-soft); --on-brand: var(--on-acc);
+  --accent: var(--acc); --accent-strong: var(--acc-ink); --accent-soft: var(--acc-soft); --on-accent: var(--on-acc);
+  --danger: var(--neg); --danger-soft: var(--neg-soft); --on-danger: var(--on-neg); --ok: var(--pos);
+  --radius-lg: var(--r); --radius: var(--rb); --radius-sm: var(--r-sm);
+  --shadow-sm: var(--e1); --shadow: var(--e2); --shadow-lg: var(--e3);
+  --font: var(--f); --fs-body: var(--fs-b); --fs-small: var(--fs-xs); --fw-bold: var(--fw-b); --fw-heavy: var(--fw-h);
+  --ease: var(--c-std); --dur: var(--t-fast);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg: #111618; --bg-sunk: #0b0f11; --surface: #1a2125; --ink: #edf1f2; --ink-soft: #a9b4bb;
-    --line: #2b353b; --line-strong: #6b7880;
-    --brand: #5cbcae; --brand-strong: #7fd0c3; --brand-soft: #18302c; --on-brand: #06201c;
-    --accent: #f0a35a; --accent-strong: #f6bd85; --accent-soft: #35281a; --on-accent: #2a1704;
-    --danger: #ff8a7f; --danger-soft: #3a1c1a; --on-danger: #2b0805;
-    --warn: #e7b84f; --ok: #6fcf97;
-    --shadow-sm: none; --shadow: 0 0 0 1px rgba(255,255,255,.02); --shadow-lg: 0 8px 24px rgba(0,0,0,.35);
-  }
+/* 다크 — 밤 유리(시스템 설정을 따르고, data-theme 으로 고정할 수 있다) */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  color-scheme: dark;
+  --pa: #0A0A12; --pb: #06060B; --s1a: rgba(34,32,54,.62); --s1b: rgba(22,21,38,.56); --solid: #171626;
+  --ink: #F0EFF8; --ink2: #A8A6BD; --ink3: #77758C; --hair: rgba(255,255,255,.08); --edge: #6E6C84;
+  --acc: #6C5FE0; --acc-hi: #9186F0; --acc-lo: #4E42BE; --acc-ink: #B6AEF7; --acc-soft: rgba(124,110,240,.16); --acc-top: #6E62E2;
+  --pos: #7FD3AE; --pos-soft: rgba(127,211,174,.14); --neg: #F2A097; --neg-soft: rgba(242,120,110,.14); --on-neg: #2B0805; --warn: #E7B84F; --warn-soft: rgba(231,184,79,.14);
+  --hl: inset 0 1px 0 rgba(255,255,255,.12); --hlb: inset 0 -1px 0 rgba(0,0,0,.3);
+  --e1: 0 0 0 .5px rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.5);
+  --e2: 0 0 0 .5px rgba(255,255,255,.08), 0 2px 6px -2px rgba(0,0,0,.6), 0 24px 48px -20px rgba(0,0,0,.9);
+  --e3: 0 0 0 .5px rgba(255,255,255,.1), 0 4px 12px -4px rgba(0,0,0,.6), 0 36px 70px -26px rgba(0,0,0,.95);
+  --well: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.22));
+  --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.06), 0 1px 0 rgba(255,255,255,.04);
+  --glass: rgba(26,25,42,.55); --glass-hl: rgba(255,255,255,.12); --glass-brd: rgba(255,255,255,.08); --aura-o: .7;
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .1 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --bg-sunk: #12111E;
+} }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --pa: #0A0A12; --pb: #06060B; --s1a: rgba(34,32,54,.62); --s1b: rgba(22,21,38,.56); --solid: #171626;
+  --ink: #F0EFF8; --ink2: #A8A6BD; --ink3: #77758C; --hair: rgba(255,255,255,.08); --edge: #6E6C84;
+  --acc: #6C5FE0; --acc-hi: #9186F0; --acc-lo: #4E42BE; --acc-ink: #B6AEF7; --acc-soft: rgba(124,110,240,.16); --acc-top: #6E62E2;
+  --pos: #7FD3AE; --pos-soft: rgba(127,211,174,.14); --neg: #F2A097; --neg-soft: rgba(242,120,110,.14); --on-neg: #2B0805; --warn: #E7B84F; --warn-soft: rgba(231,184,79,.14);
+  --hl: inset 0 1px 0 rgba(255,255,255,.12); --hlb: inset 0 -1px 0 rgba(0,0,0,.3);
+  --e1: 0 0 0 .5px rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.5);
+  --e2: 0 0 0 .5px rgba(255,255,255,.08), 0 2px 6px -2px rgba(0,0,0,.6), 0 24px 48px -20px rgba(0,0,0,.9);
+  --e3: 0 0 0 .5px rgba(255,255,255,.1), 0 4px 12px -4px rgba(0,0,0,.6), 0 36px 70px -26px rgba(0,0,0,.95);
+  --well: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.22));
+  --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.06), 0 1px 0 rgba(255,255,255,.04);
+  --glass: rgba(26,25,42,.55); --glass-hl: rgba(255,255,255,.12); --glass-brd: rgba(255,255,255,.08); --aura-o: .7;
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .1 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --bg-sunk: #12111E;
 }
-@media (prefers-reduced-motion: reduce) { :root { --dur: 0ms; } }
+
+/* ══════════ 바탕 ══════════ */
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: var(--fs-body); line-height: 1.6;
-  word-break: keep-all; overflow-wrap: break-word; -webkit-font-smoothing: antialiased; }
+body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--f); font-size: var(--fs-b); line-height: 1.6; letter-spacing: -.012em;
+  background-color: var(--pa); background-image: var(--nz), linear-gradient(180deg, var(--pa), var(--pb)); background-size: 160px 160px, auto; background-attachment: fixed;
+  word-break: keep-all; overflow-wrap: break-word; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 h1, h2, h3, h4 { text-wrap: balance; }
-a { color: var(--brand); text-underline-offset: 3px; }
+a { color: var(--acc-ink); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--acc-ink); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.num { font-family: var(--num); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.cnum { font: 700 .8125rem var(--num); letter-spacing: .12em; text-transform: uppercase; color: var(--acc-ink); }
+
+/* ══════════ 공통 부품(두 창구가 같이 쓴다) ══════════ */
+/* 오로라 빛 번짐 — 화면마다 하나, 뒤에 고정 */
+.d-aura { position: fixed; left: 50%; top: -28vh; width: min(900px, 140vw); aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; z-index: -1; pointer-events: none;
+  background: conic-gradient(from 90deg, rgba(124,110,240,0), rgba(124,110,240,.55), rgba(134,166,216,.4), rgba(176,97,123,.35), rgba(124,110,240,0));
+  filter: blur(70px); opacity: var(--aura-o); animation: d-spin 26s linear 2; }
+.d-grid { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
+  background-image: linear-gradient(var(--hair) 1px, transparent 1px), linear-gradient(90deg, var(--hair) 1px, transparent 1px); background-size: 32px 32px;
+  -webkit-mask-image: radial-gradient(80% 60% at 50% 20%, #000, transparent); mask-image: radial-gradient(80% 60% at 50% 20%, #000, transparent); }
+/* 유리 카드 */
+.d-card { position: relative; border-radius: var(--r); background-image: linear-gradient(180deg, var(--s1a), var(--s1b)); box-shadow: var(--hl), var(--hlb), var(--e2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5); backdrop-filter: blur(20px) saturate(1.5); }
+.d-glass { -webkit-backdrop-filter: blur(26px) saturate(1.7); backdrop-filter: blur(26px) saturate(1.7); background: var(--glass);
+  box-shadow: inset 0 1px 0 var(--glass-hl), inset 0 0 0 .5px var(--glass-brd), var(--e3); }
+.d-well { background: var(--well); box-shadow: var(--well-sh); }
+/* 들어 올림(누를 수 있는 카드) */
+.d-lift { transition: transform var(--t-push) var(--c-spring), box-shadow var(--t-push) var(--c-std); }
+@media (hover: hover) { .d-lift:hover { transform: translateY(-3px); box-shadow: var(--hl), var(--hlb), var(--e3); } }
+.d-lift:active { transform: scale(.98); transition-duration: 100ms; }
+/* 순차 등장 */
+.d-rise { animation: d-rise .72s var(--c-push) both; animation-delay: calc(var(--d, 0) * 55ms + 60ms); }
+@keyframes d-rise { from { transform: translateY(16px) scale(.985); opacity: 0; } }
+@keyframes d-spin { to { transform: translateX(-50%) rotate(360deg); } }
+@keyframes d-grow { from { transform: scaleX(0); } }
+@keyframes d-draw { to { stroke-dashoffset: 0; } }
+@keyframes d-fade { from { opacity: 0; } }
+@keyframes d-ping { 0% { transform: scale(.92); opacity: .9; } 100% { transform: scale(1.4); opacity: 0; } }
+@keyframes d-tab { from { opacity: 0; transform: translateX(24px); } }
+/* 주 단추(에나멜)·보조 단추 */
+.d-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: var(--tap); padding: 0 20px; border: 0; border-radius: var(--rb);
+  font: var(--fw-b) var(--fs-b)/1.25 var(--f); letter-spacing: -.02em; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t) var(--c-spring), box-shadow 240ms var(--c-std), background-color var(--t-fast) var(--c-std), color var(--t-fast) var(--c-std); }
+.d-btn svg { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.d-btn-p { color: var(--on-acc); background: var(--enamel); box-shadow: var(--enamel-sh); }
+.d-btn-p:active { transform: scale(.97) translateY(1px); box-shadow: var(--enamel-dn); transition-duration: var(--t-press); }
+.d-btn-s { color: var(--acc-ink); background-image: linear-gradient(180deg, var(--s1a), var(--s1b)); box-shadow: var(--hl), var(--e1), inset 0 0 0 1px var(--edge); }
+.d-btn-s:active { transform: scale(.97); transition-duration: var(--t-press); }
+.d-btn[disabled] { opacity: .6; cursor: wait; }
+.d-ico { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+/* 꼬리표 — 색과 함께 점·글자로 뜻을 전한다 */
+.d-tag { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: var(--fw-m); line-height: 1.3; }
+.d-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.d-tag.neg { color: var(--neg); background: var(--neg-soft); }
+.d-tag.acc { color: var(--acc-ink); background: var(--acc-soft); }
+.d-tag.pos { color: var(--pos); background: var(--pos-soft); }
+.d-tag.warn { color: var(--warn); background: var(--warn-soft); }
+/* 자리표시(⚙️ 파로 모듈이 채우기 전) */
+.d-slot { display: grid; place-items: center; min-height: 96px; padding: var(--sp-4); border-radius: var(--rb); text-align: center; color: var(--ink2); font-size: var(--fs-s);
+  background: var(--well); box-shadow: var(--well-sh); }
+
+/* 움직임 줄이기 — 반복 연출 끔, 등장은 즉시 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+  .d-aura { animation: none; }
+}
+/* 인쇄 — 장식·움직임 제거, 흰 종이 */
+@media print {
+  :root { color-scheme: light; }
+  body { background: #fff; color: #000; }
+  .d-aura, .d-grid { display: none; }
+  .d-card, .d-glass { background: #fff; box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
