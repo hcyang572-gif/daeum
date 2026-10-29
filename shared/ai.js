@@ -95,6 +95,7 @@
     var KOR = { "마흔": 40, "쉰": 50, "예순": 60, "일흔": 70, "여든": 80, "아흔": 90 };
     if (age == null) Object.keys(KOR).forEach(function (w) { if (age == null && text.indexOf(w) >= 0) { age = KOR[w]; ageBand = KOR[w] + "대"; ageLabel = ageBand; } });
     // 초등학생 → 자녀 나이 7~12로 봄
+    var childAgesGuess = !childAges.length && /초등|중학생|고등학생/.test(text) || (!childAges.length && !!tags.infant);
     if (/초등/.test(text) && !childAges.length) childAges.push(7, 12);
     if (/중학생/.test(text) && !childAges.length) childAges.push(13, 15);
     if (/고등학생/.test(text) && !childAges.length) childAges.push(16, 18);
@@ -108,7 +109,7 @@
     Object.keys(tags).forEach(function (k) { if (!tags[k]) delete tags[k]; });
     return {
       age: age, ageBand: ageBand, ageLabel: ageLabel, ageKnown: age != null, seniorHint: seniorHint,
-      childAges: childAges, tags: Object.keys(tags),
+      childAges: childAges, childAgesGuess: childAgesGuess, tags: Object.keys(tags),
       isProxy: !!proxy.isProxy, relation: proxy.relation || "",
       urgent: !!(tags.mental || tags.crisis), urgentMental: !!tags.mental, urgentCrisis: !!(tags.crisis || tags.food),
       // 생명 위기 낱말(S5b-2): 이때는 결과 맨 위에 109 고정 카드
@@ -246,7 +247,13 @@
       .sort(function (a, b) { return b.n - a.n; })
       .forEach(function (x) { ranked.push(x.id); });
     var compact = topFirst(all, ranked, AI_MAX_SERVICES).map(function (s) { return compactSvc(s, s.target, s.support); });
-    return post({ situation: String(input.text || "").slice(0, 1200), proxy: input.proxy || {}, profile: profile, services: compact })
+    // 학교급으로 «추정»한 자녀 나이는 숫자로 보내지 않는다(AI가 «7살, 12살»처럼 단정해 되읊음 — S5b-2 시험)
+    var sentProfile = Object.assign({}, profile);
+    if (profile.childAgesGuess) {
+      sentProfile.childAges = [];
+      sentProfile.childAgeNote = "자녀 나이는 말씀하지 않음(학교급으로 본 범위 " + profile.childAges.join("~") + "세 — 요약에 숫자로 쓰지 말 것)";
+    }
+    return post({ situation: String(input.text || "").slice(0, 1200), proxy: input.proxy || {}, profile: sentProfile, services: compact })
       .then(function (ans) { logUsage("국민", ans, compact.length); return ans; });
   }
 
