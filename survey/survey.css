@@ -144,7 +144,8 @@ main { max-width: 520px; margin: 0 auto; outline: none; padding-bottom: calc(150
 .msg:empty { display: none; }
 
 /* ── 소개 ── */
-.intro { padding-top: clamp(56px, 12vh, 104px); }
+.intro { padding-top: clamp(32px, 9vh, 104px); }
+@media (max-height: 740px) { .intro { padding-top: 24px; } .facts { margin-top: 24px; } .facts li { padding: 12px 0; } }
 .kicker { display: flex; align-items: center; gap: 8px; margin: 0 0 22px; font-size: 14px; font-weight: 600; color: var(--acc-ink); letter-spacing: .02em; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
 .lead { margin: 0; font-size: clamp(30px, 8.6vw, 36px); line-height: 1.28; font-weight: 800; letter-spacing: -.045em; }

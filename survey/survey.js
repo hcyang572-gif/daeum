@@ -208,7 +208,13 @@
     actions.hidden = false;
     mainBtn.disabled = false; mainBtn.textContent = mainText; onMain = main;
     onSkip = skip || null; skipBtn.hidden = !skip; msg.textContent = "";
+    padForActions();
   }
+  // 아래 버튼 줄 높이만큼만 비운다 — 고정 150px이면 버튼이 하나인 소개 화면이 빈 칸으로 조금씩 밀려 올라간다
+  function padForActions() {
+    app.style.paddingBottom = actions.hidden ? "" : (actions.offsetHeight + 16) + "px";
+  }
+  window.addEventListener("resize", padForActions);
   function refreshActions(q) {
     if (page < 0 || page >= N) return;
     if (q.type === "flow") {
@@ -274,7 +280,7 @@
     ]);
   }
   function thanks(already) {
-    actions.hidden = true;
+    actions.hidden = true; padForActions();
     return el("section", { class: "screen done" }, [
       el("div", { class: "seal", "aria-hidden": "true", html: '<svg viewBox="0 0 48 48" width="30" height="30"><path class="tick" d="M13 25l7.5 7.5L35 17" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' }),
       el("h1", { class: "lead sm", text: already ? "이미 응답해 주셨어요" : "고맙습니다" }),
