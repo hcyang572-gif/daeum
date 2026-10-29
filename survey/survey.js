@@ -1,5 +1,5 @@
 /* 위기가구 발굴 현장 설문 v2 — 한 화면 한 문항, 모두 건너뛸 수 있고, 하나만 고르는 문항은 고르면 바로 다음으로 넘어간다. 이름·개인정보는 받지 않는다.
-   저장: 닿음 Supabase field_survey(anon=넣기만). 한 기기 한 번(무작위 토큰 + 로컬 표시, 서버 unique). 컬럼은 v1 그대로, 답은 answers(JSON) 안에.
+   저장: 닿음 Supabase field_survey(anon=넣기만). 제출마다 새 토큰(서버 unique) — 10-30부터 같은 기기도 다시 응답 가능(중복은 집계 때 판단). 컬럼은 v1 그대로, 답은 answers(JSON) 안에.
    답 키는 v1 과 같은 이름을 쓴다 → 01_리서치/현장설문/read_survey.js 가 그대로 읽는다(빠진 문항은 «무응답»으로 나온다).
    v2 에서 뺀 문항: workplace·career(10-30 호창님)·duty·list_route·device·case_areas.
    10-30 되살림(선택형으로): list_score·mobile_feature·input_fields(v1 서술형 → 선택형, 다르면 input_fields_memo).
@@ -303,7 +303,9 @@
     }).then(function (r) {
       if (r.status === 201 || r.status === 409) {
         clearTimeout(saveT);
-        store(function () { localStorage.setItem(C.doneKey, new Date().toISOString()); localStorage.removeItem(C.draftKey); });
+        // 10-30 호창님: 응답한 뒤에도 다시 들어와 새로 답할 수 있게 — 토큰을 버려 다음 제출은 새 행이 된다
+        store(function () { localStorage.removeItem(C.tokenKey); localStorage.removeItem(C.doneKey); localStorage.removeItem(C.draftKey); });
+        A = { flow: {}, flow_memo: {}, rate: {} };
         page = N; render(r.status === 409); return;
       }
       throw new Error("HTTP " + r.status);
@@ -342,6 +344,9 @@
   backBtn.addEventListener("click", function () { history.back(); });
 
   try { history.replaceState({ p: -1 }, ""); } catch (e) {}
-  if (store(function () { return localStorage.getItem(C.doneKey); })) { page = N; render(true); }
-  else render();
+  // 예전에 «이미 응답» 표시가 남은 기기도 처음부터 다시 열리게 표시·토큰을 지운다
+  if (store(function () { return localStorage.getItem(C.doneKey); })) {
+    store(function () { localStorage.removeItem(C.doneKey); localStorage.removeItem(C.tokenKey); });
+  }
+  render();
 })();
