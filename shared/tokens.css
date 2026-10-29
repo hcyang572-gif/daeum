@@ -1,30 +1,66 @@
-/* 닿음 디자인 토큰 — 국민·공무원 창구 공통. 색·글자는 여기서만 정한다. */
+/* 닿음 디자인 토큰 — 국민·공무원 창구 공통. 색·글자·간격·그림자는 여기서만 정한다.
+   S5c(10-29): 대비 보정(WCAG AA — 흰 글자 단추 4.5:1 이상, 입력칸 테두리 3:1), 글자·간격 단계, 다크 모드 단추 글자색 분리 */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 :root {
-  --bg: #f7f5f0;          /* 종이 같은 따뜻한 바탕 */
+  color-scheme: light;
+  /* 바탕·글자 */
+  --bg: #f5f3ee;          /* 종이 같은 따뜻한 바탕 */
+  --bg-sunk: #ece8e0;     /* 표 머리·막대 바탕처럼 한 단계 들어간 면 */
   --surface: #ffffff;
-  --ink: #1d2327;
-  --ink-soft: #55606a;
-  --line: #e2ddd3;
+  --ink: #1b2125;
+  --ink-soft: #525d66;    /* 바탕 대비 6:1 */
+  --line: #e1dcd2;        /* 카드 구분선(장식선) */
+  --line-strong: #8e877b; /* 입력칸·단추 테두리 — 바탕 대비 3:1 이상 */
+  /* 브랜드 */
   --brand: #13655d;       /* 닿음 청록 — 신뢰 */
-  --brand-soft: #e3f1ee;
-  --accent: #d9822b;      /* 손 내미는 주황 — 행동 버튼·강조 */
+  --brand-strong: #0e4f49;
+  --brand-soft: #e2f0ec;
+  --on-brand: #ffffff;
+  --accent: #b05a12;      /* 손 내미는 주황 — 흰 글자 대비 5.3:1(종전 #d9822b는 2.9:1이라 어르신이 읽기 어려웠다) */
+  --accent-strong: #8f480c;
   --accent-soft: #fbeedd;
-  --danger: #c0392b;      /* 위기 우선순위 높음 */
-  --warn: #c98a00;
+  --on-accent: #ffffff;
+  /* 상태 */
+  --danger: #b3261e;      /* 위기 — 109·1366·129 */
+  --danger-soft: #fdecea;
+  --on-danger: #ffffff;
+  --warn: #8a5a00;        /* 글자로 쓸 때 4.5:1 이상 */
   --ok: #2e7d4f;
-  --radius: 14px;
-  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
-  --font: "Pretendard Variable", Pretendard, "Malgun Gothic", sans-serif;
-  --fs-body: 17px;        /* 국민 창구는 어르신 기준으로 크게 */
+  /* 모양 */
+  --radius-lg: 16px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 1px 2px rgba(20, 24, 27, .06);
+  --shadow: 0 1px 2px rgba(20, 24, 27, .05), 0 2px 8px rgba(20, 24, 27, .05);
+  --shadow-lg: 0 2px 4px rgba(20, 24, 27, .05), 0 8px 24px rgba(20, 24, 27, .08);
+  /* 글자 */
+  --font: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --fs-body: 17px;        /* 국민 창구는 citizen.css에서 19px로 더 키운다 */
   --fs-small: 14px;
+  --fw-bold: 700;
+  --fw-heavy: 800;
+  /* 간격(4px 단계) */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+  /* 움직임 — 상태 전환만, 꾸밈 움직임 없음 */
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --dur: 140ms;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #12171a; --surface: #1b2226; --ink: #eef2f3; --ink-soft: #a7b3ba;
-    --line: #2c363c; --brand: #4fb3a6; --brand-soft: #1d3330;
-    --accent: #f0a050; --accent-soft: #3a2c1c;
+    color-scheme: dark;
+    --bg: #111618; --bg-sunk: #0b0f11; --surface: #1a2125; --ink: #edf1f2; --ink-soft: #a9b4bb;
+    --line: #2b353b; --line-strong: #6b7880;
+    --brand: #5cbcae; --brand-strong: #7fd0c3; --brand-soft: #18302c; --on-brand: #06201c;
+    --accent: #f0a35a; --accent-strong: #f6bd85; --accent-soft: #35281a; --on-accent: #2a1704;
+    --danger: #ff8a7f; --danger-soft: #3a1c1a; --on-danger: #2b0805;
+    --warn: #e7b84f; --ok: #6fcf97;
+    --shadow-sm: none; --shadow: 0 0 0 1px rgba(255,255,255,.02); --shadow-lg: 0 8px 24px rgba(0,0,0,.35);
   }
 }
+@media (prefers-reduced-motion: reduce) { :root { --dur: 0ms; } }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: var(--fs-body); line-height: 1.6; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: var(--fs-body); line-height: 1.6;
+  word-break: keep-all; overflow-wrap: break-word; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { text-wrap: balance; }
+a { color: var(--brand); text-underline-offset: 3px; }

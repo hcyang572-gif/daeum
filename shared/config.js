@@ -8,7 +8,7 @@ window.DAEUM_CONFIG = {
   aiTimeoutMs: 15000,
 
   // 적용 예시 지역: 상주시 24개 읍면동(1읍 17면 6동). 가구는 모두 가상(실제 주민 아님). 두 창구의 읍면동 이름 정본은 이 목록 하나다.
-  // 출처: 위키백과 «상주시» 행정 구역 표 · 도로명주소 목록(dorojuso.kr) 대조(2026-10-29).
+  // 출처: 행정안전부 주민등록 인구통계 읍면동 목록(jumin.mois.go.kr, 2026-09) · 도로명주소 목록(dorojuso.kr) 대조(2026-10-29).
   // data/households.json areas[].name(make_households.py SANGJU)과 같은 순서·이름이어야 한다 — 공무원 창구가 불일치를 콘솔에 경고한다.
   regionName: "상주시",
   regions: ["함창읍",

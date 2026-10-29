@@ -4,9 +4,9 @@
   "region": "상주시 적용 예시 (가구는 모두 가상)",
   "seed": 20261029,
   "generatedBy": "data/tools/make_households.py",
-  "note": "가상 가구(실제 주민 아님). 실제 개인정보·행정자료 0건. 읍면동 이름·세대 비율만 공개 자료(위키백과 상주시 행정 구역 표)에서 쓰고, 가구 값은 난수 규칙으로 만든 가상 값이다. 좌표는 상주시청 (0,0) 기준 평면 km(읍면동 중심은 대략값).",
+  "note": "가상 가구(실제 주민 아님). 실제 개인정보·행정자료 0건. 읍면동 이름·세대 비율만 공개 자료(행정안전부 주민등록 인구통계 2026-09 읍면동별 세대수)에서 쓰고, 가구 값은 난수 규칙으로 만든 가상 값이다. 좌표는 상주시청 (0,0) 기준 평면 km(읍면동 중심은 대략값).",
   "sources": [
-   "https://ko.wikipedia.org/wiki/상주시 (행정 구역 표, 2022년 9월 기준 문구, 접근 2026-10-29)",
+   "https://jumin.mois.go.kr/statMonth.do (행정안전부 주민등록 인구 및 세대현황, 2026년 09월, 상주시 읍면동 세대수 — 출장소 4곳은 소속 면에 합산, 조회 2026-10-29)",
    "https://dorojuso.kr/경상북도/상주시 (읍면동 이름 대조)"
   ],
   "office": {
@@ -22,7 +22,7 @@
    "kind": "읍",
    "x": 2.0,
    "y": 17.0,
-   "households": 22,
+   "households": 20,
    "agingEst": 0.6
   },
   {
@@ -32,7 +32,7 @@
    "x": 5.0,
    "y": 7.0,
    "households": 13,
-   "agingEst": 0.71
+   "agingEst": 0.7
   },
   {
    "code": "C",
@@ -41,7 +41,7 @@
    "x": 13.0,
    "y": 2.0,
    "households": 5,
-   "agingEst": 0.76
+   "agingEst": 0.77
   },
   {
    "code": "D",
@@ -58,7 +58,7 @@
    "kind": "면",
    "x": -3.0,
    "y": -9.0,
-   "households": 9,
+   "households": 8,
    "agingEst": 0.74
   },
   {
@@ -67,8 +67,8 @@
    "kind": "면",
    "x": -5.0,
    "y": -15.0,
-   "households": 14,
-   "agingEst": 0.7
+   "households": 13,
+   "agingEst": 0.71
   },
   {
    "code": "G",
@@ -76,7 +76,7 @@
    "kind": "면",
    "x": -4.0,
    "y": -4.0,
-   "households": 6,
+   "households": 5,
    "agingEst": 0.76
   },
   {
@@ -85,8 +85,8 @@
    "kind": "면",
    "x": -11.0,
    "y": 1.0,
-   "households": 6,
-   "agingEst": 0.76
+   "households": 7,
+   "agingEst": 0.75
   },
   {
    "code": "I",
@@ -94,7 +94,7 @@
    "kind": "면",
    "x": -19.0,
    "y": -13.0,
-   "households": 8,
+   "households": 9,
    "agingEst": 0.74
   },
   {
@@ -122,7 +122,7 @@
    "x": -20.0,
    "y": 6.0,
    "households": 9,
-   "agingEst": 0.74
+   "agingEst": 0.73
   },
   {
    "code": "M",
@@ -140,7 +140,7 @@
    "x": -10.0,
    "y": 10.0,
    "households": 9,
-   "agingEst": 0.73
+   "agingEst": 0.74
   },
   {
    "code": "O",
@@ -157,7 +157,7 @@
    "kind": "면",
    "x": 2.0,
    "y": 12.0,
-   "households": 8,
+   "households": 7,
    "agingEst": 0.75
   },
   {
@@ -184,7 +184,7 @@
    "kind": "동",
    "x": -1.5,
    "y": -1.5,
-   "households": 33,
+   "households": 32,
    "agingEst": 0.45
   },
   {
@@ -193,8 +193,8 @@
    "kind": "동",
    "x": 0.0,
    "y": 2.0,
-   "households": 27,
-   "agingEst": 0.47
+   "households": 28,
+   "agingEst": 0.46
   },
   {
    "code": "U",
@@ -202,8 +202,8 @@
    "kind": "동",
    "x": 2.0,
    "y": 0.0,
-   "households": 23,
-   "agingEst": 0.48
+   "households": 27,
+   "agingEst": 0.47
   },
   {
    "code": "V",
@@ -211,7 +211,7 @@
    "kind": "동",
    "x": 3.0,
    "y": 2.0,
-   "households": 24,
+   "households": 23,
    "agingEst": 0.48
   },
   {
@@ -220,7 +220,7 @@
    "kind": "동",
    "x": 1.0,
    "y": -2.5,
-   "households": 11,
+   "households": 10,
    "agingEst": 0.52
   },
   {
@@ -229,8 +229,8 @@
    "kind": "동",
    "x": -2.5,
    "y": 1.5,
-   "households": 24,
-   "agingEst": 0.48
+   "households": 26,
+   "agingEst": 0.47
   }
  ],
  "indicators": [
@@ -1051,12 +1051,12 @@
    }
   },
   {
-   "id": "A-021",
-   "label": "가구 A-021",
-   "area": "함창읍",
-   "areaCode": "A",
-   "x": 0.74,
-   "y": 17.33,
+   "id": "B-001",
+   "label": "가구 B-001",
+   "area": "사벌국면",
+   "areaCode": "B",
+   "x": 3.95,
+   "y": 8.45,
    "members": [
     {
      "role": "본인",
@@ -1066,42 +1066,50 @@
    "single": true,
    "disability": true,
    "status": "없음",
-   "daysSinceContact": 426,
+   "daysSinceContact": 549,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
     "telecom_arrears": false,
-    "mgmt_fee_arrears": true,
-    "rent_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": true,
     "medical_overspend": false,
     "job_loss": false,
-    "loan_overdue": true,
-    "benefit_stopped": false
+    "loan_overdue": false,
+    "benefit_stopped": true
    }
   },
   {
-   "id": "A-022",
-   "label": "가구 A-022",
-   "area": "함창읍",
-   "areaCode": "A",
-   "x": 2.53,
-   "y": 17.28,
+   "id": "B-002",
+   "label": "가구 B-002",
+   "area": "사벌국면",
+   "areaCode": "B",
+   "x": 7.27,
+   "y": 4.89,
    "members": [
     {
      "role": "본인",
-     "age": 67
+     "age": 38
     },
     {
      "role": "배우자",
-     "age": 68
+     "age": 41
+    },
+    {
+     "role": "자녀",
+     "age": 1
+    },
+    {
+     "role": "자녀",
+     "age": 14
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 851,
+   "daysSinceContact": 85,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -1117,8 +1125,8 @@
    }
   },
   {
-   "id": "B-001",
-   "label": "가구 B-001",
+   "id": "B-003",
+   "label": "가구 B-003",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 6.44,
@@ -1148,8 +1156,8 @@
    }
   },
   {
-   "id": "B-002",
-   "label": "가구 B-002",
+   "id": "B-004",
+   "label": "가구 B-004",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 1.96,
@@ -1179,8 +1187,8 @@
    }
   },
   {
-   "id": "B-003",
-   "label": "가구 B-003",
+   "id": "B-005",
+   "label": "가구 B-005",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 3.75,
@@ -1214,8 +1222,8 @@
    }
   },
   {
-   "id": "B-004",
-   "label": "가구 B-004",
+   "id": "B-006",
+   "label": "가구 B-006",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 2.77,
@@ -1253,8 +1261,8 @@
    }
   },
   {
-   "id": "B-005",
-   "label": "가구 B-005",
+   "id": "B-007",
+   "label": "가구 B-007",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 2.71,
@@ -1284,8 +1292,8 @@
    }
   },
   {
-   "id": "B-006",
-   "label": "가구 B-006",
+   "id": "B-008",
+   "label": "가구 B-008",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 8.15,
@@ -1327,8 +1335,8 @@
    }
   },
   {
-   "id": "B-007",
-   "label": "가구 B-007",
+   "id": "B-009",
+   "label": "가구 B-009",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 8.04,
@@ -1362,8 +1370,8 @@
    }
   },
   {
-   "id": "B-008",
-   "label": "가구 B-008",
+   "id": "B-010",
+   "label": "가구 B-010",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 8.07,
@@ -1393,8 +1401,8 @@
    }
   },
   {
-   "id": "B-009",
-   "label": "가구 B-009",
+   "id": "B-011",
+   "label": "가구 B-011",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 5.29,
@@ -1424,8 +1432,8 @@
    }
   },
   {
-   "id": "B-010",
-   "label": "가구 B-010",
+   "id": "B-012",
+   "label": "가구 B-012",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 5.96,
@@ -1455,8 +1463,8 @@
    }
   },
   {
-   "id": "B-011",
-   "label": "가구 B-011",
+   "id": "B-013",
+   "label": "가구 B-013",
    "area": "사벌국면",
    "areaCode": "B",
    "x": 2.06,
@@ -1486,12 +1494,12 @@
    }
   },
   {
-   "id": "B-012",
-   "label": "가구 B-012",
-   "area": "사벌국면",
-   "areaCode": "B",
-   "x": 5.87,
-   "y": 5.78,
+   "id": "C-001",
+   "label": "가구 C-001",
+   "area": "중동면",
+   "areaCode": "C",
+   "x": 13.87,
+   "y": 0.78,
    "members": [
     {
      "role": "본인",
@@ -1517,12 +1525,12 @@
    }
   },
   {
-   "id": "B-013",
-   "label": "가구 B-013",
-   "area": "사벌국면",
-   "areaCode": "B",
-   "x": 4.62,
-   "y": 3.64,
+   "id": "C-002",
+   "label": "가구 C-002",
+   "area": "중동면",
+   "areaCode": "C",
+   "x": 12.62,
+   "y": -1.36,
    "members": [
     {
      "role": "본인",
@@ -1548,8 +1556,8 @@
    }
   },
   {
-   "id": "C-001",
-   "label": "가구 C-001",
+   "id": "C-003",
+   "label": "가구 C-003",
    "area": "중동면",
    "areaCode": "C",
    "x": 13.31,
@@ -1579,8 +1587,8 @@
    }
   },
   {
-   "id": "C-002",
-   "label": "가구 C-002",
+   "id": "C-004",
+   "label": "가구 C-004",
    "area": "중동면",
    "areaCode": "C",
    "x": 15.03,
@@ -1610,8 +1618,8 @@
    }
   },
   {
-   "id": "C-003",
-   "label": "가구 C-003",
+   "id": "C-005",
+   "label": "가구 C-005",
    "area": "중동면",
    "areaCode": "C",
    "x": 11.79,
@@ -1641,12 +1649,12 @@
    }
   },
   {
-   "id": "C-004",
-   "label": "가구 C-004",
-   "area": "중동면",
-   "areaCode": "C",
-   "x": 14.59,
-   "y": 0.9,
+   "id": "D-001",
+   "label": "가구 D-001",
+   "area": "낙동면",
+   "areaCode": "D",
+   "x": 12.59,
+   "y": -5.1,
    "members": [
     {
      "role": "본인",
@@ -1676,12 +1684,12 @@
    }
   },
   {
-   "id": "C-005",
-   "label": "가구 C-005",
-   "area": "중동면",
-   "areaCode": "C",
-   "x": 11.94,
-   "y": 1.77,
+   "id": "D-002",
+   "label": "가구 D-002",
+   "area": "낙동면",
+   "areaCode": "D",
+   "x": 9.94,
+   "y": -4.23,
    "members": [
     {
      "role": "본인",
@@ -1707,8 +1715,8 @@
    }
   },
   {
-   "id": "D-001",
-   "label": "가구 D-001",
+   "id": "D-003",
+   "label": "가구 D-003",
    "area": "낙동면",
    "areaCode": "D",
    "x": 10.31,
@@ -1746,8 +1754,8 @@
    }
   },
   {
-   "id": "D-002",
-   "label": "가구 D-002",
+   "id": "D-004",
+   "label": "가구 D-004",
    "area": "낙동면",
    "areaCode": "D",
    "x": 11.55,
@@ -1781,8 +1789,8 @@
    }
   },
   {
-   "id": "D-003",
-   "label": "가구 D-003",
+   "id": "D-005",
+   "label": "가구 D-005",
    "area": "낙동면",
    "areaCode": "D",
    "x": 8.74,
@@ -1816,8 +1824,8 @@
    }
   },
   {
-   "id": "D-004",
-   "label": "가구 D-004",
+   "id": "D-006",
+   "label": "가구 D-006",
    "area": "낙동면",
    "areaCode": "D",
    "x": 9.27,
@@ -1851,8 +1859,8 @@
    }
   },
   {
-   "id": "D-005",
-   "label": "가구 D-005",
+   "id": "D-007",
+   "label": "가구 D-007",
    "area": "낙동면",
    "areaCode": "D",
    "x": 13.19,
@@ -1882,8 +1890,8 @@
    }
   },
   {
-   "id": "D-006",
-   "label": "가구 D-006",
+   "id": "D-008",
+   "label": "가구 D-008",
    "area": "낙동면",
    "areaCode": "D",
    "x": 12.36,
@@ -1917,8 +1925,8 @@
    }
   },
   {
-   "id": "D-007",
-   "label": "가구 D-007",
+   "id": "D-009",
+   "label": "가구 D-009",
    "area": "낙동면",
    "areaCode": "D",
    "x": 10.96,
@@ -1952,8 +1960,8 @@
    }
   },
   {
-   "id": "D-008",
-   "label": "가구 D-008",
+   "id": "D-010",
+   "label": "가구 D-010",
    "area": "낙동면",
    "areaCode": "D",
    "x": 12.38,
@@ -1983,8 +1991,8 @@
    }
   },
   {
-   "id": "D-009",
-   "label": "가구 D-009",
+   "id": "D-011",
+   "label": "가구 D-011",
    "area": "낙동면",
    "areaCode": "D",
    "x": 11.23,
@@ -2018,8 +2026,8 @@
    }
   },
   {
-   "id": "D-010",
-   "label": "가구 D-010",
+   "id": "D-012",
+   "label": "가구 D-012",
    "area": "낙동면",
    "areaCode": "D",
    "x": 13.0,
@@ -2053,8 +2061,8 @@
    }
   },
   {
-   "id": "D-011",
-   "label": "가구 D-011",
+   "id": "D-013",
+   "label": "가구 D-013",
    "area": "낙동면",
    "areaCode": "D",
    "x": 11.04,
@@ -2084,8 +2092,8 @@
    }
   },
   {
-   "id": "D-012",
-   "label": "가구 D-012",
+   "id": "D-014",
+   "label": "가구 D-014",
    "area": "낙동면",
    "areaCode": "D",
    "x": 9.26,
@@ -2123,12 +2131,12 @@
    }
   },
   {
-   "id": "D-013",
-   "label": "가구 D-013",
-   "area": "낙동면",
-   "areaCode": "D",
-   "x": 10.96,
-   "y": -6.32,
+   "id": "E-001",
+   "label": "가구 E-001",
+   "area": "청리면",
+   "areaCode": "E",
+   "x": -3.04,
+   "y": -11.32,
    "members": [
     {
      "role": "본인",
@@ -2162,30 +2170,30 @@
    }
   },
   {
-   "id": "D-014",
-   "label": "가구 D-014",
-   "area": "낙동면",
-   "areaCode": "D",
-   "x": 13.54,
-   "y": -4.44,
+   "id": "E-002",
+   "label": "가구 E-002",
+   "area": "청리면",
+   "areaCode": "E",
+   "x": -2.61,
+   "y": -11.85,
    "members": [
     {
      "role": "본인",
-     "age": 62
+     "age": 73
     },
     {
      "role": "배우자",
-     "age": 64
+     "age": 68
     },
     {
      "role": "자녀",
-     "age": 14
+     "age": 39
     }
    ],
    "single": false,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": null,
+   "status": "없음",
+   "daysSinceContact": 629,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -2201,8 +2209,8 @@
    }
   },
   {
-   "id": "E-001",
-   "label": "가구 E-001",
+   "id": "E-003",
+   "label": "가구 E-003",
    "area": "청리면",
    "areaCode": "E",
    "x": -2.48,
@@ -2210,11 +2218,19 @@
    "members": [
     {
      "role": "본인",
-     "age": 28
+     "age": 33
     },
     {
      "role": "배우자",
-     "age": 33
+     "age": 27
+    },
+    {
+     "role": "자녀",
+     "age": 11
+    },
+    {
+     "role": "자녀",
+     "age": 2
     }
    ],
    "single": false,
@@ -2224,20 +2240,20 @@
    "indicators": {
     "power_cut": false,
     "water_cut": false,
-    "gas_cut": true,
-    "health_ins_arrears": 0,
+    "gas_cut": false,
+    "health_ins_arrears": 3,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
     "medical_overspend": false,
-    "job_loss": false,
+    "job_loss": true,
     "loan_overdue": false,
     "benefit_stopped": false
    }
   },
   {
-   "id": "E-002",
-   "label": "가구 E-002",
+   "id": "E-004",
+   "label": "가구 E-004",
    "area": "청리면",
    "areaCode": "E",
    "x": -3.34,
@@ -2271,8 +2287,8 @@
    }
   },
   {
-   "id": "E-003",
-   "label": "가구 E-003",
+   "id": "E-005",
+   "label": "가구 E-005",
    "area": "청리면",
    "areaCode": "E",
    "x": -4.91,
@@ -2306,8 +2322,8 @@
    }
   },
   {
-   "id": "E-004",
-   "label": "가구 E-004",
+   "id": "E-006",
+   "label": "가구 E-006",
    "area": "청리면",
    "areaCode": "E",
    "x": -2.25,
@@ -2341,8 +2357,8 @@
    }
   },
   {
-   "id": "E-005",
-   "label": "가구 E-005",
+   "id": "E-007",
+   "label": "가구 E-007",
    "area": "청리면",
    "areaCode": "E",
    "x": -5.8,
@@ -2380,8 +2396,8 @@
    }
   },
   {
-   "id": "E-006",
-   "label": "가구 E-006",
+   "id": "E-008",
+   "label": "가구 E-008",
    "area": "청리면",
    "areaCode": "E",
    "x": -5.17,
@@ -2411,132 +2427,35 @@
    }
   },
   {
-   "id": "E-007",
-   "label": "가구 E-007",
-   "area": "청리면",
-   "areaCode": "E",
-   "x": -2.09,
-   "y": -6.56,
-   "members": [
-    {
-     "role": "본인",
-     "age": 90
-    },
-    {
-     "role": "배우자",
-     "age": 89
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": null,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "E-008",
-   "label": "가구 E-008",
-   "area": "청리면",
-   "areaCode": "E",
-   "x": -3.16,
-   "y": -10.09,
-   "members": [
-    {
-     "role": "본인",
-     "age": 74
-    },
-    {
-     "role": "배우자",
-     "age": 76
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": null,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "E-009",
-   "label": "가구 E-009",
-   "area": "청리면",
-   "areaCode": "E",
-   "x": -2.55,
-   "y": -10.03,
-   "members": [
-    {
-     "role": "본인",
-     "age": 83
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "차상위",
-   "daysSinceContact": 155,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
    "id": "F-001",
    "label": "가구 F-001",
    "area": "공성면",
    "areaCode": "F",
-   "x": -6.64,
-   "y": -13.77,
+   "x": -3.93,
+   "y": -16.45,
    "members": [
     {
      "role": "본인",
-     "age": 86
+     "age": 61
     },
     {
      "role": "배우자",
-     "age": 89
+     "age": 57
+    },
+    {
+     "role": "자녀",
+     "age": 5
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 387,
+   "daysSinceContact": 575,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
-    "health_ins_arrears": 0,
+    "health_ins_arrears": 7,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
@@ -2551,16 +2470,20 @@
    "label": "가구 F-002",
    "area": "공성면",
    "areaCode": "F",
-   "x": -7.42,
-   "y": -16.67,
+   "x": -6.11,
+   "y": -15.55,
    "members": [
     {
      "role": "본인",
-     "age": 82
+     "age": 72
     },
     {
      "role": "배우자",
-     "age": 77
+     "age": 73
+    },
+    {
+     "role": "자녀",
+     "age": 44
     }
    ],
    "single": false,
@@ -2586,18 +2509,26 @@
    "label": "가구 F-003",
    "area": "공성면",
    "areaCode": "F",
-   "x": -7.8,
-   "y": -14.42,
+   "x": -2.78,
+   "y": -13.76,
    "members": [
     {
      "role": "본인",
-     "age": 43
+     "age": 72
+    },
+    {
+     "role": "배우자",
+     "age": 67
+    },
+    {
+     "role": "자녀",
+     "age": 47
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": null,
+   "status": "없음",
+   "daysSinceContact": 647,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -2606,7 +2537,7 @@
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": false,
+    "medical_overspend": true,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
@@ -2617,22 +2548,22 @@
    "label": "가구 F-004",
    "area": "공성면",
    "areaCode": "F",
-   "x": -5.26,
-   "y": -15.93,
+   "x": -6.4,
+   "y": -13.4,
    "members": [
     {
      "role": "본인",
-     "age": 72
+     "age": 69
     },
     {
      "role": "배우자",
-     "age": 71
+     "age": 66
     }
    ],
    "single": false,
    "disability": false,
    "status": "기초생활 수급",
-   "daysSinceContact": 726,
+   "daysSinceContact": 547,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -2652,15 +2583,105 @@
    "label": "가구 F-005",
    "area": "공성면",
    "areaCode": "F",
+   "x": -3.25,
+   "y": -12.15,
+   "members": [
+    {
+     "role": "본인",
+     "age": 69
+    },
+    {
+     "role": "배우자",
+     "age": 66
+    }
+   ],
+   "single": false,
+   "disability": true,
+   "status": "없음",
+   "daysSinceContact": 790,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "F-006",
+   "label": "가구 F-006",
+   "area": "공성면",
+   "areaCode": "F",
+   "x": -4.79,
+   "y": -13.88,
+   "members": [
+    {
+     "role": "본인",
+     "age": 53
+    },
+    {
+     "role": "자녀",
+     "age": 12
+    },
+    {
+     "role": "자녀",
+     "age": 15
+    },
+    {
+     "role": "자녀",
+     "age": 6
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": 706,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "F-007",
+   "label": "가구 F-007",
+   "area": "공성면",
+   "areaCode": "F",
    "x": -7.69,
    "y": -13.44,
    "members": [
     {
      "role": "본인",
-     "age": 74
+     "age": 43
+    },
+    {
+     "role": "배우자",
+     "age": 39
+    },
+    {
+     "role": "자녀",
+     "age": 2
+    },
+    {
+     "role": "자녀",
+     "age": 20
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
    "status": "없음",
    "daysSinceContact": 632,
@@ -2679,8 +2700,8 @@
    }
   },
   {
-   "id": "F-006",
-   "label": "가구 F-006",
+   "id": "F-008",
+   "label": "가구 F-008",
    "area": "공성면",
    "areaCode": "F",
    "x": -6.27,
@@ -2726,8 +2747,8 @@
    }
   },
   {
-   "id": "F-007",
-   "label": "가구 F-007",
+   "id": "F-009",
+   "label": "가구 F-009",
    "area": "공성면",
    "areaCode": "F",
    "x": -4.87,
@@ -2761,8 +2782,8 @@
    }
   },
   {
-   "id": "F-008",
-   "label": "가구 F-008",
+   "id": "F-010",
+   "label": "가구 F-010",
    "area": "공성면",
    "areaCode": "F",
    "x": -4.3,
@@ -2796,8 +2817,8 @@
    }
   },
   {
-   "id": "F-009",
-   "label": "가구 F-009",
+   "id": "F-011",
+   "label": "가구 F-011",
    "area": "공성면",
    "areaCode": "F",
    "x": -1.82,
@@ -2827,8 +2848,8 @@
    }
   },
   {
-   "id": "F-010",
-   "label": "가구 F-010",
+   "id": "F-012",
+   "label": "가구 F-012",
    "area": "공성면",
    "areaCode": "F",
    "x": -4.55,
@@ -2858,8 +2879,8 @@
    }
   },
   {
-   "id": "F-011",
-   "label": "가구 F-011",
+   "id": "F-013",
+   "label": "가구 F-013",
    "area": "공성면",
    "areaCode": "F",
    "x": -2.35,
@@ -2893,12 +2914,12 @@
    }
   },
   {
-   "id": "F-012",
-   "label": "가구 F-012",
-   "area": "공성면",
-   "areaCode": "F",
-   "x": -5.86,
-   "y": -14.81,
+   "id": "G-001",
+   "label": "가구 G-001",
+   "area": "외남면",
+   "areaCode": "G",
+   "x": -4.86,
+   "y": -3.81,
    "members": [
     {
      "role": "본인",
@@ -2924,12 +2945,12 @@
    }
   },
   {
-   "id": "F-013",
-   "label": "가구 F-013",
-   "area": "공성면",
-   "areaCode": "F",
-   "x": -6.48,
-   "y": -15.87,
+   "id": "G-002",
+   "label": "가구 G-002",
+   "area": "외남면",
+   "areaCode": "G",
+   "x": -5.48,
+   "y": -4.87,
    "members": [
     {
      "role": "본인",
@@ -2963,12 +2984,12 @@
    }
   },
   {
-   "id": "F-014",
-   "label": "가구 F-014",
-   "area": "공성면",
-   "areaCode": "F",
-   "x": -4.46,
-   "y": -13.52,
+   "id": "G-003",
+   "label": "가구 G-003",
+   "area": "외남면",
+   "areaCode": "G",
+   "x": -3.46,
+   "y": -2.52,
    "members": [
     {
      "role": "본인",
@@ -2994,8 +3015,8 @@
    }
   },
   {
-   "id": "G-001",
-   "label": "가구 G-001",
+   "id": "G-004",
+   "label": "가구 G-004",
    "area": "외남면",
    "areaCode": "G",
    "x": -1.93,
@@ -3029,8 +3050,8 @@
    }
   },
   {
-   "id": "G-002",
-   "label": "가구 G-002",
+   "id": "G-005",
+   "label": "가구 G-005",
    "area": "외남면",
    "areaCode": "G",
    "x": -0.95,
@@ -3060,12 +3081,12 @@
    }
   },
   {
-   "id": "G-003",
-   "label": "가구 G-003",
-   "area": "외남면",
-   "areaCode": "G",
-   "x": -4.68,
-   "y": -4.75,
+   "id": "H-001",
+   "label": "가구 H-001",
+   "area": "내서면",
+   "areaCode": "H",
+   "x": -11.68,
+   "y": 0.25,
    "members": [
     {
      "role": "본인",
@@ -3091,12 +3112,12 @@
    }
   },
   {
-   "id": "G-004",
-   "label": "가구 G-004",
-   "area": "외남면",
-   "areaCode": "G",
-   "x": -6.63,
-   "y": -6.11,
+   "id": "H-002",
+   "label": "가구 H-002",
+   "area": "내서면",
+   "areaCode": "H",
+   "x": -13.63,
+   "y": -1.11,
    "members": [
     {
      "role": "본인",
@@ -3126,166 +3147,30 @@
    }
   },
   {
-   "id": "G-005",
-   "label": "가구 G-005",
-   "area": "외남면",
-   "areaCode": "G",
-   "x": -6.15,
-   "y": -5.95,
-   "members": [
-    {
-     "role": "본인",
-     "age": 73
-    },
-    {
-     "role": "배우자",
-     "age": 73
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": null,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "G-006",
-   "label": "가구 G-006",
-   "area": "외남면",
-   "areaCode": "G",
-   "x": -2.44,
-   "y": -1.52,
-   "members": [
-    {
-     "role": "본인",
-     "age": 86
-    },
-    {
-     "role": "배우자",
-     "age": 88
-    },
-    {
-     "role": "자녀",
-     "age": 39
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 67,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 8,
-    "telecom_arrears": true,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": true,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "H-001",
-   "label": "가구 H-001",
-   "area": "내서면",
-   "areaCode": "H",
-   "x": -9.15,
-   "y": 3.46,
-   "members": [
-    {
-     "role": "본인",
-     "age": 89
-    },
-    {
-     "role": "배우자",
-     "age": 88
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 392,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "H-002",
-   "label": "가구 H-002",
-   "area": "내서면",
-   "areaCode": "H",
-   "x": -9.31,
-   "y": -0.18,
-   "members": [
-    {
-     "role": "본인",
-     "age": 71
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 699,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": true,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": true,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
    "id": "H-003",
    "label": "가구 H-003",
    "area": "내서면",
    "areaCode": "H",
-   "x": -13.55,
-   "y": 2.78,
+   "x": -11.7,
+   "y": -1.4,
    "members": [
     {
      "role": "본인",
-     "age": 69
+     "age": 61
     },
     {
      "role": "배우자",
-     "age": 67
+     "age": 57
+    },
+    {
+     "role": "자녀",
+     "age": 8
     }
    ],
    "single": false,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 740,
+   "status": "없음",
+   "daysSinceContact": 851,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3305,23 +3190,54 @@
    "label": "가구 H-004",
    "area": "내서면",
    "areaCode": "H",
-   "x": -12.66,
-   "y": 0.18,
+   "x": -10.02,
+   "y": 1.02,
    "members": [
     {
      "role": "본인",
-     "age": 72
+     "age": 67
     }
    ],
    "single": true,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 698,
+   "daysSinceContact": 894,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
-    "health_ins_arrears": 6,
+    "health_ins_arrears": 1,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": true,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "H-005",
+   "label": "가구 H-005",
+   "area": "내서면",
+   "areaCode": "H",
+   "x": -10.47,
+   "y": -0.23,
+   "members": [
+    {
+     "role": "본인",
+     "age": 85
+    }
+   ],
+   "single": true,
+   "disability": false,
+   "status": "차상위",
+   "daysSinceContact": 893,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
@@ -3332,22 +3248,26 @@
    }
   },
   {
-   "id": "H-005",
-   "label": "가구 H-005",
+   "id": "H-006",
+   "label": "가구 H-006",
    "area": "내서면",
    "areaCode": "H",
-   "x": -10.42,
-   "y": 3.96,
+   "x": -11.76,
+   "y": -2.08,
    "members": [
     {
      "role": "본인",
-     "age": 65
+     "age": 69
+    },
+    {
+     "role": "배우자",
+     "age": 69
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
-   "status": "차상위",
-   "daysSinceContact": 633,
+   "status": "없음",
+   "daysSinceContact": 618,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3356,34 +3276,34 @@
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": true,
+    "medical_overspend": false,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
    }
   },
   {
-   "id": "H-006",
-   "label": "가구 H-006",
+   "id": "H-007",
+   "label": "가구 H-007",
    "area": "내서면",
    "areaCode": "H",
-   "x": -10.98,
-   "y": -1.38,
+   "x": -9.35,
+   "y": -1.1,
    "members": [
     {
      "role": "본인",
-     "age": 72
+     "age": 88
     }
    ],
    "single": true,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": null,
+   "status": "없음",
+   "daysSinceContact": 518,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
-    "health_ins_arrears": 4,
+    "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
@@ -3398,22 +3318,30 @@
    "label": "가구 I-001",
    "area": "모동면",
    "areaCode": "I",
-   "x": -16.21,
-   "y": -13.46,
+   "x": -18.59,
+   "y": -15.16,
    "members": [
     {
      "role": "본인",
-     "age": 79
+     "age": 31
     },
     {
      "role": "배우자",
-     "age": 81
+     "age": 37
+    },
+    {
+     "role": "자녀",
+     "age": 8
+    },
+    {
+     "role": "자녀",
+     "age": 15
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 687,
+   "daysSinceContact": 49,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3421,10 +3349,10 @@
     "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
-    "rent_arrears": true,
+    "rent_arrears": false,
     "medical_overspend": false,
     "job_loss": false,
-    "loan_overdue": true,
+    "loan_overdue": false,
     "benefit_stopped": false
    }
   },
@@ -3433,49 +3361,22 @@
    "label": "가구 I-002",
    "area": "모동면",
    "areaCode": "I",
-   "x": -20.9,
-   "y": -11.92,
+   "x": -22.02,
+   "y": -12.15,
    "members": [
     {
      "role": "본인",
-     "age": 56
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": null,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": true,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": true,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "I-003",
-   "label": "가구 I-003",
-   "area": "모동면",
-   "areaCode": "I",
-   "x": -17.96,
-   "y": -10.42,
-   "members": [
+     "age": 91
+    },
     {
-     "role": "본인",
-     "age": 45
+     "role": "배우자",
+     "age": 90
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 377,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3486,35 +3387,27 @@
     "rent_arrears": false,
     "medical_overspend": true,
     "job_loss": false,
-    "loan_overdue": false,
+    "loan_overdue": true,
     "benefit_stopped": false
    }
   },
   {
-   "id": "I-004",
-   "label": "가구 I-004",
+   "id": "I-003",
+   "label": "가구 I-003",
    "area": "모동면",
    "areaCode": "I",
-   "x": -19.81,
-   "y": -15.93,
+   "x": -21.84,
+   "y": -14.76,
    "members": [
     {
      "role": "본인",
-     "age": 62
-    },
-    {
-     "role": "배우자",
-     "age": 56
-    },
-    {
-     "role": "자녀",
-     "age": 8
+     "age": 70
     }
    ],
-   "single": false,
+   "single": true,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 520,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3524,7 +3417,38 @@
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
     "medical_overspend": false,
-    "job_loss": true,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "I-004",
+   "label": "가구 I-004",
+   "area": "모동면",
+   "areaCode": "I",
+   "x": -18.79,
+   "y": -14.19,
+   "members": [
+    {
+     "role": "본인",
+     "age": 72
+    }
+   ],
+   "single": true,
+   "disability": true,
+   "status": "없음",
+   "daysSinceContact": 295,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": true,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
    }
@@ -3534,23 +3458,23 @@
    "label": "가구 I-005",
    "area": "모동면",
    "areaCode": "I",
-   "x": -15.8,
-   "y": -14.24,
+   "x": -20.8,
+   "y": -12.71,
    "members": [
     {
      "role": "본인",
-     "age": 90
+     "age": 65
     }
    ],
    "single": true,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 378,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
-    "health_ins_arrears": 3,
+    "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
@@ -3565,26 +3489,18 @@
    "label": "가구 I-006",
    "area": "모동면",
    "areaCode": "I",
-   "x": -17.72,
-   "y": -13.37,
+   "x": -17.05,
+   "y": -12.67,
    "members": [
     {
      "role": "본인",
-     "age": 72
-    },
-    {
-     "role": "배우자",
-     "age": 75
-    },
-    {
-     "role": "자녀",
-     "age": 44
+     "age": 68
     }
    ],
-   "single": false,
-   "disability": true,
+   "single": true,
+   "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 590,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3604,27 +3520,31 @@
    "label": "가구 I-007",
    "area": "모동면",
    "areaCode": "I",
-   "x": -21.08,
-   "y": -11.01,
+   "x": -20.25,
+   "y": -12.86,
    "members": [
     {
      "role": "본인",
-     "age": 72
+     "age": 88
+    },
+    {
+     "role": "배우자",
+     "age": 91
     }
    ],
-   "single": true,
-   "disability": false,
+   "single": false,
+   "disability": true,
    "status": "없음",
-   "daysSinceContact": 759,
+   "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
-    "water_cut": true,
+    "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": true,
+    "medical_overspend": false,
     "job_loss": false,
     "loan_overdue": true,
     "benefit_stopped": false
@@ -3635,18 +3555,65 @@
    "label": "가구 I-008",
    "area": "모동면",
    "areaCode": "I",
-   "x": -18.83,
-   "y": -13.97,
+   "x": -20.18,
+   "y": -12.76,
    "members": [
     {
      "role": "본인",
-     "age": 65
+     "age": 33
+    },
+    {
+     "role": "배우자",
+     "age": 31
+    },
+    {
+     "role": "자녀",
+     "age": 18
+    },
+    {
+     "role": "자녀",
+     "age": 7
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": null,
+   "status": "없음",
+   "daysSinceContact": 638,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "I-009",
+   "label": "가구 I-009",
+   "area": "모동면",
+   "areaCode": "I",
+   "x": -17.67,
+   "y": -12.07,
+   "members": [
+    {
+     "role": "본인",
+     "age": 69
+    },
+    {
+     "role": "배우자",
+     "age": 66
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": 426,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3666,12 +3633,12 @@
    "label": "가구 J-001",
    "area": "모서면",
    "areaCode": "J",
-   "x": -16.77,
-   "y": -7.54,
+   "x": -12.37,
+   "y": -9.73,
    "members": [
     {
      "role": "본인",
-     "age": 78
+     "age": 87
     }
    ],
    "single": true,
@@ -3697,39 +3664,8 @@
    "label": "가구 J-002",
    "area": "모서면",
    "areaCode": "J",
-   "x": -13.46,
-   "y": -11.86,
-   "members": [
-    {
-     "role": "본인",
-     "age": 81
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 552,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": true,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "J-003",
-   "label": "가구 J-003",
-   "area": "모서면",
-   "areaCode": "J",
-   "x": -14.12,
-   "y": -8.67,
+   "x": -15.82,
+   "y": -7.75,
    "members": [
     {
      "role": "본인",
@@ -3743,7 +3679,42 @@
    "single": false,
    "disability": true,
    "status": "없음",
-   "daysSinceContact": 596,
+   "daysSinceContact": 298,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": true,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "J-003",
+   "label": "가구 J-003",
+   "area": "모서면",
+   "areaCode": "J",
+   "x": -15.44,
+   "y": -7.26,
+   "members": [
+    {
+     "role": "본인",
+     "age": 69
+    },
+    {
+     "role": "배우자",
+     "age": 65
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3752,7 +3723,7 @@
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": false,
+    "medical_overspend": true,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
@@ -3763,18 +3734,18 @@
    "label": "가구 J-004",
    "area": "모서면",
    "areaCode": "J",
-   "x": -16.35,
-   "y": -8.03,
+   "x": -15.74,
+   "y": -10.57,
    "members": [
     {
      "role": "본인",
-     "age": 61
+     "age": 70
     }
    ],
    "single": true,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": null,
+   "status": "없음",
+   "daysSinceContact": 491,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3782,7 +3753,7 @@
     "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
-    "rent_arrears": false,
+    "rent_arrears": true,
     "medical_overspend": false,
     "job_loss": false,
     "loan_overdue": false,
@@ -3794,26 +3765,26 @@
    "label": "가구 J-005",
    "area": "모서면",
    "areaCode": "J",
-   "x": -17.11,
-   "y": -10.54,
+   "x": -17.78,
+   "y": -8.53,
    "members": [
     {
      "role": "본인",
-     "age": 73
+     "age": 71
     },
     {
      "role": "배우자",
-     "age": 75
+     "age": 71
     }
    ],
    "single": false,
    "disability": false,
-   "status": "차상위",
-   "daysSinceContact": 706,
+   "status": "없음",
+   "daysSinceContact": 814,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
-    "gas_cut": true,
+    "gas_cut": false,
     "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
@@ -3829,31 +3800,27 @@
    "label": "가구 J-006",
    "area": "모서면",
    "areaCode": "J",
-   "x": -15.71,
-   "y": -7.9,
+   "x": -15.74,
+   "y": -12.15,
    "members": [
     {
      "role": "본인",
-     "age": 93
-    },
-    {
-     "role": "배우자",
-     "age": 96
+     "age": 80
     }
    ],
-   "single": false,
+   "single": true,
    "disability": false,
-   "status": "없음",
-   "daysSinceContact": 137,
+   "status": "차상위",
+   "daysSinceContact": 617,
    "indicators": {
-    "power_cut": true,
+    "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
-    "telecom_arrears": true,
+    "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": false,
+    "medical_overspend": true,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
@@ -3864,17 +3831,21 @@
    "label": "가구 J-007",
    "area": "모서면",
    "areaCode": "J",
-   "x": -13.96,
-   "y": -12.14,
+   "x": -17.66,
+   "y": -6.9,
    "members": [
     {
      "role": "본인",
-     "age": 43
+     "age": 82
+    },
+    {
+     "role": "배우자",
+     "age": 78
     }
    ],
    "single": false,
-   "disability": true,
-   "status": "기초생활 수급",
+   "disability": false,
+   "status": "없음",
    "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
@@ -3895,18 +3866,22 @@
    "label": "가구 J-008",
    "area": "모서면",
    "areaCode": "J",
-   "x": -12.01,
-   "y": -8.53,
+   "x": -17.71,
+   "y": -10.52,
    "members": [
     {
      "role": "본인",
-     "age": 67
+     "age": 76
+    },
+    {
+     "role": "배우자",
+     "age": 78
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 455,
+   "daysSinceContact": 492,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -3926,32 +3901,20 @@
    "label": "가구 K-001",
    "area": "화동면",
    "areaCode": "K",
-   "x": -17.11,
-   "y": 1.55,
+   "x": -16.13,
+   "y": -3.39,
    "members": [
     {
      "role": "본인",
-     "age": 58
-    },
-    {
-     "role": "배우자",
-     "age": 63
-    },
-    {
-     "role": "자녀",
-     "age": 15
-    },
-    {
-     "role": "자녀",
-     "age": 16
+     "age": 71
     }
    ],
-   "single": false,
+   "single": true,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 87,
+   "status": "없음",
+   "daysSinceContact": null,
    "indicators": {
-    "power_cut": false,
+    "power_cut": true,
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
@@ -3969,27 +3932,31 @@
    "label": "가구 K-002",
    "area": "화동면",
    "areaCode": "K",
-   "x": -18.08,
-   "y": 0.27,
+   "x": -19.0,
+   "y": -1.29,
    "members": [
     {
      "role": "본인",
-     "age": 91
+     "age": 85
+    },
+    {
+     "role": "배우자",
+     "age": 87
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 18,
+   "status": "차상위",
+   "daysSinceContact": 383,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
-    "gas_cut": true,
+    "gas_cut": false,
     "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": false,
+    "medical_overspend": true,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
@@ -4000,20 +3967,16 @@
    "label": "가구 K-003",
    "area": "화동면",
    "areaCode": "K",
-   "x": -17.99,
-   "y": 0.71,
+   "x": -14.21,
+   "y": 1.87,
    "members": [
     {
      "role": "본인",
-     "age": 38
+     "age": 69
     },
     {
-     "role": "자녀",
-     "age": 1
-    },
-    {
-     "role": "자녀",
-     "age": 3
+     "role": "배우자",
+     "age": 72
     }
    ],
    "single": false,
@@ -4025,10 +3988,10 @@
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
-    "telecom_arrears": true,
+    "telecom_arrears": false,
     "mgmt_fee_arrears": false,
-    "rent_arrears": true,
-    "medical_overspend": false,
+    "rent_arrears": false,
+    "medical_overspend": true,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
@@ -4039,23 +4002,15 @@
    "label": "가구 K-004",
    "area": "화동면",
    "areaCode": "K",
-   "x": -13.48,
-   "y": 1.04,
+   "x": -18.89,
+   "y": 0.27,
    "members": [
     {
      "role": "본인",
-     "age": 32
-    },
-    {
-     "role": "배우자",
-     "age": 29
-    },
-    {
-     "role": "자녀",
-     "age": 11
+     "age": 76
     }
    ],
-   "single": false,
+   "single": true,
    "disability": false,
    "status": "없음",
    "daysSinceContact": null,
@@ -4078,27 +4033,27 @@
    "label": "가구 K-005",
    "area": "화동면",
    "areaCode": "K",
-   "x": -15.84,
-   "y": -2.61,
+   "x": -12.9,
+   "y": -0.35,
    "members": [
     {
      "role": "본인",
-     "age": 30
+     "age": 71
     },
     {
-     "role": "자녀",
-     "age": 9
+     "role": "배우자",
+     "age": 67
     }
    ],
    "single": false,
-   "disability": true,
-   "status": "기초생활 수급",
-   "daysSinceContact": 807,
+   "disability": false,
+   "status": "차상위",
+   "daysSinceContact": 641,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
-    "health_ins_arrears": 1,
+    "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
@@ -4111,6 +4066,37 @@
   {
    "id": "K-006",
    "label": "가구 K-006",
+   "area": "화동면",
+   "areaCode": "K",
+   "x": -15.15,
+   "y": 2.19,
+   "members": [
+    {
+     "role": "본인",
+     "age": 89
+    }
+   ],
+   "single": true,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": 668,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "K-007",
+   "label": "가구 K-007",
    "area": "화동면",
    "areaCode": "K",
    "x": -15.24,
@@ -4144,12 +4130,12 @@
    }
   },
   {
-   "id": "K-007",
-   "label": "가구 K-007",
-   "area": "화동면",
-   "areaCode": "K",
-   "x": -18.86,
-   "y": -0.89,
+   "id": "L-001",
+   "label": "가구 L-001",
+   "area": "화서면",
+   "areaCode": "L",
+   "x": -22.86,
+   "y": 6.11,
    "members": [
     {
      "role": "본인",
@@ -4179,8 +4165,8 @@
    }
   },
   {
-   "id": "L-001",
-   "label": "가구 L-001",
+   "id": "L-002",
+   "label": "가구 L-002",
    "area": "화서면",
    "areaCode": "L",
    "x": -18.89,
@@ -4214,8 +4200,8 @@
    }
   },
   {
-   "id": "L-002",
-   "label": "가구 L-002",
+   "id": "L-003",
+   "label": "가구 L-003",
    "area": "화서면",
    "areaCode": "L",
    "x": -22.6,
@@ -4249,8 +4235,8 @@
    }
   },
   {
-   "id": "L-003",
-   "label": "가구 L-003",
+   "id": "L-004",
+   "label": "가구 L-004",
    "area": "화서면",
    "areaCode": "L",
    "x": -20.77,
@@ -4280,8 +4266,8 @@
    }
   },
   {
-   "id": "L-004",
-   "label": "가구 L-004",
+   "id": "L-005",
+   "label": "가구 L-005",
    "area": "화서면",
    "areaCode": "L",
    "x": -18.63,
@@ -4319,8 +4305,8 @@
    }
   },
   {
-   "id": "L-005",
-   "label": "가구 L-005",
+   "id": "L-006",
+   "label": "가구 L-006",
    "area": "화서면",
    "areaCode": "L",
    "x": -18.02,
@@ -4350,8 +4336,8 @@
    }
   },
   {
-   "id": "L-006",
-   "label": "가구 L-006",
+   "id": "L-007",
+   "label": "가구 L-007",
    "area": "화서면",
    "areaCode": "L",
    "x": -18.62,
@@ -4385,8 +4371,8 @@
    }
   },
   {
-   "id": "L-007",
-   "label": "가구 L-007",
+   "id": "L-008",
+   "label": "가구 L-008",
    "area": "화서면",
    "areaCode": "L",
    "x": -22.73,
@@ -4416,8 +4402,8 @@
    }
   },
   {
-   "id": "L-008",
-   "label": "가구 L-008",
+   "id": "L-009",
+   "label": "가구 L-009",
    "area": "화서면",
    "areaCode": "L",
    "x": -18.72,
@@ -4451,12 +4437,12 @@
    }
   },
   {
-   "id": "L-009",
-   "label": "가구 L-009",
-   "area": "화서면",
-   "areaCode": "L",
-   "x": -20.49,
-   "y": 5.18,
+   "id": "M-001",
+   "label": "가구 M-001",
+   "area": "화북면",
+   "areaCode": "M",
+   "x": -22.49,
+   "y": 14.18,
    "members": [
     {
      "role": "본인",
@@ -4482,8 +4468,8 @@
    }
   },
   {
-   "id": "M-001",
-   "label": "가구 M-001",
+   "id": "M-002",
+   "label": "가구 M-002",
    "area": "화북면",
    "areaCode": "M",
    "x": -23.58,
@@ -4513,8 +4499,8 @@
    }
   },
   {
-   "id": "M-002",
-   "label": "가구 M-002",
+   "id": "M-003",
+   "label": "가구 M-003",
    "area": "화북면",
    "areaCode": "M",
    "x": -19.58,
@@ -4544,8 +4530,8 @@
    }
   },
   {
-   "id": "M-003",
-   "label": "가구 M-003",
+   "id": "M-004",
+   "label": "가구 M-004",
    "area": "화북면",
    "areaCode": "M",
    "x": -21.2,
@@ -4587,8 +4573,8 @@
    }
   },
   {
-   "id": "M-004",
-   "label": "가구 M-004",
+   "id": "M-005",
+   "label": "가구 M-005",
    "area": "화북면",
    "areaCode": "M",
    "x": -20.62,
@@ -4626,12 +4612,12 @@
    }
   },
   {
-   "id": "M-005",
-   "label": "가구 M-005",
-   "area": "화북면",
-   "areaCode": "M",
-   "x": -22.58,
-   "y": 12.02,
+   "id": "N-001",
+   "label": "가구 N-001",
+   "area": "외서면",
+   "areaCode": "N",
+   "x": -10.58,
+   "y": 7.02,
    "members": [
     {
      "role": "본인",
@@ -4657,8 +4643,8 @@
    }
   },
   {
-   "id": "N-001",
-   "label": "가구 N-001",
+   "id": "N-002",
+   "label": "가구 N-002",
    "area": "외서면",
    "areaCode": "N",
    "x": -8.4,
@@ -4688,8 +4674,8 @@
    }
   },
   {
-   "id": "N-002",
-   "label": "가구 N-002",
+   "id": "N-003",
+   "label": "가구 N-003",
    "area": "외서면",
    "areaCode": "N",
    "x": -9.55,
@@ -4723,8 +4709,8 @@
    }
   },
   {
-   "id": "N-003",
-   "label": "가구 N-003",
+   "id": "N-004",
+   "label": "가구 N-004",
    "area": "외서면",
    "areaCode": "N",
    "x": -8.09,
@@ -4754,8 +4740,8 @@
    }
   },
   {
-   "id": "N-004",
-   "label": "가구 N-004",
+   "id": "N-005",
+   "label": "가구 N-005",
    "area": "외서면",
    "areaCode": "N",
    "x": -7.0,
@@ -4785,8 +4771,8 @@
    }
   },
   {
-   "id": "N-005",
-   "label": "가구 N-005",
+   "id": "N-006",
+   "label": "가구 N-006",
    "area": "외서면",
    "areaCode": "N",
    "x": -10.95,
@@ -4816,8 +4802,8 @@
    }
   },
   {
-   "id": "N-006",
-   "label": "가구 N-006",
+   "id": "N-007",
+   "label": "가구 N-007",
    "area": "외서면",
    "areaCode": "N",
    "x": -8.96,
@@ -4847,8 +4833,8 @@
    }
   },
   {
-   "id": "N-007",
-   "label": "가구 N-007",
+   "id": "N-008",
+   "label": "가구 N-008",
    "area": "외서면",
    "areaCode": "N",
    "x": -13.22,
@@ -4878,8 +4864,8 @@
    }
   },
   {
-   "id": "N-008",
-   "label": "가구 N-008",
+   "id": "N-009",
+   "label": "가구 N-009",
    "area": "외서면",
    "areaCode": "N",
    "x": -9.6,
@@ -4909,12 +4895,12 @@
    }
   },
   {
-   "id": "N-009",
-   "label": "가구 N-009",
-   "area": "외서면",
-   "areaCode": "N",
+   "id": "O-001",
+   "label": "가구 O-001",
+   "area": "은척면",
+   "areaCode": "O",
    "x": -9.05,
-   "y": 11.49,
+   "y": 18.49,
    "members": [
     {
      "role": "본인",
@@ -4952,8 +4938,8 @@
    }
   },
   {
-   "id": "O-001",
-   "label": "가구 O-001",
+   "id": "O-002",
+   "label": "가구 O-002",
    "area": "은척면",
    "areaCode": "O",
    "x": -8.7,
@@ -4983,8 +4969,8 @@
    }
   },
   {
-   "id": "O-002",
-   "label": "가구 O-002",
+   "id": "O-003",
+   "label": "가구 O-003",
    "area": "은척면",
    "areaCode": "O",
    "x": -9.4,
@@ -5022,8 +5008,8 @@
    }
   },
   {
-   "id": "O-003",
-   "label": "가구 O-003",
+   "id": "O-004",
+   "label": "가구 O-004",
    "area": "은척면",
    "areaCode": "O",
    "x": -9.41,
@@ -5053,8 +5039,8 @@
    }
   },
   {
-   "id": "O-004",
-   "label": "가구 O-004",
+   "id": "O-005",
+   "label": "가구 O-005",
    "area": "은척면",
    "areaCode": "O",
    "x": -12.3,
@@ -5084,12 +5070,12 @@
    }
   },
   {
-   "id": "O-005",
-   "label": "가구 O-005",
-   "area": "은척면",
-   "areaCode": "O",
-   "x": -11.35,
-   "y": 17.09,
+   "id": "P-001",
+   "label": "가구 P-001",
+   "area": "공검면",
+   "areaCode": "P",
+   "x": 0.65,
+   "y": 12.09,
    "members": [
     {
      "role": "본인",
@@ -5131,8 +5117,8 @@
    }
   },
   {
-   "id": "P-001",
-   "label": "가구 P-001",
+   "id": "P-002",
+   "label": "가구 P-002",
    "area": "공검면",
    "areaCode": "P",
    "x": 2.98,
@@ -5170,8 +5156,8 @@
    }
   },
   {
-   "id": "P-002",
-   "label": "가구 P-002",
+   "id": "P-003",
+   "label": "가구 P-003",
    "area": "공검면",
    "areaCode": "P",
    "x": 0.96,
@@ -5201,8 +5187,8 @@
    }
   },
   {
-   "id": "P-003",
-   "label": "가구 P-003",
+   "id": "P-004",
+   "label": "가구 P-004",
    "area": "공검면",
    "areaCode": "P",
    "x": 3.75,
@@ -5232,8 +5218,8 @@
    }
   },
   {
-   "id": "P-004",
-   "label": "가구 P-004",
+   "id": "P-005",
+   "label": "가구 P-005",
    "area": "공검면",
    "areaCode": "P",
    "x": 1.32,
@@ -5267,8 +5253,8 @@
    }
   },
   {
-   "id": "P-005",
-   "label": "가구 P-005",
+   "id": "P-006",
+   "label": "가구 P-006",
    "area": "공검면",
    "areaCode": "P",
    "x": 1.16,
@@ -5298,8 +5284,8 @@
    }
   },
   {
-   "id": "P-006",
-   "label": "가구 P-006",
+   "id": "P-007",
+   "label": "가구 P-007",
    "area": "공검면",
    "areaCode": "P",
    "x": -0.66,
@@ -5333,12 +5319,12 @@
    }
   },
   {
-   "id": "P-007",
-   "label": "가구 P-007",
-   "area": "공검면",
-   "areaCode": "P",
-   "x": 1.08,
-   "y": 13.76,
+   "id": "Q-001",
+   "label": "가구 Q-001",
+   "area": "이안면",
+   "areaCode": "Q",
+   "x": -4.92,
+   "y": 19.76,
    "members": [
     {
      "role": "본인",
@@ -5364,12 +5350,12 @@
    }
   },
   {
-   "id": "P-008",
-   "label": "가구 P-008",
-   "area": "공검면",
-   "areaCode": "P",
-   "x": 4.85,
-   "y": 10.87,
+   "id": "Q-002",
+   "label": "가구 Q-002",
+   "area": "이안면",
+   "areaCode": "Q",
+   "x": -1.15,
+   "y": 16.87,
    "members": [
     {
      "role": "본인",
@@ -5399,8 +5385,8 @@
    }
   },
   {
-   "id": "Q-001",
-   "label": "가구 Q-001",
+   "id": "Q-003",
+   "label": "가구 Q-003",
    "area": "이안면",
    "areaCode": "Q",
    "x": -6.13,
@@ -5430,8 +5416,8 @@
    }
   },
   {
-   "id": "Q-002",
-   "label": "가구 Q-002",
+   "id": "Q-004",
+   "label": "가구 Q-004",
    "area": "이안면",
    "areaCode": "Q",
    "x": -0.52,
@@ -5461,8 +5447,8 @@
    }
   },
   {
-   "id": "Q-003",
-   "label": "가구 Q-003",
+   "id": "Q-005",
+   "label": "가구 Q-005",
    "area": "이안면",
    "areaCode": "Q",
    "x": -5.19,
@@ -5492,8 +5478,8 @@
    }
   },
   {
-   "id": "Q-004",
-   "label": "가구 Q-004",
+   "id": "Q-006",
+   "label": "가구 Q-006",
    "area": "이안면",
    "areaCode": "Q",
    "x": -6.15,
@@ -5527,8 +5513,8 @@
    }
   },
   {
-   "id": "Q-005",
-   "label": "가구 Q-005",
+   "id": "Q-007",
+   "label": "가구 Q-007",
    "area": "이안면",
    "areaCode": "Q",
    "x": -1.05,
@@ -5558,12 +5544,12 @@
    }
   },
   {
-   "id": "Q-006",
-   "label": "가구 Q-006",
-   "area": "이안면",
-   "areaCode": "Q",
-   "x": -2.18,
-   "y": 15.08,
+   "id": "R-001",
+   "label": "가구 R-001",
+   "area": "화남면",
+   "areaCode": "R",
+   "x": -20.18,
+   "y": -5.92,
    "members": [
     {
      "role": "본인",
@@ -5593,12 +5579,12 @@
    }
   },
   {
-   "id": "Q-007",
-   "label": "가구 Q-007",
-   "area": "이안면",
-   "areaCode": "Q",
-   "x": -4.51,
-   "y": 17.25,
+   "id": "R-002",
+   "label": "가구 R-002",
+   "area": "화남면",
+   "areaCode": "R",
+   "x": -22.51,
+   "y": -3.75,
    "members": [
     {
      "role": "본인",
@@ -5624,8 +5610,8 @@
    }
   },
   {
-   "id": "R-001",
-   "label": "가구 R-001",
+   "id": "R-003",
+   "label": "가구 R-003",
    "area": "화남면",
    "areaCode": "R",
    "x": -21.57,
@@ -5663,92 +5649,22 @@
    }
   },
   {
-   "id": "R-002",
-   "label": "가구 R-002",
-   "area": "화남면",
-   "areaCode": "R",
-   "x": -23.57,
-   "y": -3.77,
-   "members": [
-    {
-     "role": "본인",
-     "age": 93
-    },
-    {
-     "role": "배우자",
-     "age": 96
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 792,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "R-003",
-   "label": "가구 R-003",
-   "area": "화남면",
-   "areaCode": "R",
-   "x": -20.78,
-   "y": -2.03,
-   "members": [
-    {
-     "role": "본인",
-     "age": 36
-    },
-    {
-     "role": "배우자",
-     "age": 41
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": null,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": true,
-    "benefit_stopped": false
-   }
-  },
-  {
    "id": "S-001",
    "label": "가구 S-001",
    "area": "남원동",
    "areaCode": "S",
-   "x": -1.68,
-   "y": -1.69,
+   "x": -1.47,
+   "y": -1.78,
    "members": [
     {
      "role": "본인",
-     "age": 73
+     "age": 31
     }
    ],
    "single": true,
    "disability": false,
-   "status": "차상위",
-   "daysSinceContact": 285,
+   "status": "없음",
+   "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -5768,12 +5684,86 @@
    "label": "가구 S-002",
    "area": "남원동",
    "areaCode": "S",
+   "x": -1.37,
+   "y": -0.67,
+   "members": [
+    {
+     "role": "본인",
+     "age": 69
+    }
+   ],
+   "single": true,
+   "disability": false,
+   "status": "차상위",
+   "daysSinceContact": null,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": true,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "S-003",
+   "label": "가구 S-003",
+   "area": "남원동",
+   "areaCode": "S",
+   "x": -0.68,
+   "y": -0.96,
+   "members": [
+    {
+     "role": "본인",
+     "age": 29
+    },
+    {
+     "role": "배우자",
+     "age": 35
+    },
+    {
+     "role": "자녀",
+     "age": 18
+    },
+    {
+     "role": "자녀",
+     "age": 15
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "기초생활 수급",
+   "daysSinceContact": 882,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": true,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "S-004",
+   "label": "가구 S-004",
+   "area": "남원동",
+   "areaCode": "S",
    "x": -0.93,
    "y": -1.99,
    "members": [
     {
      "role": "본인",
-     "age": 70
+     "age": 85
     }
    ],
    "single": true,
@@ -5795,8 +5785,8 @@
    }
   },
   {
-   "id": "S-003",
-   "label": "가구 S-003",
+   "id": "S-005",
+   "label": "가구 S-005",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.55,
@@ -5838,8 +5828,8 @@
    }
   },
   {
-   "id": "S-004",
-   "label": "가구 S-004",
+   "id": "S-006",
+   "label": "가구 S-006",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.32,
@@ -5869,8 +5859,8 @@
    }
   },
   {
-   "id": "S-005",
-   "label": "가구 S-005",
+   "id": "S-007",
+   "label": "가구 S-007",
    "area": "남원동",
    "areaCode": "S",
    "x": -0.72,
@@ -5904,8 +5894,8 @@
    }
   },
   {
-   "id": "S-006",
-   "label": "가구 S-006",
+   "id": "S-008",
+   "label": "가구 S-008",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.15,
@@ -5947,8 +5937,8 @@
    }
   },
   {
-   "id": "S-007",
-   "label": "가구 S-007",
+   "id": "S-009",
+   "label": "가구 S-009",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.38,
@@ -5978,8 +5968,8 @@
    }
   },
   {
-   "id": "S-008",
-   "label": "가구 S-008",
+   "id": "S-010",
+   "label": "가구 S-010",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.67,
@@ -6009,8 +5999,8 @@
    }
   },
   {
-   "id": "S-009",
-   "label": "가구 S-009",
+   "id": "S-011",
+   "label": "가구 S-011",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.0,
@@ -6040,8 +6030,8 @@
    }
   },
   {
-   "id": "S-010",
-   "label": "가구 S-010",
+   "id": "S-012",
+   "label": "가구 S-012",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.43,
@@ -6079,8 +6069,8 @@
    }
   },
   {
-   "id": "S-011",
-   "label": "가구 S-011",
+   "id": "S-013",
+   "label": "가구 S-013",
    "area": "남원동",
    "areaCode": "S",
    "x": -0.88,
@@ -6122,8 +6112,8 @@
    }
   },
   {
-   "id": "S-012",
-   "label": "가구 S-012",
+   "id": "S-014",
+   "label": "가구 S-014",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.13,
@@ -6161,8 +6151,8 @@
    }
   },
   {
-   "id": "S-013",
-   "label": "가구 S-013",
+   "id": "S-015",
+   "label": "가구 S-015",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.03,
@@ -6204,8 +6194,8 @@
    }
   },
   {
-   "id": "S-014",
-   "label": "가구 S-014",
+   "id": "S-016",
+   "label": "가구 S-016",
    "area": "남원동",
    "areaCode": "S",
    "x": -0.66,
@@ -6247,8 +6237,8 @@
    }
   },
   {
-   "id": "S-015",
-   "label": "가구 S-015",
+   "id": "S-017",
+   "label": "가구 S-017",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.09,
@@ -6278,8 +6268,8 @@
    }
   },
   {
-   "id": "S-016",
-   "label": "가구 S-016",
+   "id": "S-018",
+   "label": "가구 S-018",
    "area": "남원동",
    "areaCode": "S",
    "x": -0.95,
@@ -6321,8 +6311,8 @@
    }
   },
   {
-   "id": "S-017",
-   "label": "가구 S-017",
+   "id": "S-019",
+   "label": "가구 S-019",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.09,
@@ -6356,8 +6346,8 @@
    }
   },
   {
-   "id": "S-018",
-   "label": "가구 S-018",
+   "id": "S-020",
+   "label": "가구 S-020",
    "area": "남원동",
    "areaCode": "S",
    "x": -0.79,
@@ -6403,8 +6393,8 @@
    }
   },
   {
-   "id": "S-019",
-   "label": "가구 S-019",
+   "id": "S-021",
+   "label": "가구 S-021",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.34,
@@ -6438,8 +6428,8 @@
    }
   },
   {
-   "id": "S-020",
-   "label": "가구 S-020",
+   "id": "S-022",
+   "label": "가구 S-022",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.42,
@@ -6469,8 +6459,8 @@
    }
   },
   {
-   "id": "S-021",
-   "label": "가구 S-021",
+   "id": "S-023",
+   "label": "가구 S-023",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.38,
@@ -6504,8 +6494,8 @@
    }
   },
   {
-   "id": "S-022",
-   "label": "가구 S-022",
+   "id": "S-024",
+   "label": "가구 S-024",
    "area": "남원동",
    "areaCode": "S",
    "x": -0.67,
@@ -6539,8 +6529,8 @@
    }
   },
   {
-   "id": "S-023",
-   "label": "가구 S-023",
+   "id": "S-025",
+   "label": "가구 S-025",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.45,
@@ -6570,8 +6560,8 @@
    }
   },
   {
-   "id": "S-024",
-   "label": "가구 S-024",
+   "id": "S-026",
+   "label": "가구 S-026",
    "area": "남원동",
    "areaCode": "S",
    "x": -2.37,
@@ -6601,8 +6591,8 @@
    }
   },
   {
-   "id": "S-025",
-   "label": "가구 S-025",
+   "id": "S-027",
+   "label": "가구 S-027",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.71,
@@ -6632,8 +6622,8 @@
    }
   },
   {
-   "id": "S-026",
-   "label": "가구 S-026",
+   "id": "S-028",
+   "label": "가구 S-028",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.35,
@@ -6663,8 +6653,8 @@
    }
   },
   {
-   "id": "S-027",
-   "label": "가구 S-027",
+   "id": "S-029",
+   "label": "가구 S-029",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.78,
@@ -6698,8 +6688,8 @@
    }
   },
   {
-   "id": "S-028",
-   "label": "가구 S-028",
+   "id": "S-030",
+   "label": "가구 S-030",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.9,
@@ -6741,8 +6731,8 @@
    }
   },
   {
-   "id": "S-029",
-   "label": "가구 S-029",
+   "id": "S-031",
+   "label": "가구 S-031",
    "area": "남원동",
    "areaCode": "S",
    "x": -0.67,
@@ -6776,8 +6766,8 @@
    }
   },
   {
-   "id": "S-030",
-   "label": "가구 S-030",
+   "id": "S-032",
+   "label": "가구 S-032",
    "area": "남원동",
    "areaCode": "S",
    "x": -1.14,
@@ -6807,12 +6797,12 @@
    }
   },
   {
-   "id": "S-031",
-   "label": "가구 S-031",
-   "area": "남원동",
-   "areaCode": "S",
-   "x": -0.83,
-   "y": -1.92,
+   "id": "T-001",
+   "label": "가구 T-001",
+   "area": "북문동",
+   "areaCode": "T",
+   "x": 0.67,
+   "y": 1.58,
    "members": [
     {
      "role": "본인",
@@ -6846,12 +6836,12 @@
    }
   },
   {
-   "id": "S-032",
-   "label": "가구 S-032",
-   "area": "남원동",
-   "areaCode": "S",
-   "x": -1.54,
-   "y": -1.58,
+   "id": "T-002",
+   "label": "가구 T-002",
+   "area": "북문동",
+   "areaCode": "T",
+   "x": -0.04,
+   "y": 1.92,
    "members": [
     {
      "role": "본인",
@@ -6885,12 +6875,12 @@
    }
   },
   {
-   "id": "S-033",
-   "label": "가구 S-033",
-   "area": "남원동",
-   "areaCode": "S",
-   "x": -1.53,
-   "y": -2.4,
+   "id": "T-003",
+   "label": "가구 T-003",
+   "area": "북문동",
+   "areaCode": "T",
+   "x": -0.03,
+   "y": 1.1,
    "members": [
     {
      "role": "본인",
@@ -6920,8 +6910,8 @@
    }
   },
   {
-   "id": "T-001",
-   "label": "가구 T-001",
+   "id": "T-004",
+   "label": "가구 T-004",
    "area": "북문동",
    "areaCode": "T",
    "x": 0.74,
@@ -6951,8 +6941,8 @@
    }
   },
   {
-   "id": "T-002",
-   "label": "가구 T-002",
+   "id": "T-005",
+   "label": "가구 T-005",
    "area": "북문동",
    "areaCode": "T",
    "x": 0.58,
@@ -6986,8 +6976,8 @@
    }
   },
   {
-   "id": "T-003",
-   "label": "가구 T-003",
+   "id": "T-006",
+   "label": "가구 T-006",
    "area": "북문동",
    "areaCode": "T",
    "x": 0.39,
@@ -7029,8 +7019,8 @@
    }
   },
   {
-   "id": "T-004",
-   "label": "가구 T-004",
+   "id": "T-007",
+   "label": "가구 T-007",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.36,
@@ -7064,8 +7054,8 @@
    }
   },
   {
-   "id": "T-005",
-   "label": "가구 T-005",
+   "id": "T-008",
+   "label": "가구 T-008",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.16,
@@ -7073,19 +7063,15 @@
    "members": [
     {
      "role": "본인",
-     "age": 91
+     "age": 38
     },
     {
      "role": "배우자",
-     "age": 94
-    },
-    {
-     "role": "자녀",
-     "age": 49
+     "age": 40
     }
    ],
    "single": false,
-   "disability": true,
+   "disability": false,
    "status": "없음",
    "daysSinceContact": null,
    "indicators": {
@@ -7096,15 +7082,15 @@
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": true,
-    "job_loss": false,
+    "medical_overspend": false,
+    "job_loss": true,
     "loan_overdue": false,
     "benefit_stopped": false
    }
   },
   {
-   "id": "T-006",
-   "label": "가구 T-006",
+   "id": "T-009",
+   "label": "가구 T-009",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.53,
@@ -7142,8 +7128,8 @@
    }
   },
   {
-   "id": "T-007",
-   "label": "가구 T-007",
+   "id": "T-010",
+   "label": "가구 T-010",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.69,
@@ -7173,8 +7159,8 @@
    }
   },
   {
-   "id": "T-008",
-   "label": "가구 T-008",
+   "id": "T-011",
+   "label": "가구 T-011",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.22,
@@ -7204,8 +7190,8 @@
    }
   },
   {
-   "id": "T-009",
-   "label": "가구 T-009",
+   "id": "T-012",
+   "label": "가구 T-012",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.36,
@@ -7239,8 +7225,8 @@
    }
   },
   {
-   "id": "T-010",
-   "label": "가구 T-010",
+   "id": "T-013",
+   "label": "가구 T-013",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.89,
@@ -7270,8 +7256,8 @@
    }
   },
   {
-   "id": "T-011",
-   "label": "가구 T-011",
+   "id": "T-014",
+   "label": "가구 T-014",
    "area": "북문동",
    "areaCode": "T",
    "x": 0.56,
@@ -7301,8 +7287,8 @@
    }
   },
   {
-   "id": "T-012",
-   "label": "가구 T-012",
+   "id": "T-015",
+   "label": "가구 T-015",
    "area": "북문동",
    "areaCode": "T",
    "x": 0.65,
@@ -7332,8 +7318,8 @@
    }
   },
   {
-   "id": "T-013",
-   "label": "가구 T-013",
+   "id": "T-016",
+   "label": "가구 T-016",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.62,
@@ -7371,8 +7357,8 @@
    }
   },
   {
-   "id": "T-014",
-   "label": "가구 T-014",
+   "id": "T-017",
+   "label": "가구 T-017",
    "area": "북문동",
    "areaCode": "T",
    "x": -0.25,
@@ -7402,8 +7388,8 @@
    }
   },
   {
-   "id": "T-015",
-   "label": "가구 T-015",
+   "id": "T-018",
+   "label": "가구 T-018",
    "area": "북문동",
    "areaCode": "T",
    "x": 0.41,
@@ -7433,90 +7419,16 @@
    }
   },
   {
-   "id": "T-016",
-   "label": "가구 T-016",
+   "id": "T-019",
+   "label": "가구 T-019",
    "area": "북문동",
    "areaCode": "T",
-   "x": -0.45,
-   "y": 1.56,
+   "x": 0.84,
+   "y": 1.68,
    "members": [
     {
      "role": "본인",
-     "age": 74
-    },
-    {
-     "role": "배우자",
-     "age": 73
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 129,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "T-017",
-   "label": "가구 T-017",
-   "area": "북문동",
-   "areaCode": "T",
-   "x": -0.05,
-   "y": 2.24,
-   "members": [
-    {
-     "role": "본인",
-     "age": 83
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 327,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "T-018",
-   "label": "가구 T-018",
-   "area": "북문동",
-   "areaCode": "T",
-   "x": -0.75,
-   "y": 2.64,
-   "members": [
-    {
-     "role": "본인",
-     "age": 48
-    },
-    {
-     "role": "배우자",
-     "age": 42
-    },
-    {
-     "role": "자녀",
-     "age": 2
+     "age": 64
     },
     {
      "role": "자녀",
@@ -7526,43 +7438,12 @@
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 482,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "T-019",
-   "label": "가구 T-019",
-   "area": "북문동",
-   "areaCode": "T",
-   "x": 0.6,
-   "y": 1.74,
-   "members": [
-    {
-     "role": "본인",
-     "age": 79
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 648,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 5,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
@@ -7577,21 +7458,29 @@
    "label": "가구 T-020",
    "area": "북문동",
    "areaCode": "T",
-   "x": -0.41,
-   "y": 1.58,
+   "x": 0.9,
+   "y": 1.67,
    "members": [
     {
      "role": "본인",
-     "age": 30
+     "age": 87
+    },
+    {
+     "role": "배우자",
+     "age": 90
+    },
+    {
+     "role": "자녀",
+     "age": 36
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 809,
+   "daysSinceContact": 505,
    "indicators": {
     "power_cut": false,
-    "water_cut": true,
+    "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
     "telecom_arrears": false,
@@ -7608,18 +7497,22 @@
    "label": "가구 T-021",
    "area": "북문동",
    "areaCode": "T",
-   "x": 0.24,
-   "y": 1.17,
+   "x": -0.07,
+   "y": 1.09,
    "members": [
     {
      "role": "본인",
-     "age": 56
+     "age": 68
+    },
+    {
+     "role": "배우자",
+     "age": 67
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 239,
+   "daysSinceContact": 278,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -7639,22 +7532,26 @@
    "label": "가구 T-022",
    "area": "북문동",
    "areaCode": "T",
-   "x": 0.05,
-   "y": 1.7,
+   "x": -0.84,
+   "y": 1.55,
    "members": [
     {
      "role": "본인",
-     "age": 60
+     "age": 91
+    },
+    {
+     "role": "배우자",
+     "age": 93
     },
     {
      "role": "자녀",
-     "age": 13
+     "age": 38
     }
    ],
    "single": false,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 794,
+   "status": "없음",
+   "daysSinceContact": 442,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -7663,7 +7560,7 @@
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": false,
+    "medical_overspend": true,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
@@ -7674,28 +7571,32 @@
    "label": "가구 T-023",
    "area": "북문동",
    "areaCode": "T",
-   "x": 0.47,
-   "y": 1.14,
+   "x": -0.35,
+   "y": 1.23,
    "members": [
     {
      "role": "본인",
-     "age": 59
+     "age": 78
+    },
+    {
+     "role": "배우자",
+     "age": 75
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 883,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
-    "gas_cut": true,
+    "gas_cut": false,
     "health_ins_arrears": 0,
-    "telecom_arrears": false,
+    "telecom_arrears": true,
     "mgmt_fee_arrears": false,
-    "rent_arrears": false,
+    "rent_arrears": true,
     "medical_overspend": false,
-    "job_loss": true,
+    "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
    }
@@ -7705,16 +7606,20 @@
    "label": "가구 T-024",
    "area": "북문동",
    "areaCode": "T",
-   "x": 0.21,
-   "y": 2.45,
+   "x": -0.02,
+   "y": 2.86,
    "members": [
     {
      "role": "본인",
-     "age": 73
+     "age": 41
     },
     {
      "role": "배우자",
-     "age": 72
+     "age": 37
+    },
+    {
+     "role": "자녀",
+     "age": 3
     }
    ],
    "single": false,
@@ -7724,8 +7629,8 @@
    "indicators": {
     "power_cut": false,
     "water_cut": false,
-    "gas_cut": true,
-    "health_ins_arrears": 7,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
@@ -7740,34 +7645,46 @@
    "label": "가구 T-025",
    "area": "북문동",
    "areaCode": "T",
-   "x": 0.38,
-   "y": 2.46,
+   "x": 0.31,
+   "y": 1.97,
    "members": [
     {
      "role": "본인",
-     "age": 28
+     "age": 45
+    },
+    {
+     "role": "배우자",
+     "age": 51
     },
     {
      "role": "자녀",
-     "age": 6
+     "age": 3
+    },
+    {
+     "role": "자녀",
+     "age": 7
+    },
+    {
+     "role": "자녀",
+     "age": 10
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 140,
+   "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
-    "telecom_arrears": true,
+    "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": false,
+    "medical_overspend": true,
     "job_loss": false,
     "loan_overdue": false,
-    "benefit_stopped": false
+    "benefit_stopped": true
    }
   },
   {
@@ -7775,34 +7692,18 @@
    "label": "가구 T-026",
    "area": "북문동",
    "areaCode": "T",
-   "x": -0.15,
-   "y": 2.86,
+   "x": -0.79,
+   "y": 1.85,
    "members": [
     {
      "role": "본인",
-     "age": 40
-    },
-    {
-     "role": "배우자",
-     "age": 44
-    },
-    {
-     "role": "자녀",
-     "age": 11
-    },
-    {
-     "role": "자녀",
-     "age": 9
-    },
-    {
-     "role": "자녀",
-     "age": 19
+     "age": 31
     }
    ],
-   "single": false,
-   "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": null,
+   "single": true,
+   "disability": true,
+   "status": "없음",
+   "daysSinceContact": 251,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -7813,7 +7714,7 @@
     "rent_arrears": false,
     "medical_overspend": false,
     "job_loss": false,
-    "loan_overdue": true,
+    "loan_overdue": false,
     "benefit_stopped": false
    }
   },
@@ -7822,30 +7723,49 @@
    "label": "가구 T-027",
    "area": "북문동",
    "areaCode": "T",
-   "x": -0.17,
-   "y": 2.6,
+   "x": 0.51,
+   "y": 2.2,
    "members": [
     {
      "role": "본인",
-     "age": 53
-    },
-    {
-     "role": "배우자",
-     "age": 56
-    },
-    {
-     "role": "자녀",
-     "age": 8
-    },
-    {
-     "role": "자녀",
-     "age": 1
+     "age": 39
     }
    ],
-   "single": false,
+   "single": true,
+   "disability": false,
+   "status": "기초생활 수급",
+   "daysSinceContact": 489,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "T-028",
+   "label": "가구 T-028",
+   "area": "북문동",
+   "areaCode": "T",
+   "x": -0.29,
+   "y": 1.68,
+   "members": [
+    {
+     "role": "본인",
+     "age": 63
+    }
+   ],
+   "single": true,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 350,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -7865,22 +7785,18 @@
    "label": "가구 U-001",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.41,
-   "y": -0.18,
+   "x": 1.51,
+   "y": -0.02,
    "members": [
     {
      "role": "본인",
-     "age": 70
-    },
-    {
-     "role": "배우자",
-     "age": 73
+     "age": 79
     }
    ],
-   "single": false,
+   "single": true,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 574,
+   "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -7888,7 +7804,7 @@
     "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
-    "rent_arrears": false,
+    "rent_arrears": true,
     "medical_overspend": false,
     "job_loss": false,
     "loan_overdue": false,
@@ -7900,22 +7816,30 @@
    "label": "가구 U-002",
    "area": "계림동",
    "areaCode": "U",
-   "x": 1.44,
-   "y": -0.18,
+   "x": 2.86,
+   "y": 0.28,
    "members": [
     {
      "role": "본인",
-     "age": 83
+     "age": 50
     },
     {
      "role": "배우자",
-     "age": 79
+     "age": 46
+    },
+    {
+     "role": "자녀",
+     "age": 8
+    },
+    {
+     "role": "자녀",
+     "age": 8
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 113,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -7923,7 +7847,7 @@
     "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
-    "rent_arrears": false,
+    "rent_arrears": true,
     "medical_overspend": false,
     "job_loss": false,
     "loan_overdue": false,
@@ -7935,30 +7859,22 @@
    "label": "가구 U-003",
    "area": "계림동",
    "areaCode": "U",
-   "x": 1.14,
-   "y": 0.1,
+   "x": 1.9,
+   "y": -0.74,
    "members": [
     {
      "role": "본인",
-     "age": 37
+     "age": 72
     },
     {
      "role": "배우자",
-     "age": 31
-    },
-    {
-     "role": "자녀",
-     "age": 18
-    },
-    {
-     "role": "자녀",
-     "age": 18
+     "age": 72
     }
    ],
    "single": false,
-   "disability": false,
+   "disability": true,
    "status": "없음",
-   "daysSinceContact": 128,
+   "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -7978,222 +7894,24 @@
    "label": "가구 U-004",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.15,
-   "y": -0.37,
+   "x": 1.22,
+   "y": -0.41,
    "members": [
     {
      "role": "본인",
-     "age": 87
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 190,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": true,
-    "medical_overspend": true,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "U-005",
-   "label": "가구 U-005",
-   "area": "계림동",
-   "areaCode": "U",
-   "x": 2.0,
-   "y": -0.69,
-   "members": [
-    {
-     "role": "본인",
-     "age": 72
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 792,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "U-006",
-   "label": "가구 U-006",
-   "area": "계림동",
-   "areaCode": "U",
-   "x": 1.33,
-   "y": -0.73,
-   "members": [
-    {
-     "role": "본인",
-     "age": 28
+     "age": 50
     },
     {
      "role": "배우자",
-     "age": 33
+     "age": 48
     },
     {
      "role": "자녀",
-     "age": 6
+     "age": 5
     },
     {
      "role": "자녀",
-     "age": 19
-    },
-    {
-     "role": "자녀",
-     "age": 15
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 622,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "U-007",
-   "label": "가구 U-007",
-   "area": "계림동",
-   "areaCode": "U",
-   "x": 2.73,
-   "y": -0.24,
-   "members": [
-    {
-     "role": "본인",
-     "age": 49
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 65,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": true,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "U-008",
-   "label": "가구 U-008",
-   "area": "계림동",
-   "areaCode": "U",
-   "x": 2.4,
-   "y": -0.7,
-   "members": [
-    {
-     "role": "본인",
-     "age": 45
-    },
-    {
-     "role": "자녀",
-     "age": 7
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 898,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 5,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": true,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "U-009",
-   "label": "가구 U-009",
-   "area": "계림동",
-   "areaCode": "U",
-   "x": 2.0,
-   "y": -0.82,
-   "members": [
-    {
-     "role": "본인",
-     "age": 92
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 366,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": true,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "U-010",
-   "label": "가구 U-010",
-   "area": "계림동",
-   "areaCode": "U",
-   "x": 2.17,
-   "y": 0.54,
-   "members": [
-    {
-     "role": "본인",
-     "age": 74
-    },
-    {
-     "role": "배우자",
-     "age": 74
+     "age": 10
     }
    ],
    "single": false,
@@ -8215,34 +7933,252 @@
    }
   },
   {
-   "id": "U-011",
-   "label": "가구 U-011",
+   "id": "U-005",
+   "label": "가구 U-005",
    "area": "계림동",
    "areaCode": "U",
-   "x": 1.66,
-   "y": 0.76,
+   "x": 1.59,
+   "y": -0.36,
    "members": [
     {
      "role": "본인",
-     "age": 52
+     "age": 70
+    }
+   ],
+   "single": true,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": null,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-006",
+   "label": "가구 U-006",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 1.13,
+   "y": -0.05,
+   "members": [
+    {
+     "role": "본인",
+     "age": 57
+    }
+   ],
+   "single": true,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": 242,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-007",
+   "label": "가구 U-007",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 1.7,
+   "y": 0.03,
+   "members": [
+    {
+     "role": "본인",
+     "age": 39
     },
     {
      "role": "배우자",
-     "age": 56
+     "age": 40
     },
     {
      "role": "자녀",
-     "age": 2
+     "age": 3
     },
     {
      "role": "자녀",
-     "age": 12
+     "age": 5
+    },
+    {
+     "role": "자녀",
+     "age": 5
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 292,
+   "daysSinceContact": 35,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-008",
+   "label": "가구 U-008",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 1.59,
+   "y": 0.6,
+   "members": [
+    {
+     "role": "본인",
+     "age": 31
+    },
+    {
+     "role": "배우자",
+     "age": 32
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": null,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-009",
+   "label": "가구 U-009",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 1.63,
+   "y": -0.54,
+   "members": [
+    {
+     "role": "본인",
+     "age": 85
+    },
+    {
+     "role": "배우자",
+     "age": 82
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "기초생활 수급",
+   "daysSinceContact": 659,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 5,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": true,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-010",
+   "label": "가구 U-010",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 1.61,
+   "y": 0.64,
+   "members": [
+    {
+     "role": "본인",
+     "age": 75
+    },
+    {
+     "role": "배우자",
+     "age": 76
+    }
+   ],
+   "single": false,
+   "disability": true,
+   "status": "없음",
+   "daysSinceContact": 456,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": true,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-011",
+   "label": "가구 U-011",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 2.62,
+   "y": -0.07,
+   "members": [
+    {
+     "role": "본인",
+     "age": 28
+    },
+    {
+     "role": "배우자",
+     "age": 25
+    },
+    {
+     "role": "자녀",
+     "age": 8
+    },
+    {
+     "role": "자녀",
+     "age": 11
+    },
+    {
+     "role": "자녀",
+     "age": 7
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": 511,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -8262,18 +8198,26 @@
    "label": "가구 U-012",
    "area": "계림동",
    "areaCode": "U",
-   "x": 1.11,
-   "y": 0.21,
+   "x": 2.05,
+   "y": 0.6,
    "members": [
     {
      "role": "본인",
-     "age": 53
+     "age": 45
+    },
+    {
+     "role": "배우자",
+     "age": 44
+    },
+    {
+     "role": "자녀",
+     "age": 19
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 65,
+   "daysSinceContact": 674,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -8282,7 +8226,7 @@
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": false,
+    "medical_overspend": true,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
@@ -8293,25 +8237,21 @@
    "label": "가구 U-013",
    "area": "계림동",
    "areaCode": "U",
-   "x": 1.78,
-   "y": -0.92,
+   "x": 2.12,
+   "y": 0.01,
    "members": [
     {
      "role": "본인",
-     "age": 42
+     "age": 57
     },
     {
      "role": "배우자",
-     "age": 43
-    },
-    {
-     "role": "자녀",
-     "age": 5
+     "age": 53
     }
    ],
    "single": false,
    "disability": false,
-   "status": "없음",
+   "status": "기초생활 수급",
    "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
@@ -8332,37 +8272,37 @@
    "label": "가구 U-014",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.26,
-   "y": 0.35,
+   "x": 1.6,
+   "y": 0.03,
    "members": [
     {
      "role": "본인",
-     "age": 54
-    },
-    {
-     "role": "배우자",
-     "age": 54
+     "age": 33
     },
     {
      "role": "자녀",
-     "age": 12
+     "age": 2
+    },
+    {
+     "role": "자녀",
+     "age": 8
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 13,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
-    "gas_cut": false,
+    "gas_cut": true,
     "health_ins_arrears": 0,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
     "medical_overspend": false,
     "job_loss": false,
-    "loan_overdue": true,
+    "loan_overdue": false,
     "benefit_stopped": false
    }
   },
@@ -8371,18 +8311,18 @@
    "label": "가구 U-015",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.82,
-   "y": 0.47,
+   "x": 1.38,
+   "y": 0.6,
    "members": [
     {
      "role": "본인",
-     "age": 69
+     "age": 66
     }
    ],
    "single": true,
-   "disability": false,
+   "disability": true,
    "status": "없음",
-   "daysSinceContact": null,
+   "daysSinceContact": 656,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -8393,7 +8333,7 @@
     "rent_arrears": false,
     "medical_overspend": false,
     "job_loss": false,
-    "loan_overdue": true,
+    "loan_overdue": false,
     "benefit_stopped": false
    }
   },
@@ -8402,27 +8342,31 @@
    "label": "가구 U-016",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.33,
-   "y": 0.71,
+   "x": 1.92,
+   "y": -0.24,
    "members": [
     {
      "role": "본인",
+     "age": 72
+    },
+    {
+     "role": "배우자",
      "age": 68
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 565,
+   "daysSinceContact": 334,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
-    "telecom_arrears": true,
+    "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
-    "medical_overspend": true,
+    "medical_overspend": false,
     "job_loss": false,
     "loan_overdue": false,
     "benefit_stopped": false
@@ -8433,18 +8377,18 @@
    "label": "가구 U-017",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.51,
-   "y": 0.71,
+   "x": 2.0,
+   "y": -0.69,
    "members": [
     {
      "role": "본인",
-     "age": 91
+     "age": 37
     }
    ],
    "single": true,
    "disability": false,
-   "status": "기초생활 수급",
-   "daysSinceContact": 10,
+   "status": "없음",
+   "daysSinceContact": 646,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -8455,7 +8399,7 @@
     "rent_arrears": false,
     "medical_overspend": false,
     "job_loss": false,
-    "loan_overdue": true,
+    "loan_overdue": false,
     "benefit_stopped": false
    }
   },
@@ -8464,31 +8408,23 @@
    "label": "가구 U-018",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.05,
-   "y": -0.33,
+   "x": 1.8,
+   "y": 0.85,
    "members": [
     {
      "role": "본인",
-     "age": 55
-    },
-    {
-     "role": "배우자",
-     "age": 55
-    },
-    {
-     "role": "자녀",
-     "age": 11
+     "age": 66
     }
    ],
-   "single": false,
+   "single": true,
    "disability": false,
-   "status": "없음",
-   "daysSinceContact": 555,
+   "status": "차상위",
+   "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
-    "water_cut": true,
+    "water_cut": false,
     "gas_cut": false,
-    "health_ins_arrears": 0,
+    "health_ins_arrears": 6,
     "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
@@ -8503,69 +8439,30 @@
    "label": "가구 U-019",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.28,
-   "y": -0.01,
+   "x": 1.73,
+   "y": -0.26,
    "members": [
     {
      "role": "본인",
-     "age": 40
-    },
-    {
-     "role": "자녀",
-     "age": 6
-    },
-    {
-     "role": "자녀",
-     "age": 12
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "차상위",
-   "daysSinceContact": 854,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 2,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "U-020",
-   "label": "가구 U-020",
-   "area": "계림동",
-   "areaCode": "U",
-   "x": 2.07,
-   "y": 0.48,
-   "members": [
-    {
-     "role": "본인",
-     "age": 34
+     "age": 55
     },
     {
      "role": "배우자",
-     "age": 36
+     "age": 57
     },
     {
      "role": "자녀",
-     "age": 17
+     "age": 9
     },
     {
      "role": "자녀",
-     "age": 5
+     "age": 18
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 321,
+   "daysSinceContact": 171,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -8581,33 +8478,72 @@
    }
   },
   {
+   "id": "U-020",
+   "label": "가구 U-020",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 2.62,
+   "y": -0.23,
+   "members": [
+    {
+     "role": "본인",
+     "age": 76
+    },
+    {
+     "role": "배우자",
+     "age": 72
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "기초생활 수급",
+   "daysSinceContact": 555,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": true,
+    "benefit_stopped": false
+   }
+  },
+  {
    "id": "U-021",
    "label": "가구 U-021",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.28,
-   "y": 0.69,
+   "x": 2.38,
+   "y": 0.5,
    "members": [
     {
      "role": "본인",
-     "age": 29
+     "age": 91
+    },
+    {
+     "role": "배우자",
+     "age": 88
     }
    ],
-   "single": true,
+   "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 423,
+   "daysSinceContact": 690,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 4,
-    "telecom_arrears": true,
+    "telecom_arrears": false,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
     "medical_overspend": false,
-    "job_loss": true,
-    "loan_overdue": false,
+    "job_loss": false,
+    "loan_overdue": true,
     "benefit_stopped": false
    }
   },
@@ -8616,29 +8552,21 @@
    "label": "가구 U-022",
    "area": "계림동",
    "areaCode": "U",
-   "x": 1.87,
+   "x": 1.51,
    "y": 0.74,
    "members": [
     {
      "role": "본인",
-     "age": 47
-    },
-    {
-     "role": "자녀",
-     "age": 12
-    },
-    {
-     "role": "자녀",
-     "age": 5
+     "age": 81
     }
    ],
-   "single": false,
-   "disability": false,
+   "single": true,
+   "disability": true,
    "status": "없음",
    "daysSinceContact": null,
    "indicators": {
     "power_cut": false,
-    "water_cut": false,
+    "water_cut": true,
     "gas_cut": false,
     "health_ins_arrears": 0,
     "telecom_arrears": false,
@@ -8655,18 +8583,34 @@
    "label": "가구 U-023",
    "area": "계림동",
    "areaCode": "U",
-   "x": 2.52,
-   "y": 0.12,
+   "x": 2.44,
+   "y": 0.86,
    "members": [
     {
      "role": "본인",
-     "age": 39
+     "age": 50
+    },
+    {
+     "role": "배우자",
+     "age": 49
+    },
+    {
+     "role": "자녀",
+     "age": 16
+    },
+    {
+     "role": "자녀",
+     "age": 18
+    },
+    {
+     "role": "자녀",
+     "age": 11
     }
    ],
    "single": false,
    "disability": false,
    "status": "없음",
-   "daysSinceContact": 157,
+   "daysSinceContact": 703,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
@@ -8676,8 +8620,136 @@
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
     "medical_overspend": false,
-    "job_loss": true,
+    "job_loss": false,
     "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-024",
+   "label": "가구 U-024",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 2.3,
+   "y": 0.72,
+   "members": [
+    {
+     "role": "본인",
+     "age": 57
+    },
+    {
+     "role": "배우자",
+     "age": 52
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": 889,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": true,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-025",
+   "label": "가구 U-025",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 2.76,
+   "y": 0.06,
+   "members": [
+    {
+     "role": "본인",
+     "age": 92
+    }
+   ],
+   "single": true,
+   "disability": false,
+   "status": "차상위",
+   "daysSinceContact": 464,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-026",
+   "label": "가구 U-026",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 2.04,
+   "y": -0.62,
+   "members": [
+    {
+     "role": "본인",
+     "age": 66
+    }
+   ],
+   "single": true,
+   "disability": false,
+   "status": "차상위",
+   "daysSinceContact": null,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "U-027",
+   "label": "가구 U-027",
+   "area": "계림동",
+   "areaCode": "U",
+   "x": 2.1,
+   "y": -0.23,
+   "members": [
+    {
+     "role": "본인",
+     "age": 73
+    }
+   ],
+   "single": true,
+   "disability": true,
+   "status": "없음",
+   "daysSinceContact": 342,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": true,
     "benefit_stopped": false
    }
   },
@@ -8686,32 +8758,24 @@
    "label": "가구 V-001",
    "area": "동문동",
    "areaCode": "V",
-   "x": 2.34,
-   "y": 2.36,
+   "x": 3.42,
+   "y": 2.45,
    "members": [
     {
      "role": "본인",
-     "age": 37
-    },
-    {
-     "role": "배우자",
-     "age": 40
-    },
-    {
-     "role": "자녀",
-     "age": 18
+     "age": 36
     }
    ],
-   "single": false,
-   "disability": false,
+   "single": true,
+   "disability": true,
    "status": "없음",
-   "daysSinceContact": 352,
+   "daysSinceContact": 693,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
-    "health_ins_arrears": 9,
-    "telecom_arrears": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": true,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
     "medical_overspend": false,
@@ -8725,28 +8789,24 @@
    "label": "가구 V-002",
    "area": "동문동",
    "areaCode": "V",
-   "x": 3.28,
-   "y": 2.13,
+   "x": 3.49,
+   "y": 2.61,
    "members": [
     {
      "role": "본인",
-     "age": 74
-    },
-    {
-     "role": "배우자",
-     "age": 70
+     "age": 66
     }
    ],
-   "single": false,
+   "single": true,
    "disability": false,
-   "status": "없음",
-   "daysSinceContact": null,
+   "status": "기초생활 수급",
+   "daysSinceContact": 199,
    "indicators": {
     "power_cut": false,
     "water_cut": false,
     "gas_cut": false,
     "health_ins_arrears": 0,
-    "telecom_arrears": false,
+    "telecom_arrears": true,
     "mgmt_fee_arrears": false,
     "rent_arrears": false,
     "medical_overspend": false,
@@ -8760,120 +8820,15 @@
    "label": "가구 V-003",
    "area": "동문동",
    "areaCode": "V",
-   "x": 2.18,
-   "y": 2.57,
-   "members": [
-    {
-     "role": "본인",
-     "age": 84
-    }
-   ],
-   "single": true,
-   "disability": true,
-   "status": "없음",
-   "daysSinceContact": 221,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 8,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "V-004",
-   "label": "가구 V-004",
-   "area": "동문동",
-   "areaCode": "V",
-   "x": 2.68,
-   "y": 2.33,
-   "members": [
-    {
-     "role": "본인",
-     "age": 51
-    },
-    {
-     "role": "배우자",
-     "age": 48
-    },
-    {
-     "role": "자녀",
-     "age": 5
-    }
-   ],
-   "single": false,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": null,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": true,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "V-005",
-   "label": "가구 V-005",
-   "area": "동문동",
-   "areaCode": "V",
-   "x": 3.23,
-   "y": 2.54,
-   "members": [
-    {
-     "role": "본인",
-     "age": 89
-    }
-   ],
-   "single": true,
-   "disability": false,
-   "status": "없음",
-   "daysSinceContact": 137,
-   "indicators": {
-    "power_cut": false,
-    "water_cut": false,
-    "gas_cut": false,
-    "health_ins_arrears": 0,
-    "telecom_arrears": false,
-    "mgmt_fee_arrears": false,
-    "rent_arrears": false,
-    "medical_overspend": false,
-    "job_loss": false,
-    "loan_overdue": false,
-    "benefit_stopped": false
-   }
-  },
-  {
-   "id": "V-006",
-   "label": "가구 V-006",
-   "area": "동문동",
-   "areaCode": "V",
    "x": 2.77,
    "y": 1.89,
    "members": [
     {
      "role": "본인",
-     "age": 92
-    },
-    {
-     "role": "배우자",
-     "age": 90
+     "age": 68
     }
    ],
-   "single": false,
+   "single": true,
    "disability": false,
    "status": "없음",
    "daysSinceContact": 657,
@@ -8892,8 +8847,8 @@
    }
   },
   {
-   "id": "V-007",
-   "label": "가구 V-007",
+   "id": "V-004",
+   "label": "가구 V-004",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.14,
@@ -8923,8 +8878,8 @@
    }
   },
   {
-   "id": "V-008",
-   "label": "가구 V-008",
+   "id": "V-005",
+   "label": "가구 V-005",
    "area": "동문동",
    "areaCode": "V",
    "x": 2.0,
@@ -8954,8 +8909,8 @@
    }
   },
   {
-   "id": "V-009",
-   "label": "가구 V-009",
+   "id": "V-006",
+   "label": "가구 V-006",
    "area": "동문동",
    "areaCode": "V",
    "x": 2.36,
@@ -8993,8 +8948,8 @@
    }
   },
   {
-   "id": "V-010",
-   "label": "가구 V-010",
+   "id": "V-007",
+   "label": "가구 V-007",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.03,
@@ -9024,8 +8979,8 @@
    }
   },
   {
-   "id": "V-011",
-   "label": "가구 V-011",
+   "id": "V-008",
+   "label": "가구 V-008",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.31,
@@ -9055,8 +9010,8 @@
    }
   },
   {
-   "id": "V-012",
-   "label": "가구 V-012",
+   "id": "V-009",
+   "label": "가구 V-009",
    "area": "동문동",
    "areaCode": "V",
    "x": 2.66,
@@ -9098,8 +9053,8 @@
    }
   },
   {
-   "id": "V-013",
-   "label": "가구 V-013",
+   "id": "V-010",
+   "label": "가구 V-010",
    "area": "동문동",
    "areaCode": "V",
    "x": 2.4,
@@ -9129,8 +9084,8 @@
    }
   },
   {
-   "id": "V-014",
-   "label": "가구 V-014",
+   "id": "V-011",
+   "label": "가구 V-011",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.99,
@@ -9164,8 +9119,8 @@
    }
   },
   {
-   "id": "V-015",
-   "label": "가구 V-015",
+   "id": "V-012",
+   "label": "가구 V-012",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.14,
@@ -9203,8 +9158,8 @@
    }
   },
   {
-   "id": "V-016",
-   "label": "가구 V-016",
+   "id": "V-013",
+   "label": "가구 V-013",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.27,
@@ -9250,8 +9205,8 @@
    }
   },
   {
-   "id": "V-017",
-   "label": "가구 V-017",
+   "id": "V-014",
+   "label": "가구 V-014",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.35,
@@ -9285,8 +9240,8 @@
    }
   },
   {
-   "id": "V-018",
-   "label": "가구 V-018",
+   "id": "V-015",
+   "label": "가구 V-015",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.3,
@@ -9316,8 +9271,8 @@
    }
   },
   {
-   "id": "V-019",
-   "label": "가구 V-019",
+   "id": "V-016",
+   "label": "가구 V-016",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.64,
@@ -9359,8 +9314,8 @@
    }
   },
   {
-   "id": "V-020",
-   "label": "가구 V-020",
+   "id": "V-017",
+   "label": "가구 V-017",
    "area": "동문동",
    "areaCode": "V",
    "x": 2.52,
@@ -9390,8 +9345,8 @@
    }
   },
   {
-   "id": "V-021",
-   "label": "가구 V-021",
+   "id": "V-018",
+   "label": "가구 V-018",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.75,
@@ -9425,8 +9380,8 @@
    }
   },
   {
-   "id": "V-022",
-   "label": "가구 V-022",
+   "id": "V-019",
+   "label": "가구 V-019",
    "area": "동문동",
    "areaCode": "V",
    "x": 3.53,
@@ -9460,8 +9415,8 @@
    }
   },
   {
-   "id": "V-023",
-   "label": "가구 V-023",
+   "id": "V-020",
+   "label": "가구 V-020",
    "area": "동문동",
    "areaCode": "V",
    "x": 2.95,
@@ -9503,8 +9458,8 @@
    }
   },
   {
-   "id": "V-024",
-   "label": "가구 V-024",
+   "id": "V-021",
+   "label": "가구 V-021",
    "area": "동문동",
    "areaCode": "V",
    "x": 2.65,
@@ -9538,12 +9493,12 @@
    }
   },
   {
-   "id": "W-001",
-   "label": "가구 W-001",
-   "area": "동성동",
-   "areaCode": "W",
-   "x": 0.41,
-   "y": -2.54,
+   "id": "V-022",
+   "label": "가구 V-022",
+   "area": "동문동",
+   "areaCode": "V",
+   "x": 2.41,
+   "y": 1.96,
    "members": [
     {
      "role": "본인",
@@ -9569,12 +9524,12 @@
    }
   },
   {
-   "id": "W-002",
-   "label": "가구 W-002",
-   "area": "동성동",
-   "areaCode": "W",
-   "x": 0.76,
-   "y": -3.29,
+   "id": "V-023",
+   "label": "가구 V-023",
+   "area": "동문동",
+   "areaCode": "V",
+   "x": 2.76,
+   "y": 1.21,
    "members": [
     {
      "role": "본인",
@@ -9600,8 +9555,8 @@
    }
   },
   {
-   "id": "W-003",
-   "label": "가구 W-003",
+   "id": "W-001",
+   "label": "가구 W-001",
    "area": "동성동",
    "areaCode": "W",
    "x": 0.43,
@@ -9631,8 +9586,8 @@
    }
   },
   {
-   "id": "W-004",
-   "label": "가구 W-004",
+   "id": "W-002",
+   "label": "가구 W-002",
    "area": "동성동",
    "areaCode": "W",
    "x": 0.32,
@@ -9674,8 +9629,8 @@
    }
   },
   {
-   "id": "W-005",
-   "label": "가구 W-005",
+   "id": "W-003",
+   "label": "가구 W-003",
    "area": "동성동",
    "areaCode": "W",
    "x": 1.69,
@@ -9721,8 +9676,8 @@
    }
   },
   {
-   "id": "W-006",
-   "label": "가구 W-006",
+   "id": "W-004",
+   "label": "가구 W-004",
    "area": "동성동",
    "areaCode": "W",
    "x": 1.65,
@@ -9752,8 +9707,8 @@
    }
   },
   {
-   "id": "W-007",
-   "label": "가구 W-007",
+   "id": "W-005",
+   "label": "가구 W-005",
    "area": "동성동",
    "areaCode": "W",
    "x": 1.74,
@@ -9795,8 +9750,8 @@
    }
   },
   {
-   "id": "W-008",
-   "label": "가구 W-008",
+   "id": "W-006",
+   "label": "가구 W-006",
    "area": "동성동",
    "areaCode": "W",
    "x": 0.51,
@@ -9826,8 +9781,8 @@
    }
   },
   {
-   "id": "W-009",
-   "label": "가구 W-009",
+   "id": "W-007",
+   "label": "가구 W-007",
    "area": "동성동",
    "areaCode": "W",
    "x": 1.3,
@@ -9861,8 +9816,8 @@
    }
   },
   {
-   "id": "W-010",
-   "label": "가구 W-010",
+   "id": "W-008",
+   "label": "가구 W-008",
    "area": "동성동",
    "areaCode": "W",
    "x": 1.47,
@@ -9904,8 +9859,8 @@
    }
   },
   {
-   "id": "W-011",
-   "label": "가구 W-011",
+   "id": "W-009",
+   "label": "가구 W-009",
    "area": "동성동",
    "areaCode": "W",
    "x": 0.53,
@@ -9939,12 +9894,12 @@
    }
   },
   {
-   "id": "X-001",
-   "label": "가구 X-001",
-   "area": "신흥동",
-   "areaCode": "X",
-   "x": -3.06,
-   "y": 2.18,
+   "id": "W-010",
+   "label": "가구 W-010",
+   "area": "동성동",
+   "areaCode": "W",
+   "x": 0.44,
+   "y": -1.82,
    "members": [
     {
      "role": "본인",
@@ -9970,8 +9925,8 @@
    }
   },
   {
-   "id": "X-002",
-   "label": "가구 X-002",
+   "id": "X-001",
+   "label": "가구 X-001",
    "area": "신흥동",
    "areaCode": "X",
    "x": -3.29,
@@ -10013,8 +9968,8 @@
    }
   },
   {
-   "id": "X-003",
-   "label": "가구 X-003",
+   "id": "X-002",
+   "label": "가구 X-002",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.32,
@@ -10052,8 +10007,8 @@
    }
   },
   {
-   "id": "X-004",
-   "label": "가구 X-004",
+   "id": "X-003",
+   "label": "가구 X-003",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.58,
@@ -10087,8 +10042,8 @@
    }
   },
   {
-   "id": "X-005",
-   "label": "가구 X-005",
+   "id": "X-004",
+   "label": "가구 X-004",
    "area": "신흥동",
    "areaCode": "X",
    "x": -1.86,
@@ -10126,8 +10081,8 @@
    }
   },
   {
-   "id": "X-006",
-   "label": "가구 X-006",
+   "id": "X-005",
+   "label": "가구 X-005",
    "area": "신흥동",
    "areaCode": "X",
    "x": -3.36,
@@ -10173,8 +10128,8 @@
    }
   },
   {
-   "id": "X-007",
-   "label": "가구 X-007",
+   "id": "X-006",
+   "label": "가구 X-006",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.17,
@@ -10212,8 +10167,8 @@
    }
   },
   {
-   "id": "X-008",
-   "label": "가구 X-008",
+   "id": "X-007",
+   "label": "가구 X-007",
    "area": "신흥동",
    "areaCode": "X",
    "x": -3.48,
@@ -10247,8 +10202,8 @@
    }
   },
   {
-   "id": "X-009",
-   "label": "가구 X-009",
+   "id": "X-008",
+   "label": "가구 X-008",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.6,
@@ -10278,8 +10233,8 @@
    }
   },
   {
-   "id": "X-010",
-   "label": "가구 X-010",
+   "id": "X-009",
+   "label": "가구 X-009",
    "area": "신흥동",
    "areaCode": "X",
    "x": -1.63,
@@ -10321,8 +10276,8 @@
    }
   },
   {
-   "id": "X-011",
-   "label": "가구 X-011",
+   "id": "X-010",
+   "label": "가구 X-010",
    "area": "신흥동",
    "areaCode": "X",
    "x": -3.17,
@@ -10352,8 +10307,8 @@
    }
   },
   {
-   "id": "X-012",
-   "label": "가구 X-012",
+   "id": "X-011",
+   "label": "가구 X-011",
    "area": "신흥동",
    "areaCode": "X",
    "x": -1.84,
@@ -10395,8 +10350,8 @@
    }
   },
   {
-   "id": "X-013",
-   "label": "가구 X-013",
+   "id": "X-012",
+   "label": "가구 X-012",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.27,
@@ -10426,8 +10381,8 @@
    }
   },
   {
-   "id": "X-014",
-   "label": "가구 X-014",
+   "id": "X-013",
+   "label": "가구 X-013",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.99,
@@ -10461,8 +10416,8 @@
    }
   },
   {
-   "id": "X-015",
-   "label": "가구 X-015",
+   "id": "X-014",
+   "label": "가구 X-014",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.37,
@@ -10492,8 +10447,8 @@
    }
   },
   {
-   "id": "X-016",
-   "label": "가구 X-016",
+   "id": "X-015",
+   "label": "가구 X-015",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.45,
@@ -10531,8 +10486,8 @@
    }
   },
   {
-   "id": "X-017",
-   "label": "가구 X-017",
+   "id": "X-016",
+   "label": "가구 X-016",
    "area": "신흥동",
    "areaCode": "X",
    "x": -1.76,
@@ -10562,8 +10517,8 @@
    }
   },
   {
-   "id": "X-018",
-   "label": "가구 X-018",
+   "id": "X-017",
+   "label": "가구 X-017",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.21,
@@ -10597,8 +10552,8 @@
    }
   },
   {
-   "id": "X-019",
-   "label": "가구 X-019",
+   "id": "X-018",
+   "label": "가구 X-018",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.06,
@@ -10628,8 +10583,8 @@
    }
   },
   {
-   "id": "X-020",
-   "label": "가구 X-020",
+   "id": "X-019",
+   "label": "가구 X-019",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.94,
@@ -10663,8 +10618,8 @@
    }
   },
   {
-   "id": "X-021",
-   "label": "가구 X-021",
+   "id": "X-020",
+   "label": "가구 X-020",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.95,
@@ -10710,8 +10665,8 @@
    }
   },
   {
-   "id": "X-022",
-   "label": "가구 X-022",
+   "id": "X-021",
+   "label": "가구 X-021",
    "area": "신흥동",
    "areaCode": "X",
    "x": -1.92,
@@ -10741,8 +10696,8 @@
    }
   },
   {
-   "id": "X-023",
-   "label": "가구 X-023",
+   "id": "X-022",
+   "label": "가구 X-022",
    "area": "신흥동",
    "areaCode": "X",
    "x": -2.45,
@@ -10784,8 +10739,8 @@
    }
   },
   {
-   "id": "X-024",
-   "label": "가구 X-024",
+   "id": "X-023",
+   "label": "가구 X-023",
    "area": "신흥동",
    "areaCode": "X",
    "x": -1.72,
@@ -10821,1598 +10776,1699 @@
     "loan_overdue": false,
     "benefit_stopped": false
    }
+  },
+  {
+   "id": "X-024",
+   "label": "가구 X-024",
+   "area": "신흥동",
+   "areaCode": "X",
+   "x": -1.87,
+   "y": 1.14,
+   "members": [
+    {
+     "role": "본인",
+     "age": 42
+    },
+    {
+     "role": "배우자",
+     "age": 47
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": null,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 1,
+    "telecom_arrears": true,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": true,
+    "loan_overdue": true,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "X-025",
+   "label": "가구 X-025",
+   "area": "신흥동",
+   "areaCode": "X",
+   "x": -2.5,
+   "y": 2.47,
+   "members": [
+    {
+     "role": "본인",
+     "age": 91
+    }
+   ],
+   "single": true,
+   "disability": true,
+   "status": "없음",
+   "daysSinceContact": 436,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": true,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
+  },
+  {
+   "id": "X-026",
+   "label": "가구 X-026",
+   "area": "신흥동",
+   "areaCode": "X",
+   "x": -2.23,
+   "y": 0.87,
+   "members": [
+    {
+     "role": "본인",
+     "age": 77
+    },
+    {
+     "role": "배우자",
+     "age": 80
+    }
+   ],
+   "single": false,
+   "disability": false,
+   "status": "없음",
+   "daysSinceContact": null,
+   "indicators": {
+    "power_cut": false,
+    "water_cut": false,
+    "gas_cut": false,
+    "health_ins_arrears": 0,
+    "telecom_arrears": false,
+    "mgmt_fee_arrears": false,
+    "rent_arrears": false,
+    "medical_overspend": false,
+    "job_loss": false,
+    "loan_overdue": false,
+    "benefit_stopped": false
+   }
   }
  ],
  "demand": [
   {
    "area": "함창읍",
    "serviceId": "S01",
-   "asked": 2,
-   "applied": 0
+   "asked": 1,
+   "applied": 1
   },
   {
    "area": "함창읍",
    "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "함창읍",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "함창읍",
-   "serviceId": "S04",
-   "asked": 3,
-   "applied": 0
-  },
-  {
-   "area": "함창읍",
-   "serviceId": "S05",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "함창읍",
-   "serviceId": "S06",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "함창읍",
-   "serviceId": "S07",
-   "asked": 5,
-   "applied": 2
-  },
-  {
-   "area": "함창읍",
-   "serviceId": "S08",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "함창읍",
-   "serviceId": "S09",
    "asked": 6,
    "applied": 4
   },
   {
    "area": "함창읍",
-   "serviceId": "S10",
+   "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "함창읍",
+   "serviceId": "S04",
+   "asked": 6,
+   "applied": 2
+  },
+  {
+   "area": "함창읍",
+   "serviceId": "S05",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "함창읍",
+   "serviceId": "S06",
+   "asked": 4,
+   "applied": 3
+  },
+  {
+   "area": "함창읍",
+   "serviceId": "S07",
+   "asked": 5,
+   "applied": 3
+  },
+  {
+   "area": "함창읍",
+   "serviceId": "S08",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "함창읍",
+   "serviceId": "S09",
    "asked": 1,
    "applied": 0
   },
   {
    "area": "함창읍",
-   "serviceId": "S11",
+   "serviceId": "S10",
    "asked": 4,
    "applied": 2
   },
   {
    "area": "함창읍",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "함창읍",
    "serviceId": "S12",
    "asked": 5,
-   "applied": 4
+   "applied": 1
   },
   {
    "area": "사벌국면",
    "serviceId": "S01",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "사벌국면",
-   "serviceId": "S02",
-   "asked": 4,
-   "applied": 3
-  },
-  {
-   "area": "사벌국면",
-   "serviceId": "S03",
    "asked": 0,
    "applied": 0
   },
   {
    "area": "사벌국면",
-   "serviceId": "S04",
-   "asked": 6,
+   "serviceId": "S02",
+   "asked": 3,
    "applied": 2
   },
   {
    "area": "사벌국면",
+   "serviceId": "S03",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "사벌국면",
+   "serviceId": "S04",
+   "asked": 3,
+   "applied": 1
+  },
+  {
+   "area": "사벌국면",
    "serviceId": "S05",
-   "asked": 7,
-   "applied": 3
+   "asked": 2,
+   "applied": 1
   },
   {
    "area": "사벌국면",
    "serviceId": "S06",
-   "asked": 7,
-   "applied": 4
-  },
-  {
-   "area": "사벌국면",
-   "serviceId": "S07",
    "asked": 1,
    "applied": 0
   },
   {
    "area": "사벌국면",
-   "serviceId": "S08",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "사벌국면",
-   "serviceId": "S09",
-   "asked": 7,
-   "applied": 3
-  },
-  {
-   "area": "사벌국면",
-   "serviceId": "S10",
+   "serviceId": "S07",
    "asked": 0,
    "applied": 0
   },
   {
    "area": "사벌국면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "사벌국면",
-   "serviceId": "S12",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S01",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S02",
-   "asked": 2,
-   "applied": 0
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S04",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S05",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S06",
-   "asked": 6,
-   "applied": 4
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S07",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "중동면",
    "serviceId": "S08",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S10",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S11",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "중동면",
-   "serviceId": "S12",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S02",
-   "asked": 6,
-   "applied": 3
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S03",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S04",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S05",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S06",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S07",
-   "asked": 3,
-   "applied": 3
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S08",
-   "asked": 8,
-   "applied": 4
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S09",
-   "asked": 3,
-   "applied": 0
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S10",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "낙동면",
-   "serviceId": "S12",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S01",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S03",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S04",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S05",
-   "asked": 5,
-   "applied": 3
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S06",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S07",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S10",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S11",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "청리면",
-   "serviceId": "S12",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S04",
-   "asked": 3,
-   "applied": 3
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S05",
-   "asked": 4,
-   "applied": 1
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S06",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S07",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S08",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S10",
-   "asked": 6,
-   "applied": 4
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S11",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "공성면",
-   "serviceId": "S12",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S02",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S03",
-   "asked": 2,
-   "applied": 0
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S04",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S05",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S06",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S07",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S09",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S10",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S11",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "외남면",
-   "serviceId": "S12",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S03",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S04",
-   "asked": 2,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S05",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S06",
-   "asked": 6,
-   "applied": 3
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S07",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S10",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "내서면",
-   "serviceId": "S12",
-   "asked": 8,
-   "applied": 5
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S02",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S04",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S05",
-   "asked": 10,
-   "applied": 5
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S06",
-   "asked": 6,
-   "applied": 2
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S07",
-   "asked": 4,
-   "applied": 3
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S09",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S10",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모동면",
-   "serviceId": "S12",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S02",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S03",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S04",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S05",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S06",
-   "asked": 6,
-   "applied": 3
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S07",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S09",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S10",
-   "asked": 5,
-   "applied": 2
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "모서면",
-   "serviceId": "S12",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S02",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S03",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S04",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S05",
-   "asked": 4,
-   "applied": 3
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S06",
-   "asked": 6,
-   "applied": 1
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S07",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S10",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S11",
-   "asked": 6,
-   "applied": 1
-  },
-  {
-   "area": "화동면",
-   "serviceId": "S12",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S01",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S03",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S04",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S05",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S06",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S07",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S08",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S09",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S10",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화서면",
-   "serviceId": "S12",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S02",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S03",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S04",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S05",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S06",
-   "asked": 5,
-   "applied": 3
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S07",
-   "asked": 3,
-   "applied": 0
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S10",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S11",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "화북면",
-   "serviceId": "S12",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S02",
-   "asked": 6,
-   "applied": 3
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S03",
-   "asked": 5,
-   "applied": 2
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S04",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S05",
    "asked": 7,
    "applied": 5
   },
   {
-   "area": "외서면",
+   "area": "사벌국면",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "사벌국면",
+   "serviceId": "S10",
+   "asked": 5,
+   "applied": 1
+  },
+  {
+   "area": "사벌국면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "사벌국면",
+   "serviceId": "S12",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S01",
+   "asked": 5,
+   "applied": 4
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S02",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S03",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S05",
+   "asked": 4,
+   "applied": 4
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S06",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S08",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S10",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "중동면",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S01",
+   "asked": 3,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S02",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S05",
+   "asked": 4,
+   "applied": 2
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S06",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S08",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S09",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S10",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "낙동면",
+   "serviceId": "S12",
+   "asked": 4,
+   "applied": 2
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S01",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S02",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S03",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S04",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S05",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S06",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S08",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S09",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S10",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "청리면",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S01",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S02",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S03",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S04",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S05",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S06",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S07",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S08",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S09",
+   "asked": 2,
+   "applied": 0
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S10",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "공성면",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S01",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S02",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S05",
+   "asked": 5,
+   "applied": 3
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S06",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S07",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S08",
+   "asked": 2,
+   "applied": 0
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S10",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외남면",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S01",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S02",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S05",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S06",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S08",
+   "asked": 8,
+   "applied": 5
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S10",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "내서면",
+   "serviceId": "S12",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S01",
+   "asked": 7,
+   "applied": 3
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S02",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S03",
+   "asked": 6,
+   "applied": 2
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S05",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S06",
+   "asked": 6,
+   "applied": 3
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S08",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S09",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S10",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "모동면",
+   "serviceId": "S12",
+   "asked": 3,
+   "applied": 0
+  },
+  {
+   "area": "모서면",
+   "serviceId": "S01",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "모서면",
+   "serviceId": "S02",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "모서면",
+   "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "모서면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "모서면",
+   "serviceId": "S05",
+   "asked": 7,
+   "applied": 3
+  },
+  {
+   "area": "모서면",
    "serviceId": "S06",
    "asked": 8,
-   "applied": 3
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S07",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S08",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S09",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S10",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S11",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "외서면",
-   "serviceId": "S12",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S01",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S02",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S04",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S05",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S06",
-   "asked": 5,
-   "applied": 2
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S07",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S08",
-   "asked": 4,
-   "applied": 1
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S10",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "은척면",
-   "serviceId": "S12",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S01",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S02",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S04",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S05",
-   "asked": 5,
-   "applied": 1
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S06",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S07",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S09",
-   "asked": 3,
-   "applied": 0
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S10",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "공검면",
-   "serviceId": "S12",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S01",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S04",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S05",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S06",
-   "asked": 5,
-   "applied": 3
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S07",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S08",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S09",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S10",
-   "asked": 2,
-   "applied": 0
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "이안면",
-   "serviceId": "S12",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S01",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S03",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S04",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S05",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S06",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S07",
-   "asked": 2,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S10",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S11",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "화남면",
-   "serviceId": "S12",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "남원동",
-   "serviceId": "S01",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "남원동",
-   "serviceId": "S02",
-   "asked": 7,
    "applied": 4
   },
   {
-   "area": "남원동",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "남원동",
-   "serviceId": "S04",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "남원동",
-   "serviceId": "S05",
-   "asked": 5,
-   "applied": 2
-  },
-  {
-   "area": "남원동",
-   "serviceId": "S06",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "남원동",
+   "area": "모서면",
    "serviceId": "S07",
-   "asked": 5,
-   "applied": 3
+   "asked": 0,
+   "applied": 0
   },
   {
-   "area": "남원동",
+   "area": "모서면",
    "serviceId": "S08",
-   "asked": 5,
-   "applied": 2
+   "asked": 0,
+   "applied": 0
   },
   {
-   "area": "남원동",
+   "area": "모서면",
    "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "남원동",
-   "serviceId": "S10",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "남원동",
-   "serviceId": "S11",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "남원동",
-   "serviceId": "S12",
    "asked": 5,
-   "applied": 1
-  },
-  {
-   "area": "북문동",
-   "serviceId": "S01",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "북문동",
-   "serviceId": "S02",
-   "asked": 1,
-   "applied": 1
-  },
-  {
-   "area": "북문동",
-   "serviceId": "S03",
-   "asked": 3,
-   "applied": 0
-  },
-  {
-   "area": "북문동",
-   "serviceId": "S04",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "북문동",
-   "serviceId": "S05",
-   "asked": 4,
-   "applied": 3
-  },
-  {
-   "area": "북문동",
-   "serviceId": "S06",
-   "asked": 6,
    "applied": 4
   },
   {
-   "area": "북문동",
-   "serviceId": "S07",
-   "asked": 2,
-   "applied": 0
-  },
-  {
-   "area": "북문동",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "북문동",
-   "serviceId": "S09",
-   "asked": 4,
-   "applied": 1
-  },
-  {
-   "area": "북문동",
+   "area": "모서면",
    "serviceId": "S10",
    "asked": 6,
-   "applied": 4
+   "applied": 1
   },
   {
-   "area": "북문동",
+   "area": "모서면",
    "serviceId": "S11",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "모서면",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S01",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S02",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S03",
+   "asked": 6,
+   "applied": 1
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S04",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S05",
+   "asked": 6,
+   "applied": 3
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S06",
+   "asked": 2,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S08",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S10",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화동면",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화서면",
+   "serviceId": "S01",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화서면",
+   "serviceId": "S02",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화서면",
+   "serviceId": "S03",
+   "asked": 6,
+   "applied": 5
+  },
+  {
+   "area": "화서면",
+   "serviceId": "S04",
    "asked": 7,
    "applied": 5
   },
   {
-   "area": "북문동",
-   "serviceId": "S12",
-   "asked": 2,
-   "applied": 1
+   "area": "화서면",
+   "serviceId": "S05",
+   "asked": 8,
+   "applied": 4
   },
   {
-   "area": "계림동",
-   "serviceId": "S01",
+   "area": "화서면",
+   "serviceId": "S06",
    "asked": 4,
-   "applied": 1
+   "applied": 2
   },
   {
-   "area": "계림동",
-   "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "계림동",
-   "serviceId": "S03",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "계림동",
-   "serviceId": "S04",
+   "area": "화서면",
+   "serviceId": "S07",
    "asked": 3,
    "applied": 1
   },
   {
-   "area": "계림동",
-   "serviceId": "S05",
-   "asked": 0,
+   "area": "화서면",
+   "serviceId": "S08",
+   "asked": 1,
    "applied": 0
   },
   {
-   "area": "계림동",
-   "serviceId": "S06",
-   "asked": 5,
-   "applied": 2
-  },
-  {
-   "area": "계림동",
-   "serviceId": "S07",
-   "asked": 5,
-   "applied": 2
-  },
-  {
-   "area": "계림동",
-   "serviceId": "S08",
-   "asked": 1,
+   "area": "화서면",
+   "serviceId": "S09",
+   "asked": 3,
    "applied": 1
   },
   {
-   "area": "계림동",
-   "serviceId": "S09",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "계림동",
+   "area": "화서면",
    "serviceId": "S10",
    "asked": 0,
    "applied": 0
   },
   {
-   "area": "계림동",
+   "area": "화서면",
    "serviceId": "S11",
    "asked": 0,
    "applied": 0
   },
   {
-   "area": "계림동",
+   "area": "화서면",
    "serviceId": "S12",
-   "asked": 3,
-   "applied": 3
+   "asked": 2,
+   "applied": 1
   },
   {
-   "area": "동문동",
+   "area": "화북면",
    "serviceId": "S01",
    "asked": 0,
    "applied": 0
   },
   {
-   "area": "동문동",
+   "area": "화북면",
+   "serviceId": "S02",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S03",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S04",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S05",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S06",
+   "asked": 5,
+   "applied": 2
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S08",
+   "asked": 2,
+   "applied": 0
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S09",
+   "asked": 3,
+   "applied": 3
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S10",
+   "asked": 4,
+   "applied": 2
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화북면",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S01",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S02",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S03",
+   "asked": 3,
+   "applied": 0
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S04",
+   "asked": 3,
+   "applied": 3
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S05",
+   "asked": 5,
+   "applied": 4
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S06",
+   "asked": 7,
+   "applied": 5
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S08",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S09",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S10",
+   "asked": 3,
+   "applied": 1
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "외서면",
+   "serviceId": "S12",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S01",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S02",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S05",
+   "asked": 5,
+   "applied": 3
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S06",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S08",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S09",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S10",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "은척면",
+   "serviceId": "S12",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S01",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S02",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S05",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S06",
+   "asked": 5,
+   "applied": 2
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S07",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S08",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S10",
+   "asked": 4,
+   "applied": 2
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S11",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "공검면",
+   "serviceId": "S12",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S01",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S02",
+   "asked": 2,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S04",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S05",
+   "asked": 5,
+   "applied": 1
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S06",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S08",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S10",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "이안면",
+   "serviceId": "S12",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S01",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화남면",
    "serviceId": "S02",
    "asked": 2,
    "applied": 1
   },
   {
-   "area": "동문동",
+   "area": "화남면",
    "serviceId": "S03",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S05",
+   "asked": 11,
+   "applied": 7
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S06",
+   "asked": 3,
+   "applied": 1
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S07",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S08",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S10",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "화남면",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S01",
+   "asked": 6,
+   "applied": 5
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S02",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S03",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S04",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S05",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S06",
+   "asked": 3,
+   "applied": 1
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S07",
+   "asked": 4,
+   "applied": 2
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S08",
+   "asked": 5,
+   "applied": 1
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S09",
+   "asked": 4,
+   "applied": 2
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S10",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S11",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "남원동",
+   "serviceId": "S12",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S01",
+   "asked": 6,
+   "applied": 4
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S02",
+   "asked": 5,
+   "applied": 2
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S03",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S04",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S05",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S06",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S07",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S08",
+   "asked": 5,
+   "applied": 3
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S10",
+   "asked": 5,
+   "applied": 2
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S11",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "북문동",
+   "serviceId": "S12",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "계림동",
+   "serviceId": "S01",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "계림동",
+   "serviceId": "S02",
+   "asked": 3,
+   "applied": 1
+  },
+  {
+   "area": "계림동",
+   "serviceId": "S03",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "계림동",
+   "serviceId": "S04",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "계림동",
+   "serviceId": "S05",
+   "asked": 5,
+   "applied": 4
+  },
+  {
+   "area": "계림동",
+   "serviceId": "S06",
+   "asked": 4,
+   "applied": 2
+  },
+  {
+   "area": "계림동",
+   "serviceId": "S07",
    "asked": 8,
    "applied": 1
   },
   {
-   "area": "동문동",
-   "serviceId": "S04",
+   "area": "계림동",
+   "serviceId": "S08",
    "asked": 3,
    "applied": 2
   },
   {
-   "area": "동문동",
-   "serviceId": "S05",
-   "asked": 5,
-   "applied": 2
+   "area": "계림동",
+   "serviceId": "S09",
+   "asked": 6,
+   "applied": 3
   },
   {
-   "area": "동문동",
-   "serviceId": "S06",
+   "area": "계림동",
+   "serviceId": "S10",
    "asked": 2,
    "applied": 2
   },
   {
-   "area": "동문동",
-   "serviceId": "S07",
+   "area": "계림동",
+   "serviceId": "S11",
    "asked": 3,
-   "applied": 2
+   "applied": 1
   },
   {
-   "area": "동문동",
-   "serviceId": "S08",
+   "area": "계림동",
+   "serviceId": "S12",
    "asked": 4,
    "applied": 3
   },
   {
    "area": "동문동",
-   "serviceId": "S09",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "동문동",
-   "serviceId": "S10",
-   "asked": 1,
-   "applied": 0
-  },
-  {
-   "area": "동문동",
-   "serviceId": "S11",
+   "serviceId": "S01",
    "asked": 0,
    "applied": 0
   },
   {
    "area": "동문동",
-   "serviceId": "S12",
+   "serviceId": "S02",
    "asked": 5,
+   "applied": 2
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S03",
+   "asked": 4,
+   "applied": 0
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S04",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S05",
+   "asked": 2,
+   "applied": 0
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S06",
+   "asked": 5,
+   "applied": 3
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S07",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S08",
+   "asked": 2,
+   "applied": 0
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S10",
+   "asked": 3,
    "applied": 1
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S11",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "동문동",
+   "serviceId": "S12",
+   "asked": 1,
+   "applied": 0
   },
   {
    "area": "동성동",
    "serviceId": "S01",
-   "asked": 3,
-   "applied": 1
+   "asked": 1,
+   "applied": 0
   },
   {
    "area": "동성동",
@@ -12423,133 +12479,133 @@
   {
    "area": "동성동",
    "serviceId": "S03",
-   "asked": 1,
-   "applied": 1
+   "asked": 0,
+   "applied": 0
   },
   {
    "area": "동성동",
    "serviceId": "S04",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "동성동",
-   "serviceId": "S05",
-   "asked": 3,
-   "applied": 1
-  },
-  {
-   "area": "동성동",
-   "serviceId": "S06",
-   "asked": 2,
-   "applied": 1
-  },
-  {
-   "area": "동성동",
-   "serviceId": "S07",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "동성동",
-   "serviceId": "S08",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "동성동",
-   "serviceId": "S09",
-   "asked": 2,
-   "applied": 0
-  },
-  {
-   "area": "동성동",
-   "serviceId": "S10",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "동성동",
-   "serviceId": "S11",
-   "asked": 5,
-   "applied": 2
-  },
-  {
-   "area": "동성동",
-   "serviceId": "S12",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "신흥동",
-   "serviceId": "S01",
-   "asked": 3,
-   "applied": 2
-  },
-  {
-   "area": "신흥동",
-   "serviceId": "S02",
-   "asked": 0,
-   "applied": 0
-  },
-  {
-   "area": "신흥동",
-   "serviceId": "S03",
-   "asked": 7,
-   "applied": 1
-  },
-  {
-   "area": "신흥동",
-   "serviceId": "S04",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "신흥동",
-   "serviceId": "S05",
-   "asked": 4,
-   "applied": 3
-  },
-  {
-   "area": "신흥동",
-   "serviceId": "S06",
    "asked": 6,
    "applied": 2
   },
   {
-   "area": "신흥동",
-   "serviceId": "S07",
-   "asked": 4,
-   "applied": 2
-  },
-  {
-   "area": "신흥동",
-   "serviceId": "S08",
-   "asked": 2,
-   "applied": 2
-  },
-  {
-   "area": "신흥동",
-   "serviceId": "S09",
-   "asked": 2,
+   "area": "동성동",
+   "serviceId": "S05",
+   "asked": 0,
    "applied": 0
   },
   {
-   "area": "신흥동",
+   "area": "동성동",
+   "serviceId": "S06",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "동성동",
+   "serviceId": "S07",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "동성동",
+   "serviceId": "S08",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "동성동",
+   "serviceId": "S09",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "동성동",
    "serviceId": "S10",
    "asked": 0,
    "applied": 0
   },
   {
-   "area": "신흥동",
+   "area": "동성동",
    "serviceId": "S11",
+   "asked": 1,
+   "applied": 0
+  },
+  {
+   "area": "동성동",
+   "serviceId": "S12",
+   "asked": 2,
+   "applied": 2
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S01",
    "asked": 2,
    "applied": 1
   },
   {
    "area": "신흥동",
-   "serviceId": "S12",
+   "serviceId": "S02",
+   "asked": 5,
+   "applied": 2
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S03",
+   "asked": 6,
+   "applied": 3
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S04",
+   "asked": 0,
+   "applied": 0
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S05",
+   "asked": 4,
+   "applied": 0
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S06",
    "asked": 3,
+   "applied": 1
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S07",
+   "asked": 1,
+   "applied": 1
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S08",
+   "asked": 2,
+   "applied": 1
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S09",
+   "asked": 8,
+   "applied": 2
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S10",
+   "asked": 3,
+   "applied": 2
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S11",
+   "asked": 4,
+   "applied": 1
+  },
+  {
+   "area": "신흥동",
+   "serviceId": "S12",
+   "asked": 1,
    "applied": 1
   }
  ]
