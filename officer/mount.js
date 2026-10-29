@@ -151,9 +151,17 @@
     [22, 40, 58, 76].forEach(function (y, i) { g.appendChild(sv("path", { d: "M-5 " + y + "c20-" + (6 + i) + " 40 4 60-3s30-" + (8 - i) + " 50-2" })); });
     svg.appendChild(g);
     if (xy.length > 1) svg.appendChild(sv("path", { class: "art-line", d: "M" + xy.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" L"), pathLength: "1" }));
+    // 가까운 집 번호 겹침 풀기 — 네이버 지도와 같은 계산(route_map.js spreadBy). 실제 자리엔 작은 점 + 지시선
+    var RMS = window.DaeumRouteMap && window.DaeumRouteMap.spreadBy;
+    var off = RMS ? RMS(xy.map(function (p) { return { x: p[0], y: p[1] }; }), 9) : xy.map(function () { return [0, 0]; });
     xy.forEach(function (p, i) {
-      svg.appendChild(sv("circle", { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: "4.2", class: "art-pin" + (pts[i].kind === "request" ? " req" : "") }));
-      var t = sv("text", { x: p[0].toFixed(1), y: (p[1] + 1.5).toFixed(1), class: "art-no" }); t.textContent = String(i + 1); svg.appendChild(t);
+      var q = [p[0] + off[i][0], p[1] + off[i][1]];
+      if (off[i][0] || off[i][1]) {
+        svg.appendChild(sv("line", { x1: p[0].toFixed(1), y1: p[1].toFixed(1), x2: q[0].toFixed(1), y2: q[1].toFixed(1), class: "art-lead", stroke: "#fff", "stroke-width": ".5", "stroke-opacity": ".7" }));
+        svg.appendChild(sv("circle", { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: "1.3", class: "art-dot", fill: "#fff" }));
+      }
+      svg.appendChild(sv("circle", { cx: q[0].toFixed(1), cy: q[1].toFixed(1), r: "4.2", class: "art-pin" + (pts[i].kind === "request" ? " req" : "") }));
+      var t = sv("text", { x: q[0].toFixed(1), y: (q[1] + 1.5).toFixed(1), class: "art-no" }); t.textContent = String(i + 1); svg.appendChild(t);
     });
   }
   function routeAreas(order) {
@@ -321,7 +329,10 @@
     var b = base(), home = homeArea(), S = F.report.aggregate(Object.assign({}, b, { area: home })), H = S.households, Q = S.requests;
     lastStats = S;
     var dash = clear(q(root, '[data-slot="dashboard"]'));
-    dash.appendChild(h("p", { class: "small", text: (home ? home + " 기준(자기 동)" : "전체") + " · 닿음 보조 집계 — 공식 실적은 행복이음 기준으로 대조하세요. 시군구 전체는 아래 수요 보드에 있습니다." }));
+    // 위 숫자는 담당 읍면 가구만 센다 — 시군구 전체는 아래 수요 보드(읍면 × 서비스)에 있다(S10d)
+    var mine = []; households().forEach(function (x) { if (x.area && mine.indexOf(x.area) < 0) mine.push(x.area); });
+    var scope = home ? home + " 담당 가구" : mine.length ? "담당 " + mine.length + "개 읍면(" + mine.join("·") + ") 가구" : "담당 가구";
+    dash.appendChild(h("p", { class: "small", text: scope + " 기준입니다. 시군구 전체 현황은 아래 수요 보드에서 볼 수 있어요. 닿음 보조 집계라 공식 실적은 행복이음 숫자와 맞춰 봅니다." }));
     dash.appendChild(h("div", { class: "kpis" }, [
       kpi("발굴 명단", H.total, "가구"), kpi("접촉", H.contacted, H.total ? Math.round(H.contacted / H.total * 100) + "%" : ""),
       kpi("만남·상담", H.met, "가구"), kpi("비해당", H.nonEligible, "가구"), kpi("주민 신호", Q.total, "긴급 " + Q.urgent),

@@ -137,7 +137,10 @@
       (h.disability ? " · 장애" : "") + (h.status !== "없음" ? " · " + h.status : "");
   }
   function renderList() {
-    var area = $("fArea").value, top = +$("fTop").value;
+    var sel = $("fArea");
+    // 고른 값이 목록에 없는 곳(가구 0곳으로 숨겨진 읍면동)이면 «전체»로 되돌린다
+    if (sel.selectedIndex < 0) sel.value = "";
+    var area = sel.value, top = +$("fTop").value;
     var list = rows.filter(function (r) { return !area || r.h.area === area; }).slice(0, top);
     var tb = $("listTable").tBodies[0];
     tb.textContent = "";
@@ -320,10 +323,16 @@
     var ox = D.meta.office.x, oy = -D.meta.office.y;
     m.appendChild(svg("rect", { x: ox - 0.9 * k, y: oy - 0.9 * k, width: 1.8 * k, height: 1.8 * k, class: "office" }));
     m.appendChild(svg("text", { x: ox, y: oy + 2.4 * k, class: "olabel" }, "시청"));
+    // 가까운 집 번호 겹침 풀기 — 네이버 지도와 같은 계산(route_map.js spreadBy). 실제 자리엔 작은 점 + 지시선
+    var off = RM && RM.spreadBy ? RM.spreadBy(order.map(function (s) { return { x: s.h.x, y: -s.h.y }; }), 2.1 * k) : order.map(function () { return [0, 0]; });
     order.forEach(function (s, i) {
-      var g = svg("g", { class: "stop" + (s.h.request ? " req" : "") });
-      g.appendChild(svg("circle", { cx: s.h.x, cy: -s.h.y, r: 0.95 * k }));
-      g.appendChild(svg("text", { x: s.h.x, y: -s.h.y + 0.42 * k }, i + 1));
+      var g = svg("g", { class: "stop" + (s.h.request ? " req" : "") }), x = s.h.x + off[i][0], y = -s.h.y + off[i][1];
+      if (off[i][0] || off[i][1]) {
+        m.appendChild(svg("line", { x1: s.h.x, y1: -s.h.y, x2: x, y2: y, class: "lead", style: "stroke:var(--ink);stroke-opacity:.6;stroke-width:" + (0.12 * k).toFixed(3) }));
+        m.appendChild(svg("circle", { cx: s.h.x, cy: -s.h.y, r: 0.3 * k, class: "lead-dot", style: "fill:var(--ink)" }));
+      }
+      g.appendChild(svg("circle", { cx: x, cy: y, r: 0.95 * k }));
+      g.appendChild(svg("text", { x: x, y: y + 0.42 * k }, i + 1));
       g.appendChild(svg("title", {}, (i + 1) + ". " + s.h.label + " · " + s.h.area));
       m.appendChild(g);
     });
@@ -725,7 +734,8 @@
     $("aiMode").textContent = mode === "ai" ? "AI 연결됨" : "AI 연결 전 시연 모드";
     $("aiMode").className = "mode " + mode;
     checkRegions();
-    D.areas.forEach(function (a) { var o = el("option", null, a.name); o.value = a.name; $("fArea").appendChild(o); });
+    // 가구가 0곳인 읍면동은 고르기에서 숨긴다(시연 가구는 북부 4개 읍면에만 있음)
+    FX.households.areaChoices(D.areas, D.households).forEach(function (a) { var o = el("option", null, a.name); o.value = a.name; $("fArea").appendChild(o); });
     initWeights(false);
     rebuild();
     picked = lsGet(LS_PICK, null);

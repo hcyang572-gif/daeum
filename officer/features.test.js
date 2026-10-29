@@ -202,5 +202,11 @@ t("문자·전화 대본, 긴급이면 129 안내, 자동 발송 없음", functi
   assert.ok(/김○○님/.test(rp.sms) && /129/.test(rp.sms)); assert.ok(rp.phone.length >= 5); assert.ok(/자동 발송 없음/.test(rp.note));
 });
 
+t("읍면동 고르기: 가구 0곳인 읍면동은 숨기고 정본 순서 유지(S10d)", function () {
+  var ch = F.households.areaChoices(D.areas, HH);
+  assert.deepStrictEqual(ch.map(function (a) { return a.name; }), ["함창읍", "사벌국면", "공검면", "이안면"]);
+  assert.strictEqual(ch.reduce(function (s, a) { return s + a.count; }, 0), HH.length);
+});
+
 console.log("\n결과: 통과 " + pass + " · 실패 " + fail);
 process.exit(fail ? 1 : 0);

@@ -11,13 +11,9 @@ body.cz { font-size: var(--fs-l); line-height: 1.65; }
   background: var(--glass); -webkit-backdrop-filter: blur(22px) saturate(1.6); backdrop-filter: blur(22px) saturate(1.6); box-shadow: inset 0 -.5px 0 var(--glass-brd); }
 .brand { display: inline-flex; align-items: center; gap: 10px; min-height: var(--tap); font-weight: var(--fw-h); font-size: 1.25rem; color: var(--ink); text-decoration: none; letter-spacing: -.04em; }
 .brand i { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(60% 60% at 35% 30%, rgba(255,255,255,.9), transparent 60%), conic-gradient(from 200deg, var(--acc-hi), #86A6D8, #B0617B, var(--acc-hi)); box-shadow: inset 0 0 0 .5px rgba(0,0,0,.15); }
-.top-title { font-weight: var(--fw-m); font-size: var(--fs-s); color: var(--ink2); padding-left: var(--sp-3); border-left: 1px solid var(--hair); line-height: 1.2; }
 .badge { margin-left: auto; font-size: var(--fs-xs); font-weight: var(--fw-m); padding: 3px 10px; border-radius: var(--r-pill); background: var(--acc-soft); color: var(--acc-ink); white-space: nowrap; }
-.top-act { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); min-width: var(--tap); padding: 0 12px; border: 0; border-radius: var(--r-pill); cursor: pointer;
   font: var(--fw-m) var(--fs-s) var(--f); color: var(--acc-ink); background: transparent; }
-.top-act:hover { background: var(--acc-soft); }
-.badge[hidden] + .top-act { margin-left: auto; }
-@media (max-width: 420px) { .top-title { display: none; } .top-act span { display: none; } .badge { font-size: .8125rem; } }
+@media (max-width: 420px) { .badge { font-size: .8125rem; } }
 
 .netguard { max-width: var(--col); margin: var(--sp-3) auto 0; padding: 0 var(--gutter); }
 .ng-line { margin: 0 0 var(--sp-2); padding: 10px 14px; border-radius: var(--rb); background: var(--solid); box-shadow: var(--e1), inset 3px 0 0 var(--edge); font-size: var(--fs-s); }
@@ -255,8 +251,6 @@ select { min-height: 56px; }
 .who-btn[aria-checked="true"] { box-shadow: var(--hl), var(--e1), inset 0 -2px 0 var(--acc); }
 #place-wrap .note { margin: var(--sp-2) 0 0; }
 #place-wrap .hint { display: block; font-weight: var(--fw-m); font-size: var(--fs-s); color: var(--ink2); margin: -4px 0 var(--sp-2); }
-#find.find-sub { min-height: var(--tap); width: auto; margin: var(--sp-2) auto 0; display: flex; background: none; box-shadow: none; color: var(--acc-ink);
-  font-size: var(--fs-s); font-weight: var(--fw-m); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ══════════ S10b(🩵 미르 10-30) 시안 A «하루 한 장» — 우리가족 v5 재질(종이 결·세라믹·에나멜), 주민 메뉴 2칸 ══════════ */
 .top { background-color: transparent; background-image: var(--nz-dock), var(--dock); background-size: 160px 160px, auto; box-shadow: var(--hl), 0 1px 0 var(--hair);
@@ -277,8 +271,8 @@ select { min-height: 56px; }
 .who-btn[aria-checked="true"] { background: var(--bead); box-shadow: var(--bead-sh); }
 /* 칩 — 세라믹, 고르면 먹 에나멜 */
 .chip { color: var(--ink); background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--e-sm); }
-.chip[aria-pressed="true"] { color: #fff; background: var(--ink-enamel); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 .5px rgba(0,0,0,.4), 2px 8px 16px -8px rgba(20,16,40,.5); }
-.chip[aria-pressed="true"]::before { content: "✓ "; color: #fff; }
+.chip[aria-pressed="true"] { color: var(--on-ink-enamel); background: var(--ink-enamel); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 .5px rgba(0,0,0,.4), 2px 8px 16px -8px rgba(20,16,40,.5); }
+.chip[aria-pressed="true"]::before { content: "✓ "; color: inherit; }
 /* 글 칸 — 우물 */
 textarea, select, input[type="text"] { border-radius: var(--rb); }
 .speak textarea { background: var(--well); box-shadow: var(--well-sh); border-color: transparent; }
@@ -287,7 +281,7 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
 .btn-big { border-radius: var(--r-pill); min-height: 60px; }
 .row2 .d-btn, .actions .d-btn { border-radius: var(--r-pill); }
 .nav .bk { background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--e-sm); }
-.example { border-radius: var(--r); }
+.example { border-radius: var(--r); background-color: var(--s1a); } /* 단추 기본 회색이 그라데이션 밑에 남지 않게 */
 .card.svc::before { color: var(--acc-ink); }
 .radio:has(input:checked) { box-shadow: inset 0 0 0 2px var(--acc); }
 .cta { background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--pb) 94%, transparent) 38%); }

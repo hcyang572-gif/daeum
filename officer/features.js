@@ -275,6 +275,11 @@
 
   // ── ② 가구 명단: 지역 신호로 순서 조정(점수 없음) ───────────
   F.households = {
+    /** 읍면동 고르기에 띄울 곳 — 가구가 1곳 이상 있는 읍면동만(정본 순서 유지). areas = [{name}], households = [{area}] */
+    areaChoices: function (areas, households) {
+      var n = {}; (households || []).forEach(function (h) { n[h.area] = (n[h.area] || 0) + 1; });
+      return (areas || []).filter(function (a) { return n[a.name] > 0; }).map(function (a) { return { name: a.name, count: n[a.name] }; });
+    },
     /** data = {households (정보원 명단 순서 그대로), requests, attempts, tips, officerOrder:[id]} */
     order: function (data) {
       var hh = data.households || [], pins = data.officerOrder || [];

@@ -46,6 +46,8 @@
   --enamel-sh: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 4px rgba(30,20,90,.25), 0 0 0 .5px rgba(40,28,120,.35), 1px 3px 6px -2px rgba(60,40,150,.32), 3px 14px 28px -12px color-mix(in srgb, var(--acc) 55%, transparent);
   --enamel-dn: inset 0 1px 0 rgba(255,255,255,.2), inset 0 1px 5px rgba(30,20,90,.42), 0 0 0 .5px rgba(40,28,120,.4), 0 1px 1px rgba(60,40,150,.3);
   --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.16), transparent 46%), linear-gradient(155deg, #34304C, #221F36 55%, #16142A);
+  --on-ink-enamel: #FFFFFF;                                /* 먹 에나멜 위 글자 — 다크에선 밝은 에나멜+먹 글자로 뒤집는다(우리가족 v5:847) */
+  --map-ink: #221F36;                                     /* 지도 위 «요청» 표지 — 지도 바탕은 늘 밝아 다크에서도 그대로 */
   /* ── 모서리(우리가족: 카드 24·단추 알약) ── */
   --r: 24px; --r-lg: 32px; --rb: 16px; --r-sm: 12px; --r-pill: 999px;
   /* ── 글자 ── */
@@ -93,6 +95,7 @@
   --glass: rgba(26,25,42,.6); --glass-hl: rgba(255,255,255,.1); --glass-brd: rgba(255,255,255,.08);
   --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --nz-paper: var(--nz);
+  --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.6), transparent 46%), linear-gradient(155deg, #F4F2FA, #DCD8EA); --on-ink-enamel: #1B1830;
 } }
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -114,6 +117,7 @@
   --glass: rgba(26,25,42,.6); --glass-hl: rgba(255,255,255,.1); --glass-brd: rgba(255,255,255,.08);
   --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --nz-paper: var(--nz);
+  --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.6), transparent 46%), linear-gradient(155deg, #F4F2FA, #DCD8EA); --on-ink-enamel: #1B1830;
 }
 
 /* ══════════ 바탕 ══════════ */
@@ -136,22 +140,14 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
 .d-aura { position: fixed; left: 50%; top: -30vh; width: min(980px, 150vw); aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; z-index: -1; pointer-events: none;
   background: conic-gradient(from 90deg, rgba(140,120,235,0), rgba(140,120,235,.5), rgba(110,170,200,.32), rgba(226,150,186,.38), rgba(140,120,235,0));
   filter: blur(80px); opacity: var(--aura-o); animation: d-spin 60s linear infinite; }
-.d-grid { display: none; }
 /* 카드 — 불투명 종이 + 윗변 빛 + 층 그림자(우리가족 card) */
 .d-card { position: relative; border-radius: var(--r); background-color: var(--s1a); background-image: var(--nz-card), linear-gradient(180deg, var(--s1a), var(--s1b)); background-size: 160px 160px, auto;
   box-shadow: var(--hl), var(--e2); }
-/* 떠 있는 띠(폰 도크·대화상자) */
-.d-glass { background-color: var(--s1a); background-image: var(--nz-dock), var(--dock); background-size: 160px 160px, auto; -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4);
-  box-shadow: var(--hl), var(--e3); }
 .d-well { background: var(--well); box-shadow: var(--well-sh); }
 /* 실크(밤) — 첫 화면·오늘 동선 지도에만. ui.js 가 캔버스 실크를 깐다 */
 .d-silk { position: relative; overflow: hidden; color: #F4F2FF; background-color: var(--silk-bg); background-size: cover; background-position: center;
   background-image: radial-gradient(60% 50% at 20% 15%, rgba(106,108,174,.75), transparent 70%), radial-gradient(50% 45% at 85% 70%, rgba(59,63,124,.9), transparent 70%), linear-gradient(160deg, #2A2C5C, #3B3F7C 45%, #1E2048); }
 .d-silk::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 0 0 .5px rgba(255,255,255,.08); pointer-events: none; }
-/* 들어 올림(누를 수 있는 카드) */
-.d-lift { transition: transform var(--t-push) var(--c-spring), box-shadow var(--t-push) var(--c-std); }
-@media (hover: hover) { .d-lift:hover { transform: translateY(-3px); box-shadow: var(--hl), var(--e3); } }
-.d-lift:active { transform: scale(.98); transition-duration: 100ms; }
 /* 순차 등장(절제) */
 .d-rise { animation: d-rise var(--t-slow) var(--c-std) both; animation-delay: calc(var(--d, 0) * 70ms); }
 @keyframes d-rise { from { transform: translateY(12px); opacity: 0; } }
@@ -213,8 +209,8 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
 @media print {
   :root { color-scheme: light; }
   body { background: #fff; color: #000; }
-  .d-aura, .d-grid, .d-sheet { display: none !important; }
-  .d-card, .d-glass { background: #fff; box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .d-aura, .d-sheet { display: none !important; }
+  .d-card { background: #fff; box-shadow: none; border: 1px solid #ccc; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .d-silk { background: #fff !important; color: #000; border: 1px solid #ccc; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

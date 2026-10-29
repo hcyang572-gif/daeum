@@ -6,7 +6,8 @@
   "use strict";
   var C = window.DAEUM_CONFIG || {};
   var LS_ROAD = "daeum.officer.road";
-  var state = { status: "idle", reason: "", promise: null, map: null, overlays: [] };
+  var state = { status: "idle", reason: "", promise: null, map: null, overlays: [], stops: [] };
+  var GAP = 34; // 번호 표지(32px)끼리 이만큼(px) 안이면 겹친 것으로 보고 둥글게 벌린다
 
   function load() {
     if (state.promise) return state.promise;
@@ -36,7 +37,57 @@
     return state.promise;
   }
 
-  function clear() { state.overlays.forEach(function (o) { try { o.setMap(null); } catch (e) { /* 무시 */ } }); state.overlays = []; }
+  function clear() { state.overlays.forEach(function (o) { try { o.setMap(null); } catch (e) { /* 무시 */ } }); state.overlays = []; state.stops = []; }
+
+  // ── 가까운 집 번호 겹침 풀기(S10d 🩵 미르) ─────────────────
+  // 화면 픽셀로 GAP 안에 모인 표지를 한 무리로 묶어, 무리 가운데를 중심으로 고르게 벌려 놓는다.
+  // 실제 집 자리에는 작은 점을 남기고 지시선으로 번호와 잇는다. 확대·이동이 끝날 때마다(idle) 다시 계산한다.
+  function stopHtml(s, dx, dy) {
+    var cls = "nm-stop" + (s.req ? " req" : "");
+    if (!dx && !dy) return '<div class="nm-spot" aria-hidden="true"><div class="' + cls + '">' + s.no + "</div></div>";
+    var len = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    return '<div class="nm-spot spread" aria-hidden="true"><i class="nm-lead" style="width:' + len.toFixed(1) + "px;transform:rotate(" + ang.toFixed(1) + 'deg)"></i><i class="nm-dot"></i>' +
+      '<div class="' + cls + '" style="transform:translate(' + dx.toFixed(1) + "px," + dy.toFixed(1) + 'px)">' + s.no + "</div></div>";
+  }
+  function spread(pts) {
+    var n = pts.length, par = pts.map(function (_, i) { return i; }), out = pts.map(function () { return [0, 0]; });
+    function root(i) { while (par[i] !== i) i = par[i] = par[par[i]]; return i; }
+    for (var i = 0; i < n; i++) for (var j = i + 1; j < n; j++) {
+      var dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+      if (dx * dx + dy * dy < GAP * GAP) par[root(i)] = root(j);
+    }
+    var groups = {};
+    for (var k = 0; k < n; k++) (groups[root(k)] = groups[root(k)] || []).push(k);
+    Object.keys(groups).forEach(function (g) {
+      var m = groups[g]; if (m.length < 2) return;
+      var cx = 0, cy = 0; m.forEach(function (i) { cx += pts[i].x; cy += pts[i].y; }); cx /= m.length; cy /= m.length;
+      // 무리 안 순서는 원래 방향(가운데에서 본 각도)대로 — 지시선이 서로 엇갈리지 않게
+      var ang = function (i) { var a = Math.atan2(pts[i].y - cy, pts[i].x - cx); return isFinite(a) && (pts[i].x !== cx || pts[i].y !== cy) ? a : -Math.PI / 2 + i * 1e-3; };
+      m.sort(function (a, b) { return ang(a) - ang(b); });
+      var R = Math.max(GAP / (2 * Math.sin(Math.PI / m.length)), GAP * .75), a0 = ang(m[0]);
+      m.forEach(function (i, q) {
+        var a = a0 + q * 2 * Math.PI / m.length;
+        out[i] = [cx + R * Math.cos(a) - pts[i].x, cy + R * Math.sin(a) - pts[i].y];
+      });
+    });
+    return out;
+  }
+  // 그림 지도(SVG)용 — 좌표 단위가 화면 픽셀이 아니므로 «표지 지름 + 여유(gap)»를 GAP 에 맞춰 늘렸다 줄인다(S10d 파로)
+  function spreadBy(pts, gap) {
+    var f = GAP / gap, off = spread(pts.map(function (p) { return { x: p.x * f, y: p.y * f }; }));
+    return off.map(function (d) { return [d[0] / f, d[1] / f]; });
+  }
+  function declutter() {
+    var map = state.map, N = window.naver && naver.maps; if (!map || !N || !state.stops.length) return;
+    var proj = map.getProjection(); if (!proj || !proj.fromCoordToOffset) return;
+    var pts = state.stops.map(function (it) { return proj.fromCoordToOffset(it.m.getPosition()); });
+    var off = spread(pts);
+    state.stops.forEach(function (it, i) {
+      var dx = Math.round(off[i][0]), dy = Math.round(off[i][1]), key = dx + "," + dy;
+      if (it.key === key) return; it.key = key;
+      it.m.setIcon({ content: stopHtml(it.s, dx, dy), anchor: new N.Point(0, 0) });
+    });
+  }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   /**
@@ -52,6 +103,7 @@
         scaleControl: true, mapDataControl: false, logoControlOptions: { position: N.Position.BOTTOM_LEFT },
         zoomControl: true, zoomControlOptions: { position: N.Position.TOP_RIGHT, style: N.ZoomControlStyle.SMALL }
       });
+      N.Event.addListener(state.map, "idle", declutter);
     }
     var map = state.map; clear();
     var bounds = new N.LatLngBounds();
@@ -68,11 +120,13 @@
       strokeWeight: 5, strokeStyle: opts.path ? "solid" : "shortdash", strokeLineCap: "round", strokeLineJoin: "round" }));
     opts.stops.forEach(function (s) {
       var p = new N.LatLng(s.lat, s.lng); bounds.extend(p);
-      state.overlays.push(new N.Marker({ map: map, position: p, title: s.no + ". " + s.label, zIndex: 100 + s.no,
-        icon: { content: '<div class="nm-stop' + (s.req ? " req" : "") + '" aria-hidden="true">' + s.no + "</div>", anchor: new N.Point(16, 16) } }));
+      var mk = new N.Marker({ map: map, position: p, title: s.no + ". " + s.label, zIndex: 100 + s.no,
+        icon: { content: stopHtml(s, 0, 0), anchor: new N.Point(0, 0) } });
+      state.overlays.push(mk); state.stops.push({ m: mk, s: s, key: "0,0" });
     });
     line.forEach(function (p) { bounds.extend(p); });
     map.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
+    declutter(); // fitBounds 가 바로 끝나 idle 이 늦을 때도 첫 그림부터 풀어 둔다
     return true;
   }
   function refresh() { if (state.map && window.naver) { try { naver.maps.Event.trigger(state.map, "resize"); state.map.refreshStyles && state.map.refreshStyles(); } catch (e) { /* 무시 */ } } }
@@ -98,5 +152,5 @@
         function (e) { clearTimeout(to); throw e && e.code ? e : { code: "network" }; });
   }
 
-  window.DaeumRouteMap = { load: load, draw: draw, refresh: refresh, road: road, cacheGet: cacheGet, state: state };
+  window.DaeumRouteMap = { load: load, draw: draw, refresh: refresh, road: road, cacheGet: cacheGet, state: state, _spread: spread, spreadBy: spreadBy };
 })();
