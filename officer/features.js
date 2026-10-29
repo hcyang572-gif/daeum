@@ -42,14 +42,30 @@
   function ymd(d) { d = new Date(d); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
   function startOfDay(d) { d = new Date(d); d.setHours(0, 0, 0, 0); return d; }
   function daysBetween(a, b) { return Math.round((startOfDay(b) - startOfDay(a)) / DAY); }
-  /** 영업일 더하기(토·일 건너뜀, 공휴일은 반영하지 않음 — 한계) */
+  // 관공서 공휴일(대체공휴일 포함) — 「관공서의 공휴일에 관한 규정」. 2026년은 확정분, 2027년은 음력·대체 규칙으로 계산한 «추정»
+  // (한국천문연구원 월력요항·관보 대조 전). 목록 밖 임시공휴일은 반영되지 않는다(한계).
+  var HOLIDAYS = {
+    "2026-12-25": "성탄절",
+    "2027-01-01": "신정", "2027-02-08": "설날 연휴", "2027-02-09": "설날 대체공휴일(추정)", "2027-03-01": "삼일절",
+    "2027-05-05": "어린이날", "2027-05-13": "부처님오신날(추정)", "2027-08-16": "광복절 대체공휴일(추정)",
+    "2027-09-14": "추석 연휴(추정)", "2027-09-15": "추석(추정)", "2027-09-16": "추석 연휴(추정)",
+    "2027-10-04": "개천절 대체공휴일(추정)", "2027-10-11": "한글날 대체공휴일(추정)", "2027-12-27": "성탄절 대체공휴일(추정)"
+  };
+  function isOff(d) { var w = d.getDay(); return w === 0 || w === 6 || !!HOLIDAYS[ymd(d)]; }
+  /** 영업일 더하기(토·일·관공서 공휴일 건너뜀 — 임시공휴일은 미반영) */
   function addWorkdays(d, n) {
     d = startOfDay(d);
-    while (n > 0) { d = new Date(d.getTime() + DAY); var w = d.getDay(); if (w !== 0 && w !== 6) n--; }
+    while (n > 0) { d = new Date(d.getTime() + DAY); if (!isOff(d)) n--; }
+    return d;
+  }
+  /** 영업일 빼기(시연 기록을 «오늘» 기준으로 거꾸로 깔 때) */
+  function subWorkdays(d, n) {
+    d = startOfDay(d);
+    while (n > 0) { d = new Date(d.getTime() - DAY); if (!isOff(d)) n--; }
     return d;
   }
   function uniq(a) { return a.filter(function (x, i) { return a.indexOf(x) === i; }); }
-  F.util = { ymd: ymd, daysBetween: daysBetween, addWorkdays: addWorkdays, startOfDay: startOfDay };
+  F.util = { ymd: ymd, daysBetween: daysBetween, addWorkdays: addWorkdays, subWorkdays: subWorkdays, startOfDay: startOfDay, isOff: isOff, HOLIDAYS: HOLIDAYS };
 
   // ── 저장(localStorage) — 키 정본 ───────────────────────────
   var KEYS = {
@@ -62,7 +78,8 @@
     safety: "daeum.officer.safety",       // ⑨ 안전 방문 {flags:{id:{on,reason,at}}, visits:[{id,householdId,buddy,startAt,dueAt,backAt}]}
     entry: "daeum.officer.entry",         // ⑩ 강제개문·긴급 조치 기록 [{householdId,step,note,at}]
     outcomes: "daeum.officer.outcomes",   // ⑪ 연계 결과 확인 {linkId:{result:"applied"|"decided"|"not_applied",at}}
-    handoff: "daeum.officer.handoff"      // S9h-④ 행복이음으로 옮긴 시각 {householdId: iso}
+    handoff: "daeum.officer.handoff",     // S9h-④ 행복이음으로 옮긴 시각 {householdId: iso}
+    followups: "daeum.officer.followups"  // S9j 사후관리 재점검 완료 {"<linkId>:m1"|"<linkId>:m3": iso}
   };
   function lsGet(k, d) { try { var v = root.localStorage && root.localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function lsSet(k, v) { try { root.localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
@@ -611,7 +628,7 @@
     return { tries: mine.length, items: items, bySlot: bySlot, line: line };
   };
   /** 오늘부터 days 영업일치 재시도 일정(지난 제안일은 오늘로) → [{date, label, items:[{id,label,area,slot,channel,why,escalate,overdue}]}] */
-  F.contacts.plan = function (attempts, households, now, days) {
+  F.contacts.plan = function (attempts, households, now, days, extra) {
     now = now ? new Date(now) : new Date(); days = days || 5;
     var byId = {}; (households || []).forEach(function (h) { byId[h.id] = h; });
     var dates = [startOfDay(now)]; while (dates.length < days) dates.push(addWorkdays(dates[dates.length - 1], 1));
@@ -624,9 +641,43 @@
       var h = byId[id] || {};
       day.items.push({ id: id, label: h.label || id, area: h.area || "", slot: s.next.slot, channel: s.next.channel, why: s.next.why, escalate: s.escalate, overdue: s.next.date < today });
     });
+    // S9j 사후관리: 연계 «결정 확인» 뒤 1·3개월 재점검(절차 8단계)도 같은 틀에 넣는다
+    if (extra) F.followUp.due(extra.links, extra.outcomes, extra.followups, now).forEach(function (f) {
+      var day = f.date <= today ? out[0] : out.filter(function (x) { return x.date === f.date; })[0];
+      if (!day) return;
+      var h = byId[f.householdId] || {};
+      day.items.push({ id: f.householdId, kind: "followup", key: f.key, label: f.label || h.label || f.householdId, area: f.area || h.area || "",
+        slot: "오전", channel: "phone", why: f.why, escalate: false, overdue: f.date < today });
+    });
     var ORD = { "오전": 0, "오후": 1, "저녁": 2 };
     out.forEach(function (x) { x.items.sort(function (p, q2) { return (q2.overdue - p.overdue) || ORD[p.slot] - ORD[q2.slot]; }); });
     return out;
+  };
+
+  // ── S9j 사후관리 재점검(1·3개월) ─────────────────────────
+  // 절차 8단계(사후관리)가 비어 있다는 점검(01_리서치/S9h_현장하루_점검.md §3-1). 간격 1·3개월은 시연 기본값(지침상 주기 미확인).
+  var FOLLOW = [{ k: "m1", days: 30, label: "1개월" }, { k: "m3", days: 90, label: "3개월" }];
+  F.followUp = {
+    STEPS: FOLLOW,
+    /** links·outcomes(«결정 확인»)·followups(완료 표시) → 아직 안 한 재점검 [{key, linkId, householdId, date, label, area, services, why}] */
+    due: function (links, outcomes, followups, now) {
+      now = now ? new Date(now) : new Date(); outcomes = outcomes || {}; followups = followups || {};
+      var res = [];
+      (links || []).forEach(function (l) {
+        var o = outcomes[l.id]; if (!o || outcomeKey(o) !== "decided") return;
+        var prevDone = true;
+        FOLLOW.forEach(function (st) {
+          var key = l.id + ":" + st.k; if (followups[key]) return; // 했음
+          if (!prevDone) return; prevDone = false;               // 1개월을 안 했으면 3개월은 아직 띄우지 않는다
+          var d = startOfDay(new Date(new Date(o.at).getTime() + st.days * DAY)); while (isOff(d)) d = new Date(d.getTime() + DAY);
+          var svc = (l.serviceNames || l.serviceIds || []).slice(0, 2).join(", ");
+          res.push({ key: key, linkId: l.id, householdId: l.householdId, date: ymd(d), label: l.label, area: l.area, services: svc,
+            why: "사후관리 " + st.label + " 재점검 — 지원 받는 중인지·새 위기 없는지 확인" + (svc ? " (" + svc + ")" : "") + " · 결정 확인 " + ymd(o.at).slice(5) });
+        });
+      });
+      return res.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    },
+    mark: function (followups, key, at) { var o = Object.assign({}, followups || {}); o[key] = new Date(at || Date.now()).toISOString(); return o; }
   };
 
   // ── S9h-④ 행복이음으로 «나가는 것»: 입력 순서대로 정리한 초안(복사·인쇄·파일) ─────────

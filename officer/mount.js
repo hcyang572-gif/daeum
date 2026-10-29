@@ -298,7 +298,7 @@
     var cd = F.report.countdown(F.report.currentRound(), { done: H.closed, total: H.total });
     lastCd = cd;
     var dl = clear(q(root, '[data-slot="deadline"]'));
-    dl.appendChild(h("h4", null, [cd.round.label + " 마감 역산 ", h("span", { class: "d-tag " + (cd.onTrack ? "pos" : "warn"), text: cd.onTrack ? "일정 안" : "뒤처짐" })]));
+    dl.appendChild(h("h4", null, [cd.round.label + (cd.upcoming ? " 준비 " : " 마감 역산 "), h("span", { class: "d-tag " + (cd.upcoming || cd.onTrack ? "pos" : "warn"), text: cd.upcoming ? "시작 전" : cd.onTrack ? "일정 안" : "뒤처짐" })]));
     dl.appendChild(rankList([{ label: "기간 경과", n: cd.elapsedPct, unit: "%" }, { label: "처리 완료", n: cd.donePct, unit: "%" }], 0));
     dl.appendChild(h("p", { class: "small", text: cd.message }));
     dl.appendChild(h("p", { class: "note", text: "출처: " + cd.round.source + " · 명단은 가상 가구" }));
@@ -536,7 +536,7 @@
   // ── S9h-② 닷새치 재시도 일정 (방문·연락 화면 «시도 기록과 다음 일정» 맨 위) ─────────
   function renderPlan(log, att) {
     var root = $("planRoot"), slot = root ? clear(q(root, '[data-slot="plan"]')) : null;
-    var pl = F.contacts.plan(att, households(), new Date(), 5);
+    var pl = F.contacts.plan(att, households(), new Date(), 5, { links: O.links(), outcomes: st("outcomes", {}), followups: st("followups", {}) });
     var n = pl.reduce(function (a, d) { return a + d.items.length; }, 0);
     if (root) root.hidden = !n;
     if (!n) return;
@@ -547,13 +547,16 @@
       d.items.slice(0, 5).forEach(function (x) {
         ol.appendChild(h("li", null, [h("div", { class: "grow" }, [h("b", { text: x.slot + " " + (CH[x.channel] || "") + " · " + x.label }),
           x.overdue ? h("span", { class: "d-tag warn", text: "밀림" }) : null, x.escalate ? h("span", { class: "d-tag neg", text: "간접 확인" }) : null,
-          h("div", { class: "small", text: x.why })]), h("div", { class: "acts" }, [btn("기록", function () { curHouse = x.id; renderContacts(); $("cHouse").focus(); })])]));
+          x.kind === "followup" ? h("span", { class: "d-tag pos", text: "사후관리" }) : null,
+          h("div", { class: "small", text: x.why })]), h("div", { class: "acts" }, [x.kind === "followup"
+            ? btn("재점검함", function () { put("followups", F.followUp.mark(st("followups", {}), x.key)); haptic("success"); say("재점검을 남겼습니다. 다음 재점검은 자동으로 일정에 올라옵니다."); renderContacts(); })
+            : btn("기록", function () { curHouse = x.id; renderContacts(); $("cHouse").focus(); })])]));
       });
       if (d.items.length > 5) ol.appendChild(h("li", { class: "small", text: "외 " + (d.items.length - 5) + "곳" }));
       grid.appendChild(h("section", { class: "day" + (d.items.length ? "" : " is-empty"), role: "listitem" }, [h("h4", null, [d.label + " ", h("span", { class: "d-tag " + (d.items.length ? "acc" : "pos"), text: d.items.length + "곳" })]), ol]));
     });
     if (slot) slot.appendChild(grid);
-    else { log.appendChild(h("h4", { text: "닷새치 재시도 일정 — 안 해 본 시간대로 배치(공휴일 미반영)" })); log.appendChild(grid); }
+    else { log.appendChild(h("h4", { text: "닷새치 재시도·사후관리 일정 — 안 해 본 시간대로 배치(주말·공휴일 건너뜀)" })); log.appendChild(grid); }
   }
 
   // ── S9h-① 하루 동선 1장 (오늘 할 일 «오늘 동선 묶음»·방문 경로 화면) ─────────

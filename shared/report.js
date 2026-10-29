@@ -26,9 +26,9 @@
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function ymd(d) { d = new Date(d); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
   function sod(d) { d = new Date(d); d.setHours(0, 0, 0, 0); return d; }
-  function workdaysBetween(a, b) { // a 다음 날부터 b 까지(포함) 평일 수. 공휴일 미반영
-    var n = 0, d = sod(a), e = sod(b);
-    while (d < e) { d = new Date(d.getTime() + DAY); var w = d.getDay(); if (w !== 0 && w !== 6) n++; }
+  function workdaysBetween(a, b) { // a 다음 날부터 b 까지(포함) 평일 수. 공휴일은 features.js 목록이 있으면 뺀다
+    var n = 0, d = sod(a), e = sod(b), off = F.util && F.util.isOff;
+    while (d < e) { d = new Date(d.getTime() + DAY); var w = d.getDay(); if (off ? !off(d) : w !== 0 && w !== 6) n++; }
     return n;
   }
   function inRange(iso, from, to) { if (!iso) return false; var t = new Date(iso); return (!from || t >= sod(from)) && (!to || t < new Date(sod(to).getTime() + DAY)); }
@@ -38,7 +38,11 @@
   // (https://www.korea.kr/news/policyNewsView.do?newsId=148973765, 01_리서치/현행_위기가구_발굴절차.md 1행 [A])
   var ROUNDS = [
     { no: 5, year: 2026, label: "2026년 제5차 복지 사각지대 발굴", start: "2026-10-19", end: "2026-12-11",
-      source: "보건복지부 2026-10-19 보도(정책브리핑)" }
+      source: "보건복지부 2026-10-19 보도(정책브리핑)" },
+    // S9j: 12-11 뒤 시연이면 지난 차수만 떠서 추가. «예정·추정» — 격월(연 5~6회) 주기로 5차 종료 뒤 연말연시를 건너 1월 셋째 주 시작·8주로 가정.
+    // 산식: 5차 시작 10-19 + 약 9주 ≈ 12-21 → 연말연시 업무 감안 2027-01-18 시작, 5차와 같은 8주 → 03-12 종료. 공식 일정 발표 시 교체.
+    { no: 1, year: 2027, label: "2027년 제1차 복지 사각지대 발굴(예정·추정)", start: "2027-01-18", end: "2027-03-12", estimated: true,
+      source: "추정 — 격월 주기(보건복지부 2026-10-19 보도 «연 5~6회»)로 계산, 공식 발표 전" }
   ];
   var STATUS_LABEL = { "new": "새 요청", seen: "확인", visiting: "방문 예정", done: "완료", cancelled: "취소" };
   var RESULT_LABEL = { met: "만남·통화됨", no_answer: "부재·안 받음", wrong_contact: "연락처·주소 틀림", refused: "상담 거부", not_eligible: "비해당", moved: "전출·이사" };
@@ -108,9 +112,16 @@
     };
   }
 
+  /** 진행 중인 차수 → 없으면 다가올 차수(예정) → 없으면 마지막 차수 */
+  function currentRound(now) {
+    var t = ymd(now || new Date());
+    return ROUNDS.filter(function (r) { return r.start <= t && t <= r.end; })[0]
+      || ROUNDS.filter(function (r) { return r.start > t; })[0] || ROUNDS[ROUNDS.length - 1];
+  }
   function countdown(round, o) {
-    o = o || {}; round = round || ROUNDS[ROUNDS.length - 1];
+    o = o || {};
     var now = o.now ? new Date(o.now) : new Date();
+    round = round || currentRound(now);
     var start = new Date(round.start + "T00:00:00"), end = new Date(round.end + "T00:00:00");
     var daysLeft = Math.round((sod(end) - sod(now)) / DAY);
     var wdLeft = daysLeft < 0 ? 0 : workdaysBetween(new Date(sod(now).getTime() - DAY), end); // 오늘 포함
@@ -123,7 +134,10 @@
       perWorkday: wdLeft ? Math.ceil(remaining / wdLeft) : remaining, perWeek: weeksLeft >= 1 ? Math.ceil(remaining / weeksLeft) : remaining,
       elapsedPct: Math.round(elapsed * 100), donePct: Math.round(donePct * 100), onTrack: donePct + 1e-9 >= elapsed
     };
-    res.message = daysLeft < 0 ? "차수 마감이 지났습니다(" + round.end + ")."
+    var toStart = Math.round((sod(start) - sod(now)) / DAY);
+    res.upcoming = toStart > 0;
+    res.message = res.upcoming ? round.label + " 시작 " + round.start + "까지 " + toStart + "일 — 지난 차수 마무리·명단 받을 준비 기간입니다."
+      : daysLeft < 0 ? "차수 마감이 지났습니다(" + round.end + ")."
       : "마감 " + round.end + "까지 " + daysLeft + "일(평일 " + wdLeft + "일) — 남은 " + num(remaining) + "가구, 하루 " + res.perWorkday + "가구씩 처리하면 마감 안에 끝납니다." +
         (res.onTrack ? "" : " 기간 경과 " + res.elapsedPct + "% 대비 처리 " + res.donePct + "%로 뒤처져 있습니다.");
     return res;
@@ -188,7 +202,7 @@
     monthly: function (stats, o) { return makeReport("monthly", stats, o); },
     /** 읍면동 담당자의 «자기 동»: 명단 가구가 가장 많은 읍면동 */
     homeArea: function (households) { var n = {}, best = null; (households || []).forEach(function (h) { n[h.area] = (n[h.area] || 0) + 1; if (!best || n[h.area] > n[best]) best = h.area; }); return best; },
-    currentRound: function (now) { var t = ymd(now || new Date()); return ROUNDS.filter(function (r) { return r.start <= t && t <= r.end; })[0] || ROUNDS[ROUNDS.length - 1]; }
+    currentRound: currentRound
   };
   return F;
 });
