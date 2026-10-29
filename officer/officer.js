@@ -189,9 +189,13 @@
     lsSet(LS_W, weights);
   }
 
-  // ── ④ 경로 ─────────────────────────────────────────────
+  // ── ④ 경로 — 네이버 지도 + 도로 기준 순서 + 하루 시각표(S9c) ─────────
+  var RP = window.DaeumRoutePlan, RM = window.DaeumRouteMap, LS_ROUTE = "daeum.officer.route";
+  var route = lsGet(LS_ROUTE, null) || {}; // { ids:[순서], ret, road:{key, legs, path, s, m} }
+  var roadMsg = { text: "", kind: "" }, roadBusy = false;
   function dist(a, b) { var dx = a.x - b.x, dy = a.y - b.y; return Math.sqrt(dx * dx + dy * dy) * DETOUR; }
-  function planRoute(stops, ret) {
+  function stopPt(r) { return { id: r.h.id, x: r.h.x, y: r.h.y, r: r }; }
+  function planRoute(stops) {
     var office = D.meta.office, groups = {};
     stops.forEach(function (s) { (groups[s.h.area] = groups[s.h.area] || []).push(s); });
     var areaNames = Object.keys(groups), order = [], cur = office;
@@ -207,13 +211,85 @@
         var nx = left.shift(); order.push(nx); cur = nx.h;
       }
     }
-    return { order: order, km: pathKm(order, ret) };
+    return order;
   }
-  function pathKm(order, ret) {
-    var office = D.meta.office, cur = office, km = 0;
-    order.forEach(function (s) { km += dist(cur, s.h); cur = s.h; });
-    if (ret && order.length) km += dist(cur, office);
-    return km;
+  function pathKm(order, ret) { return RP.tourKm(order.map(stopPt), D.meta.office, ret); }
+  /** 담은 가구가 바뀌면 근사 최적 순서로 새로 짜고, 같으면 사람이 바꾼 순서를 지킨다 */
+  function routeStops(ret) {
+    var stops = picked.map(rowById).filter(Boolean), want = stops.map(function (r) { return r.h.id; }).sort().join(",");
+    var have = (route.ids || []).slice().sort().join(",");
+    if (want !== have || route.ret !== ret) {
+      var c = RP.candidates(stops.map(stopPt), D.meta.office, ret, planRoute(stops).map(stopPt));
+      route = { ids: c.length ? c[0].map(function (p) { return p.id; }) : [], ret: ret, road: null };
+      lsSet(LS_ROUTE, route);
+    }
+    return route.ids.map(rowById).filter(Boolean);
+  }
+  function roadFor(order, ret) {
+    var key = RP.cacheKey(order.map(function (r) { return r.h; }), ret);
+    if (route.road && route.road.key === key) return route.road;
+    var c = RM && RM.cacheGet(key); return c ? Object.assign({ key: key }, c) : null;
+  }
+  function ptsFor(order, ret) {
+    var o = RP.toLatLng(D.meta.office), pts = [[o.lng, o.lat]];
+    order.forEach(function (r) { var p = RP.toLatLng(r.h); pts.push([p.lng, p.lat]); });
+    if (ret && order.length) pts.push([o.lng, o.lat]);
+    return pts;
+  }
+  var ROAD_WHY = { "no-key": "서버에 네이버 길찾기 키를 넣는 중입니다", limit: "오늘 도로 경로 조회 한도에 닿았습니다", network: "도로 경로 서버에 닿지 못했습니다",
+    "no-endpoint": "도로 경로 서버 주소가 없습니다" };
+  /** «도로 기준으로 순서 짜기» — 순서 후보(최대 2개)마다 도로 시간을 받아 가장 짧은 것을 고른다. 같은 조합은 보관분을 쓴다. */
+  function roadOptimize() {
+    if (roadBusy || !RM) return;
+    var ret = $("routeReturn").checked, stops = routeStops(ret);
+    if (!stops.length) return;
+    if (stops.length > RP.MAX_ROAD_STOPS) { roadMsg = { text: "도로 경로는 한 번에 " + RP.MAX_ROAD_STOPS + "곳까지 받습니다. 담은 가구를 줄여 주세요.", kind: "warn" }; renderRoute(); return; }
+    var cands = RP.candidates(stops.map(stopPt), D.meta.office, ret, planRoute(stops).map(stopPt)).slice(0, 2);
+    var cur = stops.map(stopPt); if (!cands.some(function (c) { return RP.cacheKey(c, ret) === RP.cacheKey(cur, ret); }) && cands.length < 2) cands.push(cur);
+    roadBusy = true; roadMsg = { text: "네이버 길찾기로 도로 시간을 받는 중…", kind: "" }; renderRoute();
+    var results = [];
+    cands.reduce(function (p, c) {
+      return p.then(function () {
+        var order = c.map(function (x) { return x.r; }), key = RP.cacheKey(c, ret);
+        return RM.road(key, ptsFor(order, ret)).then(function (j) { results.push({ order: order, key: key, j: j }); });
+      });
+    }, Promise.resolve()).then(function () {
+      results.sort(function (a, b) { return a.j.s - b.j.s; });
+      var best = results[0];
+      route = { ids: best.order.map(function (r) { return r.h.id; }), ret: ret, road: { key: best.key, legs: best.j.legs, path: best.j.path, s: best.j.s, m: best.j.m } };
+      lsSet(LS_ROUTE, route);
+      var gain = results.length > 1 ? Math.round((results[results.length - 1].j.s - best.j.s) / 60) : 0;
+      roadMsg = { text: "도로 경로(네이버 길찾기) 기준 순서입니다 — 후보 " + results.length + "개 중 가장 빠른 순서" + (gain > 0 ? "(다른 후보보다 " + gain + "분 빠름)" : "") +
+        (results.every(function (x) { return x.j.cached; }) ? " · 보관된 결과 사용" : ""), kind: "ok" };
+      if (window.DaeumUI) DaeumUI.haptic("success");
+    }).catch(function (e) {
+      var why = ROAD_WHY[e && e.code] || ("도로 경로를 받지 못했습니다(" + (e && e.code || "오류") + ")");
+      if (window.console) console.warn("[닿음 경로] 도로 경로 실패 —", e);
+      roadMsg = { text: "도로 경로 준비 중 — " + why + ". 지금은 직선거리 근사 순서·시간입니다.", kind: "warn" };
+    }).then(function () { roadBusy = false; renderRoute(); });
+  }
+  function moveStop(from, to, focusIdx) {
+    var ids = RP.move(route.ids, from, to); if (ids.join() === route.ids.join()) return;
+    route.ids = ids; route.road = null; lsSet(LS_ROUTE, route);
+    roadMsg = { text: "순서를 바꿨습니다 — 시각표는 직선거리 근사로 다시 계산했습니다. 이 순서의 실제 도로 시간은 시각표 아래 «이 순서로 도로 시간 받기».", kind: "" };
+    if (window.DaeumUI) DaeumUI.haptic("selection");
+    renderRoute();
+    if (focusIdx != null) { var hs = document.querySelectorAll("#routeList .grip"); if (hs[focusIdx]) hs[focusIdx].focus(); }
+  }
+  /** 사람이 정한 순서 그대로 도로 시간만 받기(호출 1~2회) */
+  function roadThisOrder() {
+    if (roadBusy || !RM) return;
+    var ret = $("routeReturn").checked, order = routeStops(ret);
+    if (!order.length || order.length > RP.MAX_ROAD_STOPS) return;
+    var key = RP.cacheKey(order.map(function (r) { return r.h; }), ret);
+    roadBusy = true; roadMsg = { text: "이 순서의 도로 시간을 받는 중…", kind: "" }; renderRoute();
+    RM.road(key, ptsFor(order, ret)).then(function (j) {
+      route.road = { key: key, legs: j.legs, path: j.path, s: j.s, m: j.m }; lsSet(LS_ROUTE, route);
+      roadMsg = { text: "도로 경로(네이버 길찾기) 기준 — 직접 정한 순서", kind: "ok" };
+    }).catch(function (e) {
+      if (window.console) console.warn("[닿음 경로] 도로 경로 실패 —", e);
+      roadMsg = { text: "도로 경로 준비 중 — " + (ROAD_WHY[e && e.code] || "도로 경로를 받지 못했습니다") + ". 지금은 직선거리 근사입니다.", kind: "warn" };
+    }).then(function () { roadBusy = false; renderRoute(); });
   }
   function svg(tag, attrs, text) {
     var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
@@ -221,52 +297,126 @@
     if (text != null) e.textContent = text;
     return e;
   }
-  function renderRoute() {
-    var ret = $("routeReturn").checked;
-    var stops = picked.map(rowById).filter(Boolean);
-    var plan = planRoute(stops, ret);
-    var naive = pathKm(stops.slice().sort(function (a, b) { return a.rank - b.rank; }), ret);
-    var hours = plan.km / KMH + stops.length * VISIT_MIN / 60;
-    $("routeStat").textContent = stops.length
-      ? "방문 " + stops.length + "곳 · 이동 " + plan.km.toFixed(1) + "km(추정) · 명단 순서대로 돌 때 " + naive.toFixed(1) +
-        "km → " + Math.max(0, naive - plan.km).toFixed(1) + "km 짧아짐 · 예상 " + hours.toFixed(1) + "시간"
-      : "명단에서 방문할 가구를 담아 주세요.";
-
+  function drawSvg(order, ret) {
     var m = $("map"); m.textContent = "";
     D.areas.forEach(function (a) {
       m.appendChild(svg("circle", { cx: a.x, cy: -a.y, r: a.kind === "동" ? 1.2 : a.kind === "읍" ? 2.6 : 3.2, class: "area" }));
       m.appendChild(svg("text", { x: a.x, y: -a.y - (a.code === "A" ? 3.8 : 5.4), class: "alabel" }, a.name));
     });
     D.households.forEach(function (h) { m.appendChild(svg("circle", { cx: h.x, cy: -h.y, r: 0.25, class: "hh" })); });
-    var pts = [D.meta.office].concat(plan.order.map(function (s) { return s.h; }));
-    if (ret && plan.order.length) pts.push(D.meta.office);
+    var pts = [D.meta.office].concat(order.map(function (s) { return s.h; }));
+    if (ret && order.length) pts.push(D.meta.office);
     m.appendChild(svg("polyline", { points: pts.map(function (p) { return p.x + "," + (-p.y); }).join(" "), class: "path" }));
     m.appendChild(svg("rect", { x: -0.9, y: -0.9, width: 1.8, height: 1.8, class: "office" }));
     m.appendChild(svg("text", { x: 0, y: 2.4, class: "olabel" }, "시청"));
-    plan.order.forEach(function (s, i) {
+    order.forEach(function (s, i) {
       var g = svg("g", { class: "stop" + (s.h.request ? " req" : "") });
       g.appendChild(svg("circle", { cx: s.h.x, cy: -s.h.y, r: 0.95 }));
       g.appendChild(svg("text", { x: s.h.x, y: -s.h.y + 0.42 }, i + 1));
-      var t = svg("title", {}, (i + 1) + ". " + s.h.label + " · " + s.h.area); g.appendChild(t);
+      g.appendChild(svg("title", {}, (i + 1) + ". " + s.h.label + " · " + s.h.area));
       m.appendChild(g);
     });
-    // 축척
     m.appendChild(svg("line", { x1: -22, y1: 22, x2: -17, y2: 22, class: "scale" }));
     m.appendChild(svg("text", { x: -19.5, y: 21.2, class: "olabel" }, "직선 5km"));
+  }
+  var MAP_WHY = { auth: "지도 인증 실패", network: "지도 서버 연결 실패", timeout: "응답 늦음", "no-key": "지도 키 없음", "no-api": "지도 기능 없음" };
+  function showMap(naverOk) { $("nmap").hidden = !naverOk; $("map").hidden = naverOk; }
+  function drawMap(order, ret, road) {
+    var go = function () {
+      var o = RP.toLatLng(D.meta.office);
+      var ok = RM.draw({ box: $("nmap"), office: { lat: o.lat, lng: o.lng, name: D.meta.office.name, short: "시청" }, ret: ret,
+        color: getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || undefined,
+        path: road && road.path, stops: order.map(function (r, i) { var p = RP.toLatLng(r.h); return { lat: p.lat, lng: p.lng, no: i + 1, label: r.h.label + " · " + r.h.area, req: !!r.h.request }; }) });
+      if (!ok) drawSvg(order, ret);
+      return ok;
+    };
+    if (!RM) { showMap(false); return drawSvg(order, ret); }
+    if (RM.state.status === "ready") { showMap(true); if (!go()) showMap(false); return; }
+    showMap(false); drawSvg(order, ret);
+    RM.load().then(function () { if ($("tab-route") && !$("tab-route").hidden) renderRoute(); },
+      function () { if ($("tab-route") && !$("tab-route").hidden) mapNote(); });
+  }
+  function mapNote() {
+    var st = RM && RM.state, rr = $("routeRoad");
+    if (st && st.status === "fail" && rr.textContent.indexOf("네이버 지도") < 0)
+      rr.textContent += " 네이버 지도를 불러오지 못해 단순 지도로 보여 드립니다(" + (MAP_WHY[st.reason] || st.reason) + ").";
+  }
+  function renderRoute() {
+    var ret = $("routeReturn").checked;
+    var order = routeStops(ret), road = roadFor(order, ret);
+    var needLegs = order.length + (ret && order.length ? 1 : 0);
+    var isRoad = !!(road && road.legs && road.legs.length === needLegs);
+    var legs = isRoad ? road.legs : RP.approxLegs(order.map(stopPt), D.meta.office, ret);
+    var sch = RP.schedule(order.map(function (r) { return { id: r.h.id }; }), legs,
+      { start: $("routeStart").value, consultMin: +$("routeConsult").value, lunch: $("routeLunch").checked ? undefined : null, ret: ret });
+    var naive = pathKm(order.slice().sort(function (a, b) { return a.rank - b.rank; }), ret);
+    $("routeStat").textContent = order.length
+      ? "방문 " + order.length + "곳 · 이동 " + sch.km.toFixed(1) + "km " + (isRoad ? "(도로)" : "(근사)") + " · 이동 " + sch.travelMin + "분 · 상담 " + sch.consultMin + "분 · " +
+        (ret ? "복귀 " : "마침 ") + sch.end + (isRoad ? "" : " · 명단 순서보다 " + Math.max(0, naive - sch.km).toFixed(1) + "km 짧음")
+      : "명단에서 방문할 가구를 담아 주세요.";
+    var rr = $("routeRoad");
+    rr.textContent = roadMsg.text || (isRoad ? "도로 경로(네이버 길찾기) 기준 시각표입니다." : "지금은 직선거리 근사 순서·시간입니다. «도로 기준으로 순서 짜기»를 누르면 실제 도로 시간으로 다시 짭니다.");
+    rr.className = "route-road" + (roadMsg.kind ? " " + roadMsg.kind : isRoad ? " ok" : "");
+    $("btnRoad").disabled = roadBusy || !order.length;
+    $("btnRoad").setAttribute("aria-busy", roadBusy ? "true" : "false");
+    drawMap(order, ret, isRoad ? road : null);
+    mapNote();
 
     var ol = $("routeList"); ol.textContent = "";
-    var lastArea = null, cur = D.meta.office;
-    plan.order.forEach(function (s, i) {
-      if (s.h.area !== lastArea) { ol.appendChild(el("li", "grp", s.h.area)); lastArea = s.h.area; }
+    order.forEach(function (s, i) {
+      var row = sch.rows[i];
+      if (row.lunchBefore) ol.appendChild(el("li", "grp", "점심"));
       var li = el("li", "stop" + (s.h.request ? " req" : ""));
+      var grip = el("button", "grip", "≡"); grip.type = "button";
+      grip.setAttribute("aria-label", (i + 1) + "번 " + s.h.label + " 순서 옮기기 — 위·아래 화살표 또는 끌기");
+      grip.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowUp" && i > 0) { e.preventDefault(); moveStop(i, i - 1, i - 1); }
+        else if (e.key === "ArrowDown" && i < order.length - 1) { e.preventDefault(); moveStop(i, i + 1, i + 1); }
+      });
+      grip.addEventListener("pointerdown", function (e) { startDrag(e, li, i); });
+      li.appendChild(grip);
       li.appendChild(el("span", "no", i + 1));
-      li.appendChild(el("b", null, s.h.label));
-      li.appendChild(el("span", "small", "앞 지점에서 " + dist(cur, s.h).toFixed(1) + "km"));
+      var main = el("div", "grow");
+      var t = el("div", "tm"); t.appendChild(el("b", "num", row.arrive)); t.appendChild(document.createTextNode(" ~ " + row.leave + " "));
+      t.appendChild(el("b", null, s.h.label)); t.appendChild(el("span", "small", " " + s.h.area));
+      main.appendChild(t);
+      main.appendChild(el("span", "small", "앞 지점에서 " + row.km.toFixed(1) + "km · " + row.travelMin + "분" + (row.approx ? "(근사)" : "")));
+      li.appendChild(main);
+      var acts = el("div", "acts");
+      var up = el("button", "ghost mini", "위로"); up.type = "button"; up.disabled = i === 0; up.setAttribute("aria-label", (i + 1) + "번 위로");
+      up.addEventListener("click", function () { moveStop(i, i - 1); });
+      var dn = el("button", "ghost mini", "아래로"); dn.type = "button"; dn.disabled = i === order.length - 1; dn.setAttribute("aria-label", (i + 1) + "번 아래로");
+      dn.addEventListener("click", function () { moveStop(i, i + 1); });
       var go = el("button", "ghost mini", "상담 기록"); go.type = "button"; go.setAttribute("data-h", "light");
       go.addEventListener("click", function () { $("recHouse").value = s.h.id; location.hash = "#record"; });
-      li.appendChild(go);
-      ol.appendChild(li); cur = s.h;
+      acts.appendChild(up); acts.appendChild(dn); acts.appendChild(go);
+      li.appendChild(acts);
+      ol.appendChild(li);
     });
+    if (sch.back) ol.appendChild(el("li", "end", "시청 복귀 " + sch.back.arrive + " · " + sch.back.km.toFixed(1) + "km · " + sch.back.travelMin + "분"));
+    if (order.length && !isRoad && !roadBusy && order.length <= RP.MAX_ROAD_STOPS) {
+      var li2 = el("li", "end"), b = el("button", "ghost", "이 순서로 도로 시간 받기"); b.type = "button"; b.setAttribute("data-h", "light");
+      b.addEventListener("click", roadThisOrder); li2.appendChild(b); ol.appendChild(li2);
+    }
+  }
+  // 끌어 옮기기(마우스·손가락 공용, 손잡이에서만 시작)
+  function startDrag(e, li, from) {
+    if (e.button != null && e.button !== 0) return;
+    e.preventDefault();
+    var items = [].slice.call($("routeList").querySelectorAll("li.stop")), to = from;
+    li.classList.add("dragging");
+    function mv(ev) {
+      var y = ev.clientY, k = 0; // 손가락이 가리키는 «틈» 번호(0 = 맨 위 앞)
+      while (k < items.length) { var r = items[k].getBoundingClientRect(); if (y < r.top + r.height / 2) break; k++; }
+      to = k > from ? k - 1 : k;
+      items.forEach(function (it, k) { it.classList.toggle("drop-to", k === to && to !== from); });
+    }
+    function up() {
+      document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+      li.classList.remove("dragging"); items.forEach(function (it) { it.classList.remove("drop-to"); });
+      if (to !== from) moveStop(from, to);
+    }
+    document.addEventListener("pointermove", mv); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
   }
 
   // ── ⑤ 상담 기록 ─────────────────────────────────────────
@@ -562,6 +712,8 @@
     $("btnPickTop").addEventListener("click", function () { pickTop(); renderList(); });
     $("btnDemoReq").addEventListener("click", demoRequest);
     $("routeReturn").addEventListener("change", renderRoute);
+    ["routeStart", "routeConsult", "routeLunch"].forEach(function (k) { $(k).addEventListener("change", renderRoute); });
+    $("btnRoad").addEventListener("click", roadOptimize);
     $("recHouse").addEventListener("change", function () { showHouseInfo(); $("recText").value = ""; $("btnLink").hidden = true; });
     $("btnSample").addEventListener("click", function () { var r = rowById($("recHouse").value); if (r) $("recText").value = sampleScript(r); });
     $("btnMic").addEventListener("click", toggleMic);
