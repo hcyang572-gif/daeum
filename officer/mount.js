@@ -45,8 +45,8 @@
   }
   var CH = { visit: "방문", phone: "전화", center: "내방", ai: "AI 초기상담 결과" };
   function esc(x) { return String(x == null ? "" : x).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-  function download(name, text, type) {
-    var blob = new Blob(["﻿" + text], { type: (type || "text/csv") + ";charset=utf-8" }); // 한글 엑셀이 깨지지 않게 BOM
+  function download(name, text, type, noBom) {
+    var blob = new Blob([(noBom ? "" : "﻿") + text], { type: (type || "text/csv") + ";charset=utf-8" }); // 한글 엑셀이 깨지지 않게 BOM(.ics 는 BOM 없이)
     var a = h("a", { href: URL.createObjectURL(blob), download: name }); document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
     say("파일을 내려받았습니다 — " + name); haptic("success");
@@ -639,7 +639,64 @@
   }
   function sheetActs() {
     return h("div", { class: "rep-acts" }, [btn("하루 동선 1장 인쇄", printSheet, "ghost", "medium"),
-      btn("하루 동선 문안 복사", function () { copy(sheetData().text); }, "ghost", "success")]);
+      btn("하루 동선 문안 복사", function () { copy(sheetData().text); }, "ghost", "success"),
+      btn("오늘 일정 달력 파일(.ics)", function () { saveIcs(false); }, "ghost", "success"),
+      btn("이번 주 달력 파일(.ics)", function () { saveIcs(true); }, "ghost", "success"),
+      btn("알림톡 문구 미리보기", function () { openTalk(); }, "ghost", "light"),
+      h("p", { class: "small sheet-src", text: "달력 파일에는 읍면동·순번·예정 시각만 들어갑니다(가구 이름·주소 제외). " + (window.DaeumNotify ? DaeumNotify.SOURCE_ICS : "") })]);
+  }
+
+  // ── S10h ⑦ 방문 일정 .ics — 오늘 동선(예정 시각) + 이번 주 남은 날 재방문(시간대 어림) ─────────
+  function saveIcs(week) {
+    var NT = window.DaeumNotify; if (!NT) return;
+    var sh = sheetData(), ev = NT.fromSheet(sh);
+    if (week) ev = ev.concat(NT.fromPlan(F.contacts.plan(st("attempts", []), households(), new Date(), 5, { links: O.links(), outcomes: st("outcomes", {}), followups: st("followups", {}) }), sh.date));
+    if (!ev.length) { say(week ? "이번 주 방문 일정이 없습니다." : "담은 가구가 없습니다. 가구 명단에서 방문할 집을 먼저 담아 주세요."); return; }
+    download("닿음_방문일정_" + (week ? "이번주_" : "") + sh.date.replace(/-/g, "") + ".ics", NT.ics(ev, { now: new Date(), calName: "닿음 방문 일정" + (week ? "(이번 주)" : "") }), "text/calendar", true);
+    say("달력 파일 " + ev.length + "건을 내려받았습니다. 휴대폰에서 파일을 열면 달력에 들어갑니다.");
+  }
+
+  // ── S10h ⑥ 알림톡 문구 미리보기 — 실제 발송 없음. 가구는 순번·읍면동으로만 고른다 ─────────
+  function nextWorkday(d) { return F.util && F.util.addWorkdays ? F.util.addWorkdays(d, 1) : new Date(+d + 864e5); }
+  function openTalk() {
+    var NT = window.DaeumNotify; if (!NT) return;
+    var sh = sheetData(), today = sh.date || F.util.ymd(new Date()), kind = "visit", pick = 0;
+    var stops = sh.stops.length ? sh.stops : [{ no: 0, area: homeArea() || "○○동", time: "" }];
+    var dlg = $("talkPrev");
+    if (!dlg) { dlg = h("dialog", { id: "talkPrev", class: "pane d-card", "aria-labelledby": "tpTitle" }); document.body.appendChild(dlg); }
+    function msg() {
+      var s = stops[pick] || stops[0], tm = String(s.time || "").split("~")[0];
+      return NT.alimtalk(kind, { area: s.area, date: today, time: tm || null, slot: tm ? null : "오전", nextDate: F.util.ymd(nextWorkday(new Date(today + "T09:00:00"))), nextSlot: "오후" });
+    }
+    function draw() {
+      clear(dlg);
+      var m = msg();
+      dlg.appendChild(h("h3", { id: "tpTitle" }, [h("span", { class: "d-tag warn", text: "미리보기 · 실제 발송 안 함" }), "알림톡 문구"]));
+      var seg = h("div", { class: "rep-acts tp-kinds", role: "group", "aria-label": "문구 종류" }, NT.KINDS.map(function (k) {
+        var b = btn(k.label, function () { kind = k.id; draw(); var f = dlg.querySelector('.tp-kinds [aria-pressed="true"]'); if (f) f.focus(); }, "ghost", "selection");
+        b.setAttribute("aria-pressed", String(k.id === kind)); return b;
+      }));
+      dlg.appendChild(seg);
+      if (sh.stops.length) {
+        var sel = h("select", { id: "tpStop", "aria-label": "오늘 동선에서 고르기(순번·읍면동만 표시)" }, stops.map(function (s, i) {
+          var o = h("option", { value: String(i), text: "방문 " + s.no + " · " + s.area + (s.time ? " · " + s.time.split("~")[0] : "") }); if (i === pick) o.selected = true; return o;
+        }));
+        sel.addEventListener("change", function () { pick = +sel.value; draw(); $("tpStop").focus(); });
+        dlg.appendChild(h("label", { class: "tp-pick small" }, ["보낼 집(오늘 동선) ", sel]));
+      }
+      dlg.appendChild(h("div", { class: "tp-phone", role: "img", "aria-label": "알림톡 말풍선 모양 미리보기 — 아래에 같은 문구가 글로 있습니다" }, [
+        h("p", { class: "tp-from" }, [h("i", { "aria-hidden": "true" }), m.sender]),
+        h("div", { class: "tp-bubble" }, [h("p", { class: "tp-head", text: "알림톡 도착" }), h("p", { class: "tp-ttl", text: m.title }),
+          h("p", { class: "tp-body", text: m.body }), h("span", { class: "tp-btn", text: m.buttons[0] })])
+      ]));
+      dlg.appendChild(h("p", { class: "sr", text: m.copy }));
+      dlg.appendChild(h("p", { class: "small", text: m.chars + "자 · 가구 이름·주소·서비스명은 넣지 않습니다. 날짜·전화번호는 시연용 가상 값(" + NT.DEMO_PHONE + ")입니다." }));
+      dlg.appendChild(h("p", { class: "note", text: NT.SOURCE_TALK + ". 실제 발송은 수신 동의·번호 관리·템플릿 승인을 갖춘 뒤의 일이고, 닿음은 문구를 준비해 주는 데까지만 합니다." }));
+      dlg.appendChild(h("div", { class: "rep-acts" }, [btn("문구 복사", function () { copy(m.copy); }, "ghost", "success"), btn("닫기", function () { dlg.close(); }, "ghost", "light")]));
+    }
+    draw();
+    if (dlg.showModal && !dlg.open) dlg.showModal(); else dlg.setAttribute("open", "");
+    haptic("light");
   }
   // 방문 경로 화면: 안내 줄 아래에 같은 단추(한 번만 붙인다)
   document.addEventListener("daeum:officer-show", function (e) {

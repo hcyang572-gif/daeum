@@ -352,18 +352,18 @@ main details[open]:not(.fold) > summary::before { transform: rotate(45deg); }
 
 
 /* ④ 방문 전 한 장 카드 — 단단한 바탕 + 깊은 그림자, 아래 단추줄 고정 */
-#visitCard { width: min(40rem, calc(100vw - 2 * var(--sp-4))); max-height: calc(100dvh - 2 * var(--sp-6)); overflow: auto; overscroll-behavior: contain;
+#visitCard, #talkPrev { width: min(40rem, calc(100vw - 2 * var(--sp-4))); max-height: calc(100dvh - 2 * var(--sp-6)); overflow: auto; overscroll-behavior: contain;
   border: 0; padding: var(--sp-5) var(--sp-5) 0; color: var(--ink); background-color: var(--solid); border-radius: var(--r-lg); box-shadow: var(--hl), var(--e3); gap: 0; }
-#visitCard[open] { animation: d-tab var(--t-fast) var(--c-std) both; }
-#visitCard::backdrop { background: color-mix(in srgb, var(--ink) 35%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-#visitCard > h3 { margin: 0 0 var(--sp-1); font-size: var(--fs-h3); font-weight: var(--fw-h); letter-spacing: -.035em; }
+#visitCard[open], #talkPrev[open] { animation: d-tab var(--t-fast) var(--c-std) both; }
+#visitCard::backdrop, #talkPrev::backdrop { background: color-mix(in srgb, var(--ink) 35%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+#visitCard > h3, #talkPrev > h3 { margin: 0 0 var(--sp-1); font-size: var(--fs-h3); font-weight: var(--fw-h); letter-spacing: -.035em; }
 #visitCard > section { padding: var(--sp-3) 0; border-top: 1px solid var(--hair); }
 #visitCard > section:first-of-type { margin-top: var(--sp-3); }
 #visitCard h4 { margin: 0 0 var(--sp-2); font-size: var(--fs-s); color: var(--ink2); font-weight: var(--fw-b); }
 #visitCard ul.small { margin: 0; padding-left: 1.2em; line-height: 1.6; }
 #visitCard .slot-list > li .d-tag { flex: none; min-width: 5.5em; justify-content: center; }
-#visitCard > .rep-acts { position: sticky; bottom: 0; margin: var(--sp-2) calc(-1 * var(--sp-5)) 0; padding: var(--sp-3) var(--sp-5) var(--sp-4); background: var(--solid); border-top: 1px solid var(--hair); }
-#visitCard > .rep-acts > button { flex: 1 1 8rem; }
+#visitCard > .rep-acts, #talkPrev > .rep-acts:last-child { position: sticky; bottom: 0; margin: var(--sp-2) calc(-1 * var(--sp-5)) 0; padding: var(--sp-3) var(--sp-5) var(--sp-4); background: var(--solid); border-top: 1px solid var(--hair); }
+#visitCard > .rep-acts > button, #talkPrev > .rep-acts > button { flex: 1 1 8rem; }
 
 /* ⑤ 안전 방문 상자(방문·연락 기록 양식 아래) — 우물 면 안에 줄 단위 정렬 */
 #safetyRoot .hinfo { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); margin: var(--sp-3) 0 0; padding: var(--sp-3) var(--sp-4); }
@@ -624,3 +624,20 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
   .seg { display: none; }
 }
 @media print { .seg { display: none !important; } }
+
+/* S10h ⑥⑦ 달력 파일·알림톡 미리보기(⚙️ 파로 10-30) — 말풍선은 토큰 색만, 장식 없음 */
+.rep-acts > .sheet-src { flex: 1 1 100%; margin: 0; color: var(--ink2); }
+#talkPrev > h3 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
+#talkPrev .tp-kinds { margin: var(--sp-3) 0 var(--sp-2); }
+#talkPrev .tp-kinds > button { flex: 1 1 9rem; }
+#talkPrev .tp-pick { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-3); }
+#talkPrev .tp-pick select { flex: 1 1 12rem; min-height: var(--tap); }
+.tp-phone { padding: var(--sp-4); border-radius: var(--r); background: var(--bg-sunk); }
+.tp-from { display: flex; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-2); font-size: var(--fs-xs); color: var(--ink2); font-weight: var(--fw-m); }
+.tp-from i { width: 28px; height: 28px; border-radius: 50%; background: var(--acc-soft); flex: none; }
+.tp-bubble { max-width: 22rem; margin-left: 36px; border-radius: 4px var(--rb) var(--rb) var(--rb); background: var(--solid); box-shadow: var(--e1); overflow: hidden; }
+.tp-head { margin: 0; padding: 8px 14px; font-size: var(--fs-xs); font-weight: var(--fw-b); color: var(--warn); background: var(--warn-soft); }
+.tp-ttl { margin: 0; padding: 12px 14px 4px; font-weight: var(--fw-b); }
+.tp-body { margin: 0; padding: 0 14px 12px; white-space: pre-line; font-size: var(--fs-s); line-height: 1.6; overflow-wrap: anywhere; }
+.tp-btn { display: flex; align-items: center; justify-content: center; min-height: var(--tap); margin: 0 14px 14px; border-radius: var(--r-sm); background: var(--bg-sunk); font-size: var(--fs-s); color: var(--ink); }
+@media (max-width: 400px) { .tp-phone { padding: var(--sp-3); } .tp-bubble { margin-left: 0; } }
