@@ -24,6 +24,10 @@
     return e;
   }
   function clear(e) { if (e) e.textContent = ""; return e; }
+  // 저장값은 ISO(UTC) 그대로, 보여 줄 때만 이 기기 시각으로(O-01 — 잘라 쓰면 9시간 이르게 보였다)
+  function p2(n) { return (n < 10 ? "0" : "") + n; }
+  function hm(iso) { var d = new Date(iso); return isNaN(d) ? "" : p2(d.getHours()) + ":" + p2(d.getMinutes()); }
+  function mdhm(iso) { var d = new Date(iso); return isNaN(d) ? "" : p2(d.getMonth() + 1) + "-" + p2(d.getDate()) + " " + hm(iso); }
   function empty(text) { return h("li", { class: "d-slot", text: text }); }
   function btn(label, on, cls, hp) { return h("button", { type: "button", class: cls || "ghost mini", "data-h": hp || "light", onclick: on, text: label }); }
   function haptic(k) { if (window.DaeumUI) DaeumUI.haptic(k); }
@@ -88,6 +92,24 @@
     items.slice(0, max || 6).forEach(function (it) { ol.appendChild(todayItem(it)); });
     if (items.length > (max || 6)) ol.appendChild(h("li", { class: "small", text: "외 " + (items.length - (max || 6)) + "건" }));
   }
+  // O-02: 방금 온 신호(?req=접수번호 · 15분 안에 들어온 시연 아닌 신호)는 6건 제한에 접히지 않게 맨 앞으로 — shared/switcher.js «방금» 강조가 찾을 수 있도록
+  var FRESH_MIN = 15;
+  function freshFirst(items) {
+    var want = {}, now = Date.now();
+    try { var qid = new URLSearchParams(location.search).get("req"); if (qid) want[qid] = 2e15; } catch (e) { /* 옛 브라우저 */ }
+    (REQ && REQ.list ? REQ.list() : []).forEach(function (r) {
+      var t = Date.parse(r.createdAt || "");
+      if (!r.seed && t && now - t < FRESH_MIN * 60000 && !want[r.id]) want[r.id] = t;
+    });
+    var top = items.filter(function (it) { return want[it.requestId]; }).sort(function (a, b) { return want[b.requestId] - want[a.requestId]; });
+    return top.length ? top.concat(items.filter(function (it) { return !want[it.requestId]; })) : items;
+  }
+  // 오늘 방문 = 담은 가구 + 주민 신호·재방문(자동). 경로 화면은 담은 가구만 쓰므로 둘을 나눠 적는다(O-03)
+  function split(order) {
+    var has = {}; O.picked().forEach(function (id) { has[id] = 1; });
+    var mine = order.filter(function (s) { return has[s.id]; }).length, rest = order.length - mine;
+    return rest && mine ? "(담은 가구 " + mine + " + 신호·재방문 " + rest + ")" : "";
+  }
   function renderToday(t) {
     var c = t.counts;
     if (window.DaeumUI) DaeumUI.countUp($("todayCount"), c.stops, "가구"); else $("todayCount").innerHTML = c.stops + "<small>가구</small>";
@@ -96,15 +118,15 @@
     var sg = $("sigLine"); if (sg) sg.classList.toggle("on", c.newRequests > 0);
     var dueHint = q($("tab-today"), '[data-slot="kpi-due"] em'); if (dueHint) dueHint.textContent = "처리 기한 하루 이내·지남(시연 설정)";
     var S = {}; t.sections.forEach(function (s) { S[s.key] = s; });
-    fillList("todayRequests", S["new"].items, "새로 들어온 요청이 없습니다.");
+    fillList("todayRequests", freshFirst(S["new"].items), "새 주민 신호가 없습니다.");
     fillList("todayDue", S.due.items, "기한이 다가오는 요청이 없습니다.");
     fillList("todayRevisit", S.revisit.items, "오늘 다시 찾아갈 집이 없습니다.");
     // 동선
     var box = clear($("todayRoute")), R = t.route;
     if (!R.order.length) box.appendChild(h("p", { class: "d-slot", text: "가구 명단에서 방문할 집을 담으면 동선을 묶어 드립니다." }));
     else {
-      var sum = "방문 " + R.order.length + "곳 · 이동 " + R.km.toFixed(1) + "km(추정) · 예상 " + (R.minutes / 60).toFixed(1) + "시간";
-      if ($("todayKm")) { routeArt(R.order); $("todayKm").innerHTML = R.km.toFixed(1) + "<small>km 이동(추정)</small>"; $("todayMeta").textContent = "방문 " + R.order.length + "곳 · 예상 " + (R.minutes / 60).toFixed(1) + "시간 · " + routeAreas(R.order); }
+      var sum = "방문 " + R.order.length + "곳" + split(R.order) + " · 이동 " + R.km.toFixed(1) + "km(추정) · 예상 " + (R.minutes / 60).toFixed(1) + "시간";
+      if ($("todayKm")) { routeArt(R.order); $("todayKm").innerHTML = R.km.toFixed(1) + "<small>km 이동(추정)</small>"; $("todayMeta").textContent = "방문 " + R.order.length + "곳" + split(R.order) + " · 예상 " + (R.minutes / 60).toFixed(1) + "시간 · " + routeAreas(R.order); }
       box.appendChild(h("p", { class: "small" + ($("todayKm") ? " sr" : ""), text: sum }));
       var ol = h("ol", { class: "slot-list visits" }), lastA = null;
       R.order.slice(0, 8).forEach(function (s, i) {
@@ -120,7 +142,17 @@
     if (!R.order.length && $("todayKm")) { clear($("todayArt")); $("todayKm").textContent = ""; $("todayMeta").textContent = "가구 명단에서 방문할 집을 담으면 순서를 묶어 드립니다"; }
     renderTodayGaps();
     var go = q($("tab-today"), 'a[href="#route"]');
-    if (go && !go._m) { go._m = 1; go.addEventListener("click", function () { if (lastToday) O.setPicked(lastToday.route.order.map(function (s) { return s.id; })); }); }
+    // O-03: 담은 가구를 말없이 덮어쓰지 않는다 — 신호·재방문 집이 따로 있으면 한 번 묻고, 담기로 하면 담은 순서 뒤에 붙인다
+    if (go && !go._m) { go._m = 1; go.addEventListener("click", function () {
+      if (!lastToday) return;
+      var mine = O.picked(), has = {}; mine.forEach(function (id) { has[id] = 1; });
+      var extra = lastToday.route.order.filter(function (s) { return !has[s.id] && O.row(s.id); });
+      if (!extra.length) return;
+      var names = extra.slice(0, 3).map(function (s) { return s.label; }).join(", ") + (extra.length > 3 ? " 외 " + (extra.length - 3) + "곳" : "");
+      if (window.confirm("주민 신호·재방문 " + extra.length + "곳(" + names + ")도 경로에 담을까요?\n\n«취소»를 누르면 담은 가구 " + mine.length + "곳만으로 경로를 짭니다.")) {
+        O.setPicked(mine.concat(extra.map(function (s) { return s.id; }))); say("주민 신호·재방문 " + extra.length + "곳을 경로에 담았습니다.");
+      }
+    }); }
     // 닿음이 미리 정리한 일(타임라인)
     var auto = clear($("todayAuto"));
     var lines = [
@@ -136,32 +168,40 @@
   // 오늘 동선 실크 위 그림 — 방문 순서대로 가상 좌표(x,y)를 이은 선과 번호(장식, 같은 내용이 옆 목록에 있다)
   var SVGNS = "http://www.w3.org/2000/svg";
   function sv(tag, at) { var e = document.createElementNS(SVGNS, tag); Object.keys(at || {}).forEach(function (k) { e.setAttribute(k, at[k]); }); return e; }
+  // 하루 동선 그림 — 칸의 실제 크기(px)를 viewBox로 잡고 경로 범위를 여백 8%로 꽉 채운다(S10n 디자인 #2: 정사각 100×100이라 세로 26%만 쓰고 번호가 4~5px였다)
+  var artOrder = null, artRO = null;
   function routeArt(order) {
     var svg = clear($("todayArt")); if (!svg) return;
+    artOrder = order;
+    if (!artRO && window.ResizeObserver) { var lastW = 0, lastH = 0; artRO = new ResizeObserver(function (en) { var r = en[0].contentRect; if (Math.abs(r.width - lastW) > 4 || Math.abs(r.height - lastH) > 4) { lastW = r.width; lastH = r.height; if (artOrder) routeArt(artOrder); } }); artRO.observe(svg); }
     var pts = order.slice(0, 12).map(function (s) {
       if (isFinite(s.x) && isFinite(s.y)) return s;
       var r = O.row(s.id); return r && r.h && isFinite(r.h.x) ? { x: r.h.x, y: r.h.y, kind: s.kind } : null; // 동선 줄에 좌표가 없으면 명단 가구 좌표
     }).filter(Boolean); if (pts.length < 1) return;
+    var box = svg.getBoundingClientRect(), W = Math.round(box.width) || 200, H = Math.round(box.height) || 200;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    var R = 11, PAD = Math.max(R + 4, Math.round(Math.min(W, H) * 0.08)); // 구슬 반지름 11px(번호 11px), 여백 8%
     var xs = pts.map(function (p) { return p.x; }), ys = pts.map(function (p) { return p.y; });
     var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-    var span = Math.max(x1 - x0, y1 - y0) || 1, P = 14, W = 100 - 2 * P;
+    var k = Math.min((W - 2 * PAD) / ((x1 - x0) || 1), (H - 2 * PAD) / ((y1 - y0) || 1)); // 가로·세로 같은 배율(모양 유지)
     var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-    var xy = pts.map(function (p) { return [50 + (p.x - cx) / span * W, 50 - (p.y - cy) / span * W]; }); // 북쪽이 위
-    var g = sv("g", { fill: "none", stroke: "rgba(255,255,255,.07)", "stroke-width": ".4" });
-    [22, 40, 58, 76].forEach(function (y, i) { g.appendChild(sv("path", { d: "M-5 " + y + "c20-" + (6 + i) + " 40 4 60-3s30-" + (8 - i) + " 50-2" })); });
+    var xy = pts.map(function (p) { return [W / 2 + (p.x - cx) * k, H / 2 - (p.y - cy) * k]; }); // 북쪽이 위
+    var g = sv("g", { fill: "none", stroke: "rgba(255,255,255,.07)", "stroke-width": ".4", transform: "scale(" + (W / 100).toFixed(3) + " " + (H / 100).toFixed(3) + ")" });
+    [22, 40, 58, 76].forEach(function (y, i) { g.appendChild(sv("path", { d: "M-5 " + y + "c20-" + (6 + i) + " 40 4 60-3s30-" + (8 - i) + " 50-2", "vector-effect": "non-scaling-stroke" })); });
     svg.appendChild(g);
     if (xy.length > 1) svg.appendChild(sv("path", { class: "art-line", d: "M" + xy.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" L"), pathLength: "1" }));
-    // 가까운 집 번호 겹침 풀기 — 네이버 지도와 같은 계산(route_map.js spreadBy). 실제 자리엔 작은 점 + 지시선
+    // 가까운 집 번호 겹침 풀기 — 네이버 지도와 같은 계산(route_map.js spreadBy). 실제 자리엔 작은 점 + 지시선. 칸 밖으로는 안 나가게 가둔다
     var RMS = window.DaeumRouteMap && window.DaeumRouteMap.spreadBy;
-    var off = RMS ? RMS(xy.map(function (p) { return { x: p[0], y: p[1] }; }), 10) : xy.map(function () { return [0, 0]; });
+    var off = RMS ? RMS(xy.map(function (p) { return { x: p[0], y: p[1] }; }), 2 * R + 3) : xy.map(function () { return [0, 0]; });
+    function inside(v, m) { return Math.max(R + 4, Math.min(m - R - 4, v)); }
     xy.forEach(function (p, i) {
-      var q = [p[0] + off[i][0], p[1] + off[i][1]];
-      if (off[i][0] || off[i][1]) {
-        svg.appendChild(sv("line", { x1: p[0].toFixed(1), y1: p[1].toFixed(1), x2: q[0].toFixed(1), y2: q[1].toFixed(1), class: "art-lead", stroke: "#fff", "stroke-width": ".5", "stroke-opacity": ".7" }));
-        svg.appendChild(sv("circle", { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: "1.3", class: "art-dot", fill: "#fff" }));
+      var q = [inside(p[0] + off[i][0], W), inside(p[1] + off[i][1], H)];
+      if (Math.abs(q[0] - p[0]) > .5 || Math.abs(q[1] - p[1]) > .5) {
+        svg.appendChild(sv("line", { x1: p[0].toFixed(1), y1: p[1].toFixed(1), x2: q[0].toFixed(1), y2: q[1].toFixed(1), class: "art-lead", stroke: "#fff", "stroke-width": "1", "stroke-opacity": ".7" }));
+        svg.appendChild(sv("circle", { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: "2.5", class: "art-dot", fill: "#fff" }));
       }
-      svg.appendChild(sv("circle", { cx: q[0].toFixed(1), cy: q[1].toFixed(1), r: "4.2", class: "art-pin" + (pts[i].kind === "request" ? " req" : "") }));
-      var t = sv("text", { x: q[0].toFixed(1), y: (q[1] + 1.5).toFixed(1), class: "art-no" }); t.textContent = String(i + 1); svg.appendChild(t);
+      svg.appendChild(sv("circle", { cx: q[0].toFixed(1), cy: q[1].toFixed(1), r: String(R), class: "art-pin" + (pts[i].kind === "request" ? " req" : "") }));
+      var t = sv("text", { x: q[0].toFixed(1), y: (q[1] + 4).toFixed(1), class: "art-no" }); t.textContent = String(i + 1); svg.appendChild(t);
     });
   }
   function routeAreas(order) {
@@ -447,7 +487,7 @@
       return h("li", null, [h("span", { class: "d-tag " + TAG[e.status], text: e.status }), h("span", { class: "grow" }, [h("b", { text: e.name }), h("div", { class: "small", text: e.why })])]);
     })), h("p", { class: "note", text: c.disclaimer })]));
     dlg.appendChild(h("div", { class: "rep-acts" }, [
-      btn("이 집 기록하기", function () { dlg.close(); goContacts(id); }, "ghost", "light"),
+      btn("이 집 기록하기", function () { dlg.close(); goContacts(id); }, "d-btn d-btn-p", "light"),
       btn("인쇄", function () { printHtml(c.title + " 방문 전 카드", dlg.innerHTML.replace(/<div class="rep-acts">[\s\S]*$/, "")); }, "ghost", "light"),
       btn("닫기", function () { dlg.close(); }, "ghost", "light")
     ]));
@@ -474,7 +514,7 @@
       put("safety", F.safety.start(st("safety", {}), { householdId: id, buddy: buddy.value.trim() })); haptic("medium");
       say("방문 시작을 남겼습니다. " + F.safety.VISIT_MIN + "분 안에 «귀청 확인»을 눌러 주세요."); renderSafety(id);
     }, "ghost", "medium")]));
-    else kids.push(h("div", { class: "rep-acts" }, [h("span", { class: "small", text: "방문 중 · " + open.startAt.slice(11, 16) + " 시작" + (open.buddy ? " · 동행 " + open.buddy : "") + " · " + open.dueAt.slice(11, 16) + "까지 확인" }),
+    else kids.push(h("div", { class: "rep-acts" }, [h("span", { class: "small", text: "방문 중 · " + hm(open.startAt) + " 시작" + (open.buddy ? " · 동행 " + open.buddy : "") + " · " + hm(open.dueAt) + "까지 확인" }),
       btn("귀청 확인", function () { put("safety", F.safety.checkin(st("safety", {}), open.id)); haptic("success"); say("귀청 확인을 남겼습니다."); renderSafety(id); }, "ghost", "success")]));
     if (od.length) kids.push(h("p", { class: "d-tag warn", role: "alert", text: "팀장 확인 화면(시연): 귀청 확인이 늦은 방문 " + od.length + "건 — " + od.map(function (v) { var x = O.row(v.householdId); return x ? x.h.label : v.householdId; }).join(", ") }));
     kids.push(h("details", null, [h("summary", { text: "민원·위험 상황 기록 서식" }),
@@ -486,7 +526,7 @@
     es.steps.forEach(function (s) {
       var c2 = h("input", { type: "checkbox", checked: s.done, "data-h": "selection", "aria-label": s.label });
       c2.addEventListener("change", function () { put("entry", c2.checked ? F.forcedEntry.record(st("entry", []), id, s.key) : F.forcedEntry.undo(st("entry", []), id, s.key)); renderSafety(id); });
-      ul.appendChild(h("li", null, [h("label", { class: "grow" }, [c2, " " + s.label]), h("span", { class: "small", text: s.at ? s.at.slice(5, 16).replace("T", " ") : "" })]));
+      ul.appendChild(h("li", null, [h("label", { class: "grow" }, [c2, " " + s.label]), h("span", { class: "small", text: s.at ? mdhm(s.at) : "" })]));
     });
     kids.push(h("details", { open: es.done > 0 && es.done < es.total }, [h("summary", { text: "강제개문·긴급 조치 체크리스트 (" + es.done + "/" + es.total + ")" }), ul,
       es.next ? h("p", { class: "small", text: "다음: " + es.next }) : h("p", { class: "small", text: "모든 단계를 기록했습니다." }), h("p", { class: "note", text: F.forcedEntry.note })]));
@@ -685,7 +725,7 @@
         dlg.appendChild(h("label", { class: "tp-pick small" }, ["보낼 집(오늘 동선) ", sel]));
       }
       dlg.appendChild(h("div", { class: "tp-phone", role: "img", "aria-label": "알림톡 말풍선 모양 미리보기 — 아래에 같은 문구가 글로 있습니다" }, [
-        h("p", { class: "tp-from" }, [h("i", { "aria-hidden": "true" }), m.sender]),
+        h("p", { class: "tp-from" }, [h("i", { "aria-hidden": "true", text: String(m.sender || "").charAt(0) }), m.sender]),
         h("div", { class: "tp-bubble" }, [h("p", { class: "tp-head", text: "알림톡 도착" }), h("p", { class: "tp-ttl", text: m.title }),
           h("p", { class: "tp-body", text: m.body }), h("span", { class: "tp-btn", text: m.buttons[0] })])
       ]));

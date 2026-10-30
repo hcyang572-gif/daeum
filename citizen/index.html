@@ -36,7 +36,7 @@
   </ul>
   <p class="sh-sep">시연</p>
   <ul>
-    <li><a class="sh-i" href="../officer/index.html"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/></svg><span>공무원 창구에서 보기<small>알린 내용이 방문 순서에 들어가는 모습</small></span></a></li>
+    <li><a class="sh-i" href="../officer/index.html"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/></svg><span>공무원 화면에서 보기<small>알린 내용이 방문 순서에 들어가는 모습</small></span></a></li>
   </ul>
 </dialog>
 <div id="netguard" class="netguard" hidden></div>
@@ -153,6 +153,7 @@
     </div>
     <h1 id="req-h" class="h-big" tabindex="-1">담당 공무원에게<br>알려요</h1>
     <p class="lead" id="req-lead">읍면동 복지 담당 공무원이 내용을 보고 연락하거나 찾아갑니다.</p>
+    <ul id="req-hot" class="cards hot-box" hidden></ul>
     <p class="demo-warn"><span class="d-tag warn">시연</span> 실제 이름·주소·전화번호를 넣지 마세요.</p>
     <form id="req-form" class="req d-card" novalidate>
       <div class="field">
@@ -199,10 +200,11 @@
     <h1 id="done-h" class="h-big" tabindex="-1">잘 받았습니다</h1>
     <p class="lead">접수번호 <strong id="req-id" class="num"></strong></p>
     <p id="done-say">담당 공무원이 확인하면 고르신 방법으로 연락드립니다. 급하시면 <a href="tel:129">129</a>로 전화해 주세요.</p>
+    <ul id="done-hot" class="cards hot-box" hidden></ul>
     <div class="actions">
       <button type="button" class="d-btn d-btn-p" data-go="progress" data-h="light">보낸 알림 확인</button>
       <button type="button" class="d-btn d-btn-s" data-go="new" data-h="light">처음으로</button>
-      <a class="d-btn d-btn-s" href="../officer/index.html#today" data-sw-to="officer" data-h="light">공무원 화면에서 보기(시연)</a>
+      <a class="d-btn d-btn-s" href="../officer/index.html#today" data-sw-to="officer" data-h="light">공무원 화면에서 보기</a>
     </div>
   </section>
 

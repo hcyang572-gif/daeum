@@ -545,13 +545,15 @@
     renderLinks();
     emit("link", { householdId: lastResult.row.h.id });
   }
+  // 저장값(ISO·UTC)을 이 기기 시각 «MM-DD HH:MM»으로(O-01)
+  function localStamp(iso) { var d = new Date(iso); if (isNaN(d)) return ""; function p(n) { return (n < 10 ? "0" : "") + n; } return p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()); }
   function renderLinks() {
     var links = lsGet(LS_LINK, []), ul = $("linkList"); ul.textContent = "";
     $("linkCount").textContent = links.length ? "(" + links.length + "건)" : "";
     links.slice(0, 8).forEach(function (l) {
       var li = el("li");
       li.appendChild(el("b", null, l.label + " · " + l.area));
-      li.appendChild(el("span", "small", " " + l.at.slice(5, 16).replace("T", " ") + " → " + l.serviceIds.map(function (id) { var s = svcById(id); return s ? s.name : id; }).join(", ")));
+      li.appendChild(el("span", "small", " " + localStamp(l.at) + " → " + l.serviceIds.map(function (id) { var s = svcById(id); return s ? s.name : id; }).join(", ")));
       ul.appendChild(li);
     });
     if (!links.length) ul.appendChild(el("li", "muted", "아직 없습니다."));
@@ -737,6 +739,8 @@
     $("aiMode").textContent = mode === "ai" ? "AI 연결됨" : "AI 연결 전 시연 모드";
     $("aiMode").className = "mode " + mode;
     checkRegions();
+    // 경로 설정 띠: 폰에선 접어 두고(지도가 첫 화면 안에 오게) 600px 이상에선 펼친다(S10n 디자인 #14)
+    var ps = $("routePlanSet"); if (ps && window.matchMedia && matchMedia("(min-width: 600px)").matches) ps.open = true;
     // 가구가 0곳인 읍면동은 고르기에서 숨긴다(시연 가구는 북부 4개 읍면에만 있음)
     FX.households.areaChoices(D.areas, D.households).forEach(function (a) { var o = el("option", null, a.name); o.value = a.name; $("fArea").appendChild(o); });
     initWeights(false);
@@ -775,8 +779,8 @@
     var h = '<h3>상주시 실제 현황 <small class="tag">공개 통계 · 실제 값</small></h3>' +
       '<p class="kpi"><b>' + b.value_pct.toFixed(1) + '%</b> 기초생활보장 수급가구 비율 <span class="muted">(근사)</span></p>' +
       '<p class="muted small">산식: ' + b.formula + ' — ' + b.note + '</p>' +
-      '<table class="grid"><thead><tr><th>사업</th><th>수급권자</th><th>수급가구</th></tr></thead><tbody>' +
-      rows.map(function (r) { return "<tr><td>" + r["사업명"] + "</td><td>" + r["수급권자수"].toLocaleString() + "</td><td>" + r["수급가구수"].toLocaleString() + "</td></tr>"; }).join("") +
+      '<table class="grid"><thead><tr><th>사업</th><th class="num">수급권자</th><th class="num">수급가구</th></tr></thead><tbody>' +
+      rows.map(function (r) { return "<tr><td>" + r["사업명"] + "</td><td class=\"num\">" + r["수급권자수"].toLocaleString() + "</td><td class=\"num\">" + r["수급가구수"].toLocaleString() + "</td></tr>"; }).join("") +
       '</tbody></table>' +
       '<p class="muted small">출처: 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(공공데이터포털 15062448), 기준월 ' + month +
       ' · 분모: ' + R.households_denominator.source + ' · 내려받은 날 ' + R.fetched + '. 아래 미신청 표(가상 값)와는 별개입니다.</p>';

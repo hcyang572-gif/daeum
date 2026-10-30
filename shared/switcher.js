@@ -87,7 +87,7 @@
       if (!li || li.classList.contains("sw-fresh")) return;
       li.classList.add("sw-fresh");
       var b = li.querySelector("b");
-      if (b && !li.querySelector(".sw-tag")) { var t = doc.createElement("span"); t.className = "d-tag acc sw-tag"; t.textContent = "방금"; b.insertAdjacentElement("afterend", t); }
+      if (b && !li.querySelector(".sw-tag")) { var t = doc.createElement("span"); t.className = "d-tag acc sw-tag"; t.textContent = "방금"; b.insertAdjacentElement("afterend", t); t.insertAdjacentText("beforebegin", " "); t.insertAdjacentText("afterend", " "); }
     });
   }
   function reveal(id) {
@@ -156,6 +156,8 @@
 
   function start() {
     if (!embed) bar();
+    // 나란히 보기 안의 주민 칸: «닿음» 로고가 칸을 시작 화면(문 두 개)으로 바꾸지 않고 주민 첫 화면으로(S10n S-01)
+    if (embed && side === "citizen") { var br = doc.querySelector(".cz .top .brand"); if (br) { br.setAttribute("href", "#ask"); br.setAttribute("aria-label", "주민 첫 화면으로"); } }
     if (side === "officer") officerInit();
     if (side === "pair") pairInit();
   }

@@ -30,7 +30,7 @@ h1:focus { outline: none; }
 .note { font-size: var(--fs-s); color: var(--ink2); line-height: 1.55; }
 .error { color: var(--neg); font-weight: var(--fw-m); margin: var(--sp-3) 0 0; }
 .error::before { content: "! "; font-weight: var(--fw-h); }
-.sec-h { font-size: var(--fs-b); font-weight: var(--fw-b); margin: 0 0 var(--sp-3); color: var(--ink2); }
+.sec-h { font-size: var(--fs-h3); font-weight: var(--fw-b); letter-spacing: -.03em; line-height: 1.35; margin: 0 0 var(--sp-3); color: var(--ink); }
 .opt { font-weight: 500; color: var(--ink2); font-size: var(--fs-s); }
 
 /* 누구의 일 — 우물 속 세그먼트 */
@@ -96,8 +96,10 @@ select { min-height: 56px; }
   transition: transform var(--t-push) var(--c-spring), box-shadow var(--t-push) var(--c-std); }
 @media (hover: hover) { .example:hover { transform: translateY(-3px); box-shadow: var(--hl), var(--hlb), var(--e3); } }
 .example:active { transform: scale(.98); }
-.example b { display: block; color: var(--ink2); font-size: var(--fs-xs); font-weight: var(--fw-m); margin-bottom: 2px; }
-.example::after { content: ""; flex: none; margin-left: auto; width: 9px; height: 9px; border-top: 2px solid var(--ink2); border-right: 2px solid var(--ink2); transform: rotate(45deg); }
+.example { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--sp-4); row-gap: 2px; }
+.example b { grid-column: 1; display: block; color: var(--ink2); font-size: var(--fs-xs); font-weight: var(--fw-m); }
+.example span { grid-column: 1; }
+.example::after { grid-column: 2; grid-row: 1 / span 2; align-self: center; content: ""; flex: none; width: 9px; height: 9px; border-top: 2px solid var(--ink2); border-right: 2px solid var(--ink2); transform: rotate(45deg); }
 
 /* 엄지 영역 주 단추 — 화면 아래에 붙어 따라온다 */
 .cta { position: sticky; bottom: 0; z-index: 6; margin: var(--sp-4) calc(-1 * var(--gutter)) 0; padding: var(--sp-4) var(--gutter) max(var(--sp-4), env(safe-area-inset-bottom, 0px));
@@ -200,6 +202,9 @@ select { min-height: 56px; }
 @keyframes spark { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; transform: rotate(calc(var(--k) * 60deg)) translateY(-74px); } }
 #req-id { font-size: 1.25em; color: var(--acc-ink); letter-spacing: .02em; }
 .done .actions { max-width: 28rem; margin-inline: auto; }
+/* 알리기·접수 화면의 위기 상담전화 카드(S10n C-01) */
+.hot-box { margin: 0 0 var(--sp-6); }
+.done .hot-box { max-width: 28rem; margin: var(--sp-5) auto var(--sp-6); text-align: left; }
 
 /* ⑥⑦ 파로 모듈이 채우는 자리 */
 .feature-root { display: grid; gap: var(--sp-3); }
@@ -221,7 +226,6 @@ select { min-height: 56px; }
 @media (min-width: 1024px) {
   :root { --col: 72rem; --gutter: 32px; }
   #step-ask { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 32rem); gap: var(--sp-12); align-items: start; }
-  .ask-hero { position: sticky; top: 120px; padding-top: var(--sp-10); }
   .ask-hero .h-big { font-size: 3.25rem; }
   .cta { position: static; margin: var(--sp-2) 0 0; padding: 0; background: none; }
   .cards { grid-template-columns: 1fr 1fr; align-items: start; }
@@ -360,7 +364,9 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
 .cz .ask-hero .cnum { color: rgba(255,255,255,.88); }
 .cz .ask-hero .lead { color: rgba(255,255,255,.9); margin-bottom: 0; }
 @keyframes cz-sheen { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
-@media (min-width: 1024px) { .cz .ask-hero { padding: var(--sp-10) var(--sp-8); } }
+/* PC: 왼쪽 큰 카드는 오른쪽 입력 칸과 윗선을 맞추고, 스크롤하면 머리(전환 띠+주민 머리) 아래에 붙는다(S10n 디자인 4).
+   예전엔 위 .cz .ask-hero 의 position:relative 가 sticky 를 덮어써 top:120px 만큼 아래로 밀려 있었다. */
+@media (min-width: 1024px) { .cz .ask-hero { padding: var(--sp-10) var(--sp-8); position: sticky; top: calc(var(--sw-h, 0px) + 68px + var(--sp-6)); align-self: start; } }
 @media (prefers-reduced-motion: reduce) { .cz .ask-hero::before { animation: none; } }
 @media print { .cz .ask-hero { background: #fff !important; color: #000; box-shadow: none; border: 1px solid #ccc; } .cz .ask-hero::before, .cz .ask-hero::after { display: none; } .cz .ask-hero .h-big, .cz .ask-hero .cnum, .cz .ask-hero .lead { color: #000; } }
 .cz .brand:focus-visible { outline: 3px solid var(--acc-ink); outline-offset: 2px; border-radius: 12px; }

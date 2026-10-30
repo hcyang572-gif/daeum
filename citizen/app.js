@@ -44,6 +44,7 @@
   var STEPS = ["ask", "result", "request", "done", "checklist", "progress"];
   function show(step, focus) {
     if (STEPS.indexOf(step) < 0) step = "ask";
+    if (step === "request" && S.done) { step = "done"; history.replaceState(null, "", "#done"); }
     if (((step === "result" || step === "checklist") && !S.result) || (step === "request" && !S.input) || (step === "done" && !S.done)) step = "ask";
     STEPS.forEach(function (s) { $("step-" + s).hidden = s !== step; });
     // 주민 메뉴 2칸(S10b): 보낸 알림 화면만 «보낸 알림», 나머지 흐름은 모두 «알리기»
@@ -208,11 +209,16 @@
     li.insertAdjacentHTML("beforeend", html);
     return li;
   }
-  function hotlineCards(pr) {
+  // nb(이웃·가족 일): 알리는 분이 대신 걸어도 되는 곳으로 문구만 바꾼다(번호는 같다)
+  function hotlineCards(pr, nb) {
     var out = [];
-    if (pr.urgentSuicide) out.push(hotCard("지금 바로 이야기 나눌 곳이 있어요",
-      '<p class="hot-num"><a href="tel:109">109</a> 자살예방 상담전화 · 24시간 · 무료</p>' +
-      '<p class="why">예전 번호 1393은 109로 통합되었습니다. 혼자 견디지 않으셔도 됩니다. 위험이 급하면 <a href="tel:112">112</a>·<a href="tel:119">119</a>로 바로 연락해 주세요.</p>'));
+    if (pr.urgentSuicide) out.push(nb
+      ? hotCard("지금 함께 상담할 수 있는 곳",
+        '<p class="hot-num"><a href="tel:109">109</a> 자살예방 상담전화 · 24시간 · 무료</p>' +
+        '<p class="why">곁에서 걱정하는 분이 걸어도 상담할 수 있습니다. 지금 위험해 보이면 <a href="tel:112">112</a>·<a href="tel:119">119</a>로 먼저 연락해 주세요.</p>')
+      : hotCard("지금 바로 이야기 나눌 곳이 있어요",
+        '<p class="hot-num"><a href="tel:109">109</a> 자살예방 상담전화 · 24시간 · 무료</p>' +
+        '<p class="why">예전 번호 1393은 109로 통합되었습니다. 혼자 견디지 않으셔도 됩니다. 위험이 급하면 <a href="tel:112">112</a>·<a href="tel:119">119</a>로 바로 연락해 주세요.</p>'));
     if (pr.urgentViolence) out.push(hotCard("폭력 피해 상담은 여기로",
       '<p class="hot-num"><a href="tel:1366">1366</a> 여성긴급전화 · 24시간</p>' +
       '<p class="why">지금 위험하면 <a href="tel:112">112</a>로 바로 신고해 주세요.</p>'));
@@ -221,6 +227,15 @@
       '<p class="why">긴급복지지원은 먼저 돕고 나중에 확인합니다. 주소지 읍면동 행정복지센터에서도 바로 신청할 수 있어요.</p>'));
     return out;
   }
+  // 알리기 길(서비스 찾기를 안 거친 경우)에도 같은 위기 카드를 요청 화면·완료 화면에 띄운다(S10n C-01)
+  function renderHot(boxId, pr) {
+    var box = $(boxId); if (!box) return;
+    var hot = hotlineCards(pr || {}, S.who !== "self");
+    box.innerHTML = "";
+    hot.forEach(function (c, i) { c.style.setProperty("--d", i); box.appendChild(c); });
+    box.hidden = !hot.length;
+  }
+  function profileNow() { return S.result ? S.result.profile || {} : DaeumAI.analyze(S.input); }
   function renderResult(res) {
     $("summary").textContent = res.summary;
     $("result-count").textContent = res.items.length;
@@ -294,12 +309,16 @@
     $("req-back").setAttribute("data-go", r ? "result" : "ask");
     $("req-error").hidden = true;
     $("consent").checked = false;
+    renderHot("req-hot", profileNow());
     go("request");
   }
   function submitRequest(e) {
     e.preventDefault();
-    if (!$("consent").checked) { $("req-error").textContent = "동의에 체크해 주셔야 요청을 보낼 수 있어요."; $("req-error").hidden = false; $("consent").focus(); ui("error"); return; }
     var r = S.result, nb = S.who === "neighbor";
+    function fail(msg, el) { $("req-error").textContent = msg; $("req-error").hidden = false; el.focus(); ui("error"); }
+    // 읍면동을 고르지 않으면 첫 항목으로 잘못 접수되지 않게 막는다(S10n C-04)
+    if (!$("region").value) return fail((nb ? "그 집이 있는" : "사시는") + " 읍면동을 골라 주세요.", $("region"));
+    if (!$("consent").checked) return fail("동의에 체크해 주셔야 " + (nb ? "알림을" : "요청을") + " 보낼 수 있어요.", $("consent"));
     var p = r ? r.profile : DaeumAI.analyze(S.input); // 서비스 찾기를 안 거쳤으면 규칙으로만(나이·긴급 낱말)
     var rec = DaeumRequests.add({
       signal: S.who,
@@ -326,13 +345,16 @@
     $("done-say").innerHTML = nb
       ? "담당 공무원이 그 집을 찾아가는 순서에 반영합니다. 지금 위험해 보이면 <a href=\"tel:112\">112</a>·<a href=\"tel:119\">119</a>로 먼저 연락해 주세요."
       : "담당 공무원이 확인하면 고르신 방법으로 연락드립니다. 급하시면 <a href=\"tel:129\">129</a>로 전화해 주세요.";
-    go("done");
+    renderHot("done-hot", p);
+    // 완료 화면은 요청 화면 자리를 대신한다 — 뒤로 가기로 양식이 다시 열려 같은 내용이 또 접수되지 않게(S10n C-02)
+    history.replaceState(null, "", "#done");
+    show("done");
     ui("success");
   }
 
   function reset() {
     S.result = null; S.done = null; S.input = null; S.chips = {};
-    $("situation").value = ""; $("display-name").value = ""; $("place").value = "";
+    $("situation").value = ""; $("display-name").value = ""; $("place").value = ""; $("region").value = "";
     document.querySelectorAll(".chip").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
     setProxy("neighbor");
     go("ask");
@@ -372,7 +394,7 @@
     list.forEach(function (p) {
       var card = el("article", "card d-card");
       card.appendChild(el("h2", null, p.title));
-      var meta = el("p", "meta", "접수번호 " + p.id + " · " + p.waitedDays + "일째 · 마지막 변경 " + p.lastUpdate); card.appendChild(meta);
+      var meta = el("p", "meta", "접수번호 " + p.id + " · " + (p.waitedDays > 0 ? p.waitedDays + "일째" : "오늘 접수") + " · 마지막 변경 " + p.lastUpdate); card.appendChild(meta);
       var now = el("p", "why"); now.appendChild(el("span", "d-tag " + (p.cancelled ? "warn" : p.finished ? "pos" : "acc"), p.current.label)); now.appendChild(document.createTextNode(" " + p.current.say)); card.appendChild(now);
       var dl = el("dl");
       p.steps.forEach(function (s) {
@@ -398,7 +420,9 @@
     badge.textContent = mode === "ai" ? "AI 안내" : "AI 연결 전 시연 모드";
     $("region-name").textContent = C.regionName || "상주시";
     $("consent-text").textContent = $("consent-text").textContent.replace("상주시", C.regionName || "상주시");
+    var ph = document.createElement("option"); ph.value = ""; ph.textContent = "읍면동을 골라 주세요"; ph.disabled = true; ph.selected = true; $("region").appendChild(ph);
     (C.regions || []).forEach(function (r) { var o = document.createElement("option"); o.textContent = r; $("region").appendChild(o); });
+    $("region").value = "";
 
     document.querySelectorAll(".who-btn").forEach(function (b) { b.addEventListener("click", function () { setProxy(WHO_BY_KEY[b.dataset.proxy]); }); });
     document.querySelectorAll("[data-go]").forEach(function (b) {
@@ -414,8 +438,10 @@
     loadCatalog().then(function (d) { S.catalog = d; }).catch(function (e) {
       $("ask-error").textContent = "서비스 목록을 읽지 못했어요. 새로고침해 주세요. (" + e.message + ")"; $("ask-error").hidden = false;
     });
-    show("ask", false);
-    if (location.hash && location.hash !== "#ask") history.replaceState(null, "", "#ask");
+    // 보낸 알림(#progress)은 앞 단계 상태가 필요 없으니 그대로 연다. 나머지는 첫 화면으로(S10n C-03)
+    var first = location.hash === "#progress" ? "progress" : "ask";
+    show(first, false);
+    if (location.hash && location.hash !== "#" + first) history.replaceState(null, "", "#" + first);
 
     if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function () {});
   }

@@ -30,7 +30,7 @@
     <a href="#record" data-tab="record" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록</span></a>
     <a href="#report" data-tab="report" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>현황<i class="pc-only"> · 보고서</i></span></a>
   </nav>
-  <div class="me"><i aria-hidden="true">담</i><div><b>담당 주무관</b>맞춤형복지팀(시연)</div>
+  <div class="me"><i aria-hidden="true">담</i><div><b>담당 주무관</b><span class="team" title="맞춤형복지팀 · 시연">맞춤형복지팀 · 시연</span></div>
     <button type="button" class="d-round more-btn" data-sheet="moreMenu" aria-haspopup="dialog" aria-expanded="false" aria-label="시연 설정 열기" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button></div>
 </aside>
 
@@ -129,7 +129,7 @@
       <div class="tbl d-card">
         <table class="grid" id="listTable">
           <caption class="sr">발굴 가구 명단(가상) — 지역 신호 순 제안, 최종 순서는 담당자</caption>
-          <thead><tr><th scope="col">담기</th><th scope="col">순번</th><th scope="col">가구</th><th scope="col">읍면</th><th scope="col">순서</th><th scope="col">왜 이 집인지</th><th scope="col">구성</th></tr></thead>
+          <thead><tr><th scope="col">담기</th><th scope="col" class="num">순번</th><th scope="col">가구</th><th scope="col">읍면</th><th scope="col">순서</th><th scope="col">왜 이 집인지</th><th scope="col">구성</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -144,9 +144,11 @@
         <label><input type="checkbox" id="routeReturn" checked> 시청으로 복귀</label>
       </div>
       <div class="bar d-card route-plan">
+        <details class="plan-set" id="routePlanSet"><summary>시각·점심 설정</summary><div class="plan-in">
         <label>출발 <input type="time" id="routeStart" value="09:30" step="300"></label>
         <label>상담 <select id="routeConsult"><option value="20">20분</option><option value="30" selected>30분</option><option value="40">40분</option><option value="60">60분</option></select></label>
         <label><input type="checkbox" id="routeLunch" checked> 점심 12:00~13:00 비우기</label>
+        </div></details>
         <span class="spacer"></span>
         <button type="button" id="btnRoad" class="d-btn d-btn-p" data-h="medium">도로 기준으로 순서 짜기</button>
       </div>

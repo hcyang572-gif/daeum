@@ -1,7 +1,7 @@
 /* 시연용 창구 전환(S10m, 🩵 미르 10-30) — shared/switcher.js 가 붙인다. 토큰만 쓰고 새 색 없음.
    두 창구 맨 위 고정 띠: [주민 화면 | 공무원 화면] 우물형 전환(우리가족 .seg 구슬 문법) + PC 1280px 이상 «나란히 보기».
    높이는 --sw-h 하나로 맞추고, 본문은 그만큼 내려 둔다(띠가 뒤늦게 붙어도 화면이 밀리지 않게). */
-:root { --sw-h: 56px; }
+:root { --sw-h: 60px; }
 html.sw-on { scroll-padding-top: calc(var(--sw-h) + 8px); }
 html.sw-on body { padding-top: var(--sw-h); }
 /* 주민 창구 머리띠는 sticky top:0 → 전환 띠 아래에 붙인다 */
@@ -14,8 +14,8 @@ html.sw-on .cz .top { top: var(--sw-h); }
   background: var(--glass); -webkit-backdrop-filter: blur(22px) saturate(1.6); backdrop-filter: blur(22px) saturate(1.6);
   box-shadow: inset 0 -.5px 0 var(--glass-brd), var(--hl); font-family: var(--f); }
 .sw-k { position: absolute; left: var(--sp-4); font-size: .8125rem; font-weight: var(--fw-m); color: var(--ink2); letter-spacing: 0; }
-.sw-seg { display: inline-flex; gap: 2px; padding: 3px; margin: 0; border-radius: var(--r-pill); background: var(--well); box-shadow: var(--well-sh); }
-.sw-seg a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: var(--tap); min-width: 44px; box-sizing: border-box;
+.sw-seg { display: inline-flex; gap: 2px; padding: 2px; margin: 0; border-radius: var(--r-pill); background: var(--well); box-shadow: var(--well-sh); }
+.sw-seg a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: var(--tap); min-height: 0; min-width: 44px; box-sizing: border-box;
   padding: 0 16px; border-radius: var(--r-pill); color: var(--ink2); font-size: var(--fs-s); font-weight: var(--fw-m); letter-spacing: -.02em;
   text-decoration: none; white-space: nowrap; transition: color var(--t-fast) var(--c-std), background var(--t-fast) var(--c-std); }
 .sw-seg a svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -24,7 +24,7 @@ html.sw-on .cz .top { top: var(--sw-h); }
 @media (hover: hover) { .sw-seg a:not([aria-current]):hover { color: var(--ink); } }
 .sw-seg a:focus-visible, .sw-pair:focus-visible, .sw-note button:focus-visible { outline: 3px solid var(--acc-ink); outline-offset: 2px; }
 
-.sw-pair { display: none; position: absolute; right: var(--sp-4); align-items: center; gap: 8px; min-height: var(--tap); padding: 0 16px 0 12px;
+.sw-pair { display: none; position: absolute; right: var(--sp-4); align-items: center; gap: 8px; height: 44px; min-height: 0; padding: 0 16px 0 12px;
   border: 0; border-radius: var(--r-pill); cursor: pointer; font: inherit; font-size: var(--fs-xs); font-weight: var(--fw-m); color: var(--ink2);
   background: var(--float); box-shadow: var(--hl), var(--e-sm); }
 .sw-pair svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
@@ -34,12 +34,13 @@ html.sw-on .cz .top { top: var(--sw-h); }
 @media (max-width: 339px) { .sw-seg a svg { display: none; } }
 
 /* 방금 들어온 주민 신호 — 공무원 창구 알림(띠 아래 고정) */
-.sw-note { position: fixed; z-index: 39; left: 50%; top: calc(var(--sw-h) + 10px); transform: translateX(-50%);
+.sw-note { position: fixed; z-index: 39; left: 50%; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 84px); transform: translateX(-50%);
   width: min(30rem, calc(100% - 32px)); box-sizing: border-box; display: flex; align-items: center; gap: var(--sp-3);
   padding: 10px 8px 10px 16px; border-radius: var(--r); color: var(--ink);
   background: linear-gradient(180deg, var(--s1a), var(--s1b)); box-shadow: var(--hl), var(--e3); font-family: var(--f);
   animation: sw-in var(--t-push) var(--c-push) both; }
-html:not(.sw-on) .sw-note { top: 10px; }
+/* PC는 아래 메뉴가 없으니 본문 오른쪽 아래 모서리에 붙인다(제목·머리 메뉴와 겹치지 않게, S10n 디자인 3) */
+@media (min-width: 1024px) { .sw-note { left: auto; right: var(--sp-6); bottom: var(--sp-6); transform: none; width: min(26rem, calc(100% - 48px)); animation-name: sw-in-pc; } }
 .sw-note .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--acc); box-shadow: 0 0 0 4px var(--acc-soft); }
 .sw-note .t { flex: 1; min-width: 0; font-size: var(--fs-xs); line-height: 1.45; color: var(--ink2); }
 .sw-note .t b { display: block; font-size: var(--fs-s); color: var(--ink); }
@@ -47,12 +48,13 @@ html:not(.sw-on) .sw-note { top: 10px; }
 .sw-note .go { padding: 0 16px; color: var(--on-acc); background: var(--enamel); box-shadow: var(--enamel-sh); }
 .sw-note .x { display: grid; place-items: center; padding: 0; color: var(--ink2); background: none; }
 .sw-note .x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
-@keyframes sw-in { from { opacity: 0; transform: translate(-50%, -8px); } }
+@keyframes sw-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+@keyframes sw-in-pc { from { opacity: 0; transform: translateY(8px); } }
 
 /* 오늘 할 일 «새 주민 신호» 안에서 방금 온 줄 강조 */
 .slot-list li.sw-fresh { position: relative; border-radius: var(--rb); background: color-mix(in srgb, var(--acc-soft) 70%, transparent);
   box-shadow: inset 0 0 0 2px var(--acc); animation: sw-glow 1.6s var(--c-std) 2; }
-.sw-tag { margin-left: 6px; vertical-align: 1px; }
+.sw-tag { margin-left: 2px; vertical-align: 1px; }
 @keyframes sw-glow { 50% { box-shadow: inset 0 0 0 2px var(--acc), 0 0 0 6px var(--acc-soft); } }
 
 /* 나란히 보기(shared/pair.html) */

@@ -353,7 +353,7 @@
     return el("section", { class: "screen done" }, [
       el("div", { class: "seal", "aria-hidden": "true", html: '<svg viewBox="0 0 48 48" width="30" height="30"><path class="tick" d="M13 25l7.5 7.5L35 17" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' }),
       el("h1", { class: "lead sm", text: already ? "이미 응답해 주셨어요" : "고맙습니다" }),
-      el("p", { class: "body", text: already ? "이 기기에서 보내 주신 답이 이미 접수되어 있습니다." : "보내 주신 답은 이 궁리에만 쓰겠습니다." }),
+      el("p", { class: "body", text: already ? "이 기기에서 보내 주신 답이 이미 접수되어 있습니다." : "보내 주신 답은 이 조사에만 쓰겠습니다." }),
       el("button", { type: "button", class: "btn main close", text: "창 닫기", onclick: closeWin }),
       el("p", { class: "note", id: "closeNote", text: "" })
     ]);
@@ -396,7 +396,8 @@
       throw new Error("HTTP " + r.status);
     }).catch(function (e) {
       mainBtn.disabled = false; mainBtn.textContent = "다시 보내기";
-      msg.textContent = "보내지 못했습니다(" + e.message + "). 잠시 뒤 다시 눌러 주세요. 답은 그대로 남아 있습니다.";
+      if (window.console) console.warn("설문 보내기 실패", e && e.message); // 상태 번호는 화면에 내보이지 않는다(S10n S-02)
+      msg.textContent = "잠시 연결이 안 됩니다. 잠시 뒤 다시 눌러 주세요. 답은 그대로 남아 있습니다.";
     });
   }
 

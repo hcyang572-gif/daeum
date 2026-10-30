@@ -1,10 +1,10 @@
 {
- "name": "닿음 · 내 복지 찾기",
+ "name": "닿음 · 이웃·도움 알리기",
  "short_name": "닿음",
  "lang": "ko",
  "start_url": "./index.html",
  "scope": "./",
  "display": "standalone",
- "background_color": "#F6FAFA",
- "theme_color": "#1D6A78"
+ "background_color": "#EDF3F4",
+ "theme_color": "#EDF3F4"
 }
