@@ -1,0 +1,77 @@
+/* 닿음 화면 그림 — S10k(⚙️ 파로, 2026-10-30). 짝: shared/chart.js. 색은 tokens.css 토큰만(다크는 토큰이 바꾼다), 새 색 없음.
+   보고서 문서(.rp-doc)는 report_doc.css 가 따로 꾸민다 — 여기 규칙은 모두 .ch-box 또는 ch- 머리라 보고서 출력에 닿지 않는다.
+   글씨 12px 아래 금지 · 360px 에서 가로 넘침 없음 · 모션은 prefers-reduced-motion 이면 끔. */
+.ch-box { --c1: var(--acc); --c2: var(--sage); --c3: var(--champ); --c4: var(--rose); --c5: var(--ink3); min-width: 0; }
+.ch-cap { margin: var(--sp-3) 0 var(--sp-2); font-size: var(--fs-s); font-weight: var(--fw-b); color: var(--ink2); }
+
+/* 도넛(보고서 부품 재사용) — 화면 크기 */
+.ch-box .rp-donut { display: grid; grid-template-columns: minmax(110px, 150px) 1fr; gap: var(--sp-4); align-items: center; }
+.ch-box .rp-donut svg { display: block; width: 100%; height: auto; font-family: var(--f); }
+.ch-box .rp-track { fill: none; stroke: var(--hair); stroke-width: 22; }
+.ch-box .rp-arc { fill: none; stroke-width: 22; }
+.ch-box .rp-arc.c1 { stroke: var(--c1); } .ch-box .rp-arc.c2 { stroke: var(--c2); } .ch-box .rp-arc.c3 { stroke: var(--c3); } .ch-box .rp-arc.c4 { stroke: var(--c4); } .ch-box .rp-arc.c5 { stroke: var(--c5); }
+.ch-box .rp-dn { text-anchor: middle; font: 600 24px var(--num); fill: var(--ink); } .ch-box .rp-du { text-anchor: middle; font: 600 12px var(--f); fill: var(--ink2); }
+.ch-box .rp-legend { list-style: none; margin: 0; padding: 0; font-size: var(--fs-xs); min-width: 0; }
+.ch-box .rp-legend li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto 3.2em; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--hair); }
+.ch-box .rp-legend li:last-child { border-bottom: 0; }
+.ch-box .rp-legend i { width: 12px; height: 12px; border-radius: 3px; }
+.ch-box .rp-legend b { font-weight: 600; text-align: right; } .ch-box .rp-legend em { font-style: normal; text-align: right; color: var(--ink2); }
+.ch-box i.c1 { background: var(--c1); } .ch-box i.c2 { background: var(--c2); } .ch-box i.c3 { background: var(--c3); } .ch-box i.c4 { background: var(--c4); } .ch-box i.c5 { background: var(--c5); }
+@media (max-width: 420px) { .ch-box .rp-donut { grid-template-columns: 1fr; } .ch-box .rp-donut svg { max-width: 150px; margin: 0 auto; } }
+
+/* ① 오늘 진행 고리 — 집마다 한 조각, 기록 남긴 집 = 채움, 지금 차례 = 굵은 테두리 */
+.ch-ring { display: block; width: 120px; height: 120px; flex: none; font-family: var(--f); }
+.ch-seg { fill: none; stroke: var(--hair); stroke-width: 12; }
+.ch-seg.on { stroke: var(--acc); }
+.ch-seg.cur { stroke: var(--acc-hi); stroke-width: 16; stroke-opacity: .55; }
+.ch-seg.on.cur { stroke-opacity: 1; }
+.ch-rn { text-anchor: middle; font: 600 28px var(--num); fill: var(--ink); letter-spacing: -.03em; }
+.ch-ru { font-size: 16px; fill: var(--ink2); font-weight: 500; }
+.ch-rs { text-anchor: middle; font: 600 12px var(--f); fill: var(--ink2); }
+
+/* ② 두 겹 진도 막대 — 아래 겹 빗금(기간 경과), 위 겹 채움(처리 완료), 세로 눈금(오늘) */
+.ch-dual { margin: var(--sp-2) 0; }
+.ch-dt { position: relative; height: 18px; border-radius: 9px; background: var(--well, var(--hair)); box-shadow: var(--well-sh, none); overflow: hidden; }
+.ch-dt i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 9px; }
+.ch-de { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink3) 45%, transparent) 0 4px, transparent 4px 8px); }
+.ch-dd { top: 4px !important; bottom: 4px !important; background: var(--acc); }
+.ch-dual.late .ch-dd { background: var(--rose); }
+.ch-dm { width: 2px; margin-left: -1px; border-radius: 0 !important; background: var(--ink); }
+.ch-dk { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin: 8px 0 0; font-size: var(--fs-xs); color: var(--ink2); }
+.ch-dk i { display: inline-block; width: 16px; height: 10px; margin-right: 6px; border-radius: 3px; vertical-align: -1px; }
+.ch-dk b { color: var(--ink); font-weight: 600; }
+.ch-kd { background: var(--acc); } .ch-dual.late .ch-kd { background: var(--rose); }
+.ch-ke { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink3) 60%, transparent) 0 3px, transparent 3px 6px); box-shadow: inset 0 0 0 1px var(--hair); }
+.ch-tag { margin-left: auto; font: 600 var(--fs-xs) var(--num); color: var(--ink); }
+
+/* ③ 깔때기 — 발굴 → 접촉 → 만남 → 연계 */
+.ch-funnel { list-style: none; margin: 0; padding: 0; font-size: var(--fs-xs); }
+.ch-fs { display: grid; grid-template-columns: minmax(4.5em, 7em) minmax(0, 1fr) 2.8em 3em; gap: 8px; align-items: center; min-height: 28px; }
+.ch-fl { color: var(--ink); font-weight: var(--fw-m); }
+.ch-fb { display: flex; justify-content: center; height: 18px; border-radius: 5px; background: var(--hair); overflow: hidden; }
+.ch-fb i { display: block; height: 100%; border-radius: 5px; }
+.ch-fs b { text-align: right; font-weight: 600; } .ch-fs em { font-style: normal; text-align: right; color: var(--ink2); }
+.ch-fx { display: grid; grid-template-columns: minmax(4.5em, 7em) minmax(0, 1fr); gap: 8px; line-height: 1.2; }
+.ch-fx span { grid-column: 2; text-align: center; color: var(--ink2); font-size: 12px; }
+
+/* ④ 연계 누락 흐름도 — 마디 크기 = 멈춘 집 수, 멈춘 곳 있음 = 장미색 테두리 */
+.ch-flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.ch-fn { position: relative; display: grid; justify-items: center; align-content: start; gap: 2px; min-width: 0; text-align: center; line-height: 1.25; }
+.ch-fn + .ch-fn::before { content: ""; position: absolute; top: 28px; left: -12px; width: 18px; height: 2px; background: var(--ink3); }
+.ch-fn + .ch-fn::after { content: ""; position: absolute; top: 24px; left: 2px; border: 5px solid transparent; border-left: 6px solid var(--ink3); border-right: 0; }
+.ch-fd { display: grid; place-items: center; width: var(--sz, 40px); height: var(--sz, 40px); margin: calc((56px - var(--sz, 40px)) / 2) 0; border-radius: 50%;
+  background: var(--well, var(--hair)); box-shadow: var(--well-sh, none); font: 500 1.125rem/1 var(--num); color: var(--ink2); }
+.ch-fn.on .ch-fd { color: var(--rose); font-weight: 600; box-shadow: var(--well-sh, none), inset 0 0 0 2.5px var(--rose); }
+.ch-fn b { font-size: var(--fs-xs); color: var(--ink); word-break: keep-all; overflow-wrap: break-word; }
+.ch-fsub { font-size: 12px; color: var(--ink2); word-break: keep-all; overflow-wrap: break-word; }
+
+/* 오늘 머리 — 고리 + 큰 숫자 */
+.today-num { display: flex; align-items: center; gap: var(--sp-4); min-width: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ch-seg, .ch-dd, .ch-fb i { transition: stroke .3s ease, width .5s cubic-bezier(.2, .8, .2, 1); }
+}
+@media print {
+  .ch-box { --c1: #111; --c2: #6a6a6a; --c3: #a5a5a5; --c4: #cfcfcf; --c5: #e6e6e6; }
+  .ch-seg.on, .ch-dd { stroke: #111; background: #111; }
+}

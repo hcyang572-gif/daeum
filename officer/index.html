@@ -15,6 +15,7 @@
 <meta name="theme-color" content="#0B0A12" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%237B70E2%27/%3E%3Cstop offset=%271%27 stop-color=%27%234236A8%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2715%27 fill=%27url(%23g)%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="../shared/chart.css">
 <link rel="stylesheet" href="officer.css">
 <script src="../shared/switcher.js"></script>
 </head>
@@ -87,7 +88,7 @@
     <section id="tab-today" class="tab" data-feature="today" hidden>
       <div class="today-hero">
         <div><p class="d"><span id="todayDate"></span> · 오늘 찾아갈 집</p>
-          <div class="n bignum" id="todayCount" aria-live="polite">0<small>가구</small></div></div>
+          <div class="today-num"><div id="todayRing" class="ch-box"></div><div class="n bignum" id="todayCount" aria-live="polite">0<small>가구</small></div></div></div>
         <div class="acts">
           <a class="d-btn d-btn-s" href="#route" data-h="medium"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l8 10h4M4 17h4l2.5-3M14 10l2-3h4M18 5l2 2-2 2M18 15l2 2-2 2"/></svg>순서 다시 짜기 · 지도</a>
         </div>
@@ -379,6 +380,7 @@
 <script src="../shared/netguard.js"></script>
 <script src="features.js"></script>
 <script src="demo_seed.js"></script>
+<script src="../shared/chart.js"></script>
 <script src="../shared/report.js"></script>
 <script src="route_plan.js"></script>
 <script src="route_map.js"></script>

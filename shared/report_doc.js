@@ -174,54 +174,12 @@
     };
   }
 
-  // ── 그림(SVG 문자열) — 색은 클래스(c1~c5)로, 인쇄 땐 CSS 가 회색 단계로 바꾼다 ──
-  function donut(d) {
-    var tot = d.reduce(function (s, x) { return s + x.n; }, 0) || 1, R = 52, C = 2 * Math.PI * R, off = 0;
-    var arcs = d.map(function (x, i) { var len = x.n / tot * C, s = '<circle class="rp-arc c' + (x.c || i + 1) + '" cx="70" cy="70" r="' + R + '" stroke-dasharray="' + len.toFixed(2) + " " + (C - len).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '"/>'; off += len; return s; }).join("");
-    var lab = d.map(function (x) { return x.label + " " + x.n; }).join(", ");
-    return '<div class="rp-donut"><svg viewBox="0 0 140 140" role="img" aria-label="' + esc(lab) + '"><g transform="rotate(-90 70 70)"><circle class="rp-track" cx="70" cy="70" r="' + R + '"/>' + arcs + '</g>' +
-      '<text x="70" y="68" class="rp-dn">' + num(tot) + '</text><text x="70" y="86" class="rp-du">가구</text></svg>' +
-      '<ul class="rp-legend">' + d.map(function (x, i) { return '<li><i class="c' + (x.c || i + 1) + '"></i><span>' + esc(x.label) + '</span><b class="num">' + num(x.n) + '</b><em class="num">' + pct(x.n, tot) + '%</em></li>'; }).join("") + "</ul></div>";
-  }
-  function bars(d) {
-    var mx = Math.max.apply(null, d.map(function (x) { return x.n; }).concat([1]));
-    return '<ul class="rp-bars" role="img" aria-label="' + esc(d.map(function (x) { return x.label + " " + x.n; }).join(", ")) + '">' + d.map(function (x, i) {
-      return '<li><span class="rp-bl">' + esc(x.label) + '</span><span class="rp-bt"><i class="c' + (i === 0 ? 1 : 2) + '" style="width:' + Math.max(x.n ? 2 : 0, Math.round(x.n / mx * 100)) + '%"></i></span><b class="num">' + num(x.n) + "</b></li>";
-    }).join("") + "</ul>";
-  }
-  function map(pts) {
-    var W = 360, Hh = 330, k = 8, ox = 196, oy = 160; // 1km = 8px, 시청(0,0) → (196,160)
-    function X(x) { return ox + x * k; } function Y(y) { return oy - y * k; }
-    var mx = Math.max.apply(null, pts.map(function (p) { return p.n; }).concat([1]));
-    var dots = pts.slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) {
-      if (!p.n) return '<circle class="rp-mo" cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="3"><title>' + esc(p.name) + " 명단 없음</title></circle>";
-      var r = 7 + 15 * Math.sqrt(p.n / mx), left = p.x < 0, tx = X(p.x) + (left ? -(r + 5) : r + 5), anc = left ? "end" : "start";
-      return '<circle class="rp-mb" cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="' + r.toFixed(1) + '"/>' +
-        '<circle class="rp-mc" cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="' + (r * Math.sqrt(p.n ? p.c / p.n : 0)).toFixed(1) + '"/>' +
-        '<text class="rp-ml" x="' + tx.toFixed(1) + '" y="' + (Y(p.y) - 2).toFixed(1) + '" text-anchor="' + anc + '">' + esc(p.name) + " " + p.n + "</text>" +
-        '<text class="rp-ms" x="' + tx.toFixed(1) + '" y="' + (Y(p.y) + 12).toFixed(1) + '" text-anchor="' + anc + '">접촉 ' + pct(p.c, p.n) + "%</text>";
-    }).join("");
-    var lab = pts.filter(function (p) { return p.n; }).map(function (p) { return p.name + " 명단 " + p.n + "가구 접촉 " + pct(p.c, p.n) + "%"; }).join(", ");
-    return '<svg class="rp-map" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="' + esc(lab || "명단 가구 없음") + '">' +
-      '<g class="rp-mg"><path d="M' + X(0) + " " + (Y(0) - 6) + "v12M" + (X(0) - 6) + " " + Y(0) + 'h12"/></g><text class="rp-ms" x="' + (X(0) + 8) + '" y="' + (Y(0) + 4) + '">시청</text>' +
-      '<text class="rp-ms" x="' + (W - 14) + '" y="18" text-anchor="end">북 ↑</text>' + dots +
-      '<g class="rp-mk" transform="translate(12 ' + (Hh - 34) + ')"><circle class="rp-mb" cx="7" cy="7" r="7"/><text class="rp-ms" x="20" y="11">원 크기 = 명단 가구</text>' +
-      '<circle class="rp-mc" cx="7" cy="25" r="5"/><text class="rp-ms" x="20" y="29">안쪽 = 접촉한 비율</text></g></svg>';
-  }
-  function trendSvg(t) {
-    var W = 360, Hh = 190, L = 34, Rr = 12, T = 14, Bm = 30, w = W - L - Rr, h = Hh - T - Bm, tot = Math.max(1, t.total);
-    function X(i) { return L + i / t.span * w; } function Y(v) { return T + h - v / tot * h; }
-    var line = t.points.map(function (v, i) { return (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); }).join("");
-    var area = t.points.length ? line + "L" + X(t.points.length - 1).toFixed(1) + " " + Y(0) + "L" + X(0) + " " + Y(0) + "Z" : "";
-    var lastI = t.points.length - 1, lastV = t.points[lastI] || 0;
-    var grid = [0, .5, 1].map(function (f) { return '<line class="rp-gl" x1="' + L + '" x2="' + (W - Rr) + '" y1="' + Y(f * tot).toFixed(1) + '" y2="' + Y(f * tot).toFixed(1) + '"/><text class="rp-ms" x="' + (L - 6) + '" y="' + (Y(f * tot) + 4).toFixed(1) + '" text-anchor="end">' + Math.round(f * tot) + "</text>"; }).join("");
-    return '<svg class="rp-trend" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="' + esc("차수 " + t.span + "일 중 " + lastI + "일째 누적 접촉 " + lastV + "가구, 명단 " + t.total + "가구") + '">' + grid +
-      '<line class="rp-tg" x1="' + X(0) + '" y1="' + Y(0) + '" x2="' + X(t.span) + '" y2="' + Y(tot) + '"/>' +
-      (area ? '<path class="rp-ta" d="' + area + '"/><path class="rp-tl" d="' + line + '"/><circle class="rp-tp" cx="' + X(lastI).toFixed(1) + '" cy="' + Y(lastV).toFixed(1) + '" r="4.5"/>' +
-        '<text class="rp-ml" x="' + (X(lastI) + (lastI / t.span > .7 ? -8 : 8)).toFixed(1) + '" y="' + (Y(lastV) - 8).toFixed(1) + '" text-anchor="' + (lastI / t.span > .7 ? "end" : "start") + '">' + lastV + "가구</text>" : "") +
-      '<text class="rp-ms" x="' + L + '" y="' + (Hh - 8) + '">' + esc(dot(t.start)) + '</text><text class="rp-ms" x="' + (W - Rr) + '" y="' + (Hh - 8) + '" text-anchor="end">' + esc(dot(t.end)) + " 마감</text></svg>" +
-      '<p class="rp-key"><i class="rp-kl"></i>누적 접촉 <i class="rp-kg"></i>마감까지 고르게 처리할 때</p>';
-  }
+  // ── 그림(SVG 문자열) — S10k: shared/chart.js 로 옮겼다(화면과 함께 씀). 색은 클래스(c1~c5)로, 인쇄 땐 CSS 가 회색 단계로 바꾼다 ──
+  var C = root.DaeumChart || (typeof require === "function" ? require("./chart.js") : null);
+  function donut(d) { return C.donut(d); }
+  function bars(d) { return C.bars(d); }
+  function map(pts) { return C.map(pts); }
+  function trendSvg(t) { return C.trendSvg(t); }
   function tagHtml(t) { return '<span class="rp-tag' + (t === "가상" ? " v" : t === "공공데이터" ? " p" : "") + '">' + esc(t) + "</span>"; }
 
   /** 모델 → 보고서 HTML(화면·인쇄·공유 보기 공통) */

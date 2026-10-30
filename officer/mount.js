@@ -115,7 +115,7 @@
           btn("기록", function () { goContacts(r.h.id); })])]));
     });
     box.appendChild(h("article", { class: "d-card side nr-card", "aria-labelledby": "h-nr" }, [
-      h("div", { class: "ch" }, [h("h3", { id: "h-nr" }, ["무반응 신호 — 오늘 먼저"]), h("span", { class: "c num", text: String(nr.length) }),
+      h("div", { class: "ch-box" }, [h("h3", { id: "h-nr" }, ["무반응 신호 — 오늘 먼저"]), h("span", { class: "c num", text: String(nr.length) }),
         h("span", { class: "exp", text: "협약 시 AI 스피커·IoT 돌봄 기관에서 받는 «일정 시간 무반응» 신호 · 오늘 동선에 자동으로 넣었습니다" })]),
       ol,
       h("p", { class: "small src-tag" }, [h("span", { class: "d-tag warn", text: "가상" }), " " + AL.sourceNoResp(d)])
@@ -203,6 +203,7 @@
       box.appendChild(sheetActs());
     }
     if (!R.order.length && $("todayKm")) { clear($("todayArt")); $("todayKm").textContent = ""; $("todayMeta").textContent = "가구 명단에서 방문할 집을 담으면 순서를 묶어 드립니다"; }
+    renderTodayRing(R.order);
     renderTodayGaps();
     var go = q($("tab-today"), 'a[href="#route"]:not(.over-go)');
     // O-03: 담은 가구를 말없이 덮어쓰지 않는다 — 신호·재방문 집이 따로 있으면 한 번 묻고, 담기로 하면 담은 순서 뒤에 붙인다
@@ -274,6 +275,16 @@
     return seen.length > 3 ? seen.slice(0, 3).join("·") + " 외 " + (seen.length - 3) + "곳" : seen.join("·");
   }
 
+  // S10k ① 오늘 머리 진행 고리 — 오늘 찾아갈 집 중 «오늘 기록을 남긴 집»(방문·전화 시도 기록) / 남은 집, 지금 차례 = 첫 남은 집
+  function localYmd(iso) { var d = new Date(iso); return isNaN(d) ? "" : d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); }
+  function renderTodayRing(order) {
+    var host = $("todayRing"); if (!host || !window.DaeumChart) return;
+    var today = ymdNow(), did = {};
+    st("attempts", []).forEach(function (a) { if (localYmd(a.at) === today) did[a.householdId] = 1; });
+    var states = order.map(function (s) { return !!(did[s.householdId] || did[s.id]); }), cur = states.indexOf(false);
+    host.innerHTML = DaeumChart.ring({ total: order.length, states: states, cur: cur < 0 ? null : cur });
+  }
+
   // 오늘 할 일 «③ 연계 누락» — 4단계 멈춘 집 수(흐름 순서). 자세한 목록은 연계·보고서 화면
   var GAP_ORDER = ["req_stalled", "met_nolink", "link_nocheck", "applied_nodecision"];
   var GAP_SHORT = { req_stalled: ["주민 신호", "확인 뒤 멈춤"], met_nolink: ["상담", "연계 없음"], link_nocheck: ["안내", "신청 확인 안 함"], applied_nodecision: ["신청", "결정 확인 안 함"] };
@@ -288,10 +299,17 @@
     var g = gapData();
     $("kpiGap").textContent = g.total;
     var ng = $("navGap"); if (ng) ng.textContent = g.total || "";
-    g.stages.forEach(function (s) {
-      var n = s.items.length, nm = GAP_SHORT[s.key] || [s.label, ""];
-      ol.appendChild(h("li", { class: n ? "on" : null }, [h("span", { class: "gs-k" }, [h("b", { text: nm[0] }), h("span", { class: "small", text: nm[1] })]),
-        h("b", { class: "num gs-n", text: String(n) }), h("span", { class: "sr", text: "곳" })]));
+    // S10k ③: 2×2 숫자 칸 → 4단계 흐름도(단계를 화살표로 잇고 멈춘 집 수를 마디 크기·테두리로). 숫자는 그림 안에 그대로 보인다
+    var stages = g.stages.map(function (s) { var nm = GAP_SHORT[s.key] || [s.label, ""]; return { label: nm[0], sub: nm[1], n: s.items.length }; });
+    if (window.DaeumChart) {
+      var fw = h("div", { class: "ch-box" }); fw.innerHTML = DaeumChart.flow(stages);
+      ol.replaceWith(fw); fw.id = "todayGaps"; fw.setAttribute("data-slot", "gaps");
+      fw.appendChild(h("p", { class: "small src-tag", "data-src-ref": "V1", text: "출처: 가상 가구 연락·연계 기록(닿음 집계)" }));
+      return;
+    }
+    stages.forEach(function (s) {
+      ol.appendChild(h("li", { class: s.n ? "on" : null }, [h("span", { class: "gs-k" }, [h("b", { text: s.label }), h("span", { class: "small", text: s.sub })]),
+        h("b", { class: "num gs-n", text: String(s.n) }), h("span", { class: "sr", text: "곳" })]));
     });
   }
 
@@ -456,18 +474,32 @@
     var mine = []; households().forEach(function (x) { if (x.area && mine.indexOf(x.area) < 0) mine.push(x.area); });
     var scope = home ? home + " 담당 가구" : mine.length ? "담당 " + mine.length + "개 읍면(" + mine.join("·") + ") 가구" : "담당 가구";
     dash.appendChild(h("p", { class: "small", text: scope + " 기준입니다. 시군구 전체 현황은 아래 수요 보드에서 볼 수 있어요. 닿음 보조 집계라 공식 실적은 행복이음 숫자와 맞춰 봅니다." }));
-    dash.appendChild(h("div", { class: "kpis" }, [
-      kpi("발굴 명단", H.total, "가구"), kpi("접촉", H.contacted, H.total ? Math.round(H.contacted / H.total * 100) + "%" : ""),
-      kpi("만남·상담", H.met, "가구"), kpi("비해당", H.nonEligible, "가구"), kpi("주민 신호", Q.total, "긴급 " + Q.urgent),
-      kpi("오늘 재시도", S.followUp ? S.followUp.retryDue : "—", "가구"), kpi("연계", S.links.total, S.links.households + "가구")
-    ]));
-    dash.appendChild(h("h4", { text: "요청 처리 단계" }));
-    dash.appendChild(rankList(S.funnel.map(function (f) { return { label: f.label, n: f.n }; }), S.funnel[0].n));
-    if (S.nonEligibleBy.length) { dash.appendChild(h("h4", { text: "비해당 사유" })); dash.appendChild(rankList(S.nonEligibleBy.map(function (x) { return { label: x.label, n: x.n, unit: "가구" }; }), H.nonEligible)); }
+    var CH = window.DaeumChart;
+    if (CH) {
+      // S10k ②: KPI 숫자 7칸·순위 목록 → 가구 깔때기(발굴→접촉→만남→연계) + 비해당 사유 도넛. 주민 신호·오늘 재시도는 숫자 하나라 숫자 칸으로 남긴다
+      dash.appendChild(h("div", { class: "kpis" }, [kpi("주민 신호", Q.total, "긴급 " + Q.urgent), kpi("오늘 재시도", S.followUp ? S.followUp.retryDue : "—", "가구")]));
+      var fig = h("div", { class: "ch-box ch-dash" });
+      fig.innerHTML = '<h4 class="ch-cap">발굴 가구가 어디까지 왔나</h4>' + CH.funnel([{ label: "발굴 명단", n: H.total }, { label: "접촉", n: H.contacted }, { label: "만남·상담", n: H.met }, { label: "서비스 연계", n: S.links.households }]) +
+        '<p class="small src-tag" data-src-ref="V1">출처: 가상 가구 명단·연락·연계 기록(닿음 집계, 공식 실적 아님)</p>' +
+        '<h4 class="ch-cap">비해당 사유</h4>' + (S.nonEligibleBy.length ? CH.donut(S.nonEligibleBy.map(function (x, i) { return { label: x.label, n: x.n, c: (i % 5) + 1 }; })) : '<p class="small">비해당으로 정리한 가구가 아직 없습니다.</p>') +
+        '<h4 class="ch-cap">주민 신호 처리 단계</h4>' + CH.funnel(S.funnel.map(function (f) { return { label: f.label, n: f.n }; }), { unit: "건" }) +
+        '<p class="small src-tag" data-src-ref="V1,V2">출처: 가상 주민 신호·비해당 기록(닿음 집계)</p>';
+      dash.appendChild(fig);
+    } else {
+      dash.appendChild(h("div", { class: "kpis" }, [
+        kpi("발굴 명단", H.total, "가구"), kpi("접촉", H.contacted, H.total ? Math.round(H.contacted / H.total * 100) + "%" : ""),
+        kpi("만남·상담", H.met, "가구"), kpi("비해당", H.nonEligible, "가구"), kpi("주민 신호", Q.total, "긴급 " + Q.urgent),
+        kpi("오늘 재시도", S.followUp ? S.followUp.retryDue : "—", "가구"), kpi("연계", S.links.total, S.links.households + "가구")
+      ]));
+      dash.appendChild(h("h4", { text: "요청 처리 단계" }));
+      dash.appendChild(rankList(S.funnel.map(function (f) { return { label: f.label, n: f.n }; }), S.funnel[0].n));
+      if (S.nonEligibleBy.length) { dash.appendChild(h("h4", { text: "비해당 사유" })); dash.appendChild(rankList(S.nonEligibleBy.map(function (x) { return { label: x.label, n: x.n, unit: "가구" }; }), H.nonEligible)); }
+    }
     var cd = F.report.countdown(F.report.currentRound(), { done: H.closed, total: H.total });
     var dl = clear(q(root, '[data-slot="deadline"]'));
     dl.appendChild(h("h4", null, [cd.round.label + (cd.upcoming ? " 준비 " : " 마감 역산 "), h("span", { class: "d-tag " + (cd.upcoming || cd.onTrack ? "pos" : "warn"), text: cd.upcoming ? "시작 전" : cd.onTrack ? "일정 안" : "뒤처짐" })]));
-    dl.appendChild(rankList([{ label: "기간 경과", n: cd.elapsedPct, unit: "%" }, { label: "처리 완료", n: cd.donePct, unit: "%" }], 0));
+    if (window.DaeumChart) { var dw = h("div", { class: "ch-box" }); dw.innerHTML = DaeumChart.dualBar({ done: cd.donePct, elapsed: cd.elapsedPct, late: !(cd.upcoming || cd.onTrack), tag: cd.upcoming ? "시작 전" : cd.daysLeft >= 0 ? "D-" + cd.daysLeft : "마감" }); dl.appendChild(dw); }
+    else dl.appendChild(rankList([{ label: "기간 경과", n: cd.elapsedPct, unit: "%" }, { label: "처리 완료", n: cd.donePct, unit: "%" }], 0));
     dl.appendChild(h("p", { class: "small", text: cd.message }));
     dl.appendChild(h("p", { class: "note", text: "출처: " + cd.round.source + " · 명단은 가상 가구" }));
     if (F.linkGap) renderGaps(b);
@@ -516,7 +548,9 @@
     var cd = F.report.countdown(F.report.currentRound(), { done: H.closed, total: H.total });
     $("kpiRound").textContent = cd.upcoming ? "준비" : cd.daysLeft >= 0 ? "D-" + cd.daysLeft : "마감";
     box.appendChild(h("p", { class: "small" }, [h("b", { text: cd.round.label + " " }), h("span", { class: "d-tag " + (cd.upcoming || cd.onTrack ? "pos" : "warn"), text: cd.upcoming ? "시작 전" : cd.onTrack ? "일정 안" : "뒤처짐" })]));
-    box.appendChild(h("p", { class: "small", text: cd.upcoming ? cd.message : "남은 " + cd.remaining + "가구 · 하루 " + cd.perWorkday + "가구 · 처리 " + cd.donePct + "%(기간 경과 " + cd.elapsedPct + "%)" }));
+    // S10k ①: 문장 → 두 겹 진도 막대(기간 경과 빗금 위에 처리 완료 채움, 오늘 눈금·D-n). 남은 가구·하루 몫은 아래 한 줄로 남긴다
+    if (!cd.upcoming && window.DaeumChart) { var bw = h("div", { class: "ch-box" }); bw.innerHTML = DaeumChart.dualBar({ done: cd.donePct, elapsed: cd.elapsedPct, late: !cd.onTrack, tag: cd.daysLeft >= 0 ? "D-" + cd.daysLeft : "마감" }); box.appendChild(bw); }
+    box.appendChild(h("p", { class: "small", text: cd.upcoming ? cd.message : "남은 " + cd.remaining + "가구 · 하루 " + cd.perWorkday + "가구" + (window.DaeumChart ? "" : " · 처리 " + cd.donePct + "%(기간 경과 " + cd.elapsedPct + "%)") }));
     box.appendChild(h("p", { class: "small src-tag", text: "출처: " + cd.round.source + " · 가구 수는 가상" }));
   }
   // ── S10o-2 오늘 ⑤ 명단 정리 — 마지막으로 정리한 명단 요약 ──

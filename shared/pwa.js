@@ -18,9 +18,21 @@
   var btn = box.querySelector("[data-pwa=btn]"), ios = box.querySelector("[data-pwa=ios]");
   var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   var deferred = null;
+  // 카카오톡 인앱 브라우저는 설치(beforeinstallprompt·홈 화면 추가)를 막는다 → 초대장으로 들어오면 바깥 브라우저(크롬·사파리)로 넘긴다
+  if (/KAKAOTALK/i.test(navigator.userAgent)) {
+    var ext = function () { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); };
+    var kk = box.querySelector("[data-pwa=kakao]"), kb = box.querySelector("[data-pwa=ext]");
+    box.hidden = false; if (kk) kk.hidden = false;
+    if (kb) kb.addEventListener("click", ext);
+    ext();
+    return;
+  }
   if (isIOS) { box.hidden = false; if (ios) ios.hidden = false; }
+  // 안드로이드에서 설치 신호가 늦거나 오지 않으면(삼성 인터넷 등) 메뉴로 추가하는 길을 알려 준다
+  var and = box.querySelector("[data-pwa=and]");
+  if (/Android/i.test(navigator.userAgent) && and) setTimeout(function () { if (!deferred) { box.hidden = false; and.hidden = false; } }, 3000);
   window.addEventListener("beforeinstallprompt", function (e) {
-    e.preventDefault(); deferred = e; box.hidden = false; if (btn) btn.hidden = false;
+    e.preventDefault(); deferred = e; box.hidden = false; if (btn) btn.hidden = false; if (and) and.hidden = true;
   });
   if (btn) btn.addEventListener("click", function () {
     if (!deferred) return;
