@@ -1,4 +1,5 @@
-/* 위기가구 발굴 현장 설문 v2 — 한 화면 한 문항, 모두 건너뛸 수 있고, 하나만 고르는 문항은 고르면 바로 다음으로 넘어간다. 이름·개인정보는 받지 않는다.
+/* 닿음 현장 설문 v3(10-30) — 시작 화면에 «닿음이 무엇인지» 그림 한 줄, 문항마다 «왜 묻나요»(why)·답하는 법(hint), 기능 판단 2화면(feat_a·feat_b → answers.feat). 이하 v2 설명:
+   위기가구 발굴 현장 설문 v2 — 한 화면 한 문항, 모두 건너뛸 수 있고, 하나만 고르는 문항은 고르면 바로 다음으로 넘어간다. 이름·개인정보는 받지 않는다.
    저장: 닿음 Supabase field_survey(anon=넣기만). 제출마다 새 토큰(서버 unique) — 10-30부터 같은 기기도 다시 응답 가능(중복은 집계 때 판단). 컬럼은 v1 그대로, 답은 answers(JSON) 안에.
    답 키는 v1 과 같은 이름을 쓴다 → 01_리서치/현장설문/read_survey.js 가 그대로 읽는다(빠진 문항은 «무응답»으로 나온다).
    v2 에서 뺀 문항: workplace·career(10-30 호창님)·duty·list_route·device·case_areas.
@@ -32,27 +33,74 @@
   var INPUT_GUESS = ["대상 가구(읍면동)", "상담·조사 일시", "상담 방법", "방문·연락 시도 이력", "주요 호소(상담 내용 요약)", "욕구 영역",
     "가구 상황", "긴급 여부", "조치·서비스 연계", "연계 결과(신청·결정)", "비해당 사유", "향후 계획"];
 
+  // v3(10-30): 오늘 넣기로 한 기능 중 «현장이 실제로 쓸지» 판단이 필요한 것만 — 답 이름 A.feat[key] = 쓸 것 같다/아니다/모르겠다
+  var FEAT_A = [
+    ["heat", "폭염·한파 특보 날, 혼자 사는 어르신 집부터 방문 순서", "특보가 뜨면 그날 목록 맨 위로"],
+    ["oldhouse", "지은 지 오래된 집 표시", "난방·누수 걱정이 큰 집을 미리 알아보기"],
+    ["clinic", "방문 가구 가까운 병원·약국 보기", "현장에서 바로 안내하실 때"],
+    ["sensor", "AI 스피커·센서가 한동안 반응 없을 때 알림", "설치된 집만, 먼저 연락할 집으로"],
+    ["post", "우체국 집배원 안부살핌 의뢰", "연락이 안 닿는 집 확인을 맡기기"],
+    ["calendar", "방문 일정을 폰 달력으로 내보내기", "업무폰 달력에 바로 들어가게"]
+  ];
+  var FEAT_B = [
+    ["risk_area", "읍면동별 고독사 위험도 한눈에", "우리 읍면동이 다른 곳과 견주어 어느 정도인지"],
+    ["msg", "방문 안내 알림톡 문구 미리 보기", "보내기 전에 주민이 받을 글 확인"],
+    ["report", "보고서를 한글·엑셀(수식 그대로)로 내려받기", "정부 보고서 서식 그대로, 숫자만 고쳐 쓰기"],
+    ["ai_ok", "AI가 추천한 연계 서비스에 «맞아요/아니에요» 누르기", "추천이 맞는지 현장 판단을 한 번에 남기기"]
+  ];
+  var FEAT_OPTS = ["쓸 것 같다", "아니다", "모르겠다"];
+
+  // why = 왜 묻는지(닿음의 어느 기능을 맞추려는지) · hint = 어떻게 답하면 되는지(예시 한 줄)
   var Q = [
-    { id: "flow", type: "flow", label: "위기가구 발굴 및 관리업무 절차 순서가 맞는지 확인해주세요.", hint: "실제와 다른 단계만 눌러 주세요. 모두 맞으면 그대로 넘어가시면 됩니다." },
-    { id: "list_count", type: "single", label: "한 차수에 맡는 발굴 대상은 대략 몇 건인가요?", options: ["10건 미만", "10~30건", "30~50건", "50~100건", "100건 이상", "잘 모르겠다"] },
-    { id: "list_export", type: "single", label: "행복이음에서 위기가구 발굴 대상자 명단을 볼 때, 그 명단을 엑셀로 내려받을 수 있나요?", options: ["있다", "없다", "잘 모르겠다"] },
-    { id: "list_score", type: "single", label: "행복이음 위기가구 명단에 점수·순위(위험도)가 표시되나요?", options: ["있다", "없다", "잘 모르겠다"] },
-    { id: "plan_method", type: "multi", label: "방문 순서·일정은 무엇으로 정하시나요?", hint: "해당하는 것을 모두 골라 주세요.", options: ["행복이음 화면", "엑셀", "수첩·종이", "지도 앱", "동료·통장과 상의", "기타"] },
-    { id: "mobile_feature", type: "single", label: "모바일 행복이음(또는 업무폰)에 방문 일정이나 지도 기능이 있나요?", options: ["일정·지도 둘 다 있다", "일정만 있다", "지도만 있다", "둘 다 없다", "안 쓴다·잘 모르겠다"] },
-    { id: "visits_day", type: "single", label: "하루에 몇 가구쯤 방문하시나요?", options: ["1~3곳", "4~6곳", "7~10곳", "10곳 넘게"] },
-    { id: "miss_rate", type: "single", label: "가 보면 안 계시거나 대상이 아닌 경우는 어느 정도인가요?", hint: "체감으로 골라 주세요.", options: ["10% 미만", "10~30%", "30~50%", "절반 넘게"] },
-    { id: "retry_count", type: "single", label: "연락이 닿지 않으면 몇 번까지 다시 시도하시나요?", options: ["1~2번", "3번", "4~5번", "6번 이상", "정해진 기준 없음"] },
-    { id: "retry_where", type: "single", label: "시도한 횟수는 어디에 남기시나요?", options: ["행복이음에 적는 칸이 있다", "칸이 없어 남기지 않는다", "엑셀·수첩에 따로 적는다"] },
-    { id: "input_time", type: "single", label: "한 가구 조사 결과를 입력하는 데 얼마나 걸리나요?", options: ["10분 미만", "10~30분", "30분~1시간", "1시간 넘게"] },
-    { id: "input_fields", type: "single", label: "조사 결과 입력 화면의 칸 순서가 이와 비슷한가요?", preface: INPUT_GUESS, prefaceTitle: "저희가 추정한 입력 순서",
+    { id: "flow", type: "flow", label: "위기가구 발굴 및 관리업무 절차 순서가 맞는지 확인해주세요.",
+      hint: "실제와 다른 단계만 눌러 주세요. 모두 맞으면 «모두 맞아요».", why: "닿음이 어느 단계부터 거들지 정하려고요." },
+    { id: "list_count", type: "single", label: "격월로 내려오는 명단에서, 한 번에 맡는 가구는 대략 몇 곳인가요?",
+      hint: "예: 지난 차수에 25가구를 맡으셨다면 «10~30건».", why: "방문 계획을 몇 가구 규모로 짤지 정하려고요.",
+      options: ["10건 미만", "10~30건", "30~50건", "50~100건", "100건 이상", "잘 모르겠다"] },
+    { id: "list_export", type: "single", label: "행복이음의 발굴 대상자 명단을 엑셀로 내려받을 수 있나요?",
+      why: "명단을 닿음으로 옮기는 방법을 정하려고요.", options: ["있다", "없다", "잘 모르겠다"] },
+    { id: "list_score", type: "single", label: "그 명단에 위험도 점수나 순위가 함께 나오나요?",
+      why: "이미 있다면 닿음이 따로 매기지 않으려고요.", options: ["있다", "없다", "잘 모르겠다"] },
+    { id: "plan_method", type: "multi", label: "방문 순서·일정은 지금 무엇으로 정하시나요?",
+      hint: "해당하는 것을 모두 골라 주세요.", why: "쓰시던 방식 옆에서 덜어 드리려고요.",
+      options: ["행복이음 화면", "엑셀", "수첩·종이", "지도 앱", "동료·통장과 상의", "기타"] },
+    { id: "mobile_feature", type: "single", label: "모바일 행복이음(또는 업무폰)에 방문 일정이나 지도 기능이 있나요?",
+      why: "이미 있는 기능을 다시 만들지 않으려고요.",
+      options: ["일정·지도 둘 다 있다", "일정만 있다", "지도만 있다", "둘 다 없다", "안 쓴다·잘 모르겠다"] },
+    { id: "visits_day", type: "single", label: "방문 나가는 날, 하루에 몇 가구쯤 도시나요?",
+      hint: "예: 보통 5곳이면 «4~6곳».", why: "하루 동선 한 장에 몇 집을 담을지 정하려고요.", options: ["1~3곳", "4~6곳", "7~10곳", "10곳 넘게"] },
+    { id: "miss_rate", type: "single", label: "가 보면 안 계시거나 대상이 아닌 집은 열 집 중 몇 집쯤인가요?",
+      hint: "체감으로 골라 주세요. 예: 열 집 중 두 집이면 «10~30%».", why: "헛걸음을 줄이는 기능이 얼마나 필요한지 보려고요.",
+      options: ["10% 미만", "10~30%", "30~50%", "절반 넘게"] },
+    { id: "retry_count", type: "single", label: "연락이 닿지 않으면 몇 번까지 다시 시도하시나요?",
+      why: "다음 시도 날짜를 알려 드리는 기준으로 쓰려고요.", options: ["1~2번", "3번", "4~5번", "6번 이상", "정해진 기준 없음"] },
+    { id: "retry_where", type: "single", label: "몇 번 연락·방문했는지는 어디에 남기시나요?",
+      why: "시도 기록을 어디서 이어받을지 정하려고요.", options: ["행복이음에 적는 칸이 있다", "칸이 없어 남기지 않는다", "엑셀·수첩에 따로 적는다"] },
+    { id: "input_time", type: "single", label: "한 가구 조사 결과를 행복이음에 입력하는 데 얼마나 걸리나요?",
+      why: "기록 정리를 얼마나 덜어 드릴 수 있을지 보려고요.", options: ["10분 미만", "10~30분", "30분~1시간", "1시간 넘게"] },
+    { id: "input_fields", type: "single", label: "조사 결과 입력 화면의 칸 순서가 이와 비슷한가요?", preface: INPUT_GUESS, prefaceTitle: "저희가 짐작한 입력 순서",
+      hint: "«12칸 보기»를 눌러 보고 골라 주세요.", why: "닿음 기록을 그 순서대로 옮겨 적기 쉽게 하려고요.",
       options: ["거의 같다", "일부 다르다", "많이 다르다", "잘 모르겠다"], memoOn: ["일부 다르다", "많이 다르다"], memoPh: "어떻게 다른지 한 줄 (선택)" },
-    { id: "progress_report", type: "single", label: "처리 현황 보고는 시스템에서 바로 뽑히나요?", options: ["바로 뽑힌다", "손으로 집계한다", "잘 모르겠다"] },
-    { id: "netsep", type: "single", label: "이런 도구가 일반 인터넷 웹사이트로 만들어진다면, 업무 중에 열어 쓰실 수 있을까요?", hint: "행복이음을 쓰는 업무 PC는 보통 인터넷이 막혀 있어, 따로 인터넷 PC나 폰으로 열어야 합니다.", options: ["사무실 인터넷 PC로 열 수 있다", "폰으로만 열 수 있다", "둘 다 어렵다", "잘 모르겠다"] },
-    { id: "rate", type: "rate", label: "이런 기능이 있다면 얼마나 도움이 될까요?", hint: "1 별로 · 5 아주 많이" },
-    { id: "hardest", type: "single", label: "가장 손이 많이 가는 단계는 어디인가요?", options: ["명단 받기·나누기", "방문 순서·일정", "연락·재방문", "현장 조사", "결과 입력", "현황 보고", "연계·사후관리"] },
-    { id: "wish", type: "text", label: "마지막으로, 바라는 점이 있다면 적어 주세요", hint: "없으시면 바로 보내셔도 됩니다." }
+    { id: "progress_report", type: "single", label: "몇 가구 방문·완료했는지 위에 보고할 때, 시스템에서 바로 뽑히나요?",
+      why: "현황 보고서를 닿음이 대신 만들지 정하려고요.", options: ["바로 뽑힌다", "손으로 집계한다", "잘 모르겠다"] },
+    { id: "netsep", type: "single", label: "이런 도구가 일반 인터넷 웹사이트라면, 업무 중에 열어 쓰실 수 있을까요?",
+      hint: "행복이음 업무 PC는 보통 인터넷이 막혀 있어, 따로 인터넷 PC나 폰으로 열어야 합니다.", why: "닿음을 PC·폰 중 어디에 맞출지 정하려고요.",
+      options: ["사무실 인터넷 PC로 열 수 있다", "폰으로만 열 수 있다", "둘 다 어렵다", "잘 모르겠다"] },
+    { id: "rate", type: "rate", label: "닿음의 기본 기능이에요. 얼마나 도움이 될까요?",
+      hint: "1 별로 · 5 아주 많이. 아는 것만 눌러 주세요.", why: "어느 기능부터 다듬을지 정하려고요." },
+    { id: "feat_a", type: "feat", items: FEAT_A, label: "방문 나가기 전·현장에서, 이런 기능을 쓰실 것 같나요?",
+      hint: "하나씩 «쓸 것 같다 / 아니다 / 모르겠다»로 골라 주세요.", why: "현장에서 안 쓸 기능은 빼려고요." },
+    { id: "feat_b", type: "feat", items: FEAT_B, label: "기록·보고 쪽 기능도 쓰실 것 같나요?",
+      hint: "하나씩 골라 주세요. 모르는 건 건너뛰셔도 됩니다.", why: "현장에서 안 쓸 기능은 빼려고요." },
+    { id: "hardest", type: "single", label: "가장 손이 많이 가는 단계는 어디인가요?",
+      why: "닿음이 가장 먼저 덜어 드릴 곳을 정하려고요.",
+      options: ["명단 받기·나누기", "방문 순서·일정", "연락·재방문", "현장 조사", "결과 입력", "현황 보고", "연계·사후관리"] },
+    { id: "wish", type: "text", label: "마지막으로, 현장 일에서 이것만은 덜고 싶다는 것이 있다면 적어 주세요",
+      hint: "예: 같은 내용을 두 번 적는 일. 없으시면 바로 보내셔도 됩니다." }
   ];
   var N = Q.length;
+  var INTRO_BODY = "행복이음 명단을 받은 다음의 방문·기록·연계·보고를 덜어 드리는 도구를 만들고 있습니다. 현장에 맞추려고 몇 가지 여쭙니다.";
+  var INTRO_TEXT = "복지 사각지대 현장 업무 도우미 닿음 현장 설문 명단 행복이음 방문 기록 연계·보고 닿음이 거드는 일 " + INTRO_BODY;
 
   var $ = function (id) { return document.getElementById(id); };
   var app = $("app"), top = $("top"), fill = $("barFill"), backBtn = $("backBtn");
@@ -60,7 +108,7 @@
 
   function store(fn) { try { return fn(); } catch (e) { return null; } }
   var A = store(function () { return JSON.parse(localStorage.getItem(C.draftKey) || "null"); }) || {};
-  A.flow = A.flow || {}; A.flow_memo = A.flow_memo || {}; A.rate = A.rate || {};
+  A.flow = A.flow || {}; A.flow_memo = A.flow_memo || {}; A.rate = A.rate || {}; A.feat = A.feat || {};
   var page = -1; // -1 소개, 0..N-1 문항, N 감사
   var saveT = 0;
   function save() { clearTimeout(saveT); saveT = setTimeout(function () { store(function () { localStorage.setItem(C.draftKey, JSON.stringify(A)); }); }, 250); }
@@ -70,9 +118,10 @@
   var fontReady = false, fontOn = false;
   window.__pf = function () {
     if (!document.fonts || !document.fonts.load) return;
-    var text = Q.map(function (q) { return q.label + (q.hint || "") + (q.options || []).join("") + (q.preface || []).join(""); }).join("")
+    var text = Q.map(function (q) { return q.label + (q.hint || "") + (q.why || "") + (q.options || []).join("") + (q.preface || []).join(""); }).join("")
+      + FEAT_A.concat(FEAT_B).map(function (f) { return f[1] + f[2]; }).join("") + FEAT_OPTS.join("") + INTRO_TEXT
       + FLOW.map(function (f) { return f[1]; }).join("") + RATE.map(function (r) { return r[1]; }).join("")
-      + "위기가구 발굴 현장의 이야기를 듣고 싶습니다 시작하기 이어서 답하기 다음 건너뛰기 보내기 고맙습니다 0123456789";
+      + "왜 묻나요 시작하기 이어서 답하기 다음 건너뛰기 보내기 고맙습니다 0123456789";
     document.fonts.load('16px "Pretendard Variable"', text).then(function () { fontReady = true; if (page < 0 && performance.now() < 1500) applyFont(); }, function () {});
   };
   function applyFont() { if (fontReady && !fontOn) { fontOn = true; document.documentElement.classList.add("pf"); } }
@@ -185,6 +234,23 @@
     return wrap;
   }
 
+  function featList(q) {
+    var wrap = el("div", { class: "feats" });
+    q.items.forEach(function (f) {
+      var gid = "ft" + f[0];
+      var row = el("div", { class: "seg3", role: "radiogroup", "aria-labelledby": gid });
+      FEAT_OPTS.forEach(function (o) {
+        var on = A.feat[f[0]] === o;
+        var b = el("button", { type: "button", class: "pick" + (on ? " on" : ""), role: "radio", "aria-checked": String(on), text: o });
+        b.addEventListener("click", function () { buzz(); A.feat[f[0]] = o; save(); setOn(row, b); refreshActions(Q[page]); });
+        row.appendChild(b);
+      });
+      wrap.appendChild(el("div", { class: "feat" }, [
+        el("p", { id: gid, class: "fl", text: f[1] }), el("p", { class: "fe", text: f[2] }), row]));
+    });
+    return wrap;
+  }
+
   function textBox(q) {
     var ta = el("textarea", { class: "memo big", rows: "5", maxlength: String(TEXT_MAX), placeholder: "자유롭게 적어 주세요", "aria-labelledby": "qh" });
     ta.value = A[q.id] || "";
@@ -196,6 +262,7 @@
     if (q.type === "multi") return (A[q.id] || []).length > 0;
     if (q.type === "flow") return Object.keys(A.flow).length > 0;
     if (q.type === "rate") return Object.keys(A.rate).length > 0;
+    if (q.type === "feat") return q.items.some(function (f) { return !!A.feat[f[0]]; });
     if (q.type === "text") return !!(A[q.id] || "").trim();
     return !!A[q.id];
   }
@@ -239,6 +306,7 @@
     if (q.type === "flow") body = flowList();
     else if (q.type === "rate") body = rateList();
     else if (q.type === "text") body = textBox(q);
+    else if (q.type === "feat") body = featList(q);
     else body = optionList(q);
 
     if (q.type === "flow") {
@@ -255,7 +323,8 @@
     var head = el("div", { class: "qhead" }, [
       el("p", { class: "count" }, [el("b", { text: String(i + 1) }), el("span", { text: " / " + N })]),
       el("h1", { id: "qh", class: "qt", text: q.label }),
-      q.hint ? el("p", { class: "hint", text: q.hint }) : null
+      q.hint ? el("p", { class: "hint", text: q.hint }) : null,
+      q.why ? el("p", { class: "why" }, [el("b", { text: "왜 묻나요" }), el("span", { text: q.why })]) : null
     ]);
     setActions(last ? "보내기" : "다음",
       q.type === "flow" ? flowNext : last ? function () { submit(); } : function () { go(i + 1); },
@@ -268,14 +337,25 @@
   function hasDraft() { return Object.keys(A).some(function (k) { var v = A[k]; return v && (typeof v !== "object" || Object.keys(v).length); }); }
   function firstOpen() { for (var i = 0; i < N; i++) if (!answered(Q[i])) return i; return N - 1; }
   function row(k, v) { return el("li", {}, [el("span", { class: "k", text: k }), el("span", { class: "v", text: v })]); }
+  // 닿음이 맡는 자리: 명단은 행복이음에서 받고, 그다음 방문·기록·연계·보고를 거든다(발굴 자체를 대신하지 않음)
+  function jobMap() {
+    var steps = [["명단", "행복이음", false], ["방문", "", true], ["기록", "", true], ["연계·보고", "", true]];
+    var ol = el("ol", { class: "jobs", "aria-label": "닿음이 거드는 일: 행복이음에서 받은 명단 다음의 방문, 기록, 연계와 보고" });
+    steps.forEach(function (s, i) {
+      ol.appendChild(el("li", { class: s[2] ? "j on" : "j" }, [
+        el("span", { class: "jn", "aria-hidden": "true", text: String(i + 1) }), el("span", { class: "jt", text: s[0] }), s[1] ? el("span", { class: "js", text: s[1] }) : null]));
+    });
+    return el("div", { class: "jobmap" }, [ol, el("p", { class: "jcap", "aria-hidden": "true" }, [el("span", {}), el("b", { text: "닿음이 거드는 일" })])]);
+  }
   function intro() {
     var resume = hasDraft();
     setActions(resume ? "이어서 답하기" : "시작하기", function () { go(resume ? firstOpen() : 0); }, null);
     return el("section", { class: "screen intro" }, [
-      el("p", { class: "kicker" }, [el("i", { class: "dot", "aria-hidden": "true" }), el("span", { text: "현장 설문" })]),
-      el("h1", { class: "lead", html: "위기가구 발굴,<br>현장의 이야기를<br>듣고 싶습니다" }),
-      el("p", { class: "body", text: "위기가구 발굴 업무를 돕는 도구를 생각하고 있습니다. 실제로 어떻게 일하시는지 알아야 쓸모 있게 만들 수 있어 몇 가지 여쭙니다." }),
-      el("ul", { class: "facts" }, [row("걸리는 시간", "약 3분"), row("이름", "적지 않습니다"), row("문항", "언제든 건너뛸 수 있습니다")]),
+      el("p", { class: "kicker" }, [el("i", { class: "dot", "aria-hidden": "true" }), el("span", { text: "닿음 · 현장 설문" })]),
+      el("h1", { class: "lead", html: "복지 사각지대<br>현장 업무 도우미,<br>닿음" }),
+      el("p", { class: "body", text: INTRO_BODY }),
+      jobMap(),
+      el("ul", { class: "facts" }, [row("걸리는 시간", "약 4분"), row("이름", "적지 않습니다"), row("문항", "언제든 건너뛸 수 있습니다")]),
       el("p", { class: "note", text: "개인정보나 대상자 정보는 적지 말아 주세요." })
     ]);
   }
@@ -284,7 +364,7 @@
     return el("section", { class: "screen done" }, [
       el("div", { class: "seal", "aria-hidden": "true", html: '<svg viewBox="0 0 48 48" width="30" height="30"><path class="tick" d="M13 25l7.5 7.5L35 17" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' }),
       el("h1", { class: "lead sm", text: already ? "이미 응답해 주셨어요" : "고맙습니다" }),
-      el("p", { class: "body", text: already ? "이 기기에서 보내 주신 답이 이미 접수되어 있습니다." : "보내 주신 답은 도구를 현장에 맞게 다듬는 데만 쓰겠습니다." }),
+      el("p", { class: "body", text: already ? "이 기기에서 보내 주신 답이 이미 접수되어 있습니다." : "보내 주신 답은 닿음을 현장에 맞게 다듬는 데만 쓰겠습니다." }),
       el("button", { type: "button", class: "btn main close", text: "창 닫기", onclick: closeWin }),
       el("p", { class: "note", id: "closeNote", text: "" })
     ]);
@@ -321,7 +401,7 @@
         clearTimeout(saveT);
         // 10-30 호창님: 응답한 뒤에도 다시 들어와 새로 답할 수 있게 — 토큰을 버려 다음 제출은 새 행이 된다
         store(function () { localStorage.removeItem(C.tokenKey); localStorage.removeItem(C.doneKey); localStorage.removeItem(C.draftKey); });
-        A = { flow: {}, flow_memo: {}, rate: {} };
+        A = { flow: {}, flow_memo: {}, rate: {}, feat: {} };
         page = N; render(r.status === 409); return;
       }
       throw new Error("HTTP " + r.status);
