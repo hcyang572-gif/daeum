@@ -796,3 +796,63 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 
 /* S10k-2 사소: 오늘 동선 «내일로 미룰 집» 링크 터치 높이 44px 이상(이전 41px) */
 .over-go { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* ── S10p-2(10-30 A안) 첫 화면: «공공데이터 → 닿음 → 현장 개선» 띠 1장 + 주 화면 3카드 · 우리가족 매니저 테마 토큰 그대로 ── */
+.tabs { grid-template-columns: repeat(4, 1fr); } /* 폰 아래 4칸: 오늘·시각표·연계 누락·현황 */
+.pd-band { padding: var(--sp-5) var(--sp-5) var(--sp-3); }
+.pd-band h2 { margin: 0 0 var(--sp-3); font-size: var(--fs-b); font-weight: var(--fw-m); color: var(--ink2); letter-spacing: -.01em; }
+.pd-chips { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+.pd-chip { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 10px 4px; border-radius: var(--rb); background: var(--well); box-shadow: var(--well-sh); font-size: var(--fs-xs); line-height: 1.3; color: var(--ink2); }
+.pd-chip b { color: var(--ink); font-size: var(--fs-xs); word-break: keep-all; }
+.pd-chip svg { width: 28px; height: 28px; fill: none; stroke: var(--acc); stroke-width: 2.5; stroke-linecap: round; }
+.pd-chip.c-wx svg { stroke: var(--champ); } .pd-chip.c-wx svg circle { fill: var(--champ); }
+.pd-chip.c-med svg { stroke: var(--neg); } .pd-chip.c-pop svg { stroke: var(--sage); } .pd-chip.c-pop svg circle { fill: var(--sage); stroke: none; }
+.pd-flow { display: none; width: 100%; height: 56px; }
+.pd-flow path { fill: none; stroke: var(--acc-hi); stroke-width: 2; stroke-dasharray: 6 8; opacity: .75; animation: pdRun 1.6s linear infinite; }
+@keyframes pdRun { to { stroke-dashoffset: -28; } }
+.pd-src { margin: var(--sp-2) 0 0; font-size: var(--fs-xs); color: var(--ink2); overflow-wrap: anywhere; }
+.pd-src .d-tag { min-height: 22px; padding: 0 8px; vertical-align: middle; }
+.pd-cards { display: grid; gap: var(--sp-4); margin-top: var(--sp-4); }
+.pd-card { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-5); border-top: 4px solid var(--acc); }
+.pd-card h3 { margin: 0; display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-h3); letter-spacing: -.02em; }
+.pd-card h3 i { font-style: normal; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--enamel); box-shadow: var(--enamel-sh); color: var(--on-acc); font-size: var(--fs-xs); font-family: var(--num); }
+.pd-card > p { margin: 0; color: var(--ink2); font-size: var(--fs-s); }
+.pd-ba { display: grid; grid-template-columns: 1fr 18px 1fr; align-items: center; gap: 6px; padding: 10px; border-radius: var(--rb); background: var(--well); box-shadow: var(--well-sh); }
+.pd-ba figure { margin: 0; }
+.pd-ba svg { display: block; width: 100%; height: 80px; }
+.pd-ba figcaption { text-align: center; font-size: var(--fs-xs); color: var(--ink2); }
+.pd-ba .ar { color: var(--acc-ink); font-weight: var(--fw-b); text-align: center; }
+.pd-ba .bad { fill: none; stroke: var(--neg); stroke-width: 2.5; }
+.pd-ba .good { fill: none; stroke: var(--acc); stroke-width: 3; }
+.pd-ba .dots { fill: var(--acc); } .pd-ba .dots.off { fill: var(--ink3); }
+.pd-ba .memo rect { fill: var(--s1a); stroke: var(--ink3); stroke-width: 2; }
+.pd-ba .stop { fill: var(--neg); } .pd-ba .ring { fill: none; stroke: var(--neg); stroke-width: 2; opacity: .5; }
+.pd-num { margin: 0; font-size: var(--fs-b); color: var(--ink); }
+.pd-num .num, .pd-line .num { font-family: var(--num); font-weight: 800; color: var(--acc-ink); font-size: 1.15em; }
+.pd-num .d-tag, .pd-sub .d-tag { min-height: 22px; padding: 0 8px; vertical-align: middle; }
+.pd-num small { display: block; color: var(--ink2); font-size: var(--fs-xs); }
+.pd-sub { margin: 0; padding: 6px 10px; border-radius: var(--rb); background: var(--warn-soft); color: var(--ink); font-size: var(--fs-xs); }
+.pd-line { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); color: var(--acc-ink); font-size: var(--fs-s); font-weight: var(--fw-m); text-decoration: none; }
+.pd-line::after { content: "›"; margin-left: 2px; }
+.pd-go { margin-top: auto; align-self: flex-start; min-height: 48px; }
+.pd-risk { list-style: none; margin: 0; padding: 10px 12px; display: grid; gap: 8px; border-radius: var(--rb); background: var(--well); box-shadow: var(--well-sh); }
+.pd-risk li { display: grid; grid-template-columns: 5.5em minmax(0, 1fr) 3em; align-items: center; gap: 8px; font-size: var(--fs-xs); }
+.pd-risk li b { color: var(--ink); white-space: nowrap; }
+.pd-risk .rk { height: 10px; border-radius: var(--r-pill); background: var(--s1a); overflow: hidden; }
+.pd-risk .rk i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--acc-hi), var(--neg)); }
+.pd-risk .v { text-align: right; font-family: var(--num); font-weight: 700; color: var(--ink); }
+.pd-out { margin-top: var(--sp-4); padding: var(--sp-4) var(--sp-5); border-radius: var(--r); background: var(--acc-soft); }
+.pd-out b { color: var(--acc-ink); font-size: var(--fs-b); }
+.today-old { margin-top: var(--sp-4); padding: 0 var(--sp-5); }
+.today-old > summary { min-height: 56px; display: flex; align-items: center; color: var(--ink); font-size: var(--fs-b); font-weight: var(--fw-m); cursor: pointer; }
+.today-old .to-body { padding: var(--sp-2) 0 var(--sp-5); }
+.route-side .pd-line { margin: 0 0 var(--sp-2); }
+.rt-export > summary { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 16px; border-radius: var(--r-pill); background: var(--float); box-shadow: var(--bead-sh); color: var(--acc-ink); font-weight: var(--fw-m); cursor: pointer; }
+.rt-export[open] > summary { margin-bottom: var(--sp-2); }
+@media (min-width: 900px) {
+  .pd-chips { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .pd-flow { display: block; }
+  .pd-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .pd-flow path { animation: none; } }
+@media print { .pd-band, .pd-cards, .pd-out { display: none !important; } }

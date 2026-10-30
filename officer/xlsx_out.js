@@ -300,7 +300,7 @@
   }
   // 단추 자리: 화면 맨 위(슬롯 밖이라 다시 그려도 남는다)
   var PLACE = {
-    today: ["tab-today", "오늘 찾아갈 집 전체"], route: ["tab-route", "하루 방문 시각표"], contacts: ["tab-contacts", "재시도 일정·시도 기록"],
+    today: ["todayOldBody", "오늘 찾아갈 집 전체"], route: ["tab-route", "하루 방문 시각표"], contacts: ["tab-contacts", "재시도 일정·시도 기록"],
     board: ["tab-board", "연계 누락·미신청"], intake: ["tab-intake", "명단 정리 결과"], list: ["tab-list", "가구 명단 전체"], record: ["tab-record", "저장된 연계"],
     cost: ["tab-cost", "도입 비용 계산"], region: ["tab-region", "시군 읍면동 현황"], report: ["statsRoot", "현황 대시보드"], requests: ["moreToday", "주민 요청 목록"]
   };

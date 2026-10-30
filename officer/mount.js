@@ -719,7 +719,9 @@
     var tab = e.detail.tab;
     lastToday = F.today.build(base());
     var nav = $("navToday"); if (nav) nav.textContent = lastToday.counts.stops || "";
-    if (tab === "today") { renderAlerts(); renderToday(lastToday); renderTodayReport(); renderTodayIntake(); }
+    if (tab === "today") { renderAlerts(); renderToday(lastToday); renderTodayReport(); renderTodayIntake(); if (window.DaeumFront) DaeumFront.render(lastToday); }
+    // S10p-2: 재시도는 시각표 안 «다시 찾을 집» 줄로 합침(기능·화면은 그대로, 메뉴는 더 보기)
+    if (tab === "route" && $("routeRevisitN")) $("routeRevisitN").textContent = lastToday.counts.revisits;
     if (tab === "intake") renderIntake();
     intakeNav();
     if (tab === "list") renderHouseholds();
@@ -1035,6 +1037,11 @@
     printReport({ title: sh.title, printedAt: new Date().toLocaleString("ko-KR"), sections: [], table: { head: [], rows: [] }, note: sh.note, raw: body });
   }
   function sheetActs() {
+    // S10p-2: 인쇄·문안·달력(.ics) 4개를 «내보내기» 하나로 접는다(.ics 단추는 유지 — 10-30 호창님 «그대로 둬»)
+    var det = h("details", { class: "rt-export" }, [h("summary", { "data-h": "light", text: "내보내기 — 인쇄 · 문안 · 달력(.ics)" }), sheetBtns()]);
+    return det;
+  }
+  function sheetBtns() {
     return h("div", { class: "rep-acts" }, [btn("하루 동선 1장 인쇄", printSheet, "ghost", "medium"),
       btn("하루 동선 문안 복사", function () { copy(sheetData().text); }, "ghost", "success"),
       btn("오늘 일정 달력 파일(.ics)", function () { saveIcs(false); }, "ghost", "success"),

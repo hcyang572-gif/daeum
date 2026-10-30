@@ -28,15 +28,15 @@
 <aside class="rail" aria-label="업무 메뉴">
   <a class="logo" href="../index.html" aria-label="닿음 첫 화면으로"><i aria-hidden="true"></i>닿음</a>
   <nav class="tabs" aria-label="공무원 메뉴">
-    <!-- S10o-2(10-30 호창님 확정 주 기능 5개): 오늘(입구) → ①시각표 ②재시도 ③연계 누락 ④현황·보고서 ⑤명단 정리 / 보조는 «더 보기» -->
+    <!-- S10p-2(10-30 A안): 주 화면 3개 = ①시각표 ②연계 누락 ③현황·보고 / 재시도·명단 정리는 «더 보기»(기능 그대로). 옛 주석: S10o-2(10-30 호창님 확정 주 기능 5개): 오늘(입구) → ①시각표 ②재시도 ③연계 누락 ④현황·보고서 ⑤명단 정리 / 보조는 «더 보기» -->
     <a href="#today" data-tab="today" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>오늘</span><em class="num" id="navToday"></em></a>
     <p class="nav-grp" aria-hidden="true">주 기능</p>
     <a href="#route" data-tab="route" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg><span><i class="pc-only">하루 방문 </i>시각표</span></a>
-    <a href="#contacts" data-tab="contacts" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg><span><i class="pc-only">다시 찾을 집 · </i>재시도</span><em class="num" id="navRevisit"></em></a>
     <a href="#board" data-tab="board" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>연계<i class="pc-only"> 누락</i></span><em class="num" id="navGap"></em></a>
     <a href="#report" data-tab="report" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>현황<i class="pc-only"> · 보고서</i></span></a>
-    <a href="#intake" data-tab="intake" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8M8 4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/><path d="m9 12 2 2 4-4M9 17h6"/></svg><span>명단<i class="pc-only"> 정리</i></span><em class="num" id="navIntake"></em></a>
     <p class="nav-grp" aria-hidden="true">더 보기</p>
+    <a href="#contacts" data-tab="contacts" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg><span>다시 찾을 집 · 재시도</span><em class="num" id="navRevisit"></em></a>
+    <a href="#intake" data-tab="intake" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8M8 4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/><path d="m9 12 2 2 4-4M9 17h6"/></svg><span>명단 정리</span><em class="num" id="navIntake"></em></a>
     <a href="#list" data-tab="list" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>가구 명단</span><em class="num" id="navList"></em></a>
     <a href="#record" data-tab="record" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록</span></a>
     <a href="#cost" data-tab="cost" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/></svg><span>도입 비용·탄소</span></a>
@@ -51,6 +51,8 @@
   <div class="sh-h"><h2 id="moreH">더 보기</h2><button type="button" class="d-round" data-close aria-label="닫기"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <p class="sh-grp">보조 기능</p>
   <ul>
+    <li><a class="sh-i" href="#contacts"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg><span>다시 찾을 집 · 재시도 일정<small>부재 뒤 다음 시도 제안 · 3번 허탕이면 이웃 확인</small></span></a></li>
+    <li><a class="sh-i" href="#intake"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8M8 4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/><path d="m9 12 2 2 4-4M9 17h6"/></svg><span>명단 정리<small>지난 비해당 표시 · 확인만 할 집 / 다시 볼 집</small></span></a></li>
     <li><a class="sh-i" href="#list"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>가구 명단<small>방문 순서를 정한 근거 · 경로에 담기</small></span></a></li>
     <li><a class="sh-i" href="#record"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록<small>행복이음에 옮길 초안 · 받아쓰기(가교)</small></span></a></li>
     <li><a class="sh-i" href="#cost"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/></svg><span>도입 비용·탄소 계산<small>AI 월 비용·유지보수(가정)·이동·CO₂ 추정</small></span></a></li>
@@ -81,11 +83,72 @@
     <button type="button" class="d-round more-btn ph-only" data-sheet="moreMenu" aria-haspopup="dialog" aria-expanded="false" aria-label="더 보기 — 보조 기능·시연 설정" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button>
   </header>
 
-  <p class="virtual">상주시 적용 예시 · 이 화면의 가구·문의·좌표는 모두 <b>가상 데이터</b>입니다(실제 주민·개인정보 0건). 읍면동 이름과 세대 비율만 공개 자료에서 가져왔습니다(생성 규칙 <code>data/tools/make_households.py</code>).</p>
+  <p class="virtual"><span class="d-tag warn">가상</span> 가구·좌표·문의는 모두 <b>가상 데이터</b>(실제 주민 0명) · 읍면동 이름과 통계만 공개 자료입니다.</p>
 
   <main id="main">
     <!-- ① 오늘 — 하루 한 장(S10b 시안 A): 동선 1장이 주인공, 오른쪽에 다시 찾을 집·연계 누락. ⚙️ 파로 features.js·mount.js 가 data-slot 을 채운다 -->
     <section id="tab-today" class="tab" data-feature="today" hidden>
+      <!-- S10p-2(10-30 A안): 첫 화면 = «공공데이터 → 닿음 → 현장 개선» 띠 1장 + 주 화면 3카드. 숫자는 officer/front.js 가 채운다. 옛 «오늘» 내용은 아래 «자세히»에 접어 둔다(기능 그대로) -->
+      <section class="pd-band d-card" aria-labelledby="pdH">
+        <h2 id="pdH">이 공공데이터로 현장의 하루를 바꿉니다</h2>
+        <ul class="pd-chips" aria-label="닿음이 쓰는 공공데이터 6묶음">
+          <li class="pd-chip c-wx"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="13" r="6"/><path d="M6 26h20"/></svg><b>기상청</b><span>기상특보</span></li>
+          <li class="pd-chip c-house"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 15 16 6l11 9v11H5Z"/><path d="M13 26v-6h6v6"/></svg><b>국토교통부</b><span>건축물대장</span></li>
+          <li class="pd-chip c-med"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="6" y="6" width="20" height="20" rx="5"/><path d="M16 11v10M11 16h10"/></svg><b>국립중앙의료원</b><span>병원·약국</span></li>
+          <li class="pd-chip c-pop"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="11" r="4"/><circle cx="22" cy="13" r="3"/><path d="M4 26c1-6 13-6 14 0M17 26c1-4 9-4 10 0"/></svg><b>행정안전부</b><span>인구·세대</span></li>
+          <li class="pd-chip c-svc"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="7" y="5" width="18" height="22" rx="3"/><path d="M11 12h10M11 17h10M11 22h6"/></svg><b>사회보장정보원</b><span>복지서비스</span></li>
+          <li class="pd-chip c-rcp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 26V16M13 26V9M20 26v-7M27 26V12"/></svg><b>사회보장정보원</b><span>수급권자 현황</span></li>
+        </ul>
+        <!-- 선: 띠 6칸 → 주 화면 3카드(①시각표 ← 기상·건축·의료·인구 / ②연계 누락 ← 복지서비스·수급 / ③현황 ← 인구·수급) -->
+        <svg class="pd-flow" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M100 0C100 32 200 24 200 56"/><path d="M300 0C300 32 200 24 200 56"/><path d="M500 0C500 32 200 24 200 56"/><path d="M700 0C700 32 200 24 200 56"/>
+          <path d="M700 0C700 32 1000 24 1000 56"/><path d="M900 0C900 32 600 24 600 56"/><path d="M1100 0C1100 32 600 24 600 56"/><path d="M1100 0C1100 32 1000 24 1000 56"/>
+        </svg>
+        <p class="pd-src"><span class="d-tag pub">공공데이터</span> 출처: 공공데이터포털 15000415·15134735·15000736·15000576·15097972·15097974·15090532·15108347·15062448 · 가구는 모두 <span class="d-tag warn">가상</span></p>
+      </section>
+
+      <div class="pd-cards">
+        <article class="pd-card d-card" aria-labelledby="pd1">
+          <h3 id="pd1"><i aria-hidden="true">1</i>하루 방문 시각표</h3>
+          <p>특보·홀로 사는 어르신·오래된 집을 반영해 오늘 갈 순서와 시각을 한 장으로.</p>
+          <div class="pd-ba" aria-hidden="true">
+            <figure><svg viewBox="0 0 100 84"><path class="bad" d="M10 70 80 15 20 30 75 70 30 12 88 50"/><g class="dots off"><circle cx="10" cy="70" r="4"/><circle cx="80" cy="15" r="4"/><circle cx="20" cy="30" r="4"/><circle cx="75" cy="70" r="4"/><circle cx="30" cy="12" r="4"/><circle cx="88" cy="50" r="4"/></g></svg><figcaption>명단 순서대로</figcaption></figure>
+            <span class="ar">→</span>
+            <figure><svg viewBox="0 0 100 84"><path class="good" d="M10 70 20 30 30 12 80 15 88 50 75 70"/><g class="dots"><circle cx="10" cy="70" r="4"/><circle cx="20" cy="30" r="4"/><circle cx="30" cy="12" r="4"/><circle cx="80" cy="15" r="4"/><circle cx="88" cy="50" r="4"/><circle cx="75" cy="70" r="4"/></g></svg><figcaption>읍면 묶어 한 바퀴</figcaption></figure>
+          </div>
+          <p class="pd-num" id="fGain">이동 거리를 줄이는 순서로 묶습니다 <span class="d-tag warn">가상</span></p>
+          <p class="pd-sub" id="fWx" hidden></p>
+          <a class="pd-line" href="#contacts" id="fRevisit" data-h="light">다시 찾을 집 <b class="num" id="fRevisitN">—</b>곳 · 재시도 일정</a>
+          <a class="d-btn d-btn-p pd-go" href="#route" data-h="medium">오늘 시각표 보기</a>
+        </article>
+        <article class="pd-card d-card" aria-labelledby="pd2">
+          <h3 id="pd2"><i aria-hidden="true">2</i>연계 누락</h3>
+          <p>안내하고 멈춘 집을 빨간 점으로 — 다음 할 일 하나만 보여 줍니다.</p>
+          <div class="pd-ba" aria-hidden="true">
+            <figure><svg viewBox="0 0 100 84"><g class="memo"><rect x="8" y="10" width="40" height="28" rx="4"/><rect x="52" y="20" width="40" height="28" rx="4"/><rect x="24" y="46" width="40" height="28" rx="4"/></g></svg><figcaption>흩어진 메모</figcaption></figure>
+            <span class="ar">→</span>
+            <figure><svg viewBox="0 0 100 84"><path class="good" d="M10 42h80"/><g class="dots"><circle cx="12" cy="42" r="6"/><circle cx="37" cy="42" r="6"/><circle cx="88" cy="42" r="6"/></g><circle class="stop" cx="63" cy="42" r="8"/><circle class="ring" cx="63" cy="42" r="13"/></svg><figcaption>신호·상담·안내·신청</figcaption></figure>
+          </div>
+          <p class="pd-num">멈춘 집 <b class="num" id="fGap">—</b>곳 <span class="d-tag warn">가상</span></p>
+          <a class="d-btn d-btn-p pd-go" href="#board" data-h="medium">멈춘 집 보기</a>
+        </article>
+        <article class="pd-card d-card" aria-labelledby="pd3">
+          <h3 id="pd3"><i aria-hidden="true">3</i>현황 · 보고</h3>
+          <p>읍면별 고독사 위험을 한눈에, 보고서는 한글·엑셀로 바로 받습니다.</p>
+          <ol class="pd-risk" id="fRisk" aria-label="고독사 위험도 높은 읍면 3곳(공공데이터, 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
+          <p class="pd-num" id="fRecip" hidden></p>
+          <p class="pd-src" id="fRiskSrc" hidden></p>
+          <a class="d-btn d-btn-p pd-go" href="#report" data-h="medium">이번 차수 현황</a>
+        </article>
+      </div>
+
+      <div class="pd-out">
+        <b>명단 다음의 현장 하루를, 공공데이터로 한 장에.</b>
+      </div>
+
+      <details class="today-old d-card" id="todayOld">
+        <summary data-h="light">더 보기 — 오늘 동선·특보·무반응 신호·명단 정리</summary>
+        <div class="to-body" id="todayOldBody">
       <div class="today-hero">
         <div><p class="d"><span id="todayDate"></span> · 오늘 찾아갈 집</p>
           <div class="today-num"><div id="todayRing" class="ch-box"></div><div class="n bignum" id="todayCount" aria-live="polite">0<small>가구</small></div></div></div>
@@ -148,6 +211,8 @@
             <ol class="slot-list" id="todayAuto" data-slot="auto"><li class="d-slot">정리한 일을 불러오는 중입니다.</li></ol></section>
         </div>
       </details>
+        </div>
+      </details>
     </section>
 
     <!-- ② 가구 명단 -->
@@ -206,6 +271,7 @@
         </div>
         <div class="route-side d-card">
           <h3 class="route-h">하루 방문 시각표</h3>
+          <a class="pd-line" href="#contacts" id="routeRevisit" data-h="light">다시 찾을 집 <b class="num" id="routeRevisitN">—</b>곳 · 재시도 일정</a>
           <p class="small route-hint">순서를 바꾸려면 ≡ 손잡이를 끌거나, 손잡이에 초점을 두고 위·아래 화살표를 누르세요.</p>
           <button type="button" class="skip-in" id="skipRoute">시각표 건너뛰기(줄마다 단추가 3~4개 있습니다)</button>
           <ol id="routeList" class="route-list"></ol>
@@ -394,6 +460,7 @@
 <script src="expand.js"></script>
 <script src="xlsx_out.js"></script>
 <script src="officer.js"></script>
+<script src="front.js"></script>
 <script src="../shared/pwa.js"></script>
 </body>
 </html>

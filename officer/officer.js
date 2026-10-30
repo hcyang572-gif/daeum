@@ -685,8 +685,8 @@
   // S10o-2(10-30 호창님 확정 주 기능 5개): 메뉴 = 오늘(입구) · ①시각표 · ②재시도 · ③연계 누락 · ④현황·보고서 · ⑤명단 정리.
   // 가구 명단·상담 기록은 보조라 폰 아래 메뉴에서 빼고 «더 보기»로(셋째 값 "" = 폰에서 불 켤 칸 없음)
   var TABS = { today: ["오늘", "오늘 찾아갈 집", "today"], route: ["시각표", "① 하루 방문 시각표", "route"],
-    contacts: ["재시도", "② 다시 찾을 집 · 다음 시도 제안", "contacts"], board: ["연계 누락", "③ 연계 누락 · 미신청", "board"],
-    report: ["현황·보고서", "④ 현황 · 보고서", "report"], intake: ["명단 정리", "⑤ 명단 정리 입구", "intake"],
+    contacts: ["재시도", "다시 찾을 집 · 재시도 일정", "route"], board: ["연계 누락", "② 연계 누락 · 미신청", "board"],
+    report: ["현황·보고서", "③ 현황 · 보고서", "report"], intake: ["명단 정리", "명단 정리 입구", ""],
     list: ["가구 명단", "가구 명단 · 방문 순서를 정한 근거", ""], record: ["상담 기록", "상담 기록 · 행복이음에 옮길 초안", ""],
     cost: ["도입 비용·탄소", "도입 비용 · 탄소 계산(추정)", ""], region: ["다른 시군", "다른 시군으로 바꿔 보기", ""] };
   var PC = window.matchMedia ? window.matchMedia("(min-width: 1024px)") : null;
@@ -804,6 +804,12 @@
       return BUILTIN_SERVICES.map(function (s) { return { id: s.id, name: s.name, demand: D.areas.reduce(function (n, a) { var x = cell[a.name + "|" + s.id]; return n + (x ? gap(x) : 0); }, 0) }; });
     },
     recipients: function () { return RECIP; },
+    // S10p-2 첫 화면 «하루 방문 시각표» 카드: 담은 가구를 명단 순번대로 다닐 때 vs 닿음이 묶은 순서(직선×1.3 근사, 같은 산식) — 재측정 기록 _design/S10p-2_이동거리_재측정.md
+    gain: function () {
+      if (!D || !$("routeReturn")) return null;
+      var ret = $("routeReturn").checked, order = routeStops(ret); if (order.length < 2) return null;
+      return { n: order.length, ret: ret, plan: pathKm(order, ret), naive: pathKm(order.slice().sort(function (a, b) { return a.rank - b.rank; }), ret) };
+    },
     // S10j-2 엑셀용: 수요 보드(읍면 × 서비스 문의·신청·연계) · 명단 근거 문장
     board: function () { return D ? { cell: boardData(), areas: D.areas.map(function (a) { return a.name; }), services: BUILTIN_SERVICES.map(function (s) { return { id: s.id, name: (svcById(s.id) || s).name }; }) } : null; },
     reason: function (r) { return reasonSentence(r.factors || []); },
@@ -842,7 +848,7 @@
     $("btnSummarize").addEventListener("click", summarize);
     $("btnLink").addEventListener("click", saveLink);
     // 오늘 «새 주민 신호» 줄 → 접어 둔 칸을 펼치고 그리로(해시는 바꾸지 않는다)
-    var sig = $("sigLine"); if (sig) sig.addEventListener("click", function (e) { e.preventDefault(); var m = $("moreToday"); if (!m) return; m.open = true; m.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); var sm = m.querySelector("summary"); if (sm) sm.focus({ preventScroll: true }); });
+    var sig = $("sigLine"); if (sig) sig.addEventListener("click", function (e) { e.preventDefault(); var m = $("moreToday"); if (!m) return; var po = $("todayOld"); if (po) po.open = true; m.open = true; m.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); var sm = m.querySelector("summary"); if (sm) sm.focus({ preventScroll: true }); });
     var skr = $("skipRoute"); if (skr) skr.addEventListener("click", function () { var n = $("routeNote"); if (n) n.focus(); }); // 긴 시각표를 키보드로 건너뛰기
     window.addEventListener("hashchange", show);
     if (PC && PC.addEventListener) PC.addEventListener("change", show); // 폰↔PC 폭이 바뀌면 메뉴 불 다시 켜기
@@ -870,6 +876,7 @@
       '<p class="muted small">출처: 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(공공데이터포털 15062448), 기준월 ' + month +
       ' · 분모: ' + R.households_denominator.source + ' · 내려받은 날 ' + R.fetched + '. 아래 미신청 표(가상 값)와는 별개입니다.</p>';
     box.innerHTML = h;
+    if (window.DaeumFront) DaeumFront.render();
   }
   // file:// 로 열면 fetch 가 막힌다 — 그때는 같은 내용의 짝 .js(window.__DAEUM_…__)를 script 로 읽는다
   function loadJs(src, name) {
@@ -894,6 +901,7 @@
       var box = $("lonelyRisk"); if (!d || !box || !window.DaeumLonely || !D) return;
       var focus = []; D.households.forEach(function (h) { if (focus.indexOf(h.area) < 0) focus.push(h.area); });
       DaeumLonely.render(box, d, focus, el);
+      if (window.DaeumFront) DaeumFront.render();
     });
   }
   loadData("recipients_sangju", "__DAEUM_RECIPIENTS__").then(renderRegionStat)
