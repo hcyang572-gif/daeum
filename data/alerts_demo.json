@@ -1,0 +1,26 @@
+{
+ "meta": {
+  "title": "닿음 시연 신호 시나리오(가상)",
+  "note": "시연용 가상 시나리오. 실제 센서 신호·실제 기상특보가 아니다. 가구 번호는 data/households.json 의 가상 가구. 실시간 호출·서비스키 없음(키 노출 방지).",
+  "made": "2026-10-30 ⚙️ 파로 손작성(S10h ⑧·②)"
+ },
+ "noResponse": {
+  "partner": "협약 기관(AI 스피커·IoT 돌봄)",
+  "note": "닿음은 센서를 만들지 않는다. 협약 시 기관이 보내는 «일정 시간 무반응» 신호를 받아 방문 순서에만 반영한다. 상주시 협약은 확인되지 않아 «협약 시» 가정.",
+  "basis": "지자체 AI 스피커·IoT 안부 확인 운영 사례(서울 종로·전남 나주 등, 2024~2026 보도) — 01_리서치/기능_보완_후보.md §5 Y3",
+  "items": [
+   { "householdId": "A-009", "device": "AI 스피커", "hours": 30 },
+   { "householdId": "Q-033", "device": "IoT 활동 감지", "hours": 26 },
+   { "householdId": "P-026", "device": "AI 스피커", "hours": 49 }
+  ]
+ },
+ "weather": {
+  "active": "heat",
+  "region": "상주시",
+  "scenarios": {
+   "heat": { "code": 12, "level": 1, "name": "폭염경보", "from": "11:00" },
+   "cold": { "code": 3, "level": 0, "name": "한파주의보", "from": "21:00" }
+  },
+  "source": { "org": "기상청", "name": "기상특보 조회서비스", "portal": "15000415", "codes": "특보코드 3 한파·12 폭염, 강도 0 주의보·1 경보", "url": "https://www.data.go.kr/data/15000415/openapi.do" }
+ }
+}

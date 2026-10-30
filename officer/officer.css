@@ -763,3 +763,18 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 .rg-tbl { width: 100%; min-width: 20rem; }
 .rg-tbl th[scope="row"] { text-align: left; font-weight: var(--fw-m); }
 #rgOut h4 { margin: var(--sp-4) 0 var(--sp-2); }
+
+/* S10h ⑧·② 오늘 할 일 맨 위 — 특보 띠(작게)·무반응 신호 카드. 기존 토큰만 */
+#todayAlerts:empty { display: none; }
+#todayAlerts { display: grid; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+.wx-band { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 12px; border-radius: var(--rb); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-size: var(--fs-s); }
+.wx-band.on { background: var(--warn-soft); }
+.wx-band > p { margin: 0; min-width: 0; }
+.wx-band .wx-src { flex-basis: 100%; font-size: var(--fs-xs); }
+.wx-band .d-tag, .nr-card .d-tag { min-height: 22px; padding: 0 8px; vertical-align: middle; }
+.nr-list > li { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.al-lines { margin-top: 0; }
+/* S10h ③ 방문 전 카드 «가까운 병원·약국» */
+.med-list > li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+#visitCard .med-list > li .d-tag { min-width: 4em; }
+.med-tel { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 8px; color: var(--acc-ink); font-size: var(--fs-xs); text-decoration: none; }

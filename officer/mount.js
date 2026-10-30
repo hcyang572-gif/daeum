@@ -80,7 +80,46 @@
     var D = O.data();
     return { households: households(), areas: D.areas, office: D.meta.office, requests: REQ.list(),
       attempts: st("attempts", []), tips: st("tips", []), picked: O.picked(), links: O.links(),
-      outcomes: st("outcomes", {}), consults: st("consults", []), now: now || new Date() };
+      outcomes: st("outcomes", {}), consults: st("consults", []), now: now || new Date(),
+      alertIds: window.DaeumAlerts && DaeumAlerts.get() ? DaeumAlerts.todayIds(DaeumAlerts.get(), function (id) { return !!O.row(id); }) : [] };
+  }
+
+  // ── S10h ⑧·② 오늘 할 일 맨 위: 무반응 신호(협약 시, 가상) · 폭염·한파 특보 띠(시연 시나리오) ─────────
+  function renderAlerts() {
+    var box = clear($("todayAlerts")), AL = window.DaeumAlerts; if (!box || !AL || !AL.get()) return;
+    var d = AL.get(), w = AL.weather(d, O.weatherChoice ? O.weatherChoice() : null);
+    var nr = O.rows().filter(function (r) { return r.alert && r.alert.noResp; });
+    var hot = O.rows().filter(function (r) { return r.alert && r.alert.heat; }).length;
+    // ② 특보 띠(작게) — 시연 특보 바꾸기: 시나리오 기본 → 다른 특보 → 끄기
+    var keys = Object.keys(d.weather.scenarios).concat(["off"]), cur = (O.weatherChoice && O.weatherChoice()) || d.weather.active;
+    var nextK = keys[(keys.indexOf(cur) + 1) % keys.length];
+    var nextLbl = nextK === "off" ? "특보 없는 날" : d.weather.scenarios[nextK].name;
+    var sw = btn("시연: " + nextLbl + "로 보기", function () { O.setWeather(nextK); say(nextK === "off" ? "특보 없는 날로 바꿨습니다." : nextLbl + " 시나리오로 바꿨습니다."); }, "ghost mini", "selection");
+    box.appendChild(h("div", { class: "wx-band" + (w ? " on" : ""), role: "status" }, [
+      h("p", { class: "grow" }, w ? [h("span", { class: "d-tag warn", text: "가상" }), " ", h("b", { text: w.region + " " + w.name + " " + w.from + " 발효(시연)" }),
+        " — 75세 이상 홀로 사는 집 " + hot + "곳을 명단 위로 올렸습니다" + (nr.length ? "(무반응 신호 집은 그보다 위)" : "")]
+        : [h("b", { text: "오늘 폭염·한파 특보 없음(시연)" }), " — 특보 날엔 75세 이상 홀로 사는 집을 명단 위로 올립니다"]),
+      sw,
+      h("p", { class: "small src-tag wx-src" }, [h("span", { class: "d-tag pub", text: "공공데이터" }), " " + AL.sourceWeather(d)])
+    ]));
+    if (!nr.length) return;
+    // ⑧ 무반응 가구 — 오늘 동선 맨 앞에 자동으로 들어간다
+    var ol = h("ol", { class: "slot-list nr-list" });
+    nr.forEach(function (r) {
+      ol.appendChild(h("li", null, [h("div", { class: "grow" }, [h("b", { text: r.h.label }), " ", h("span", { class: "d-tag neg", text: "무반응" }),
+        h("div", { class: "small", text: r.h.area + " · " + r.alert.lines[0] }),
+        r.alert.lines[1] ? h("div", { class: "small", text: r.alert.lines[1] }) : null]),
+        h("div", { class: "acts" }, [
+          F.visitCard ? btn("방문 전 카드", function () { openCard(r.h.id); }) : null,
+          window.DaeumNotify ? btn("방문 안내 문구", function () { openTalk({ kind: "visit", area: r.h.area, date: F.util.ymd(new Date()), title: "방문 예정 안내 문구" }); }) : null,
+          btn("기록", function () { goContacts(r.h.id); })])]));
+    });
+    box.appendChild(h("article", { class: "d-card side nr-card", "aria-labelledby": "h-nr" }, [
+      h("div", { class: "ch" }, [h("h3", { id: "h-nr" }, ["무반응 신호 — 오늘 먼저"]), h("span", { class: "c num", text: String(nr.length) }),
+        h("span", { class: "exp", text: "협약 시 AI 스피커·IoT 돌봄 기관에서 받는 «일정 시간 무반응» 신호 · 오늘 동선에 자동으로 넣었습니다" })]),
+      ol,
+      h("p", { class: "small src-tag" }, [h("span", { class: "d-tag warn", text: "가상" }), " " + AL.sourceNoResp(d)])
+    ]));
   }
 
   // ── ① 오늘 할 일 ───────────────────────────────────────
@@ -150,7 +189,7 @@
       var ol = h("ol", { class: "slot-list visits" }), lastA = null;
       R.order.slice(0, 8).forEach(function (s, i) {
         ol.appendChild(h("li", { class: s.kind === "request" ? "req" : null }, [h("span", { class: "vn num", text: String(i + 1), "aria-hidden": "true" }), h("span", { class: "grow" }, [h("span", { class: "sr", text: (i + 1) + "번 " }), h("b", { text: s.label }),
-          h("span", { class: "small", text: " " + s.area + (s.kind === "request" ? " · 주민 신호" : "") })]),
+          h("span", { class: "small", text: " " + s.area + (s.kind === "request" ? " · 주민 신호" : "") + (s.alert === "noresp" ? " · 무반응 신호(가상)" : "") })]),
           O.row(s.id) ? h("div", { class: "acts" }, [btn("방문 전 카드", function () { openCard(s.id); })]) : null]));
         lastA = s.area;
       });
@@ -628,7 +667,7 @@
     var tab = e.detail.tab;
     lastToday = F.today.build(base());
     var nav = $("navToday"); if (nav) nav.textContent = lastToday.counts.stops || "";
-    if (tab === "today") { renderToday(lastToday); renderTodayReport(); renderTodayIntake(); }
+    if (tab === "today") { renderAlerts(); renderToday(lastToday); renderTodayReport(); renderTodayIntake(); }
     if (tab === "intake") renderIntake();
     intakeNav();
     if (tab === "list") renderHouseholds();
@@ -667,6 +706,7 @@
     var lr = window.DaeumLonely && DaeumLonely.get() ? DaeumLonely.areaLine(r.h.area) : null;
     if (lr) dlg.appendChild(h("p", { class: "small lr-card" }, [h("span", { class: "d-tag pub", text: "공공데이터" }), " " + lr,
       h("span", { class: "muted", text: " (출처: 행정안전부 주민등록 인구·세대 통계, 기준일 " + DaeumLonely.get().base + " · 닿음 추정 지수)" })]));
+    var med = medSection(r.h); if (med) dlg.appendChild(med);
     dlg.appendChild(sec("왜 이 집인지", [h("ul", { class: "small" }, (c.why.length ? c.why : ["명단 사유 없음"]).map(function (x) { return h("li", { text: x }); }))]));
     dlg.appendChild(sec("지난 시도", [c.tries.length ? h("ul", { class: "small" }, c.tries.map(function (t) { return h("li", { text: t.at + " " + (CH[t.channel] || "") + " — " + t.result + (t.note ? " (" + t.note + ")" : "") }); })) : h("p", { class: "small", text: "처음 찾아가는 집입니다." }),
       c.next ? h("p", { class: "small", text: "다음: " + c.next }) : null]));
@@ -681,6 +721,29 @@
     ]));
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
     haptic("light");
+  }
+  // S10h ③ 가까운 병원·약국 — 방문 시각(오늘 시각표에 있으면 그 시각, 없으면 지금)에 문 연 곳 먼저 2~3곳. 국립중앙의료원 공개 자료(미리 받은 파일)
+  function visitTime(id) {
+    var now = new Date();
+    try {
+      var x = sheetData().stops.filter(function (s) { return s.id === id; })[0], m = x && /^(\d{1,2}):(\d{2})/.exec(x.time || "");
+      if (m) { var d = new Date(now); d.setHours(+m[1], +m[2], 0, 0); return { at: d, from: "오늘 시각표 도착 " + m[1] + ":" + m[2] }; }
+    } catch (e) { /* 시각표 없음 */ }
+    return { at: now, from: "지금 " + p2(now.getHours()) + ":" + p2(now.getMinutes()) };
+  }
+  function medSection(hh) {
+    var MD = window.DaeumMedical, RP = window.DaeumRoutePlan; if (!MD || !MD.get() || !RP || !isFinite(hh.x)) return null;
+    var vt = visitTime(hh.id), hol = !!(F.util.HOLIDAYS && F.util.HOLIDAYS[F.util.ymd(vt.at)]);
+    var list = MD.nearby(MD.get(), RP.toLatLng(hh), { now: vt.at, holiday: hol, n: 3 });
+    if (!list.length) return null;
+    return h("section", { class: "med" }, [h("h4", null, ["가까운 병원·약국 ", h("span", { class: "small muted", text: "(" + vt.from + (hol ? " · 공휴일" : "") + " 기준)" })]),
+      h("ul", { class: "slot-list med-list" }, list.map(function (m) {
+        return h("li", null, [h("span", { class: "d-tag " + (m.open ? "pos" : "warn"), text: m.open ? "문 엶" : "닫힘" }),
+          h("span", { class: "grow" }, [h("b", { text: m.name }), h("span", { class: "small", text: " " + m.kind + " · " + m.km.toFixed(1) + "km" }),
+            h("div", { class: "small", text: m.hours })]),
+          m.tel ? h("a", { class: "ghost mini med-tel", href: "tel:" + m.tel.replace(/[^0-9]/g, ""), text: m.tel, "aria-label": m.name + " 전화 " + m.tel }) : null]);
+      })),
+      h("p", { class: "small src-tag" }, [h("span", { class: "d-tag pub", text: "공공데이터" }), " " + MD.sourceLine(MD.get())])]);
   }
   function printHtml(title, body) {
     printReport({ title: title, printedAt: new Date().toLocaleString("ko-KR"), sections: [], table: { head: [], rows: [] }, note: "방문 전 카드(시연·가상 자료)", raw: body });
@@ -924,7 +987,7 @@
     function draw() {
       clear(dlg);
       var m = msg();
-      dlg.appendChild(h("h3", { id: "tpTitle" }, [h("span", { class: "d-tag warn", text: "미리보기 · 실제 발송 안 함" }), ctx ? "재시도 전 안내 문자 문안" : "알림톡 문구"]));
+      dlg.appendChild(h("h3", { id: "tpTitle" }, [h("span", { class: "d-tag warn", text: "미리보기 · 실제 발송 안 함" }), ctx ? ctx.title || "재시도 전 안내 문자 문안" : "알림톡 문구"]));
       var seg = h("div", { class: "rep-acts tp-kinds", role: "group", "aria-label": "문구 종류" }, NT.KINDS.map(function (k) {
         var b = btn(k.label, function () { kind = k.id; draw(); var f = dlg.querySelector('.tp-kinds [aria-pressed="true"]'); if (f) f.focus(); }, "ghost", "selection");
         b.setAttribute("aria-pressed", String(k.id === kind)); return b;

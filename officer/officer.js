@@ -117,11 +117,15 @@
     var o = FX.households.order({ households: listed.map(function (r) { return r.h; }), requests: REQ.list(),
       attempts: FX.store.get("attempts", []), tips: FX.store.get("tips", []), officerOrder: FX.store.get("order", []) });
     rows = o.items.map(function (x) { var r = byId[x.id]; r.signals = x.signals; r.group = x.group; r.pinned = x.pinned; return r; });
+    // S10h ⑧·②: 무반응 신호(협약 시, 가상) → 특보 날 75세 이상 홀로 사는 집 → 그 아래는 위 순서 그대로(alerts.js)
+    var AL = window.DaeumAlerts;
+    if (AL && AL.get()) rows = AL.prioritize(rows, function (r) { return r.h; }, AL.get(), { weather: AL.weather(AL.get(), lsGet(LS_WX, null)) });
     rows.forEach(function (r, i) { r.rank = i + 1; });
     // 담기 목록에서 사라진 가구 정리
     var ids = {}; rows.forEach(function (r) { ids[r.h.id] = 1; });
     picked = picked.filter(function (id) { return ids[id]; });
   }
+  var LS_WX = "daeum.officer.wx"; // 시연 특보 고르기(heat|cold|off, 없으면 시나리오 기본값)
   function rowById(id) { for (var i = 0; i < rows.length; i++) if (rows[i].h.id === id) return rows[i]; return null; }
   function pickTop() {
     var n = Math.max(1, Math.min(30, +$("fPick").value || 12));
@@ -157,6 +161,7 @@
       pk.appendChild(cb); td0.appendChild(pk); tr.appendChild(td0);
       tr.appendChild(el("td", "num c-rank", r.rank < 10 ? "0" + r.rank : r.rank));
       var tdL = el("td", "c-name"); tdL.appendChild(el("b", null, r.h.label)); if (hasReq) tdL.appendChild(el("span", "tag req", "주민 신호"));
+      if (r.alert && r.alert.noResp) tdL.appendChild(el("span", "tag req", "무반응"));
       tdL.appendChild(el("span", "small area-sm", r.h.area)); tr.appendChild(tdL);
       tr.appendChild(el("td", "c-area", r.h.area));
       // 순서 고정(담당자 결정) — 점수 칸·막대는 없앴다
@@ -166,6 +171,11 @@
       pin.addEventListener("click", function () { FX.store.set("order", FX.households.togglePin(FX.store.get("order", []), r.h.id)); rebuild(); renderList(); emit("show", { tab: "list" }); });
       tdS.appendChild(pin); tr.appendChild(tdS);
       var tdW = el("td", "why c-why");
+      if (r.alert) {
+        var al = el("div", "chips al-lines");
+        r.alert.lines.forEach(function (l, i) { al.appendChild(el("span", "chip r", (i === 0 && r.alert.noResp ? "무반응 · " : "특보 · ") + l)); });
+        tdW.appendChild(al);
+      }
       if ((r.signals || []).length) {
         var sg = el("div", "chips");
         r.signals.forEach(function (x) { sg.appendChild(el("span", "chip r", (x.kind === "request" ? "요청 · " : x.kind === "tip" ? "제보 · " : "시도 · ") + x.text)); });
@@ -183,8 +193,9 @@
   function renderSummary() {
     var reqN = rows.filter(function (r) { return (r.signals || []).some(function (x) { return x.kind === "request"; }); }).length;
     var sigN = rows.filter(function (r) { return r.group === "signal"; }).length;
+    var nrN = rows.filter(function (r) { return r.alert && r.alert.noResp; }).length, hotN = rows.filter(function (r) { return r.alert && r.alert.heat; }).length;
     $("listSummary").textContent = "발굴 명단 " + rows.length + "곳(전체 가상 가구 " + D.households.length +
-      "곳) · 지역 신호 있음 " + sigN + "곳 · 주민 신호 " + reqN + "곳 · 경로에 담은 가구 " + picked.length + "곳";
+      "곳) · " + (nrN ? "무반응 신호 " + nrN + "곳(가상) · " : "") + (hotN ? "특보 대상 " + hotN + "곳 · " : "") + "지역 신호 있음 " + sigN + "곳 · 주민 신호 " + reqN + "곳 · 경로에 담은 가구 " + picked.length + "곳";
   }
   function initWeights(force) {
     var saved = force ? null : lsGet(LS_W, null);
@@ -790,6 +801,9 @@
     },
     recipients: function () { return RECIP; },
     refresh: function () { rebuild(); show(); },
+    // S10h ②: 시연 특보 고르기(heat|cold|off)
+    weatherChoice: function () { return lsGet(LS_WX, null); },
+    setWeather: function (k) { lsSet(LS_WX, k); rebuild(); show(); },
     openRecord: function (id) { location.hash = "#record"; setTimeout(function () { if (rowById(id)) { fillRecHouses(); var sel = $("recHouse"); if (![].some.call(sel.options, function (o) { return o.value === id; })) { var r = rowById(id), o = el("option", null, r.h.label + " · " + r.h.area); o.value = id; sel.appendChild(o); } sel.value = id; showHouseInfo(); } }, 0); }
   };
   function init() {
@@ -880,6 +894,10 @@
 
   Promise.all([
     loadData("households", "__DAEUM_HOUSEHOLDS__").then(function (j) { D = j; }),
+    // S10h ③ 가까운 병원·약국(국립중앙의료원 공개 자료, 미리 받은 파일). 못 읽어도 나머지 그대로
+    loadData("medical_sangju", "__DAEUM_MEDICAL__").then(function (j) { if (window.DaeumMedical) DaeumMedical.set(j); }).catch(function () { return null; }),
+    // S10h ⑧·② 시연 신호 시나리오(가상). 못 읽어도 명단은 그대로
+    loadData("alerts_demo", "__DAEUM_ALERTS__").then(function (j) { if (window.DaeumAlerts) DaeumAlerts.set(j); }).catch(function () { return null; }),
     loadServices()
   ]).then(function () { init(); renderLonely(); }).catch(function (e) {
     // O-13: 개발자 말 대신 할 일을. 원인은 콘솔에만

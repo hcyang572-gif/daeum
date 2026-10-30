@@ -110,7 +110,7 @@
     }
     var km = pathKm(order, office), naiveKm = pathKm(stops, office);
     return {
-      order: order.map(function (s) { return { id: s.id, label: s.label, area: s.area, kind: s.kind }; }),
+      order: order.map(function (s) { var o = { id: s.id, label: s.label, area: s.area, kind: s.kind }; if (s.alert) o.alert = s.alert; return o; }),
       km: +km.toFixed(1), naiveKm: +naiveKm.toFixed(1),
       minutes: Math.round(km / KMH * 60 + order.length * VISIT_MIN)
     };
@@ -276,6 +276,8 @@
       // 오늘 방문 묶음: 방문 요청 + 방문 재시도 + 공무원이 고른 가구
       var stops = [], seen = {};
       function push(s) { if (!seen[s.id]) { seen[s.id] = 1; stops.push(s); } }
+      // S10h ⑧: 협약 기관 무반응 신호(가상) 가구가 맨 먼저 — alertIds 는 alerts.js todayIds()
+      (data.alertIds || []).forEach(function (id) { var h = byId[id]; if (h) push({ id: h.id, label: h.label, area: h.area, kind: "household", alert: "noresp", x: h.x, y: h.y }); });
       reqs.forEach(function (r) {
         if (r.contactPref !== "visit" && signalOf(r) !== "neighbor") return;
         var a = areaC[r.region] || { x: 0, y: 0 };
@@ -287,7 +289,7 @@
 
       return {
         date: today,
-        counts: { newRequests: newItems.length, dueSoon: dueItems.length, revisits: revisit.length, stops: stops.length },
+        counts: { newRequests: newItems.length, dueSoon: dueItems.length, revisits: revisit.length, stops: stops.length, noResp: stops.filter(function (s) { return s.alert === "noresp"; }).length },
         sections: [
           { key: "new", title: "새 주민 신호", hint: "주민 창구로 들어온 도움 요청·이웃 알림", items: newItems },
           { key: "due", title: "기한 임박", hint: "처리 기한(시연 설정: 긴급 당일·일반 3영업일) 하루 이내·지남", items: dueItems },
