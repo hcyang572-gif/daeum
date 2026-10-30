@@ -158,5 +158,6 @@
     out.appendChild(h("p", { class: "small src-tag", text: "출처: 행정안전부 «지역별(행정동) 세대원수별 주민등록 세대수»·«성별 연령별 주민등록 인구수» 기준 " + R.base + " · 한국사회보장정보원 «복지사업 시군구별 수급권자 현황» 기준 " + R.d5Month + " · «지자체복지서비스» 목록 조회 " + R.fetched + (R.d2Note ? " (" + R.d2Note + ")" : "") }));
     out.appendChild(h("p", { class: "note", text: R.limits }));
   }
+  api.regions = function () { return R; }; // S10j-2 «엑셀로»가 읽는다
   doc.addEventListener("daeum:officer-show", function (e) { var t = e.detail && e.detail.tab; if (t === "cost") renderCost(); if (t === "region") renderRegion(); });
 })(typeof window !== "undefined" ? window : globalThis);

@@ -800,6 +800,9 @@
       return BUILTIN_SERVICES.map(function (s) { return { id: s.id, name: s.name, demand: D.areas.reduce(function (n, a) { var x = cell[a.name + "|" + s.id]; return n + (x ? gap(x) : 0); }, 0) }; });
     },
     recipients: function () { return RECIP; },
+    // S10j-2 엑셀용: 수요 보드(읍면 × 서비스 문의·신청·연계) · 명단 근거 문장
+    board: function () { return D ? { cell: boardData(), areas: D.areas.map(function (a) { return a.name; }), services: BUILTIN_SERVICES.map(function (s) { return { id: s.id, name: (svcById(s.id) || s).name }; }) } : null; },
+    reason: function (r) { return reasonSentence(r.factors || []); },
     refresh: function () { rebuild(); show(); },
     // S10h ②: 시연 특보 고르기(heat|cold|off)
     weatherChoice: function () { return lsGet(LS_WX, null); },

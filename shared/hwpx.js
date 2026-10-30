@@ -57,7 +57,8 @@
     var pps = PPS.map(function (p, i) {
       var m = '<hh:margin><hc:intent value="' + p[2] + '" unit="HWPUNIT"/><hc:left value="' + p[1] + '" unit="HWPUNIT"/><hc:right value="0" unit="HWPUNIT"/><hc:prev value="' + p[3] + '" unit="HWPUNIT"/><hc:next value="' + p[4] + '" unit="HWPUNIT"/></hh:margin><hh:lineSpacing type="PERCENT" value="' + p[5] + '" unit="HWPUNIT"/>';
       return '<hh:paraPr id="' + i + '" tabPrIDRef="0" condense="0" fontLineHeight="0" snapToGrid="1" suppressLineNumbers="0" checked="0" textDir="LTR"><hh:align horizontal="' + p[0] + '" vertical="BASELINE"/><hh:heading type="NONE" idRef="0" level="0"/>' +
-        '<hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="KEEP_WORD" widowOrphan="1" keepWithNext="' + p[6] + '" keepLines="' + p[6] + '" pageBreakBefore="0" lineWrap="BREAK"/><hh:autoSpacing eAsianEng="0" eAsianNum="0"/>' +
+        // 한글 «어절» 줄 나눔 = breakNonLatinWord="BREAK_WORD"(한컴 바탕글과 같음). KEEP_WORD 는 «글자» 단위라 «확/인»이 갈라졌다(S10j-2 실측)
+        '<hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="BREAK_WORD" widowOrphan="1" keepWithNext="' + p[6] + '" keepLines="' + p[6] + '" pageBreakBefore="0" lineWrap="BREAK"/><hh:autoSpacing eAsianEng="0" eAsianNum="0"/>' +
         '<hp:switch><hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">' + m + "</hp:case><hp:default>" + m + '</hp:default></hp:switch><hh:border borderFillIDRef="2" offsetLeft="0" offsetRight="0" offsetTop="0" offsetBottom="0" connect="0" ignoreMargin="0"/></hh:paraPr>';
     }).join("");
     return XH + "<hh:head " + NS + ' version="1.5" secCnt="1"><hh:beginNum page="1" footnote="1" endnote="1" pic="1" tbl="1" equation="1"/><hh:refList>' +

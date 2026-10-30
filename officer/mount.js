@@ -662,6 +662,15 @@
     if (tab === "board" || tab === "report") renderStats();
   }
   document.addEventListener("daeum:officer-show", onShow);
+  // S10j-2: 화면별 «엑셀로»(officer/xlsx_out.js)가 화면과 같은 계산을 쓰도록 여는 창구 — 읽기 전용
+  window.DaeumMountData = {
+    base: function () { O = window.DaeumOfficer; return base(); }, gapData: function () { O = window.DaeumOfficer; return gapData(); },
+    sheetData: function () { O = window.DaeumOfficer; return sheetData(); }, homeArea: function () { O = window.DaeumOfficer; return homeArea(); },
+    today: function () { O = window.DaeumOfficer; return F.today.build(base()); }, unapplied: function (g) { O = window.DaeumOfficer; return unappliedList(g || gapData()); },
+    intake: function () { O = window.DaeumOfficer; var L = intakeLast(); return L && L.ids ? { last: L, c: classifyIds(L.ids) } : null; },
+    plan: function () { O = window.DaeumOfficer; return F.contacts.plan(st("attempts", []), households(), new Date(), 5, { links: O.links(), outcomes: st("outcomes", {}), followups: st("followups", {}) }); },
+    CH: CH
+  };
   document.addEventListener("daeum:officer-summary", function (e) { O = window.DaeumOfficer; renderConsult(e.detail); });
 
   // ── ⑫ 국민 요청 답변 초안 (오늘 할 일 줄 아래로 펼침) ───────────
@@ -809,12 +818,19 @@
   function renderUnapplied(g) {
     var box = $("unappliedRoot"); if (!box || !O.svcGaps) return;
     var slot = clear(q(box, '[data-slot="unapplied"]')), R = O.recipients ? O.recipients() : null;
-    var stalled = {}; (g.notApplied || []).forEach(function (x) { stalled[x.name] = x.n; });
+    var list = unappliedList(g);
+    if (!list.length) { slot.appendChild(h("p", { class: "d-slot", text: "미신청이 없습니다." })); return; }
+    drawUnapplied(slot, list, R);
+  }
+  /** 덜 신청된 서비스 순서(화면·엑셀 같은 계산) */
+  function unappliedList(g) {
+    var R = O.recipients ? O.recipients() : null, stalled = {}; (g.notApplied || []).forEach(function (x) { stalled[x.name] = x.n; });
     var realBy = {}; if (R) R.rows.forEach(function (r) { realBy[r["사업명"]] = r; });
     var rows = O.svcGaps().map(function (sv) { var rr = realBy[REAL_OF[sv.name]]; return { name: sv.name, stalled: stalled[sv.name] || 0, demand: sv.demand, real: rr ? { households: rr["수급가구수"], month: rr["기준년월"], name: rr["사업명"] } : null }; });
     Object.keys(stalled).forEach(function (n) { if (!rows.some(function (r) { return r.name === n; })) rows.push({ name: n, stalled: stalled[n], demand: 0, real: null }); });
-    var list = F.linkGap.unappliedOrder(rows);
-    if (!list.length) { slot.appendChild(h("p", { class: "d-slot", text: "미신청이 없습니다." })); return; }
+    return F.linkGap.unappliedOrder(rows);
+  }
+  function drawUnapplied(slot, list, R) {
     var tb = h("tbody");
     list.slice(0, 8).forEach(function (x, i) {
       tb.appendChild(h("tr", { class: i === 0 ? "rank-top" : null }, [h("td", { class: "num", text: String(i + 1) }), h("th", { scope: "row", text: x.name }),
