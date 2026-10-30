@@ -700,3 +700,52 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 .fit-miss { margin-top: var(--sp-3); }
 .fit-miss summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; }
 .src-tag { margin: 4px 0 0; color: var(--ink2); }
+
+/* ── S10o-2 주 기능 반영(⚙️ 파로 10-30): 폰 아래 6칸(오늘·시각표·재시도·연계·현황·명단) · PC 오늘 + 주 기능 5 + 더 보기 ── */
+.tabs { grid-template-columns: repeat(6, 1fr); }
+@media (max-width: 420px) { .rail { left: 8px; right: 8px; padding: 5px; } .tabs a { font-size: .75rem; padding: 4px 0; letter-spacing: -.05em; } }
+.fno { display: inline-grid; place-items: center; width: 1.5em; height: 1.5em; margin-right: 6px; border-radius: 50%; font: 700 .8125rem/1 var(--num); color: var(--acc-ink); background: var(--acc-soft); vertical-align: .1em; }
+.a-map .cap .fno { color: inherit; background: color-mix(in srgb, currentColor 18%, transparent); }
+.a-duo { display: grid; gap: var(--sp-4); margin-top: var(--sp-4); }
+.a-duo .side p { margin: 0 0 4px; }
+@media (min-width: 600px) { .a-duo { grid-template-columns: 1fr 1fr; } }
+/* 더 보기 시트 묶음 머리 */
+.d-sheet .sh-grp { margin: var(--sp-3) 0 var(--sp-2); font-size: var(--fs-xs); font-weight: var(--fw-m); letter-spacing: .04em; color: var(--ink2); }
+.d-sheet .sh-grp:first-of-type { margin-top: 0; }
+/* 현황 보조 지표 접기 */
+.aux-more { margin-top: var(--sp-4); padding: 0 var(--sp-5); }
+.aux-more > summary { min-height: 56px; display: flex; align-items: center; cursor: pointer; color: var(--ink); font-weight: var(--fw-m); }
+.aux-more .aux-body { display: grid; gap: var(--sp-4); padding: 0 0 var(--sp-5); }
+/* ⑤ 명단 정리 입구 */
+.intake-grid { display: grid; gap: var(--sp-4); }
+@media (min-width: 900px) { .intake-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+#inText { width: 100%; min-height: 9rem; font: inherit; font-family: var(--num); }
+.in-one { padding: 0; box-shadow: none; background: none; align-items: flex-end; }
+.in-one input { min-height: var(--tap); width: 100%; }
+.in-one button, #tab-intake .rep-acts button { min-height: var(--tap); }
+.in-grp { margin-top: var(--sp-3); }
+.in-grp h4 { margin: 0 0 var(--sp-2); display: flex; align-items: center; gap: var(--sp-2); }
+.in-badge { min-height: 22px; padding: 0 8px; margin-top: 4px; }
+#intakeOut .acts { display: flex; flex-wrap: wrap; gap: 6px; }
+#intakeOut .acts button { min-height: var(--tap); }
+/* ② 간접 확인 순서표 */
+.ind-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ind-list > li { border-radius: var(--rb); padding: 2px 4px; }
+.ind-list > li.next { background: var(--acc-soft); }
+.ind-list > li.done .grow { color: var(--ink2); text-decoration: line-through; }
+.ind-row { display: flex; align-items: center; gap: 10px; min-height: var(--tap); cursor: pointer; }
+.ind-row input { width: 22px; height: 22px; flex: none; accent-color: var(--acc); }
+.ind-no { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%; font-size: .8125rem; font-weight: 700; color: var(--acc-ink); background: var(--s1a); box-shadow: var(--hl), var(--e-sm); }
+.ind-list.compact .ind-row { font-size: var(--fs-s); }
+.ind-tip { margin: 0 0 6px 66px; font-size: var(--fs-s); }
+.ind-tip summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; color: var(--acc-ink); font-weight: var(--fw-m); }
+.ind-tip .bar { padding: 0; box-shadow: none; background: none; align-items: flex-end; flex-wrap: wrap; }
+.ind-tip input { min-height: var(--tap); width: 100%; }
+.ind-tip button { min-height: var(--tap); }
+.ind-sheet { width: min(34rem, calc(100vw - 32px)); }
+@media (max-width: 420px) { .ind-tip { margin-left: 0; } }
+/* ③ 미신청 칸 보강 표 */
+.ua-tbl { width: 100%; min-width: 30rem; }
+.ua-tbl th[scope="row"] { font-weight: var(--fw-m); text-align: left; }
+.ua-tbl .d-tag { min-height: 20px; padding: 0 6px; font-size: .6875rem; vertical-align: middle; }
+.ua-tbl tr.rank-top th, .ua-tbl tr.rank-top td { color: var(--acc-ink); font-weight: var(--fw-b); }

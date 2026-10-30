@@ -166,6 +166,24 @@
     "방문 안내문(연락 달라는 쪽지) 남기기",
     "지역사회보장협의체·명예사회복지공무원에게 함께 살펴 달라고 부탁"
   ];
+  // S10o-2 ④ 3번째 허탕 뒤 «간접 확인 순서표» — 누구에게 먼저 묻나(통반장 → 이웃 → 집주인 → 흔적 → 안내문 → 협의체).
+  // who 가 있는 줄은 «제보로 남기기»(F.households.addTip)로 이어져 그 집이 명단·동선 앞쪽으로 온다(기존 이웃·통반장 제보 재사용).
+  var INDIRECT_STEPS = [
+    { key: "tong", who: "통장·이장", text: "통장·이장에게 실거주 여부 묻기" },
+    { key: "neighbor", who: "이웃", text: "이웃에게 최근 모습·출입 묻기" },
+    { key: "landlord", who: "집주인", text: "집주인·관리사무소에게 실거주·다른 연락처 묻기" },
+    { key: "trace", who: "", text: "우편함·전기·가스 계량기 사용 흔적 보기(사진은 개인 식별 안 되게)" },
+    { key: "note", who: "", text: "방문 안내문(연락 달라는 쪽지) 남기기" },
+    { key: "council", who: "명예사회복지공무원", text: "지역사회보장협의체·명예사회복지공무원에게 함께 살펴 달라고 부탁" }
+  ];
+  /** 순서표 + 체크 상태. checked = {key:true} (store «indirect»[householdId]) */
+  function indirectOrder(checked) {
+    checked = checked || {};
+    var steps = INDIRECT_STEPS.map(function (x, i) { return { no: i + 1, key: x.key, who: x.who, text: x.text, done: !!checked[x.key] }; });
+    var next = steps.filter(function (x) { return !x.done; })[0] || null;
+    return { steps: steps, done: steps.filter(function (x) { return x.done; }).length, next: next,
+      source: "출처: 서울 강남구 «3회 방문 뒤 간접조사» 공개 사례(gangnam.go.kr) · 재시도 3번은 현장 설문 응답(소수) — 횟수·순서는 시연 기본값" };
+  }
   function addAttempt(attempts, a) {
     if (!a || !a.householdId || !a.result) throw new Error("householdId·result 필요");
     if (a.result === "not_eligible" && !a.reason) throw new Error("비해당은 사유(reason)를 하나 골라야 합니다");
@@ -208,6 +226,14 @@
   }
   function labelOf(list, key) { for (var i = 0; i < list.length; i++) if (list[i].key === key) return list[i].label; return ""; }
   F.contacts = { RESULTS: RESULTS, NON_ELIGIBLE_REASONS: NON_ELIGIBLE_REASONS, INDIRECT_CHECK: INDIRECT_CHECK,
+    INDIRECT_STEPS: INDIRECT_STEPS, indirectOrder: indirectOrder, labelOf: labelOf,
+    /** 마지막 기록으로 «간접 확인»에 처음 들어섰나(3번째 허탕을 막 누른 순간 순서표를 띄우려고) */
+    justEscalated: function (attempts, householdId, now) {
+      var all = attempts || [], mine = all.filter(function (t) { return t.householdId === householdId; });
+      if (!mine.length) return false;
+      var last = mine[mine.length - 1], before = all.filter(function (t) { return t !== last; });
+      return !!suggestNext(all, householdId, now).escalate && !(before.some(function (t) { return t.householdId === householdId; }) && suggestNext(before, householdId, now).escalate);
+    },
     MAX_VISIT_TRIES: MAX_VISIT_TRIES, add: addAttempt, suggestNext: suggestNext,
     /** 비해당 한 번 고르기 — add 의 지름길 */
     markNotEligible: function (attempts, householdId, reasonKey, note, at) {
@@ -308,7 +334,7 @@
       return {
         items: items,
         groups: ["pinned", "signal", "none"].map(function (k) { return { key: k, label: LBL[k], count: items.filter(function (x) { return x.group === k; }).length }; }),
-        note: "순서는 제안입니다. 위험 점수를 매기지 않고, 주민 요청·이웃 제보·지난 시도 같은 지역 신호가 있는 집을 앞에 둡니다. 최종 순서는 담당자가 정합니다."
+        note: "방문 순서를 정한 근거만 보여 줍니다. 위험 판단은 사회보장정보원 명단 그대로이고, 닿음은 주민 요청·이웃 제보·지난 시도 같은 지역 신호가 있는 집을 앞에 둘 뿐입니다. 최종 순서는 담당자가 정합니다."
       };
     },
     /** 공무원이 «앞으로»를 누르면: 고정 목록 맨 뒤에 붙인다(이미 있으면 빼기 = 토글) */
@@ -771,6 +797,84 @@
       ].filter(Boolean);
       return { sms: sms, phone: phone, smsLen: sms.length, note: "초안입니다. 발송·통화는 담당자가 내용을 확인한 뒤 합니다(자동 발송 없음)." };
     }
+  };
+
+  // ── S10o-2 ⑤ 명단 정리 입구 — 받은 명단을 붙여넣으면 «이전 차수 비해당» 배지·지난 사유로 «확인만 할 집 / 다시 볼 집»을 가른다 ──
+  // 현장 공백: 같은 사람이 차수마다 다시 올라와 매번 비대상을 다시 처리하고, 이전 차수 발굴 사유가 안 보인다
+  //   ([C] 나라살림연구소 2024-03-25, 01_리서치/현장공백_지도.md §1 ①). 행복이음 명단 화면의 실제 모양은 미확인 → 붙여넣기·손입력 두 길.
+  // ⚠️ 지난 차수 기록은 시연용 «가상» 값(가구 번호로 정해지는 규칙)이다. 실제 운영은 담당자가 남긴 비해당 사유(attempts)만 쓴다.
+  var PRIOR_ROUND = "2026년 제4차(가상)";
+  function hashId(s) { var x = 0; s = String(s); for (var i = 0; i < s.length; i++) x = (x * 31 + s.charCodeAt(i)) >>> 0; return x; }
+  function crisisKeys(h) { var ind = (h && h.indicators) || {}; return Object.keys(ind).filter(function (k) { return ind[k] === true || (typeof ind[k] === "number" && ind[k] > 0); }); }
+  function normId(t) { var m = /^([A-Za-z])\s*-?\s*(\d{1,3})$/.exec(String(t).trim()); if (!m) return ""; var n = String(+m[2]); while (n.length < 3) n = "0" + n; return m[1].toUpperCase() + "-" + n; }
+  F.intake = {
+    PRIOR_ROUND: PRIOR_ROUND,
+    /** 붙여넣은 글에서 가구 번호(A-005·a005·A 5)를 뽑는다 → {ids, dup} (같은 번호 두 번이면 dup 로 센다) */
+    parse: function (text) {
+      var ids = [], dup = 0, re = /(?:^|[^A-Za-z0-9])([A-Za-z])\s?-?\s?(\d{1,3})(?![0-9])/g, m;
+      while ((m = re.exec(String(text || "")))) { var id = normId(m[1] + "-" + m[2]); if (!id) continue; if (ids.indexOf(id) >= 0) dup++; else ids.push(id); }
+      return { ids: ids, dup: dup };
+    },
+    normId: normId,
+    crisisKeys: crisisKeys,
+    /** 시연용 «지난 차수 비해당» 가상 기록 — 위기 정보가 있는 집의 약 5분의 1. crisis = 그때의 위기 정보(일부 집은 하나 적게 → 새 위기 정보 생김) */
+    priorRounds: function (households) {
+      var out = {}, reasons = NON_ELIGIBLE_REASONS.filter(function (r) { return r.key !== "other"; });
+      (households || []).forEach(function (h) {
+        var c = crisisKeys(h); if (!c.length) return;
+        var x = hashId(h.id); if (x % 5 !== 0) return;
+        var then = (x >> 3) % 3 === 0 ? c.slice(0, -1) : c.slice();
+        out[h.id] = { round: PRIOR_ROUND, reason: reasons[(x >> 5) % reasons.length].key, crisis: then, virtual: true };
+      });
+      return out;
+    },
+    /** 시연용 붙여넣기 예시: 지난 차수 비해당 집 반 + 처음 올라온 집 반(가상 가구 번호만) */
+    sample: function (households, prior, n) {
+      n = n || 10;
+      var withP = [], without = [];
+      (households || []).forEach(function (h) { if (!crisisKeys(h).length) return; (prior[h.id] ? withP : without).push(h.id); });
+      var half = Math.min(withP.length, Math.ceil(n / 2));
+      return withP.slice(0, half).concat(without.slice(0, n - half));
+    },
+    /**
+     * d = { ids, households, indicators:[{key,name}], prior:{id:{round,reason,crisis}}, attempts, requests, tips }
+     * → { items:[{id,label,area,prior:{round,reason,reasonLabel,source}|null,bucket:"check"|"review",why,changes:[]}], check, review, unknown }
+     */
+    classify: function (d) {
+      var byId = {}; (d.households || []).forEach(function (h) { byId[h.id] = h; });
+      var nm = {}; (d.indicators || []).forEach(function (x) { nm[x.key] = x.name; });
+      var prior = d.prior || {}, att = (d.attempts || []).slice().sort(function (a, b) { return a.at < b.at ? -1 : 1; });
+      var items = [], unknown = [];
+      (d.ids || []).forEach(function (id) {
+        var h = byId[id];
+        if (!h) { unknown.push(id); return; }
+        // 지난 비해당: 담당자가 닿음에 남긴 비해당 사유(가장 최근)가 먼저, 없으면 지난 차수(가상)
+        var mine = att.filter(function (t) { return t.householdId === id && t.result === "not_eligible"; }).slice(-1)[0];
+        var p = mine ? { round: "닿음 기록 " + String(mine.at).slice(0, 10), reason: mine.reason, crisis: null, source: "담당자 기록" }
+          : prior[id] ? { round: prior[id].round, reason: prior[id].reason, crisis: prior[id].crisis, source: "지난 차수(가상)" } : null;
+        var changes = [];
+        if (p) {
+          if (p.crisis) crisisKeys(h).forEach(function (k) { if (p.crisis.indexOf(k) < 0) changes.push("새 위기 정보 " + (nm[k] || k)); });
+          if ((d.requests || []).some(function (r) { return r.householdId === id && r.status !== "cancelled" && r.status !== "done"; })) changes.push("주민 신호");
+          if ((d.tips || []).some(function (t) { return t.householdId === id; })) changes.push("이웃·통반장 제보");
+        }
+        var rl = p ? (labelOf(NON_ELIGIBLE_REASONS, p.reason) || "사유 미상") : "";
+        var bucket = !p || changes.length ? "review" : "check";
+        var why = !p ? "이번 차수에 처음 올라온 집 — 방문·확인 대상"
+          : changes.length ? "지난 비해당(" + rl + ") 뒤 달라진 점: " + changes.join(", ") + " — 다시 봅니다"
+          : "지난 비해당(" + rl + ")과 위기 정보가 같음 — 사유가 그대로인지 확인만";
+        items.push({ id: id, label: h.label, area: h.area, prior: p ? { round: p.round, reason: p.reason, reasonLabel: rl, source: p.source } : null, bucket: bucket, why: why, changes: changes });
+      });
+      return { items: items, check: items.filter(function (x) { return x.bucket === "check"; }), review: items.filter(function (x) { return x.bucket === "review"; }), unknown: unknown };
+    }
+  };
+
+  // ── S10o-2 (S10l ⑥ 합침) 연계 누락 보드 «미신청» 칸 보강 — 서비스별 «안내했는데 신청 안 한 집»과 동네 미신청 수요(가상)를 한 줄로 ──
+  // rows = [{name, stalled(가구, 이 기기 기록), demand(문의-신청-연계, 가상), real?:{households, month}(사보원 공개 통계 실제 값)}]
+  // 순서 = 멈춘 집 많은 순 → 동네 미신청(가상) 많은 순. 실제 수급가구 수는 «참고»로만 붙이고 순서에 쓰지 않는다(가상 값과 섞지 않으려고).
+  F.linkGap.unappliedOrder = function (rows) {
+    return (rows || []).filter(function (r) { return (r.stalled || 0) + (r.demand || 0) > 0; }).slice()
+      .sort(function (a, b) { return (b.stalled || 0) - (a.stalled || 0) || (b.demand || 0) - (a.demand || 0) || String(a.name).localeCompare(String(b.name), "ko"); });
   };
 
   return F;

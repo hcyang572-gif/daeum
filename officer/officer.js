@@ -667,9 +667,12 @@
   // 화면 이름(머리띠 제목) — 경로는 «오늘 할 일»의 동선 묶음에서 들어온다
   // S10g(1안): 메뉴 = 폰 5칸(오늘·경로·연계 누락·가구·현황) / PC 7칸(+다시 찾을 집·상담 기록). 셋째 값은 «폰에서 불 켤 칸»
   // — 폰엔 다시 찾을 집·상담 기록 칸이 없어 «가구»에 불을 켜고, 가구 안 전환(.seg)으로 오간다. 옛 주소(#report 등)는 그대로
-  var TABS = { today: ["오늘", "오늘 찾아갈 집", "today"], route: ["경로", "방문 경로", "route"],
-    contacts: ["다시 찾을 집", "다시 찾을 집 · 방문·연락 기록", "list"], board: ["연계 누락", "연계 누락 · 행복이음에 옮길 초안", "board"],
-    list: ["가구", "가구 명단 · 지역 신호 순", "list"], record: ["가구", "상담 기록", "list"], report: ["현황·보고서", "현황 · 보고서", "report"] };
+  // S10o-2(10-30 호창님 확정 주 기능 5개): 메뉴 = 오늘(입구) · ①시각표 · ②재시도 · ③연계 누락 · ④현황·보고서 · ⑤명단 정리.
+  // 가구 명단·상담 기록은 보조라 폰 아래 메뉴에서 빼고 «더 보기»로(셋째 값 "" = 폰에서 불 켤 칸 없음)
+  var TABS = { today: ["오늘", "오늘 찾아갈 집", "today"], route: ["시각표", "① 하루 방문 시각표", "route"],
+    contacts: ["재시도", "② 다시 찾을 집 · 다음 시도 제안", "contacts"], board: ["연계 누락", "③ 연계 누락 · 미신청", "board"],
+    report: ["현황·보고서", "④ 현황 · 보고서", "report"], intake: ["명단 정리", "⑤ 명단 정리 입구", "intake"],
+    list: ["가구 명단", "가구 명단 · 방문 순서를 정한 근거", ""], record: ["상담 기록", "상담 기록 · 행복이음에 옮길 초안", ""] };
   var PC = window.matchMedia ? window.matchMedia("(min-width: 1024px)") : null;
   var lastTab = "";
   function show() {
@@ -693,6 +696,7 @@
     renderNav();
     if (tab === "today") renderToday();
     if (tab === "list") renderList();
+    if (tab === "list" || tab === "record") { var mm = document.querySelector('.d-sheet .sh-i[href="#' + tab + '"]'); [].forEach.call(document.querySelectorAll('.d-sheet .sh-i[href^="#"]'), function (a) { if (a === mm) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }); }
     if (tab === "route") renderRoute();
     if (tab === "record") { fillRecHouses(); renderLinks(); }
     if (tab === "board" || tab === "report") renderBoard();
@@ -777,6 +781,13 @@
     // 방문 경로 화면에서 마지막으로 짠 시각표(담은 가구가 그 뒤 바뀌었으면 null — 하루 동선 1장은 근사로 다시 짠다)
     route: function () { return lastRoute && lastRoute.order.slice().sort().join() === picked.slice().sort().join() ? lastRoute : null; },
     memberText: memberText,
+    // S10o-2 미신청 칸 보강용: 서비스별 동네 미신청(가상 수요 보드) · 사보원 수급권자 공개 통계(실제, 없으면 null)
+    svcGaps: function () {
+      if (!D) return [];
+      var cell = boardData();
+      return BUILTIN_SERVICES.map(function (s) { return { id: s.id, name: s.name, demand: D.areas.reduce(function (n, a) { var x = cell[a.name + "|" + s.id]; return n + (x ? gap(x) : 0); }, 0) }; });
+    },
+    recipients: function () { return RECIP; },
     refresh: function () { rebuild(); show(); },
     openRecord: function (id) { location.hash = "#record"; setTimeout(function () { if (rowById(id)) { fillRecHouses(); var sel = $("recHouse"); if (![].some.call(sel.options, function (o) { return o.value === id; })) { var r = rowById(id), o = el("option", null, r.h.label + " · " + r.h.area); o.value = id; sel.appendChild(o); } sel.value = id; showHouseInfo(); } }, 0); }
   };
@@ -821,7 +832,9 @@
   function renderFit() { if (window.DaeumFit) [].forEach.call(document.querySelectorAll(".fit-box"), function (b) { DaeumFit.render(b); }); }
 
   // 상주시 실제 현황 — 사보원 «복지사업 시군구별 수급권자 현황»(공개 통계, data/recipients_sangju.json). 가상 가구와 별개로 실제 값만 보인다.
+  var RECIP = null;
   function renderRegionStat(R) {
+    RECIP = R;
     var box = $("regionStat"); if (!box) return;
     var b = R.basic_rate, pick = ["기초생활보장(맞춤형급여)", "기초생계급여", "기초의료급여", "기초주거급여", "차상위본인부담경감대상자", "기초연금"];
     var rows = R.rows.filter(function (r) { return pick.indexOf(r["사업명"]) >= 0; });
