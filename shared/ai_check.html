@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>닿음 · AI 추천 검증</title>
+<meta name="description" content="가상 사연 20건으로 잰 AI 추천 결과 — 측정 방법, 규칙만 vs AI, 틀린 추천(2026-10-30 측정).">
+<meta name="theme-color" content="#F1EFF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0A12" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .ac { max-width: 960px; margin: 0 auto; padding: var(--sp-5) var(--sp-4) var(--sp-14); }
+  .ac-top { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-4); }
+  .ac-back { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); padding: 0 var(--sp-4); border-radius: var(--r-pill); text-decoration: none; color: var(--ink); font-weight: var(--fw-m); background: var(--well); box-shadow: var(--well-sh); }
+  .ac h1 { margin: 0 0 var(--sp-1); font-size: var(--fs-h1); letter-spacing: -.04em; line-height: 1.15; }
+  .ac h2 { margin: 0 0 var(--sp-3); font-size: var(--fs-h3); letter-spacing: -.03em; }
+  .ac section { margin-top: var(--sp-6); }
+  .ac .d-card { padding: var(--sp-5); }
+  .src { display: block; margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--ink2); line-height: 1.45; }
+  .src b { font-weight: var(--fw-m); }
+  .virt { display: inline-block; margin-left: 4px; padding: 0 8px; border-radius: var(--r-pill); font-size: .8125rem; font-weight: var(--fw-m); color: var(--warn); background: var(--warn-soft); vertical-align: 1px; }
+  /* 큰 숫자 3칸 */
+  .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-3); }
+  .kpi { padding: var(--sp-4); }
+  .kpi .bignum { font-size: clamp(2.4rem, 9vw, 3.4rem); color: var(--acc-ink); }
+  .kpi .bignum small { font-size: .42em; font-weight: 600; margin-left: 2px; }
+  .kpi p { margin: var(--sp-2) 0 0; font-weight: var(--fw-m); }
+  .kpi .frac { font-size: var(--fs-s); color: var(--ink2); }
+  /* 막대 */
+  .bars { display: grid; gap: var(--sp-4); margin: 0; padding: 0; list-style: none; }
+  .bar-g h3 { margin: 0 0 var(--sp-2); font-size: var(--fs-b); }
+  .bar { display: grid; grid-template-columns: 4.5rem 1fr 6.5rem; align-items: center; gap: var(--sp-2); min-height: 32px; }
+  .bar .lb { font-size: var(--fs-s); color: var(--ink2); font-weight: var(--fw-m); }
+  .bar .tr { height: 14px; border-radius: var(--r-pill); background: var(--well); box-shadow: var(--well-sh); overflow: hidden; }
+  .bar .fl { display: block; height: 100%; border-radius: inherit; background: var(--edge); transform-origin: left; animation: ac-grow var(--t-slow) var(--c-std) both; }
+  .bar.ai .fl { background: var(--enamel); }
+  .bar .v { text-align: right; font-size: var(--fs-s); }
+  .bar .v b { font-family: var(--num); font-size: var(--fs-b); }
+  @keyframes ac-grow { from { transform: scaleX(0); } }
+  .legend { display: flex; gap: var(--sp-4); flex-wrap: wrap; margin: 0 0 var(--sp-4); font-size: var(--fs-s); color: var(--ink2); }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 6px; vertical-align: -2px; background: var(--edge); }
+  .legend .ai i { background: var(--enamel); }
+  /* 측정 방법 4걸음 */
+  .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  .steps li { position: relative; padding: var(--sp-4); border-radius: var(--rb); background: var(--well); box-shadow: var(--well-sh); counter-increment: s; font-size: var(--fs-s); }
+  .steps li::before { content: counter(s); display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: var(--sp-2); border-radius: 50%; color: var(--on-acc); background: var(--enamel); font: 700 .875rem var(--num); }
+  .steps b { display: block; font-size: var(--fs-b); margin-bottom: 2px; }
+  /* 20건 칸 */
+  .grid20 { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sp-2); margin: 0; padding: 0; list-style: none; }
+  .cell { width: 100%; min-height: 64px; padding: var(--sp-2) var(--sp-3); border: 0; border-radius: var(--rb); text-align: left; cursor: pointer; color: var(--ink); font: inherit; background: var(--well); box-shadow: var(--well-sh); }
+  .cell[aria-expanded="true"] { background: var(--bead); box-shadow: var(--bead-sh); }
+  .cell .id { font: 700 var(--fs-s) var(--num); }
+  .cell .k { font-size: .8125rem; color: var(--ink2); margin-left: 4px; }
+  .dots { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: .8125rem; color: var(--ink2); }
+  .dots span.m { width: 2.4rem; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-grid; place-items: center; font: 700 11px/1 var(--num); }
+  .dot.ok { background: var(--pos); }
+  .dot.no { color: var(--neg); box-shadow: inset 0 0 0 1.5px var(--neg); }
+  .dot.no::before { content: "×"; }
+  .case-detail { margin-top: var(--sp-3); }
+  .case-detail blockquote { margin: 0 0 var(--sp-3); padding: var(--sp-3) var(--sp-4); border-radius: var(--rb); background: var(--well); box-shadow: var(--well-sh); }
+  .pick2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+  .pick2 h3 { margin: 0 0 var(--sp-2); font-size: var(--fs-s); color: var(--ink2); }
+  .pick2 ol { margin: 0; padding-left: 1.3em; font-size: var(--fs-s); }
+  .pick2 li { margin-bottom: 4px; }
+  .pick2 li.no { color: var(--neg); }
+  .pick2 li.no::after { content: " — 정답표 밖"; font-size: .8125rem; }
+  /* 틀린 추천 */
+  .wrong { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--sp-2); }
+  .wrong li { display: grid; grid-template-columns: 3.2rem 1fr; gap: var(--sp-3); align-items: start; padding: var(--sp-3) var(--sp-4); border-radius: var(--rb); background: var(--well); box-shadow: var(--well-sh); }
+  .wrong .rk { font: 700 var(--fs-s) var(--num); color: var(--neg); }
+  .wrong .nm { font-weight: var(--fw-b); }
+  .wrong .ws { display: block; font-size: var(--fs-s); color: var(--ink2); }
+  .calib { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; font-size: var(--fs-b); }
+  .calib .num { font-weight: 700; }
+  .lim { margin: 0; padding-left: 1.2em; }
+  .lim li { margin-bottom: var(--sp-2); }
+  @media (max-width: 720px) { .steps { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .kpis { grid-template-columns: 1fr; } .pick2 { grid-template-columns: 1fr; } .bar { grid-template-columns: 3.6rem 1fr 5.6rem; } }
+  @media (max-width: 380px) { .steps { grid-template-columns: 1fr; } .grid20 { grid-template-columns: 1fr 1fr; } }
+  @media print { .ac-back { display: none; } .bar .fl { animation: none; } }
+</style>
+</head>
+<body>
+<div class="d-aura" aria-hidden="true"></div>
+<main class="ac" id="main">
+  <div class="ac-top">
+    <a class="ac-back" href="../officer/index.html" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>공무원 화면</a>
+  </div>
+  <p class="cnum" id="acKicker">가상 사연 20건 · 측정</p>
+  <h1>AI 추천 검증</h1>
+
+  <section aria-labelledby="hKpi">
+    <h2 id="hKpi" class="sr">한눈에</h2>
+    <div class="kpis" id="acKpis"></div>
+    <span class="src" id="acKpiSrc"></span>
+  </section>
+
+  <section aria-labelledby="hCmp">
+    <div class="d-card">
+      <h2 id="hCmp">규칙만 vs AI</h2>
+      <p class="legend" aria-hidden="true"><span><i></i>규칙만(AI 없음)</span><span class="ai"><i></i>AI</span></p>
+      <ul class="bars" id="acBars"></ul>
+      <span class="src" id="acBarsSrc"></span>
+    </div>
+  </section>
+
+  <section aria-labelledby="hKind">
+    <div class="d-card">
+      <h2 id="hKind">사연 종류별 첫 추천</h2>
+      <ul class="bars" id="acKinds"></ul>
+      <span class="src" id="acKindsSrc"></span>
+    </div>
+  </section>
+
+  <section aria-labelledby="hHow">
+    <h2 id="hHow">어떻게 쟀나</h2>
+    <ol class="steps" id="acSteps"></ol>
+    <span class="src" id="acStepsSrc"></span>
+  </section>
+
+  <section aria-labelledby="hAll">
+    <h2 id="hAll">20건 한눈에</h2>
+    <ul class="grid20" id="acGrid"></ul>
+    <div class="d-card case-detail" id="acDetail" hidden tabindex="-1" aria-live="polite"></div>
+    <span class="src" id="acGridSrc"></span>
+  </section>
+
+  <section aria-labelledby="hWrong">
+    <h2 id="hWrong">틀린 추천</h2>
+    <ul class="wrong" id="acWrong"></ul>
+    <span class="src" id="acWrongSrc"></span>
+  </section>
+
+  <section aria-labelledby="hCal">
+    <div class="d-card">
+      <h2 id="hCal">후보 규칙을 고친 뒤</h2>
+      <div id="acCalib"></div>
+      <span class="src" id="acCalibSrc"></span>
+    </div>
+  </section>
+
+  <section aria-labelledby="hLim">
+    <div class="d-card">
+      <h2 id="hLim">한계</h2>
+      <ul class="lim" id="acLim"></ul>
+    </div>
+  </section>
+</main>
+<script src="ui.js"></script>
+<script src="ai_check_data.js"></script>
+<script src="ai_check.js"></script>
+</body>
+</html>
