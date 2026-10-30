@@ -1,31 +1,8 @@
-/* 닿음 국민 창구 서비스워커 — 상주시 정책플랫폼 sw.js 교훈을 줄여 옮김:
-   ① 문서(navigate)·데이터(.json)는 network-first(실패 시 캐시) — 옛 화면·옛 목록이 남지 않게
-   ② 나머지 정적 자원은 cache-first, 프리캐시는 1회용 쿼리로 HTTP 캐시를 우회해 받는다
-   ⚠ 파일을 바꾸면 CACHE 이름을 올린다. */
-const CACHE = "daeum-citizen-4c3662e5b9";
-const ASSETS = ["./", "index.html", "citizen.css", "app.js", "progress.js", "manifest.json", "data/services.sample.json", "data/services.sample.js",
-  "../shared/tokens.css", "../shared/config.js", "../shared/ai.js", "../shared/requests.js", "../shared/netguard.js", "../shared/ui.js",
-  "../shared/switcher.js", "../shared/switcher.css"];
-
-self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => Promise.all(ASSETS.map((u) => {
-    const url = new URL(u, self.registration.scope);
-    const bust = new URL(url); bust.searchParams.set("swcb", Date.now());
-    return fetch(bust, { cache: "no-store" }).then((r) => r.ok && c.put(url, r)).catch(() => {});
-  }))).then(() => self.skipWaiting()));
-});
+/* 옛 주민 창구 서비스워커(범위 /daeum/citizen/) — 2026-10-30 PWA 정리로 은퇴.
+   이제 /daeum/sw.js 하나만 쓴다. 이미 설치된 폰에서는 이 파일로 갱신되며 옛 캐시를 지우고 스스로 등록을 푼다.
+   (deploy_daeum.py 의 CACHE 이름 바꾸기는 해당 줄이 없어 그냥 지나간다) */
+self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("daeum-citizen-") && k !== CACHE).map((k) => caches.delete(k))))
-    .then(() => self.clients.claim()));
-});
-self.addEventListener("fetch", (e) => {
-  const req = e.request;
-  if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
-  const fresh = req.mode === "navigate" || req.url.endsWith(".json");
-  if (fresh) {
-    e.respondWith(fetch(req).then((r) => { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); return r; })
-      .catch(() => caches.match(req, { ignoreSearch: true })));
-  } else {
-    e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req)));
-  }
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith("daeum-citizen-")).map((k) => caches.delete(k))))
+    .then(() => self.registration.unregister()));
 });

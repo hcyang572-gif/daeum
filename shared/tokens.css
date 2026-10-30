@@ -215,3 +215,10 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
   .d-silk { background: #fff !important; color: #000; border: 1px solid #ccc; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ── 폰 전체화면(PWA, 2026-10-30) — 노치·상태 표시줄·제스처 막대 안전 여백은 여기 한 곳에서 ──
+   viewport-fit=cover 라 화면이 가장자리까지 그려진다. 본문은 안전 영역만큼 안으로 들이고,
+   위에 붙는 고정·sticky 띠(switcher.css .sw-bar · 주민 .top)는 --sat 만큼 내려 단추가 가리지 않게 한다. */
+:root { --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px); --sar: env(safe-area-inset-right, 0px); }
+body { padding-top: var(--sat); padding-bottom: var(--sab); padding-left: var(--sal); padding-right: var(--sar); }
+.d-sheet { max-height: calc(100dvh - 48px - var(--sat) - var(--sab)); }

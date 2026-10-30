@@ -2,12 +2,27 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="shared/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="닿음">
 <title>닿음 · 복지 사각지대 현장 업무 도우미</title>
 <meta name="description" content="복지 사각지대 현장 업무 도우미 닿음 — 한국사회보장정보원 발굴 명단을 받은 뒤 방문·재시도·연계·보고를 돕고, 주민 신호로 추가 발굴을 돕는 상주시 적용 예시 시제품">
 <meta name="theme-color" content="#F1EFF8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B0A12" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%237B70E2%27/%3E%3Cstop offset=%271%27 stop-color=%27%234236A8%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2715%27 fill=%27url(%23g)%27/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="닿음">
+<meta property="og:url" content="https://hcyang572-gif.github.io/daeum/">
+<meta property="og:title" content="닿음 — 복지 사각지대 현장 업무 도우미">
+<meta property="og:description" content="찾아가는 발걸음부터 도움이 닿기까지">
+<meta property="og:image" content="https://hcyang572-gif.github.io/daeum/shared/og/invite_800x400.png">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="400">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="shared/tokens.css">
 <style>
   /* 첫 화면 — S10b 시안 A: 실크(밤) 카드 한 장 + 문 두 개. 3초 안에: 제목 한 줄 · 세 단계 흐름 · 누구로 들어갈지 */
@@ -35,6 +50,10 @@
   .door.p span.t, .door.p .arr { color: rgba(255,255,255,.86); }
   .door.p .di { color: #fff; background: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
   .door.p:active { box-shadow: var(--enamel-dn); }
+  .pwa { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 18px; border-radius: var(--r); font-size: var(--fs-s); color: var(--ink2); }
+  .pwa[hidden], .pwa [hidden] { display: none; }
+  .pwa b { color: var(--ink); font-weight: var(--fw-b); }
+  html.pwa-app .pwa { display: none; }
   footer { max-width: 64rem; width: 100%; margin: 0 auto; padding: var(--sp-4) var(--sp-4) var(--sp-8); font-size: var(--fs-xs); color: var(--ink2); }
   @media (min-width: 900px) {
     main { grid-template-columns: 1.35fr 1fr; align-items: stretch; padding-top: var(--sp-12); gap: var(--sp-5); }
@@ -64,6 +83,11 @@
       <span><b>이웃을 알리기</b><span class="t">걱정되는 이웃·도움이 필요할 때 담당 공무원에게</span></span>
       <svg class="d-ico arr" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
     </a>
+    <div id="pwa-install" class="pwa d-card d-rise" style="--d:4" hidden>
+      <span><b>홈 화면에 설치</b> · 앱처럼 전체 화면으로 열립니다</span>
+      <button type="button" class="d-btn d-btn-p" data-pwa="btn" data-h="light" hidden>설치하기</button>
+      <span data-pwa="ios" hidden>아이폰: 아래 공유 단추 → «홈 화면에 추가»</span>
+    </div>
   </nav>
 </main>
 <footer>
@@ -71,5 +95,6 @@
   상주시 적용 예시 시제품 · 공개 데이터와 합성(가상) 데이터만 씁니다 · 실제 개인정보 없음 · 복지 서비스 찾기·신청은 복지로</footer>
 <script src="shared/ui.js"></script>
 <script src="shared/guide.js"></script>
+<script src="shared/pwa.js"></script>
 </body>
 </html>

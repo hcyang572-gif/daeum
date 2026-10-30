@@ -444,7 +444,7 @@
     show(first, false);
     if (location.hash && location.hash !== "#" + first) history.replaceState(null, "", "#" + first);
 
-    if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function () {});
+    // 서비스워커는 shared/pwa.js 가 /daeum/sw.js 하나로 등록한다(2026-10-30 PWA 정리)
   }
   document.addEventListener("DOMContentLoaded", init);
 })();

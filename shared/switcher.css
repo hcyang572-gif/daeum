@@ -2,15 +2,15 @@
    두 창구 맨 위 고정 띠: [주민 화면 | 공무원 화면] 우물형 전환(우리가족 .seg 구슬 문법) + PC 1280px 이상 «나란히 보기».
    높이는 --sw-h 하나로 맞추고, 본문은 그만큼 내려 둔다(띠가 뒤늦게 붙어도 화면이 밀리지 않게). */
 :root { --sw-h: 60px; }
-html.sw-on { scroll-padding-top: calc(var(--sw-h) + 8px); }
-html.sw-on body { padding-top: var(--sw-h); }
+html.sw-on { scroll-padding-top: calc(var(--sw-h) + var(--sat, 0px) + 8px); }
+html.sw-on body { padding-top: calc(var(--sw-h) + var(--sat, 0px)); }
 /* 주민 창구 머리띠는 sticky top:0 → 전환 띠 아래에 붙인다 */
-html.sw-on .cz .top { top: var(--sw-h); }
+html.sw-on .cz .top { top: calc(var(--sw-h) + var(--sat, 0px)); }
 /* 공무원 PC 왼쪽 레일(fixed top:16px)도 띠 아래로 */
 @media (min-width: 1024px) { html.sw-on .of .rail { top: calc(var(--sw-h) + 16px); } }
 
-.sw-bar { position: fixed; z-index: 40; left: 0; right: 0; top: 0; height: var(--sw-h); box-sizing: border-box;
-  display: flex; align-items: center; justify-content: center; gap: var(--sp-3); padding: 0 var(--sp-4);
+.sw-bar { position: fixed; z-index: 40; left: 0; right: 0; top: 0; height: calc(var(--sw-h) + var(--sat, 0px)); box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-3); padding: var(--sat, 0px) calc(var(--sp-4) + var(--sar, 0px)) 0 calc(var(--sp-4) + var(--sal, 0px));
   background: var(--glass); -webkit-backdrop-filter: blur(22px) saturate(1.6); backdrop-filter: blur(22px) saturate(1.6);
   box-shadow: inset 0 -.5px 0 var(--glass-brd), var(--hl); font-family: var(--f); }
 .sw-k { position: absolute; left: var(--sp-4); font-size: .8125rem; font-weight: var(--fw-m); color: var(--ink2); letter-spacing: 0; }

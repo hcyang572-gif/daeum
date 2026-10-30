@@ -1,0 +1,22 @@
+{
+  "id": "/daeum/",
+  "name": "닿음 — 복지 사각지대 현장 업무 도우미",
+  "short_name": "닿음",
+  "description": "찾아가는 발걸음부터 도움이 닿기까지 — 복지 사각지대 현장 업무 도우미(상주시 적용 예시, 가상 데이터)",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "/daeum/",
+  "scope": "/daeum/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#2B2D5E",
+  "theme_color": "#2B2D5E",
+  "categories": ["productivity", "government"],
+  "icons": [
+    { "src": "shared/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "shared/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "shared/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "shared/icons/daeum.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
