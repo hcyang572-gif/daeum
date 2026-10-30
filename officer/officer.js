@@ -560,7 +560,10 @@
           lab.appendChild(cb); lab.appendChild(el("b", null, " " + s.name));
           lab.appendChild(el("span", "small", " · " + (s.org || "") + ((res.why && res.why[id]) ? " · 맞는 욕구: " + res.why[id].join(", ") : "")));
           if (res.reasons && res.reasons[id]) lab.appendChild(el("span", "small muted", " — " + res.reasons[id]));
-          li.appendChild(lab); ul.appendChild(li);
+          li.appendChild(lab);
+          // S10l ③ 현장 적합률: 추천마다 «맞아요/아니에요»(가상 가구 번호만 저장)
+          if (window.DaeumFit) DaeumFit.attach(li, { householdId: r.h.id, serviceId: id, serviceName: s.name, source: res.source });
+          ul.appendChild(li);
         });
         if (!ul.children.length) ul.appendChild(el("li", "muted", "맞는 서비스를 찾지 못했습니다. 통합사례관리 회의에 올려 보세요."));
         out.appendChild(ul);
@@ -811,8 +814,11 @@
     window.addEventListener("hashchange", show);
     if (PC && PC.addEventListener) PC.addEventListener("change", show); // 폰↔PC 폭이 바뀌면 메뉴 불 다시 켜기
     REQ.onChange(function () { rebuild(); show(); }); // 국민 창구 탭에서 요청이 들어오면 반영
+    renderFit();
+    if (window.DaeumFit) DaeumFit.onChange(renderFit);
     show();
   }
+  function renderFit() { if (window.DaeumFit) [].forEach.call(document.querySelectorAll(".fit-box"), function (b) { DaeumFit.render(b); }); }
 
   // 상주시 실제 현황 — 사보원 «복지사업 시군구별 수급권자 현황»(공개 통계, data/recipients_sangju.json). 가상 가구와 별개로 실제 값만 보인다.
   function renderRegionStat(R) {

@@ -683,3 +683,20 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 #lonelyRisk .src-line .d-tag, .lr-card .d-tag { min-height: 22px; padding: 0 8px; vertical-align: middle; }
 @media (min-width: 600px) { .lr-list li { grid-template-columns: 9rem 1fr minmax(0, 22rem); grid-template-areas: "name bar val"; } }
 @media print { .lr-bar { border: 1px solid #999; } .lr-bar i { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+
+/* S10l ③ 추천 «맞아요/아니에요» 현장 적합률 */
+.fit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.fit-btn { min-height: var(--tap); min-width: 88px; padding: 4px 14px; border: 1px solid var(--hair); border-radius: var(--r-pill); background: var(--solid); color: var(--ink); font-size: var(--fs-s); }
+.fit-btn.yes[aria-pressed="true"] { background: var(--pos-soft); border-color: var(--pos); color: var(--ink); font-weight: var(--fw-b); }
+.fit-btn.no[aria-pressed="true"] { background: var(--neg-soft); border-color: var(--neg); color: var(--ink); font-weight: var(--fw-b); }
+.fit-btn[aria-pressed="true"]::before { content: "✓ "; }
+.fit-btn:focus-visible { outline: 3px solid var(--acc); outline-offset: 2px; }
+.fit-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.fit-top > div:last-child { flex: 1 1 12rem; min-width: 0; }
+.fit-ring { --p: 0; width: 84px; height: 84px; flex: none; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(closest-side, var(--solid) 72%, transparent 73%), conic-gradient(var(--pos) calc(var(--p) * 1%), var(--hair) 0); }
+.fit-ring b { font-size: var(--fs-b); }
+.fit-kpi { margin: 0 0 4px; font-weight: var(--fw-b); }
+.fit-miss { margin-top: var(--sp-3); }
+.fit-miss summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; }
+.src-tag { margin: 4px 0 0; color: var(--ink2); }
