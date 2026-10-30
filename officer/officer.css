@@ -665,3 +665,21 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 .netguard { margin: 0 0 var(--sp-3); }
 .ng-line { margin: 0 0 var(--sp-2); padding: 10px 14px; border-radius: var(--rb); background: var(--solid); box-shadow: var(--e1), inset 3px 0 0 var(--edge); font-size: var(--fs-s); }
 .ng-warn { box-shadow: var(--e1), inset 3px 0 0 var(--warn); }
+/* S10h ① 읍면동 고독사 위험도 — 순위 막대(공공데이터 추정 지수). 막대 색 = 등급(높음 neg·보통 warn·낮음 pos), 숫자는 글로 함께 */
+.d-tag.pub { color: var(--acc-ink); background: var(--acc-soft); }
+#lonelyRisk .kpi-line { margin: 0 0 var(--sp-2); font-size: var(--fs-s); }
+#lonelyRisk .lr-mine { margin: 0 0 var(--sp-3); font-size: var(--fs-s); font-weight: var(--fw-b); }
+.lr-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.lr-list li { display: grid; grid-template-columns: minmax(7.5rem, 9rem) 1fr; grid-template-areas: "name bar" "val val"; align-items: center; column-gap: var(--sp-3); padding: 4px 6px; border-radius: var(--rb); }
+.lr-list li.on { background: var(--acc-soft); }
+.lr-name { grid-area: name; display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); }
+.lr-name .d-tag { min-height: 22px; padding: 0 8px; }
+.lr-bar { grid-area: bar; height: 10px; border-radius: var(--r-pill); background: var(--bg-sunk); overflow: hidden; }
+.lr-bar i { display: block; height: 100%; border-radius: inherit; background: var(--acc); }
+.lr-bar i.neg { background: var(--neg); } .lr-bar i.warn { background: var(--warn); } .lr-bar i.pos { background: var(--pos); }
+.lr-val { grid-area: val; font-size: .8125rem; color: var(--ink2); }
+.lr-how { margin: var(--sp-3) 0 0; font-size: var(--fs-s); }
+.lr-how summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+#lonelyRisk .src-line .d-tag, .lr-card .d-tag { min-height: 22px; padding: 0 8px; vertical-align: middle; }
+@media (min-width: 600px) { .lr-list li { grid-template-columns: 9rem 1fr minmax(0, 22rem); grid-template-areas: "name bar val"; } }
+@media print { .lr-bar { border: 1px solid #999; } .lr-bar i { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }

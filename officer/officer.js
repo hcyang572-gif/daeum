@@ -845,13 +845,23 @@
     return fetch("../data/" + name + ".json").then(function (r) { if (!r.ok) throw 0; return r.json(); })
       .catch(function () { return loadJs("../data/" + name + ".js", globalName); });
   }
+  // S10h ① 읍면동 고독사 위험도(행안부 D12·D13 공개 CSV → data/lonely_risk.json). 실패해도 나머지 화면은 그대로
+  var lonelyP = loadData("lonely_risk", "__DAEUM_LONELY__").then(function (d) { if (window.DaeumLonely) DaeumLonely.set(d); return d; })
+    .catch(function () { var b = $("lonelyRisk"); if (b) b.querySelector("p").textContent = "공개 통계를 불러오지 못했습니다."; return null; });
+  function renderLonely() {
+    lonelyP.then(function (d) {
+      var box = $("lonelyRisk"); if (!d || !box || !window.DaeumLonely || !D) return;
+      var focus = []; D.households.forEach(function (h) { if (focus.indexOf(h.area) < 0) focus.push(h.area); });
+      DaeumLonely.render(box, d, focus, el);
+    });
+  }
   loadData("recipients_sangju", "__DAEUM_RECIPIENTS__").then(renderRegionStat)
     .catch(function () { var b = $("regionStat"); if (b) b.querySelector("p").textContent = "공개 통계를 불러오지 못했습니다."; });
 
   Promise.all([
     loadData("households", "__DAEUM_HOUSEHOLDS__").then(function (j) { D = j; }),
     loadServices()
-  ]).then(init).catch(function (e) {
+  ]).then(function () { init(); renderLonely(); }).catch(function (e) {
     // O-13: 개발자 말 대신 할 일을. 원인은 콘솔에만
     if (window.console) console.warn("닿음 공무원 창구 자료 불러오기 실패:", e);
     var m = document.querySelector("main"); m.textContent = "";

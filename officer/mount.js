@@ -512,6 +512,10 @@
     function sec(title, kids) { return h("section", null, [h("h4", { text: title })].concat(kids)); }
     dlg.appendChild(h("h3", { id: "vcTitle" }, [h("span", { class: "d-tag acc", text: "방문 전" }), c.title, c.twoPerson ? h("span", { class: "d-tag neg", text: "2인 방문" }) : null]));
     dlg.appendChild(h("p", { class: "small", text: c.members }));
+    // S10h ①: 이 읍면 고독사 위험도(공공데이터 추정 지수) 한 줄 + 출처
+    var lr = window.DaeumLonely && DaeumLonely.get() ? DaeumLonely.areaLine(r.h.area) : null;
+    if (lr) dlg.appendChild(h("p", { class: "small lr-card" }, [h("span", { class: "d-tag pub", text: "공공데이터" }), " " + lr,
+      h("span", { class: "muted", text: " (출처: 행정안전부 주민등록 인구·세대 통계, 기준일 " + DaeumLonely.get().base + " · 닿음 추정 지수)" })]));
     dlg.appendChild(sec("왜 이 집인지", [h("ul", { class: "small" }, (c.why.length ? c.why : ["명단 사유 없음"]).map(function (x) { return h("li", { text: x }); }))]));
     dlg.appendChild(sec("지난 시도", [c.tries.length ? h("ul", { class: "small" }, c.tries.map(function (t) { return h("li", { text: t.at + " " + (CH[t.channel] || "") + " — " + t.result + (t.note ? " (" + t.note + ")" : "") }); })) : h("p", { class: "small", text: "처음 찾아가는 집입니다." }),
       c.next ? h("p", { class: "small", text: "다음: " + c.next }) : null]));
