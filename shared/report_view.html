@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>닿음 보고서 보기</title>
+<meta name="description" content="닿음 시연용 보고서(가상 집계) 읽기 전용 보기">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  body { background: var(--pg); padding: 16px 16px 48px; }
+  .rv-top { max-width: 860px; margin: 0 auto 12px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; font-size: var(--fs-xs); color: var(--ink2); }
+  .rv-top b { color: var(--ink); font-size: var(--fs-s); }
+  .rv-err { max-width: 560px; margin: 40px auto; padding: 24px; border-radius: var(--r); background: var(--s1a); box-shadow: var(--e2); text-align: center; }
+  @media print { body { padding: 0; background: #fff; } .rv-top { display: none; } }
+</style>
+</head>
+<body>
+<!-- S10j: 공유 링크로 여는 읽기 전용 보고서. 주소 # 뒤에 집계 숫자·읍면 이름만 담겨 있다(가구 번호·이름 없음, 서버에 저장하지 않음). -->
+<p class="rv-top"><b>닿음 보고서 · 읽기 전용</b><span>시연용 가상 자료로 만든 집계입니다</span></p>
+<main id="rv"></main>
+<script src="report_doc.js"></script>
+<script>
+(function () {
+  var box = document.getElementById("rv"), D = window.DaeumFeatures.reportDoc, z = location.hash.slice(1);
+  function fail() { box.innerHTML = '<div class="rv-err"><b>보고서를 열 수 없습니다.</b><p class="small">링크가 잘렸거나 이 브라우저가 지원하지 않는 형식입니다. 보낸 분께 링크를 다시 받아 주세요.</p></div>'; }
+  if (!z) return fail();
+  D.decode(z).then(function (m) {
+    if (!m || !m.title || !m.body) return fail();
+    document.title = m.title + " — 닿음";
+    D.mount(box, m, { readonly: true, url: location.href });
+  }).catch(fail);
+})();
+</script>
+</body>
+</html>

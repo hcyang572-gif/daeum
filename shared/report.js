@@ -96,7 +96,7 @@
     var byResult = {}; attempts.forEach(function (t) { byResult[t.result] = (byResult[t.result] || 0) + 1; });
     var live = R.filter(function (r) { return r.status !== "cancelled"; });
     function reached(st) { var ord = ["new", "seen", "visiting", "done"]; return live.filter(function (r) { return ord.indexOf(r.status) >= ord.indexOf(st); }).length; }
-    return {
+    var res = {
       period: { from: from ? ymd(from) : null, to: to ? ymd(to) : null }, scope: area,
       followUp: follow,
       households: { total: hh.length, contacted: contacted, notContacted: hh.length - contacted, met: met, nonEligible: nonE, closed: closed, pending: hh.length - closed },
@@ -110,6 +110,9 @@
       funnel: [["new", "요청 접수"], ["seen", "담당자 확인"], ["visiting", "방문·상담"], ["done", "연계 완료"]].map(function (x) { return { key: x[0], label: x[1], n: reached(x[0]) }; }),
       attempts: { total: attempts.length, byResult: byResult }
     };
+    // S10j: 마지막 집계(입력·결과)를 기억 — 보고서 문서(report_doc.js)가 화면과 같은 숫자로 그림을 그린다
+    if (F.report) F.report.last = { input: d, stats: res };
+    return res;
   }
 
   /** 진행 중인 차수 → 없으면 다가올 차수(예정) → 없으면 마지막 차수 */
@@ -205,5 +208,10 @@
     homeArea: function (households) { var n = {}, best = null, all = (households || []).length; (households || []).forEach(function (h) { n[h.area] = (n[h.area] || 0) + 1; if (!best || n[h.area] > n[best]) best = h.area; }); return best && n[best] * 2 > all ? best : null; },
     currentRound: currentRound
   };
+  // S10j: 브라우저에선 보고서 문서 모듈(report_doc.js·report_doc.css)을 이 파일 옆에서 함께 싣는다 — 화면 HTML을 고치지 않고 붙이려고
+  if (typeof document !== "undefined" && document.currentScript && !root.__DAEUM_RDOC_LOADING__) {
+    root.__DAEUM_RDOC_LOADING__ = 1;
+    var sc = document.createElement("script"); sc.src = document.currentScript.src.replace(/report\.js(\?.*)?$/, "report_doc.js"); document.head.appendChild(sc);
+  }
   return F;
 });
