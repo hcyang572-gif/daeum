@@ -32,7 +32,7 @@
     virtual: { tag: "가상", text: "가구·접촉·주민 신호·연계 기록: 닿음 시연용 가상 자료(실제 주민·행정자료 0건)" },
     round: null, // 차수 출처는 countdown 에서
     region: { tag: "공공데이터", text: "읍면동 이름·세대 비율: 행정안전부 주민등록 인구통계 읍면동별 세대수(2026-09)" },
-    calc: { tag: "닿음 집계", text: "숫자는 닿음 report.aggregate() 한 곳에서 셈(AI 미사용) — 공식 실적은 행복이음 숫자와 대조" }
+    calc: { tag: "닿음 집계", text: "닿음 자동 집계(AI 미사용) — 화면·보고서·내려받기 모두 같은 숫자, 공식 실적은 행복이음 숫자와 대조" }
   };
 
   // ── 추세: 차수 시작부터 오늘까지 «처음 접촉한 가구» 누적 ──
@@ -47,6 +47,9 @@
     var pts = [], c = 0; for (var i = 0; i <= last; i++) { c += byDay[i] || 0; pts.push(c); }
     return { start: r.start, end: r.end, span: span, total: hh.length, points: pts, upcoming: !!cd.upcoming };
   }
+  /** [그림] 추세 판정 — 그래프에 그린 두 숫자(마지막 날 누적 접촉 vs 같은 날 목표선)로만 정한다(처리 진도와 섞지 않음) */
+  function trendGoal(tr) { return tr.total * Math.max(0, tr.points.length - 1) / tr.span; }
+  function trendAbove(tr) { var last = tr.points[tr.points.length - 1] || 0; return last >= trendGoal(tr); }
   // ── 읍면 위치: input.areas(x,y km, 시청 0,0) → 없으면 가구 좌표 평균 ──
   function areaPoints(input, stats) {
     var by = {}; stats.byArea.forEach(function (a) { by[a.area] = a; });
@@ -128,7 +131,8 @@
     li(2, cd.upcoming ? cd.message : "기간 경과 " + cd.elapsedPct + "% 대비 처리 " + cd.donePct + "% — " + (ahead ? "일정 안에 있음" : "뒤처져 있어 하루 처리량을 " + cd.perWorkday + "가구로 높여야 함"));
     var tr = trend(input, stats, cd);
     li(3, "차수 시작부터 누적 접촉 추세는 [그림 " + (fig + 1) + "] 참조(점선 = 마감까지 고르게 처리할 때)");
-    figure("trend", ahead ? "누적 접촉이 목표선보다 위에 있음" : "누적 접촉이 목표선보다 아래에 있음", tr, cd.round.source + " · 접촉 기록: 가상", ["공개 자료", "가상"], { sheet: "접촉 추세" });
+    var trAbove = trendAbove(tr);
+    figure("trend", trAbove ? "누적 접촉이 목표선보다 위에 있음" : "누적 접촉이 목표선보다 아래에 있음", tr, cd.round.source + " · 접촉 기록: 가상", ["공개 자료", "가상"], { sheet: "접촉 추세" });
     if (stats.nonEligibleBy.length) {
       li(1, "비해당 사유");
       li(2, "비해당 " + num(H.nonEligible) + "가구 — " + stats.nonEligibleBy[0].label + "가 가장 많음");
@@ -257,7 +261,7 @@
     var out = [], seen = {};
     function add(r) { var k = r.kind + "|" + r.name; if (!seen[k]) { seen[k] = 1; out.push(r); } }
     m.sources.forEach(function (s) { add(srcRow(s.tag, s.text, "보고서 전체")); });
-    m.body.forEach(function (n) { if ((n.t === "fig" || n.t === "tbl") && n.src) add(srcRow((n.tags || [])[0] || "닿음 집계", n.src, n.t === "tbl" ? "<표 " + n.no + "> " + n.title : "[그림 " + n.no + "] " + (n.sheet || ""))); });
+    m.body.forEach(function (n) { if ((n.t === "fig" || n.t === "tbl") && n.src) add(srcRow((n.tags || [])[0] || "닿음 집계", n.src, n.t === "tbl" ? "<표 " + n.no + "> " + n.title : "[그림 " + n.no + "] " + (n.kind === "map" ? "지도(화면·PDF)" : (n.sheet || "")))); });
     return out;
   }
   function numOf(v) { var x = Number(String(v).replace(/,/g, "")); return isFinite(x) && String(v).trim() !== "" ? x : null; }
@@ -310,6 +314,16 @@
       if (kp[0] && kp[0].v === foot[1]) kp[0].ref = { sheet: tb.sheet, col: "k1" };
       if (kp[1] && kp[1].type === "pct" && kp[0] && kp[0].ref) { kp[1].fx = "IF([" + tb.sheet + ":k1]=0,0,[" + tb.sheet + ":k2]/[" + tb.sheet + ":k1])"; kp[1].v = foot[1] ? foot[2] / foot[1] : 0; }
     }
+    // 만남·상담 = «명단 처리» 시트의 그 줄, 서비스 연계 = «연계 서비스» 합계(같을 때) 또는 읍면별 표 연계 합계 — 값도 함께 둔다
+    var figOf = function (sheet) { return m.body.filter(function (n) { return n.t === "fig" && n.sheet === sheet; })[0]; };
+    var met = kp[2], dn = figOf("명단 처리");
+    if (met && met.type === "int" && dn) { var mr = dn.data.filter(function (x) { return x.label === "만남·상담"; })[0]; if (mr && mr.n === met.v) met.ref = { sheet: "명단 처리", col: "n", row: "만남·상담" }; }
+    var lk = kp[3], lf = figOf("연계 서비스");
+    if (lk && lk.type === "int") {
+      var lsum = lf ? lf.data.reduce(function (s, x) { return s + x.n; }, 0) : null;
+      if (lf && lsum === lk.v) lk.ref = { sheet: "연계 서비스", col: "n" };
+      else if (tb && numOf(tb.foot[5]) === lk.v) lk.ref = { sheet: tb.sheet, col: "k5" };
+    }
     sheets.unshift({ name: "보고서 본문", title: m.title, note: dot(m.period.from) + " ~ " + dot(m.period.to) + " · 정부 보고서 개조식(□ ○ - ·)", text: bodyLines(m, true).concat([{ lv: 2, text: "끝." }]) });
     return {
       title: m.title, subtitle: dot(m.period.from) + " ~ " + dot(m.period.to), made: dot(m.made) + " " + m.madeTime, office: m.office,
@@ -347,13 +361,13 @@
         } else B.push({ t: "p", kind: "src", text: "※ [그림 " + n.no + "] " + n.title + " — 읍면별 숫자는 <표 1> 참조, 지도는 화면·PDF 보고서에 있음" });
       }
     });
-    B.push({ t: "p", kind: "end", text: "끝." });
     B.push({ t: "ch", text: "데이터 출처" });
     B.push({ t: "tbl", title: "", head: ["구분", "제공기관", "데이터 이름", "기준일"], rows: sources(m).map(function (s) { return [s.kind, s.org, s.name, s.date]; }), widths: [6200, 8400, 26190, 7400], src: "※ 가상 = 시연용으로 만든 자료(실제 주민·행정자료 0건)" });
+    B.push({ t: "p", kind: "end", text: "끝." }); // [법] 시행규칙 제4조 준용 — 출처 표까지가 본문
     return { title: m.title, subtitle: dot(m.period.from) + " ~ " + dot(m.period.to), made: dot(m.made), office: m.office, note: "※ 가구·주민 신호·연계 숫자는 시연용 가상 자료입니다(실제 개인정보 없음).", blocks: B };
   }
 
-  var api = { build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM, xlsxSpec: xlsxSpec, hwpxDoc: hwpxDoc, sources: sources };
+  var api = { build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM, xlsxSpec: xlsxSpec, hwpxDoc: hwpxDoc, sources: sources, trendAbove: trendAbove };
   F.reportDoc = api;
 
   // ═══════════ 브라우저 연결 ═══════════

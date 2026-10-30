@@ -182,5 +182,45 @@ t("공무원 창구 옛 보고서 미리보기(makeReport) 제거", function () 
   assert.ok(!/function makeReport/.test(src) && !/lastReport/.test(src)); assert.ok(/function printReport/.test(src)); // 방문 전 카드 등 다른 인쇄는 그대로
 });
 
+console.log("테오 검수 다듬기(10-30)");
+var RF = unzip(X.build(SP));
+function rsheet(name) { var wbx = get(RF, "xl/workbook.xml"), hit = null; wbx.replace(/<sheet name="([^"]+)" sheetId="(\d+)"/g, function (_, n, i) { if (n === name) hit = i; }); return get(RF, "xl/worksheets/sheet" + hit + ".xml"); }
+t("[그림] 추세 제목 판정 = 그래프 숫자(마지막 누적 접촉 vs 같은 날 목표선)", function () {
+  var fg = M.body.filter(function (n) { return n.kind === "trend"; })[0], d = fg.data, last = d.points[d.points.length - 1], goal = d.total * (d.points.length - 1) / d.span;
+  assert.strictEqual(/위에 있음/.test(fg.title), last >= goal, fg.title + " " + last + " vs " + goal);
+  assert.strictEqual(D.trendAbove({ total: 60, span: 10, points: [0, 24] }), true); assert.strictEqual(D.trendAbove({ total: 60, span: 10, points: [0, 1, 2, 3, 4] }), false);
+  var hsec = get(unzip(W.build(HD)), "Contents/section0.xml"); assert.ok(hsec.indexOf(fg.title) >= 0);
+});
+t("출처 글: 함수 이름(aggregate) 대신 «닿음 자동 집계(AI 미사용)»", function () {
+  var js = JSON.stringify(SP) + JSON.stringify(HD) + JSON.stringify(M.sources); assert.ok(js.indexOf("aggregate") < 0); assert.ok(js.indexOf("닿음 자동 집계(AI 미사용)") >= 0);
+  assert.ok(S && F.report.weekly(S, { now: now, countdown: cd }).note.indexOf("aggregate") < 0);
+});
+t("요약 «만남·상담»은 명단 처리 시트 그 줄, «서비스 연계»는 시트 합계 참조(값도 함께)", function () {
+  assert.deepStrictEqual(SP.kpis[2].ref, { sheet: "명단 처리", col: "n", row: "만남·상담" }); assert.ok(SP.kpis[3].ref && /연계 서비스|읍면별/.test(SP.kpis[3].ref.sheet));
+  var sm = rsheet("요약");
+  var mm = sm.match(/<f>'명단 처리'!\$B\$\d+<\/f><v>(\d+)<\/v>/); assert.ok(mm && +mm[1] === S.households.met, "만남·상담 참조");
+  var ml = sm.match(/<f>'연계 서비스'!\$B\$\d+<\/f><v>(\d+)<\/v>/); assert.ok(ml && +ml[1] === S.links.total, "연계 참조");
+  var dn = rsheet("명단 처리"), rr = (sm.match(/'명단 처리'!\$B\$(\d+)/) || [])[1]; assert.ok(new RegExp('<c r="A' + rr + '"[^>]*><is><t[^>]*>만남·상담</t>').test(dn), "가리키는 줄이 만남·상담");
+});
+t("날짜 = 엑셀 날짜 일련번호 + «yyyy. m. d.» 서식(글자 아님)", function () {
+  assert.strictEqual(X.serial("2026. 10. 19."), 46314); assert.strictEqual(X.serial("2026-10-19"), 46314); assert.strictEqual(X.serial("10월"), null);
+  var st = get(RF, "xl/styles.xml"); assert.ok(st.indexOf('numFmtId="167" formatCode="yyyy\\.\\ m\\.\\ d\\."') >= 0, "서식 글자 이스케이프(\\.)");
+  var tr = rsheet("접촉 추세"); assert.ok(/<c r="A5" s="27"><v>46314<\/v><\/c>/.test(tr), "A5 날짜 칸"); assert.ok(!/<c r="A5"[^>]*t="inlineStr"/.test(tr));
+});
+t("한글: «끝.»은 데이터 출처 표 뒤(문서 맨 끝)", function () {
+  var L = HD.blocks.length; assert.strictEqual(HD.blocks[L - 1].kind, "end"); assert.strictEqual(HD.blocks[L - 2].t, "tbl"); assert.strictEqual(HD.blocks[L - 3].text, "데이터 출처");
+  var sec = get(unzip(W.build(HD)), "Contents/section0.xml"); assert.ok(sec.lastIndexOf("끝.") > sec.lastIndexOf("데이터 이름"));
+});
+t("작성 부서 이름 통일: 보고서·엑셀 내보내기 모두 «상주시 희망복지지원단»", function () {
+  var fs = require("fs"); assert.strictEqual(M.office, "상주시 희망복지지원단");
+  assert.ok(/var OFFICE = "상주시 희망복지지원단\(시연\)"/.test(fs.readFileSync(path.join(__dirname, "..", "officer", "xlsx_out.js"), "utf8")));
+  assert.ok(F.report.weekly(S, { now: now, countdown: cd }).text.indexOf("상주시 희망복지지원단") >= 0);
+});
+t("출처 시트 [그림] 지도 «쓰인 곳» = 지도(화면·PDF)", function () {
+  var mp = M.body.filter(function (n) { return n.kind === "map"; })[0], row = SP.sources.filter(function (s) { return s.use.indexOf("[그림 " + mp.no + "]") === 0; })[0];
+  assert.ok(row, "지도 출처 줄"); assert.strictEqual(row.use, "[그림 " + mp.no + "] 지도(화면·PDF)");
+  SP.sources.forEach(function (s) { assert.ok(!/\]\s*$/.test(s.use), "빈 쓰인 곳: " + s.use); });
+});
+
 console.log("결과: 통과 " + pass + " · 실패 " + fail);
 if (fail) process.exit(1);

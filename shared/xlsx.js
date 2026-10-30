@@ -13,7 +13,7 @@
      title: "보고서 제목", subtitle: "2026. 10. 19. ~ 2026. 10. 30.", made: "2026. 10. 30. 15:00", office: "작성 부서",
      conclusion: "한 줄 결론", note: "※ 시연용 가상 자료",                       // 요약(표지) 시트 머리
      kpis: [{ k: "발굴 명단", v: 60, u: "가구", s: "설명", type: "int"|"pct"|"text",
-              ref: { sheet: "읍면별", col: "n" },                                 // → ='읍면별'!합계칸 (그 시트 숫자를 고치면 요약도 바뀜)
+              ref: { sheet: "읍면별", col: "n", row: "만남·상담" },              // → ='읍면별'!합계칸 (row 가 있으면 첫 칸이 그 글인 줄의 칸) — 그 시트 숫자를 고치면 요약도 바뀜
               fx: "IF([읍면별:n]=0,0,[읍면별:c]/[읍면별:n])" }],                  // [시트:열키] = 그 시트 합계칸
      lines: [{ lv: 1..4, text: "□ …" }],                                          // 요약 시트 개조식(선택)
      sheets: [{
@@ -82,7 +82,7 @@
   // ═══════════ 서식(styles.xml) — 닿음 색 ═══════════
   var C = { acc: "FF5A4AC2", soft: "FFECEAF8", stripe: "FFF6F5FC", ink: "FF1B1830", ink2: "FF5E5A73", line: "FFD9D6E8", deep: "FF463799" };
   var X = { def: 0, title: 1, meta: 2, head: 3, txt: 4, txtS: 5, int: 6, intS: 7, pct: 8, pctS: 9, dec: 10, decS: 11,
-    tTxt: 12, tInt: 13, tPct: 14, tDec: 15, wrap: 16, label: 17, ch: 18, l1: 19, l2: 20, l3: 21, l4: 22, kInt: 23, kPct: 24, kTxt: 25, src: 26 };
+    tTxt: 12, tInt: 13, tPct: 14, tDec: 15, wrap: 16, label: 17, ch: 18, l1: 19, l2: 20, l3: 21, l4: 22, kInt: 23, kPct: 24, kTxt: 25, src: 26, dt: 27, dtS: 28 };
   function stylesXml() {
     var F = "맑은 고딕";
     function font(sz, bold, color) { return '<font>' + (bold ? "<b/>" : "") + '<sz val="' + sz + '"/><color rgb="' + color + '"/><name val="' + F + '"/><family val="3"/><charset val="129"/></font>'; }
@@ -113,10 +113,11 @@
       xf(0, 0, 0, 0, W.replace('vertical="top"', 'vertical="top" indent="2"')), // 21 -
       xf(0, 0, 0, 0, W.replace('vertical="top"', 'vertical="top" indent="3"')), // 22 ·
       xf(5, 0, 1, 164, R), xf(5, 0, 1, 165, R), xf(5, 0, 1, 0, R), // 23~25 요약 숫자 칸(크게)
-      xf(3, 0, 0, 0, W)                                           // 26 출처 줄
+      xf(3, 0, 0, 0, W),                                          // 26 출처 줄
+      xf(0, 0, 1, 167, R), xf(0, 3, 1, 167, R)                    // 27·28 날짜 yyyy. m. d.(일련번호)
     ];
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-      '<numFmts count="3"><numFmt numFmtId="164" formatCode="#,##0"/><numFmt numFmtId="165" formatCode="0.0%"/><numFmt numFmtId="166" formatCode="#,##0.0"/></numFmts>' +
+      '<numFmts count="4"><numFmt numFmtId="164" formatCode="#,##0"/><numFmt numFmtId="165" formatCode="0.0%"/><numFmt numFmtId="166" formatCode="#,##0.0"/><numFmt numFmtId="167" formatCode="yyyy\\.\\ m\\.\\ d\\."/></numFmts>' +
       '<fonts count="6">' + font(10, 0, C.ink) + font(10, 1, "FFFFFFFF") + font(16, 1, C.ink) + font(9, 0, C.ink2) + font(10, 1, C.ink) + font(12, 1, C.deep) + "</fonts>" +
       '<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>' + fill(C.acc) + fill(C.stripe) + fill(C.soft) + "</fills>" +
       '<borders count="4"><border><left/><right/><top/><bottom/><diagonal/></border>' + border("thin", "thin", ["thin", C.line], ["thin", C.line]) +
@@ -131,6 +132,14 @@
   function cStr(ref, v, s) { return '<c r="' + ref + '" s="' + s + '" t="inlineStr"><is><t xml:space="preserve">' + esc(v) + "</t></is></c>"; }
   function cF(ref, f, v, s) { return '<c r="' + ref + '" s="' + s + '"><f>' + esc(f) + "</f>" + (isNum(v) ? "<v>" + v + "</v>" : "") + "</c>"; }
   function cell(ref, v, s) { return v == null || v === "" ? '<c r="' + ref + '" s="' + s + '"/>' : isNum(v) ? cNum(ref, v, s) : cStr(ref, v, s); }
+  /** 날짜 글(«2026. 10. 19.»·«2026-10-19»)·Date → 엑셀 날짜 일련번호(1900 체계). 못 읽으면 null(글 그대로 둔다) */
+  function serial(v) {
+    var y, mo, d;
+    if (v instanceof Date && isFinite(v)) { y = v.getFullYear(); mo = v.getMonth() + 1; d = v.getDate(); }
+    else { var mm = String(v == null ? "" : v).match(/^\s*(\d{4})\s*[.\-\/]\s*(\d{1,2})\s*[.\-\/]\s*(\d{1,2})\s*\.?\s*$/); if (!mm) return null; y = +mm[1]; mo = +mm[2]; d = +mm[3]; }
+    var t = Date.UTC(y, mo - 1, d); if (!isFinite(t)) return null;
+    return Math.round((t - Date.UTC(1899, 11, 30)) / 86400000);
+  }
   function row(r, cells, ht) { return '<row r="' + r + '"' + (ht ? ' ht="' + ht + '" customHeight="1"' : "") + ">" + cells.join("") + "</row>"; }
 
   var HEAD = 4; // 머리행 위치(1 제목 · 2 작성일·단위 · 3 설명/출처 · 4 머리행)
@@ -153,18 +162,19 @@
     return columns.map(function (c, i) {
       if (c.w) return c.w;
       var m = dispLen(c.h) + 2;
-      rows.forEach(function (r) { var v = r[i]; m = Math.max(m, (isNum(v) ? String(Math.round(v)).length + 3 : dispLen(v)) + 2); });
+      rows.forEach(function (r) { var v = r[i]; m = Math.max(m, (c.type === "date" ? 13 : isNum(v) ? String(Math.round(v)).length + 3 : dispLen(v)) + 2); });
       return Math.max(c.type === "text" ? 10 : 8, Math.min(46, m));
     });
   }
-  var STY = { text: [X.txt, X.txtS, X.tTxt], date: [X.txt, X.txtS, X.tTxt], int: [X.int, X.intS, X.tInt], dec: [X.dec, X.decS, X.tDec], pct: [X.pct, X.pctS, X.tPct] };
+  var STY = { text: [X.txt, X.txtS, X.tTxt], date: [X.dt, X.dtS, X.tTxt], int: [X.int, X.intS, X.tInt], dec: [X.dec, X.decS, X.tDec], pct: [X.pct, X.pctS, X.tPct] };
 
   /** 자료 시트 배치 — 합계칸 위치를 먼저 알아야 요약 시트가 참조할 수 있다 */
   function layout(sh) {
     var cols = sh.columns, n = (sh.rows || []).length, first = HEAD + 1, lastData = HEAD + n;
     var keys = {}; cols.forEach(function (c, i) { keys[c.key || ("c" + i)] = i; });
     var tot = sh.total === false || !n ? 0 : lastData + 1;
-    return { keys: keys, first: first, lastData: lastData, totalRow: tot, n: n };
+    var byLabel = {}; (sh.rows || []).forEach(function (r, i) { var k = String(r[0]); if (!(k in byLabel)) byLabel[k] = first + i; });
+    return { keys: keys, first: first, lastData: lastData, totalRow: tot, n: n, byLabel: byLabel };
   }
   function fxFill(tpl, r, L, isTotal) {
     return tpl.replace(/\{([A-Za-z0-9_]+)(?::(sum|prev|first))?\}/g, function (_, k, mod) {
@@ -196,6 +206,7 @@
       var rn = L.first + ri, z = ri % 2;
       out.push(row(rn, cols.map(function (c, i) {
         var ref = col(i) + rn, s = STY[c.type || "text"][z];
+        if (c.type === "date" && !c.fx) { var sn = isNum(r[i]) ? r[i] : serial(r[i]); return sn != null ? cNum(ref, sn, s) : cell(ref, r[i], STY.text[z]); }
         return c.fx ? cF(ref, fxFill(c.fx, rn, L, false), r[i], s) : cell(ref, r[i], s);
       })));
     });
@@ -242,15 +253,16 @@
       out.push(row(r, [cStr("A" + r, "한 줄 결론", X.label), cStr("B" + r, spec.conclusion, X.wrap), cell("C" + r, "", X.wrap), cell("D" + r, "", X.wrap)], Math.max(36, 18 * Math.ceil(dispLen(spec.conclusion) / 70))));
       merges.push("B" + r + ":D" + r); r += 2;
     }
-    function refOf(sheet, key) {
-      var g = reg[sheet]; if (!g || !g.L.totalRow || g.L.keys[key] == null) return null;
-      return qs(g.name) + "!$" + col(g.L.keys[key]) + "$" + g.L.totalRow;
+    function refOf(sheet, key, label) {
+      var g = reg[sheet]; if (!g || g.L.keys[key] == null) return null;
+      var rn = label != null ? g.L.byLabel[String(label)] : g.L.totalRow; if (!rn) return null;
+      return qs(g.name) + "!$" + col(g.L.keys[key]) + "$" + rn;
     }
     if (spec.kpis && spec.kpis.length) {
       out.push(row(r, ["항목", "값", "단위", "설명"].map(function (h, i) { return cStr(col(i) + r, h, X.head); }), 24)); r++;
       spec.kpis.forEach(function (k) {
         var ref = "B" + r, s = k.type === "pct" ? X.kPct : isNum(k.v) ? X.kInt : X.kTxt, f = null;
-        if (k.ref) { var rr = refOf(k.ref.sheet, k.ref.col); if (rr) f = rr; }
+        if (k.ref) { var rr = refOf(k.ref.sheet, k.ref.col, k.ref.row); if (rr) f = rr; }
         if (k.fx) { var ok = true, ff = k.fx.replace(/\[([^\]:]+):([^\]]+)\]/g, function (_, sn, key) { var rr2 = refOf(sn, key); if (!rr2) ok = false; return rr2 || "0"; }); if (ok) f = ff; }
         out.push(row(r, [cStr("A" + r, k.k, X.label), f ? cF(ref, f, isNum(k.v) ? k.v : undefined, s) : cell(ref, k.v, s), cStr("C" + r, k.u || "", X.txt), cStr("D" + r, k.s || "", X.wrap)], 22)); r++;
       });
@@ -331,5 +343,5 @@
   /** 파일 이름에 못 쓰는 글자 정리 + 날짜 */
   function fileName(base, ext, d) { d = d || new Date(); var p = function (n) { return (n < 10 ? "0" : "") + n; }; return String(base || "닿음").replace(/[\\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim() + "_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "." + ext; }
 
-  return { build: build, download: download, save: save, zip: zip, col: col, crc32: crc32, fileName: fileName, HEAD: HEAD };
+  return { build: build, download: download, save: save, zip: zip, col: col, crc32: crc32, fileName: fileName, HEAD: HEAD, serial: serial };
 });

@@ -9,7 +9,7 @@
   var F = window.DaeumFeatures, doc = document;
   var BASE = "../shared/";
   var NOTE = "※ 시연용 가상 자료입니다 — 가구·주민 신호·시도 기록은 모두 가상이며 실제 주민·개인정보는 0건입니다. 정식 기록·실적은 행복이음 기준입니다.";
-  var OFFICE = "읍면동 맞춤형복지팀(시연)";
+  var OFFICE = "상주시 희망복지지원단(시연)"; // 보고서(report_doc.js·report.js)와 같은 작성 부서
 
   function O() { return window.DaeumOfficer; }
   function M() { return window.DaeumMountData; }

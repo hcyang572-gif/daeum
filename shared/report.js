@@ -155,7 +155,7 @@
       : { from: ymd(new Date(now.getFullYear(), now.getMonth(), 1)), to: ymd(now) });
     var H = stats.households, Q = stats.requests, Lk = stats.links, cd = o.countdown;
     var scope = stats.scope || o.area || null;
-    var office = o.office || (scope ? scope + " 행정복지센터 맞춤형복지팀" : "희망복지지원단(통합사례관리)");
+    var office = o.office || (scope ? "상주시 " + scope + " 행정복지센터 맞춤형복지팀" : "상주시 희망복지지원단");
     var name = kind === "weekly" ? "주간" : "월간";
     var sections = [];
     sections.push({ heading: "추진 현황", lines: [
@@ -195,7 +195,7 @@
     })).join("\n") + "\n\n※ 가구는 시연용 가상 자료, «추정» 표시는 가정값에 따른 값입니다.";
     return { kind: kind, title: title, period: p, printedAt: ymd(now) + " " + pad(now.getHours()) + ":" + pad(now.getMinutes()),
       sections: sections, table: table, text: text, scope: scope,
-      note: "닿음 보조 집계입니다(숫자는 report.aggregate() 한 곳에서 셈, AI 미사용). 공식 실적은 행복이음 기준으로 대조하세요." };
+      note: "닿음 자동 집계입니다(AI 미사용). 공식 실적은 행복이음 기준으로 대조하세요." };
   }
 
   F.report = {
