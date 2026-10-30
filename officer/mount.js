@@ -431,7 +431,7 @@
   }
 
   // ── ⑤ 통계·보고서 ──────────────────────────────────────
-  var lastStats = null, lastCd = null;
+  var lastStats = null;
   function kpi(label, n, em) { return h("div", { class: "kpi d-card" }, [h("span", { text: label }), h("b", { class: "num", text: String(n) }), em ? h("em", { text: em }) : null]); }
   function rankList(items, total) {
     var ul = h("ul", { class: "rank" }), max = Math.max(1, Math.max.apply(null, items.map(function (x) { return x.n; }).concat([1])));
@@ -460,7 +460,6 @@
     dash.appendChild(rankList(S.funnel.map(function (f) { return { label: f.label, n: f.n }; }), S.funnel[0].n));
     if (S.nonEligibleBy.length) { dash.appendChild(h("h4", { text: "비해당 사유" })); dash.appendChild(rankList(S.nonEligibleBy.map(function (x) { return { label: x.label, n: x.n, unit: "가구" }; }), H.nonEligible)); }
     var cd = F.report.countdown(F.report.currentRound(), { done: H.closed, total: H.total });
-    lastCd = cd;
     var dl = clear(q(root, '[data-slot="deadline"]'));
     dl.appendChild(h("h4", null, [cd.round.label + (cd.upcoming ? " 준비 " : " 마감 역산 "), h("span", { class: "d-tag " + (cd.upcoming || cd.onTrack ? "pos" : "warn"), text: cd.upcoming ? "시작 전" : cd.onTrack ? "일정 안" : "뒤처짐" })]));
     dl.appendChild(rankList([{ label: "기간 경과", n: cd.elapsedPct, unit: "%" }, { label: "처리 완료", n: cd.donePct, unit: "%" }], 0));
@@ -470,29 +469,17 @@
     if (F.handoff) renderHandoff(b);
     renderReportActs();
   }
+  // 주간·월간 보고서: 단추 클릭은 shared/report_doc.js 가 먼저(캡처 단계) 받아 정부 보고서 문서로 그린다(S10j).
+  // 여기서는 단추를 켜고, 집계 전(F.report.last 없음)에 눌렸을 때만 집계 후 같은 단추를 다시 누른다. 옛 간이 미리보기(makeReport)는 S10j-2에서 지움.
   function renderReportActs() {
     var root = $("reportRoot"); if (!root || root._m) return; root._m = 1;
     [].forEach.call(root.querySelectorAll("[data-report]"), function (bt) {
       bt.disabled = false;
-      bt.addEventListener("click", function () { makeReport(bt.getAttribute("data-report")); });
+      bt.addEventListener("click", function () {
+        if (F.report && F.report.last) return; // report_doc 이 이미 처리
+        renderStats(); if (F.report && F.report.last && F.reportDoc) bt.click();
+      });
     });
-  }
-  var lastReport = null;
-  function makeReport(kind) {
-    if (!lastStats) renderStats();
-    var home = lastStats.scope;
-    var rep = F.report[kind](lastStats, { countdown: lastCd, office: "상주시 " + (home || "○○") + " 행정복지센터 맞춤형복지팀(시연)" });
-    lastReport = rep;
-    var pv = clear(q($("reportRoot"), '[data-slot="preview"]'));
-    pv.appendChild(h("h4", { text: rep.title }));
-    rep.sections.forEach(function (s) { pv.appendChild(h("p", { class: "small" }, [h("b", { text: "□ " + s.heading })])); pv.appendChild(h("ul", { class: "small" }, s.lines.map(function (l) { return h("li", { text: l }); }))); });
-    pv.appendChild(h("div", { class: "rep-acts" }, [
-      btn("인쇄·PDF", function () { printReport(rep); }, "ghost", "medium"),
-      btn("한글 붙여넣기 문안 복사", function () { copy(rep.text); }, "ghost", "success")
-    ]));
-    pv.appendChild(h("p", { class: "note", text: rep.note + " · 출력 " + rep.printedAt }));
-    pv.appendChild(h("p", { id: "mountStatus3", class: "small", role: "status" }));
-    haptic("success");
   }
   // A4 인쇄 — 보이지 않는 틀(iframe)에 보고서만 담아 인쇄 대화상자를 연다(PDF 저장도 같은 대화상자)
   function printReport(rep) {

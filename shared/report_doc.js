@@ -87,7 +87,7 @@
     function ch(t) { B.push({ t: "ch", text: t }); }
     function li(lv, text) { B.push({ t: "li", lv: lv, text: text }); }
     var fig = 0, tbl = 0;
-    function figure(kind2, title, data, src, tags) { fig++; B.push({ t: "fig", no: fig, kind: kind2, title: title, data: data, src: src, tags: tags }); return fig; }
+    function figure(kind2, title, data, src, tags, ex) { fig++; B.push(Object.assign({ t: "fig", no: fig, kind: kind2, title: title, data: data, src: src, tags: tags }, ex || {})); return fig; }
 
     ch("개요");
     li(1, "보고 목적");
@@ -102,13 +102,13 @@
     li(3, "처리 상태별 구성은 [그림 " + (fig + 1) + "] 참조");
     figure("donut", "명단 " + num(H.total) + "가구 중 " + pct(H.closed, H.total) + "%는 처리를 마침", [
       { label: "만남·상담", n: H.met, c: 1 }, { label: "비해당", n: H.nonEligible, c: 2 }, { label: "전출 등 종결", n: other, c: 3 }, { label: "접촉 중", n: inProg, c: 4 }, { label: "미접촉", n: notC, c: 5 }
-    ].filter(function (x) { return x.n; }), "닿음 집계(가상 가구)", ["가상"]);
+    ].filter(function (x) { return x.n; }), "닿음 집계(가상 가구)", ["가상"], { sheet: "명단 처리", item: "처리 상태", unitName: "가구", agg: "share" });
     li(1, "주민 신호(도움 요청·이웃 알림)");
     li(2, num(Q.total) + "건 접수(긴급 " + Q.urgent + "·대신·이웃 " + Q.proxy + ") — 완료 " + Q.byStatus.done + ", 진행 " + (Q.byStatus.seen + Q.byStatus.visiting) + ", 미확인 " + Q.byStatus["new"] + (Q.avgDays != null ? ", 평균 처리 " + Q.avgDays + "일" : ""));
-    if (Q.total) figure("bars", "요청 " + num(stats.funnel[0].n) + "건 중 " + num(stats.funnel[3].n) + "건이 연계 완료까지 감", stats.funnel.map(function (f) { return { label: f.label, n: f.n }; }), "닿음 집계(가상 주민 신호)", ["가상"]);
+    if (Q.total) figure("bars", "요청 " + num(stats.funnel[0].n) + "건 중 " + num(stats.funnel[3].n) + "건이 연계 완료까지 감", stats.funnel.map(function (f) { return { label: f.label, n: f.n }; }), "닿음 집계(가상 주민 신호)", ["가상"], { sheet: "요청 단계", item: "처리 단계", unitName: "건", agg: "funnel" });
     li(1, "서비스 연계");
     li(2, num(Lk.total) + "건(" + Lk.households + "가구)" + (Lk.byService.length ? " — 많은 순: " + Lk.byService.slice(0, 3).map(function (s) { return s.name + " " + s.n; }).join(", ") : ""));
-    if (Lk.byService.length) figure("bars", Lk.byService[0].name + " 연계가 " + Lk.byService[0].n + "건으로 가장 많음", Lk.byService.slice(0, 6).map(function (s) { return { label: s.name, n: s.n }; }), "닿음 집계(가상 연계 기록)", ["가상"]);
+    if (Lk.byService.length) figure("bars", Lk.byService[0].name + " 연계가 " + Lk.byService[0].n + "건으로 가장 많음", Lk.byService.slice(0, 6).map(function (s) { return { label: s.name, n: s.n }; }), "닿음 집계(가상 연계 기록)", ["가상"], { sheet: "연계 서비스", item: "서비스", unitName: "건", agg: "share" });
     var pts = areaPoints(input, stats);
     if (stats.byArea.length) {
       li(1, "읍면별 현황");
@@ -120,7 +120,7 @@
       var sum = rows.reduce(function (s, a) { s[0] += a.households; s[1] += a.contacted; s[2] += a.requests; s[3] += a.links; return s; }, [0, 0, 0, 0]);
       B.push({ t: "tbl", no: tbl, title: "읍면별 처리 현황", unit: "(단위: 가구, %, 건)", head: ["읍면", "명단", "접촉", "접촉률", "주민 신호", "연계"],
         rows: rows.map(function (a) { return [a.area, a.households, a.contacted, pct(a.contacted, a.households) + "%", a.requests, a.links]; }),
-        foot: ["합계", sum[0], sum[1], pct(sum[1], sum[0]) + "%", sum[2], sum[3]], src: "닿음 집계(가상) · 읍면 이름 행정안전부(2026-09)", tags: ["가상", "공공데이터"], see: nM });
+        foot: ["합계", sum[0], sum[1], pct(sum[1], sum[0]) + "%", sum[2], sum[3]], src: "닿음 집계(가상) · 읍면 이름 행정안전부(2026-09)", tags: ["가상", "공공데이터"], see: nM, sheet: "읍면별", rate: { col: 3, num: 2, den: 1 } });
     }
 
     ch("문제점·분석");
@@ -128,7 +128,7 @@
     li(2, cd.upcoming ? cd.message : "기간 경과 " + cd.elapsedPct + "% 대비 처리 " + cd.donePct + "% — " + (ahead ? "일정 안에 있음" : "뒤처져 있어 하루 처리량을 " + cd.perWorkday + "가구로 높여야 함"));
     var tr = trend(input, stats, cd);
     li(3, "차수 시작부터 누적 접촉 추세는 [그림 " + (fig + 1) + "] 참조(점선 = 마감까지 고르게 처리할 때)");
-    figure("trend", ahead ? "누적 접촉이 목표선보다 위에 있음" : "누적 접촉이 목표선보다 아래에 있음", tr, cd.round.source + " · 접촉 기록: 가상", ["공개 자료", "가상"]);
+    figure("trend", ahead ? "누적 접촉이 목표선보다 위에 있음" : "누적 접촉이 목표선보다 아래에 있음", tr, cd.round.source + " · 접촉 기록: 가상", ["공개 자료", "가상"], { sheet: "접촉 추세" });
     if (stats.nonEligibleBy.length) {
       li(1, "비해당 사유");
       li(2, "비해당 " + num(H.nonEligible) + "가구 — " + stats.nonEligibleBy[0].label + "가 가장 많음");
@@ -287,7 +287,115 @@
   function encode(m) { return typeof CompressionStream === "undefined" ? Promise.resolve(encodeSync(m)) : pipe(utf8(JSON.stringify(m)), CompressionStream).then(function (b) { return "z." + b64u(b); }).catch(function () { return encodeSync(m); }); }
   function decode(s) { if (s.indexOf("z.") !== 0) return Promise.resolve(decodeSync(s)); return pipe(unb64u(s.slice(2)), DecompressionStream).then(function (b) { return JSON.parse(deutf8(b)); }); }
 
-  var api = { build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM };
+  // ═══════════ S10j-2 내려받기: 엑셀(.xlsx)·한글(.hwpx) — 같은 모델(m)에서 만든다(가상 집계 숫자만, 개인 식별값 없음) ═══════════
+  var ORG = /(행정안전부|보건복지부|국립중앙의료원|기상청|국토교통부|한국사회보장정보원|닿음)/;
+  /** 출처 글 한 줄 → {구분, 기관, 데이터 이름, 기준일} (기관·날짜는 글에서 찾고, 없으면 «-») */
+  function srcRow(kind, text, use) {
+    var s = String(text || ""), d = (s.match(/\d{4}-\d{2}(-\d{2})?/) || [""])[0], o = (s.match(ORG) || [""])[0];
+    if (kind === "가상") { o = "닿음 시연 자료"; d = d || "가상"; }
+    return { kind: kind, org: o || "-", name: s, date: d || "-", use: use || "" };
+  }
+  function sources(m) {
+    var out = [], seen = {};
+    function add(r) { var k = r.kind + "|" + r.name; if (!seen[k]) { seen[k] = 1; out.push(r); } }
+    m.sources.forEach(function (s) { add(srcRow(s.tag, s.text, "보고서 전체")); });
+    m.body.forEach(function (n) { if ((n.t === "fig" || n.t === "tbl") && n.src) add(srcRow((n.tags || [])[0] || "닿음 집계", n.src, n.t === "tbl" ? "<표 " + n.no + "> " + n.title : "[그림 " + n.no + "] " + (n.sheet || ""))); });
+    return out;
+  }
+  function numOf(v) { var x = Number(String(v).replace(/,/g, "")); return isFinite(x) && String(v).trim() !== "" ? x : null; }
+  function bodyLines(m, withRefs) {
+    var L = [], c = 0;
+    m.body.forEach(function (n) {
+      if (n.t === "ch") L.push({ lv: 0, text: ROMAN[c++] + ". " + n.text });
+      else if (n.t === "li") L.push({ lv: n.lv, text: SYM[n.lv - 1] + " " + n.text });
+      else if (withRefs && n.t === "fig") L.push({ lv: 4, text: "※ [그림 " + n.no + "] " + n.title + (n.sheet && n.kind !== "map" ? " → «" + n.sheet + "» 시트" : "") });
+      else if (withRefs && n.t === "tbl") L.push({ lv: 4, text: "※ <표 " + n.no + "> " + n.title + " → «" + n.sheet + "» 시트" });
+    });
+    return L;
+  }
+  /** 모델 → DaeumXlsx.build(spec) 의 spec. 합계·비율·증감은 엑셀 수식, 요약 숫자는 각 시트 합계칸을 참조 */
+  function xlsxSpec(m) {
+    var sheets = [], tb = null;
+    m.body.forEach(function (n) {
+      if (n.t === "tbl") {
+        tb = n;
+        var keys = n.head.map(function (_, i) { return "k" + i; }), R = n.rate;
+        var cols = n.head.map(function (h, i) {
+          if (R && i === R.col) { var a = keys[R.num], b = keys[R.den]; return { key: keys[i], h: h, type: "pct", fx: "IF({" + b + "}=0,0,{" + a + "}/{" + b + "})", calc: function (g) { return g(b) ? g(a) / g(b) : 0; } }; }
+          return { key: keys[i], h: h, type: i === 0 ? "text" : "int" };
+        });
+        sheets.push({ name: n.sheet || "표" + n.no, title: "<표 " + n.no + "> " + n.title, unit: n.unit.replace(/^\(|\)$/g, ""), note: "합계·접촉률은 수식입니다 — 숫자를 고치면 합계와 요약 시트가 함께 바뀝니다.", src: "※ 출처: " + n.src, tags: n.tags,
+          columns: cols, rows: n.rows.map(function (r) { return r.map(function (v, i) { return i === 0 ? v : R && i === R.col ? null : numOf(v); }); }), total: "합계" });
+      } else if (n.t === "fig" && (n.kind === "donut" || n.kind === "bars")) {
+        var share = n.agg !== "funnel";
+        sheets.push({ name: n.sheet || "그림" + n.no, title: "[그림 " + n.no + "] " + n.title, unit: "단위: " + (n.unitName || "건") + ", %", src: "※ 출처: " + n.src, tags: n.tags,
+          note: share ? "비율 = 항목 ÷ 합계(수식)" : "비율 = 단계 ÷ 첫 단계(수식) — 단계는 앞 단계에 포함되므로 합계를 내지 않습니다.",
+          columns: [{ key: "a", h: n.item || "항목", type: "text" }, { key: "n", h: n.unitName || "건수", type: "int" },
+            share ? { key: "r", h: "비율", type: "pct", fx: "IF({n:sum}=0,0,{n}/{n:sum})", calc: function (g, cx) { var t = cx.sum("n"); return t ? g("n") / t : 0; } }
+                  : { key: "r", h: "첫 단계 대비", type: "pct", fx: "IF({n:first}=0,0,{n}/{n:first})" }],
+          rows: n.data.map(function (x) { var f0 = n.data[0] ? n.data[0].n : 0; return [x.label, x.n, share ? null : (f0 ? x.n / f0 : 0)]; }), total: share ? "합계" : false });
+      } else if (n.t === "fig" && n.kind === "trend") {
+        var d = n.data, base = new Date(d.start + "T00:00:00");
+        sheets.push({ name: n.sheet || "추세", title: "[그림 " + n.no + "] " + n.title, unit: "단위: 가구", src: "※ 출처: " + n.src, tags: n.tags, note: "하루 증감 = 오늘 누적 − 어제 누적(수식) · 목표선 = 명단 × 경과일 ÷ 차수 일수(수식)",
+          columns: [{ key: "d", h: "날짜", type: "date" }, { key: "c", h: "누적 접촉", type: "int" }, { key: "x", h: "하루 증감", type: "int", fx: "{c}-{c:prev}", calc: function (g) { return g("c") - g.prev("c"); } },
+            { key: "i", h: "경과일", type: "int" }, { key: "g", h: "목표선", type: "dec", fx: d.total + "*{i}/" + d.span, calc: function (g) { return d.total * g("i") / d.span; } }],
+          rows: d.points.map(function (v, i) { var x = new Date(base.getTime() + i * DAY); return [dot(ymd(x)), v, null, i, null]; }), total: false });
+      }
+    });
+    var kp = m.kpis.map(function (k) {
+      var v = numOf(k.v), o = { k: k.k, v: v != null ? v : k.v, u: k.u, s: k.s, type: v != null ? "int" : "text" };
+      if (k.u === "%") { o.type = "pct"; o.v = v != null ? v / 100 : k.v; o.u = ""; }
+      return o;
+    });
+    if (tb) { // 표 합계와 요약 숫자가 같을 때만 참조로 잇는다(범위가 다르면 값 그대로)
+      var foot = tb.foot;
+      if (kp[0] && kp[0].v === foot[1]) kp[0].ref = { sheet: tb.sheet, col: "k1" };
+      if (kp[1] && kp[1].type === "pct" && kp[0] && kp[0].ref) { kp[1].fx = "IF([" + tb.sheet + ":k1]=0,0,[" + tb.sheet + ":k2]/[" + tb.sheet + ":k1])"; kp[1].v = foot[1] ? foot[2] / foot[1] : 0; }
+    }
+    sheets.unshift({ name: "보고서 본문", title: m.title, note: dot(m.period.from) + " ~ " + dot(m.period.to) + " · 정부 보고서 개조식(□ ○ - ·)", text: bodyLines(m, true).concat([{ lv: 2, text: "끝." }]) });
+    return {
+      title: m.title, subtitle: dot(m.period.from) + " ~ " + dot(m.period.to), made: dot(m.made) + " " + m.madeTime, office: m.office,
+      note: "※ 가구·주민 신호·연계 숫자는 시연용 가상 자료입니다(실제 개인정보 없음).", conclusion: m.verdict, kpis: kp,
+      lines: [{ lv: 1, text: "□ 핵심 현황" }].concat(m.summary.map(function (s) { return { lv: 2, text: "○ " + s }; }), [{ lv: 1, text: "□ 조치 사항" }], m.asks.map(function (s) { return { lv: 2, text: "○ " + s }; })),
+      sheets: sheets, sources: sources(m), footer: "닿음 · 시연용 가상 자료"
+    };
+  }
+  /** 모델 → DaeumHwpx.build(doc) 의 doc. 표 합계 칸은 한글 표 계산식(=SUM), 접촉률은 =C/B*100 */
+  function hwpxDoc(m) {
+    var B = [{ t: "box", label: "한 줄 결론", text: m.verdict }];
+    B.push({ t: "tbl", title: "핵심 숫자", head: m.kpis.map(function (k) { return k.k; }), rows: [m.kpis.map(function (k) { return k.v + (k.u || ""); })], align: "center", src: "" });
+    B.push({ t: "li", lv: 1, text: "핵심 현황" }); m.summary.forEach(function (s) { B.push({ t: "li", lv: 2, text: s }); });
+    B.push({ t: "li", lv: 1, text: "조치 사항" }); m.asks.forEach(function (s) { B.push({ t: "li", lv: 2, text: s }); });
+    B.push({ t: "break" });
+    var c = 0;
+    m.body.forEach(function (n) {
+      if (n.t === "ch") B.push({ t: "ch", text: ROMAN[c++] + ". " + n.text });
+      else if (n.t === "li") B.push({ t: "li", lv: n.lv, text: n.text });
+      else if (n.t === "tbl") {
+        var R = n.rate, head = n.head.map(function (h, i) { return R && i === R.col ? h + "(%)" : h; });
+        var rows = n.rows.map(function (r) { return r.map(function (v, i) { if (i === 0) return v; if (R && i === R.col) { var b = numOf(r[R.den]); return b ? Math.round(numOf(r[R.num]) / b * 1000) / 10 : 0; } return numOf(v); }); });
+        var sum = []; for (var i = 1; i < head.length; i++) if (!R || i !== R.col) sum.push(i);
+        var fx = {}, val = {};
+        if (R) { var A = String.fromCharCode(65 + R.num), Bc = String.fromCharCode(65 + R.den); fx[R.col] = "=" + A + "{r}/" + Bc + "{r}*100"; val[R.col] = numOf(n.foot[R.den]) ? Math.round(numOf(n.foot[R.num]) / numOf(n.foot[R.den]) * 1000) / 10 : 0; }
+        B.push({ t: "tbl", title: "<표 " + n.no + "> " + n.title, unit: n.unit, head: head, rows: rows, foot: { label: "합계", sum: sum, fx: fx, val: val }, src: "※ 출처: " + n.src + " [" + (n.tags || []).join("·") + "]" });
+      } else if (n.t === "fig") {
+        if (n.kind === "donut" || n.kind === "bars") {
+          var share = n.agg !== "funnel";
+          B.push({ t: "tbl", title: "[그림 " + n.no + "] " + n.title, unit: "(단위: " + (n.unitName || "건") + ")", head: [n.item || "항목", n.unitName || "건수"], rows: n.data.map(function (x) { return [x.label, x.n]; }),
+            foot: share ? { label: "합계", sum: [1] } : null, src: "※ 출처: " + n.src + " [" + (n.tags || []).join("·") + "]" + (share ? "" : " — 단계는 앞 단계에 포함") });
+        } else if (n.kind === "trend") {
+          var d = n.data, last = d.points[d.points.length - 1] || 0, goal = Math.round(d.total * (d.points.length - 1) / d.span);
+          B.push({ t: "p", kind: "src", text: "※ [그림 " + n.no + "] " + n.title + " — 누적 접촉 " + last + "가구, 같은 날 목표선 " + goal + "가구 (출처: " + n.src + ")" });
+        } else B.push({ t: "p", kind: "src", text: "※ [그림 " + n.no + "] " + n.title + " — 읍면별 숫자는 <표 1> 참조, 지도는 화면·PDF 보고서에 있음" });
+      }
+    });
+    B.push({ t: "p", kind: "end", text: "끝." });
+    B.push({ t: "ch", text: "데이터 출처" });
+    B.push({ t: "tbl", title: "", head: ["구분", "제공기관", "데이터 이름", "기준일"], rows: sources(m).map(function (s) { return [s.kind, s.org, s.name, s.date]; }), widths: [6200, 8400, 26190, 7400], src: "※ 가상 = 시연용으로 만든 자료(실제 주민·행정자료 0건)" });
+    return { title: m.title, subtitle: dot(m.period.from) + " ~ " + dot(m.period.to), made: dot(m.made), office: m.office, note: "※ 가구·주민 신호·연계 숫자는 시연용 가상 자료입니다(실제 개인정보 없음).", blocks: B };
+  }
+
+  var api = { build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM, xlsxSpec: xlsxSpec, hwpxDoc: hwpxDoc, sources: sources };
   F.reportDoc = api;
 
   // ═══════════ 브라우저 연결 ═══════════
@@ -316,17 +424,31 @@
     share: '<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>',
     print: '<path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/>',
     link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
-    copy: '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>'
+    copy: '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+    xlsx: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>',
+    hwp: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'
   };
+  // S10j-2: 엑셀·한글 부품은 누를 때 한 번만 싣는다(shared/xlsx.js·hwpx.js — 이 파일 옆)
+  var loading = {};
+  function need(file, name) {
+    if (root[name]) return Promise.resolve(root[name]);
+    return loading[file] || (loading[file] = new Promise(function (ok, no) {
+      var sc = document.createElement("script"); sc.src = BASE + file; sc.onload = function () { root[name] ? ok(root[name]) : no(new Error(file)); }; sc.onerror = function () { delete loading[file]; no(new Error(file)); }; document.head.appendChild(sc);
+    }));
+  }
+  function fname(m, ext) { return String(m.title).replace(/[\\\/:*?"<>|]+/g, " ").replace(/\s+/g, "_") + "_" + String(m.made).replace(/-/g, "") + "." + ext; }
+  function saveXlsx(m) { return need("xlsx.js", "DaeumXlsx").then(function (X) { return X.download(xlsxSpec(m), fname(m, "xlsx")); }); }
+  function saveHwpx(m) { return need("xlsx.js", "DaeumXlsx").then(function () { return need("hwpx.js", "DaeumHwpx"); }).then(function (W) { return W.download(hwpxDoc(m), fname(m, "hwpx")); }); }
   function tb(act, label, ico, primary) { return '<button type="button" class="d-btn ' + (primary ? "d-btn-p" : "d-btn-s") + ' rp-btn" data-rp="' + act + '" data-h="light"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICO[ico] + "</svg>" + label + "</button>"; }
   /** box 안에 도구 막대 + 문서. opts.readonly 면 «한글 문안 복사» 없이 공유 보기용 */
   function mount(box, m, opts) {
     opts = opts || {};
-    box.innerHTML = '<div class="rp-bar" role="toolbar" aria-label="보고서 공유·인쇄">' + tb("share", "공유하기", "share", true) + tb("print", "PDF 저장·인쇄", "print") + tb("link", "링크 복사", "link") +
+    box.innerHTML = '<div class="rp-bar" role="toolbar" aria-label="보고서 공유·인쇄">' + tb("share", "공유하기", "share", true) + tb("print", "PDF 저장·인쇄", "print") + tb("link", "링크 복사", "link") + tb("xlsx", "엑셀로", "xlsx") + tb("hwpx", "한글로", "hwp") +
       (opts.readonly ? "" : tb("text", "한글 붙여넣기 문안", "copy")) + '</div><p class="rp-status small" role="status" aria-live="polite"></p>' + html(m);
     box.querySelector(".rp-bar").addEventListener("click", function (e) {
       var b = e.target.closest("[data-rp]"); if (!b) return; var a = b.getAttribute("data-rp");
       if (a === "print") return printDoc(box.querySelector(".rp-doc"));
+      if (a === "xlsx" || a === "hwpx") return (a === "xlsx" ? saveXlsx(m) : saveHwpx(m)).then(function (n) { say(box, (a === "xlsx" ? "엑셀" : "한글") + " 파일을 내려받았습니다 — " + n + (a === "xlsx" ? " (합계·비율은 수식)" : " (표 합계는 한글 표 계산식)")); }, function () { say(box, "파일을 만들지 못했습니다. 잠시 뒤 다시 눌러 주세요."); });
       if (a === "text") return copyText(text(m)).then(function () { say(box, "한글 붙여넣기용 개조식 문안을 복사했습니다."); }, function () { say(box, "복사하지 못했습니다. 브라우저 권한을 확인해 주세요."); });
       var urlP = opts.url ? Promise.resolve(opts.url) : linkOf(m);
       urlP.then(function (url) {
@@ -338,13 +460,13 @@
     });
     return box;
   }
-  api.mount = mount; api.printDoc = printDoc; api.linkOf = linkOf;
+  api.mount = mount; api.printDoc = printDoc; api.linkOf = linkOf; api.saveXlsx = saveXlsx; api.saveHwpx = saveHwpx;
 
   // 공무원 창구 현황 탭: «주간/월간 보고서» 단추를 먼저 받아 정부 보고서 문서로 그린다(mount.js 의 옛 간이 미리보기 대신).
   document.addEventListener("click", function (e) {
     var b = e.target && e.target.closest && e.target.closest("#reportRoot [data-report]");
     var last = F.report && F.report.last;
-    if (!b || !last || !F.report.countdown) return; // 집계 전이면 옛 경로가 처리
+    if (!b || !last || !F.report.countdown) return; // 집계 전이면 mount.js 가 집계한 뒤 이 단추를 다시 누른다
     e.stopPropagation(); e.preventDefault();
     var kind = b.getAttribute("data-report") === "monthly" ? "monthly" : "weekly", S = last.stats, H = S.households;
     var cd = F.report.countdown(F.report.currentRound(last.input.now), { now: last.input.now, done: H.closed, total: H.total });

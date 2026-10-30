@@ -8,6 +8,7 @@
 | `config.js` | `window.DAEUM_CONFIG` — AI 주소, 시연 지역·**읍면 정본**(`data/households.json` areas와 같아야 함), 데이터 경로, 요청 저장 키. ⛔ 비밀값 금지 |
 | `ai.js` | 국민 `DaeumAI.recommend(input, catalog)`·공무원 `DaeumAI.summarize(text, ctx)` — 같은 Edge Function 하나를 같은 형식으로 부르고, 실패하면 규칙 기반으로 돌아간다(옛 `officer/ai-officer.js` 통합) |
 | `requests.js` | `DaeumRequests` — 국민 «도움 요청» 저장·조회·상태 변경 |
+| `guide.js`·`guide.css`·`data.html` | 안내 부품(S10i): 첫 방문 소개 4장(한 번만, `localStorage["daeum.intro.seen"]`) · «사용 방법»(화면별 그림, 공무원·주민) · «활용 데이터» 표(정본 `01_리서치/활용데이터_목록.md`와 같이 고침) · **출처 꼬리표 통일** — `.src-tag`·`.src-line`·`.src`·«출처:»로 시작하는 문단에 «공공데이터»/«가상» 표식과 «자료 표 ›»(→ 해당 줄)을 자동으로 붙인다. 줄을 정확히 지정하려면 `data-src-ref="D13,D12"`. 단추는 `data-guide="intro|help|data"` |
 | `netguard.js` | 끊김·자료 사본·AI 미연결 안내 띠(`#netguard`) |
 | `edge/daeum-ai/index.ts` | Supabase Edge Function 소스(Claude API 호출, 키는 서버 비밀). 배포: 닿음 전용 프로젝트 daeum(7c5296b). 보내기 전 `redact.ts`가 전화·주민번호·이메일·계좌·주소·이름을 표식으로 가리고 응답 `redacted` 건수를 화면이 «개인정보 N건을 가린 뒤 AI에 보냈어요»로 띄운다(시험 `node shared/edge/daeum-ai/redact.test.mjs`) |
 

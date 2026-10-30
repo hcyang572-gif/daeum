@@ -283,6 +283,7 @@
         det.appendChild(ul); li.appendChild(det);
       }
       var src = el("p", "src");
+      if (/^D\d+$/.test(s.dataset || "")) src.setAttribute("data-src-ref", s.dataset); // 공통 출처 꼬리표(shared/guide.js)가 «공공데이터» 표식·«자료 표»를 붙인다
       src.appendChild(document.createTextNode("출처: "));
       var a = el("a", null, s.url.replace(/^https?:\/\//, "").replace(/\/$/, ""));
       a.href = s.url; a.target = "_blank"; a.rel = "noopener";
