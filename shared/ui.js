@@ -64,8 +64,7 @@
     try {
       var dk = R.dataset.theme === "dark" || (R.dataset.theme !== "light" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
       var set = function (k, v) { R.style.setProperty(k, v); };
-      if (dk) { set("--nz-paper", noiseTile(.05, false, 3)); set("--nz-card", noiseTile(.03, false, 7)); set("--nz-dock", noiseTile(.04, false, 13)); }
-      else { set("--nz-paper", noiseTile(.035, true, 3)); set("--nz-card", noiseTile(.02, true, 7)); set("--nz-dock", noiseTile(.03, true, 13)); }
+      /* 종이 결은 tokens.css 의 크기 없는 SVG 결(요소 한 장)을 쓴다 — 160px 캔버스 타일은 반복 무늬가 보여 끔(S10f 10-30) */
       SILK = { night: silk(["#2A2C5C", "#3B3F7C", "#6A6CAE", "#1E2048"], true, 11) };
       paintSilk();
     } catch (e) { /* 캔버스가 없으면 tokens.css 의 SVG 결·그라데이션 실크로 대신 */ }

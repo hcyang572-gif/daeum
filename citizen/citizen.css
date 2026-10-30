@@ -253,7 +253,7 @@ select { min-height: 56px; }
 #place-wrap .hint { display: block; font-weight: var(--fw-m); font-size: var(--fs-s); color: var(--ink2); margin: -4px 0 var(--sp-2); }
 
 /* ══════════ S10b(🩵 미르 10-30) 시안 A «하루 한 장» — 우리가족 v5 재질(종이 결·세라믹·에나멜), 주민 메뉴 2칸 ══════════ */
-.top { background-color: transparent; background-image: var(--nz-dock), var(--dock); background-size: 160px 160px, auto; box-shadow: var(--hl), 0 1px 0 var(--hair);
+.top { background-color: transparent; background-image: var(--nz-dock), var(--dock); background-size: var(--nz-s), auto; box-shadow: var(--hl), 0 1px 0 var(--hair);
   -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4); flex-wrap: nowrap; }
 .brand { font-weight: var(--fw-b); }
 .brand i { position: relative; width: 28px; height: 28px; border-radius: 10px; background: var(--enamel); box-shadow: var(--enamel-sh); }
@@ -270,7 +270,7 @@ select { min-height: 56px; }
 /* 누구의 일 — 우물 속 세라믹 구슬 */
 .who-btn[aria-checked="true"] { background: var(--bead); box-shadow: var(--bead-sh); }
 /* 칩 — 세라믹, 고르면 먹 에나멜 */
-.chip { color: var(--ink); background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--e-sm); }
+.chip { color: var(--ink); background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: var(--nz-s), auto; box-shadow: var(--hl), var(--e-sm); }
 .chip[aria-pressed="true"] { color: var(--on-ink-enamel); background: var(--ink-enamel); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 .5px rgba(0,0,0,.4), 2px 8px 16px -8px rgba(20,16,40,.5); }
 .chip[aria-pressed="true"]::before { content: "✓ "; color: inherit; }
 /* 글 칸 — 우물 */
@@ -280,7 +280,7 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
 /* 큰 주 단추 — 에나멜 알약 60px */
 .btn-big { border-radius: var(--r-pill); min-height: 60px; }
 .row2 .d-btn, .actions .d-btn { border-radius: var(--r-pill); }
-.nav .bk { background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: 160px 160px, auto; box-shadow: var(--hl), var(--e-sm); }
+.nav .bk { background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: var(--nz-s), auto; box-shadow: var(--hl), var(--e-sm); }
 .example { border-radius: var(--r); background-color: var(--s1a); } /* 단추 기본 회색이 그라데이션 밑에 남지 않게 */
 .card.svc::before { color: var(--acc-ink); }
 .radio:has(input:checked) { box-shadow: inset 0 0 0 2px var(--acc); }
@@ -303,8 +303,8 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
   --well: linear-gradient(180deg, #E2EBED, #EAF1F2);
   --well-sh: inset 0 1px 2px rgba(14,60,72,.09), inset 0 0 0 .5px rgba(19,38,43,.05), 0 1px 0 rgba(255,255,255,.8);
   --aurora: radial-gradient(70% 55% at 8% -5%, rgba(70,165,178,.26), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(150,205,175,.20), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(120,150,220,.14), transparent 70%);
-  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .04 0 0 0 0 .15 0 0 0 0 .18 .07 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --nz-paper: var(--nz);
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .04 0 0 0 0 .15 0 0 0 0 .18 .07 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --nz-paper: var(--nz); --nz-card: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .04 0 0 0 0 .15 0 0 0 0 .18 .04 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); --nz-dock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .04 0 0 0 0 .15 0 0 0 0 .18 .055 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --enamel-sh: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 4px rgba(6,40,48,.25), 0 0 0 .5px rgba(10,60,70,.35), 1px 3px 6px -2px rgba(14,80,95,.32), 3px 14px 28px -12px color-mix(in srgb, var(--acc) 55%, transparent);
   --enamel-dn: inset 0 1px 0 rgba(255,255,255,.2), inset 0 1px 5px rgba(6,40,48,.42), 0 0 0 .5px rgba(10,60,70,.4), 0 1px 1px rgba(14,80,95,.3);
   --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.16), transparent 46%), linear-gradient(155deg, #26393E, #172A2E 55%, #0E1D20);
@@ -323,7 +323,7 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
   --bead: linear-gradient(180deg, #213236, #1A2A2E); --bead-sh: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 .5px rgba(255,255,255,.08), 1px 3px 8px -3px rgba(0,0,0,.6);
   --well: linear-gradient(180deg, #0C1719, #122022); --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
   --aurora: radial-gradient(70% 55% at 8% -5%, rgba(70,165,178,.18), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(150,205,175,.09), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(120,150,220,.08), transparent 70%);
-  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --glass: rgba(19,33,37,.6); --bg-sunk: #0C1719;
   --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.6), transparent 46%), linear-gradient(155deg, #EEF6F7, #D3E2E5); --on-ink-enamel: #13262B;
 } }
@@ -339,7 +339,7 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
   --bead: linear-gradient(180deg, #213236, #1A2A2E); --bead-sh: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 .5px rgba(255,255,255,.08), 1px 3px 8px -3px rgba(0,0,0,.6);
   --well: linear-gradient(180deg, #0C1719, #122022); --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
   --aurora: radial-gradient(70% 55% at 8% -5%, rgba(70,165,178,.18), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(150,205,175,.09), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(120,150,220,.08), transparent 70%);
-  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --glass: rgba(19,33,37,.6); --bg-sunk: #0C1719;
   --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.6), transparent 46%), linear-gradient(155deg, #EEF6F7, #D3E2E5); --on-ink-enamel: #13262B;
 }
@@ -353,7 +353,7 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
   box-shadow: var(--e3); }
 .cz .ask-hero::before { content: ""; position: absolute; inset: -40% -20%; z-index: 0; pointer-events: none; background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.14) 47%, rgba(255,255,255,.04) 52%, transparent 60%); animation: cz-sheen 14s ease-in-out 2 alternate; }
 .cz .ask-hero::after { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none; opacity: .55;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 160px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 100% 100%;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 0 0 .5px rgba(255,255,255,.1); }
 .cz .ask-hero > * { position: relative; z-index: 1; }
 .cz .ask-hero .h-big { color: #FFFFFF; }
