@@ -604,3 +604,23 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 #routeNote:focus { outline: 3px solid var(--acc-ink); outline-offset: 4px; border-radius: var(--r-sm); }
 .nmap a[href="#"] { position: relative; }
 .nmap a[href="#"]::after { content: ""; position: absolute; inset: -8px; }
+
+/* ── S10g 메뉴 1안(10-30 호창님 선택): 폰 아래 5칸 · PC 옆 메뉴 7칸 두 묶음 · 가구 안 전환 ── */
+.tabs { grid-template-columns: repeat(5, 1fr); }
+.tabs a { min-width: var(--tap); }
+.tabs a span { white-space: nowrap; }
+.tabs a span i { font-style: normal; }
+.tabs .pc-only, .tabs a span i.pc-only, .tabs .nav-grp { display: none; } /* .tabs a{display:grid} 보다 세게 */
+.seg { display: flex; gap: 4px; margin: 0 0 var(--sp-3, 12px); padding: 4px; border-radius: var(--r-pill); background: var(--s1a); box-shadow: var(--hl), var(--e-sm); }
+.seg a { flex: 1 1 0; display: grid; place-items: center; min-height: var(--tap); padding: 0 8px; border-radius: var(--r-pill); color: var(--ink2); font-weight: var(--fw-m); font-size: var(--fs-s); text-decoration: none; text-align: center; white-space: nowrap; }
+.seg a[aria-current="page"] { color: var(--acc-ink); background: var(--bead); box-shadow: var(--bead-sh); }
+.seg a:focus-visible { outline: 3px solid var(--acc-ink); outline-offset: -3px; }
+@media (max-width: 380px) { .tabs a { font-size: .75rem; padding: 4px 0; } .seg a { padding: 0 4px; font-size: .8125rem; } }
+@media (min-width: 1024px) {
+  .tabs a.pc-only { display: flex; }
+  .tabs a span i.pc-only { display: inline; }
+  .tabs .nav-grp { display: block; margin: 14px 14px 4px; font-size: var(--fs-xs); font-weight: var(--fw-m); letter-spacing: .04em; color: var(--ink2); }
+  .tabs .nav-grp:first-child { margin-top: 0; }
+  .seg { display: none; }
+}
+@media print { .seg { display: none !important; } }

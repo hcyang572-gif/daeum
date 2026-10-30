@@ -617,22 +617,25 @@
 
   // ── 탭·초기화 ──────────────────────────────────────────
   // 화면 이름(머리띠 제목) — 경로는 «오늘 할 일»의 동선 묶음에서 들어온다
-  // S10b(시안 A): 메뉴 4칸 = 오늘·다시 찾을 집·연계 누락·가구. 경로는 «오늘», 상담 기록은 «가구», 현황·보고서는 «더보기»에 속한다
-  var TABS = { today: ["오늘", "오늘 찾아갈 집", "today"], route: ["오늘", "방문 경로", "today"],
-    contacts: ["다시 찾을 집", "다시 찾을 집 · 방문·연락 기록", "contacts"], board: ["연계 누락", "연계 누락 · 행복이음에 옮길 초안", "board"],
-    list: ["가구", "가구 명단 · 지역 신호 순", "list"], record: ["가구", "상담 기록", "list"], report: ["현황·보고서", "현황 · 보고서", "more"] };
+  // S10g(1안): 메뉴 = 폰 5칸(오늘·경로·연계 누락·가구·현황) / PC 7칸(+다시 찾을 집·상담 기록). 셋째 값은 «폰에서 불 켤 칸»
+  // — 폰엔 다시 찾을 집·상담 기록 칸이 없어 «가구»에 불을 켜고, 가구 안 전환(.seg)으로 오간다. 옛 주소(#report 등)는 그대로
+  var TABS = { today: ["오늘", "오늘 찾아갈 집", "today"], route: ["경로", "방문 경로", "route"],
+    contacts: ["다시 찾을 집", "다시 찾을 집 · 방문·연락 기록", "list"], board: ["연계 누락", "연계 누락 · 행복이음에 옮길 초안", "board"],
+    list: ["가구", "가구 명단 · 지역 신호 순", "list"], record: ["가구", "상담 기록", "list"], report: ["현황·보고서", "현황 · 보고서", "report"] };
+  var PC = window.matchMedia ? window.matchMedia("(min-width: 1024px)") : null;
   var lastTab = "";
   function show() {
     var tab = (location.hash || "#today").slice(1);
     if (!TABS[tab]) tab = "today";
     Object.keys(TABS).forEach(function (t) { $("tab-" + t).hidden = t !== tab; });
+    var wide = PC && PC.matches;
     [].forEach.call(document.querySelectorAll(".tabs a"), function (a) {
-      var on = a.dataset.tab === TABS[tab][2];
+      var on = a.dataset.tab === (wide ? tab : TABS[tab][2]);
       a.classList.toggle("on", on);
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    [].forEach.call(document.querySelectorAll("#moreMenu [data-more]"), function (a) {
-      if (a.dataset.more === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    [].forEach.call(document.querySelectorAll(".seg a"), function (a) {
+      if (a.dataset.seg === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     document.body.setAttribute("data-tab", tab);
     $("pageTitle").textContent = TABS[tab][1];
@@ -758,6 +761,7 @@
     var sig = $("sigLine"); if (sig) sig.addEventListener("click", function (e) { e.preventDefault(); var m = $("moreToday"); if (!m) return; m.open = true; m.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); var sm = m.querySelector("summary"); if (sm) sm.focus({ preventScroll: true }); });
     var skr = $("skipRoute"); if (skr) skr.addEventListener("click", function () { var n = $("routeNote"); if (n) n.focus(); }); // 긴 시각표를 키보드로 건너뛰기
     window.addEventListener("hashchange", show);
+    if (PC && PC.addEventListener) PC.addEventListener("change", show); // 폰↔PC 폭이 바뀌면 메뉴 불 다시 켜기
     REQ.onChange(function () { rebuild(); show(); }); // 국민 창구 탭에서 요청이 들어오면 반영
     show();
   }
