@@ -100,7 +100,7 @@
   ];
   var N = Q.length;
   var INTRO_BODY = "개인적인 관심으로 알아보고 있습니다. 평소 일하시는 방식을 몇 가지 여쭙니다.";
-  var INTRO_TEXT = "현장 설문 현장 복지 업무, 덜 수 있는 방법이 있을까요? 약 4분 이름 없이 건너뛰어도 됩니다 " + INTRO_BODY;
+  var INTRO_TEXT = "현장 설문 복지 사각지대 발굴 업무에 대해서 알고 싶어요. 약 4분 이름 없이 건너뛰어도 됩니다 " + INTRO_BODY;
 
   var $ = function (id) { return document.getElementById(id); };
   var app = $("app"), top = $("top"), fill = $("barFill"), backBtn = $("backBtn");
@@ -342,7 +342,7 @@
     setActions(resume ? "이어서 답하기" : "시작하기", function () { go(resume ? firstOpen() : 0); }, null);
     return el("section", { class: "screen intro" }, [
       el("p", { class: "kicker" }, [el("i", { class: "dot", "aria-hidden": "true" }), el("span", { text: "현장 설문" })]),
-      el("h1", { class: "lead", html: "현장 복지 업무,<br>덜 수 있는 방법이<br>있을까요?" }),
+      el("h1", { class: "lead", html: "복지 사각지대<br>발굴 업무에 대해서<br>알고 싶어요." }),
       el("p", { class: "body", text: INTRO_BODY }),
       el("p", { class: "chips" }, [el("span", { text: "약 4분" }), el("span", { text: "이름 없이" }), el("span", { text: "건너뛰어도 됩니다" })]),
       el("p", { class: "note", text: "개인정보나 대상자 정보는 적지 말아 주세요." })
