@@ -31,7 +31,7 @@ var today = F.today.build({ households: HH, areas: D.areas, office: D.meta.offic
 t("새 요청 2건(완료·확인 제외), 긴급이 맨 위", function () {
   assert.strictEqual(today.counts.newRequests, 2); assert.strictEqual(today.sections[0].items[0].id, "REQ-1");
 });
-t("기한 임박: 긴급(1영업일 → 10-29 오늘)·지난 요청 포함, 완료 제외", function () {
+t("기한 임박: 긴급(당일 기한 → 10-28, 10-29엔 지남)·지난 요청 포함, 완료 제외", function () {
   var ids = today.sections[1].items.map(function (x) { return x.id; });
   assert.ok(ids.indexOf("REQ-1") >= 0 && ids.indexOf("REQ-4") >= 0 && ids.indexOf("REQ-3") < 0, ids.join(","));
   assert.ok(today.sections[1].items.filter(function (x) { return x.id === "REQ-4"; })[0].overdue);

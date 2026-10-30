@@ -28,8 +28,24 @@
   function p2(n) { return (n < 10 ? "0" : "") + n; }
   function hm(iso) { var d = new Date(iso); return isNaN(d) ? "" : p2(d.getHours()) + ":" + p2(d.getMinutes()); }
   function mdhm(iso) { var d = new Date(iso); return isNaN(d) ? "" : p2(d.getMonth() + 1) + "-" + p2(d.getDate()) + " " + hm(iso); }
+  function ymdNow() { var d = new Date(); return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); }
   function empty(text) { return h("li", { class: "d-slot", text: text }); }
   function btn(label, on, cls, hp) { return h("button", { type: "button", class: cls || "ghost mini", "data-h": hp || "light", onclick: on, text: label }); }
+  // 닿음 테마 확인창(브라우저 기본 confirm 대신) — shared/tokens.css .d-sheet 모양·다크 모드, Esc·바깥 누름 = 취소(shared/ui.js), 닫히면 연 단추로 초점
+  function askTheme(title, text, okLabel, noLabel, onOk, opener) {
+    var old = $("askDlg"); if (old) old.remove();
+    var ok = h("button", { type: "button", class: "primary", "data-h": "success", text: okLabel });
+    var no = h("button", { type: "button", class: "ghost", "data-close": "", text: noLabel });
+    var d = h("dialog", { id: "askDlg", class: "d-sheet", "aria-labelledby": "askDlgH", "aria-describedby": "askDlgP" }, [
+      h("div", { class: "sh-h" }, [h("h2", { id: "askDlgH", text: title })]),
+      h("p", { id: "askDlgP", text: text }),
+      h("div", { class: "rep-acts" }, [ok, no])]);
+    ok.addEventListener("click", function () { if (window.DaeumUI) DaeumUI.closeSheet(d); else d.close(); onOk(); });
+    d.addEventListener("close", function () { setTimeout(function () { d.remove(); }, 0); });
+    document.body.appendChild(d);
+    if (window.DaeumUI) DaeumUI.openSheet("askDlg", opener); else if (d.showModal) d.showModal();
+    try { ok.focus(); } catch (e) { /* 무시 */ }
+  }
   function haptic(k) { if (window.DaeumUI) DaeumUI.haptic(k); }
   function st(name, d) { return F.store.get(name, d); }
   function put(name, v) { F.store.set(name, v); }
@@ -72,7 +88,7 @@
     var li = h("li", { class: it.overdue ? "is-over" : null, "data-req": it.kind === "request" ? it.requestId : null }); // data-req: shared/switcher.js «방금 온 신호» 강조(S10m)
     var tag = it.urgent ? h("span", { class: "d-tag neg", text: "긴급" }) : it.overdue ? h("span", { class: "d-tag warn", text: "기한 지남" }) : null;
     var body = h("div", { class: "grow" }, [h("b", { text: it.label }), tag ? " " : null, tag,
-      h("div", { class: "small", text: it.area + " · " + it.why + (it.due ? " · 기한 " + it.due.slice(5) : "") + (it.channel ? " · " + (CH[it.channel] || it.channel) : "") })]);
+      h("div", { class: "small", text: it.area + " · " + it.why + (it.due ? " · 기한 " + (it.due === ymdNow() ? "오늘" : it.due.slice(5)) : "") + (it.channel ? " · " + (CH[it.channel] || it.channel) : "") })]);
     li.appendChild(body);
     var acts = h("div", { class: "acts" });
     if (it.kind === "request") {
@@ -128,6 +144,9 @@
       var sum = "방문 " + R.order.length + "곳" + split(R.order) + " · 이동 " + R.km.toFixed(1) + "km(추정) · 예상 " + (R.minutes / 60).toFixed(1) + "시간";
       if ($("todayKm")) { routeArt(R.order); $("todayKm").innerHTML = R.km.toFixed(1) + "<small>km 이동(추정)</small>"; $("todayMeta").textContent = "방문 " + R.order.length + "곳" + split(R.order) + " · 예상 " + (R.minutes / 60).toFixed(1) + "시간 · " + routeAreas(R.order); }
       box.appendChild(h("p", { class: "small" + ($("todayKm") ? " sr" : ""), text: sum }));
+      // O-06: 이동+상담이 8시간을 넘으면 경고 줄(오늘 묶음은 추정 시간만 있어 18시 판정은 경로 화면에서)
+      if (R.minutes > 480) box.appendChild(h("p", { class: "warn", role: "status" }, ["예상 " + (R.minutes / 60).toFixed(1) + "시간 — 근무 8시간을 넘습니다. ",
+        h("a", { href: "#route", class: "over-go", text: "경로에서 내일로 미룰 집 고르기" })]));
       var ol = h("ol", { class: "slot-list visits" }), lastA = null;
       R.order.slice(0, 8).forEach(function (s, i) {
         ol.appendChild(h("li", { class: s.kind === "request" ? "req" : null }, [h("span", { class: "vn num", text: String(i + 1), "aria-hidden": "true" }), h("span", { class: "grow" }, [h("span", { class: "sr", text: (i + 1) + "번 " }), h("b", { text: s.label }),
@@ -141,7 +160,7 @@
     }
     if (!R.order.length && $("todayKm")) { clear($("todayArt")); $("todayKm").textContent = ""; $("todayMeta").textContent = "가구 명단에서 방문할 집을 담으면 순서를 묶어 드립니다"; }
     renderTodayGaps();
-    var go = q($("tab-today"), 'a[href="#route"]');
+    var go = q($("tab-today"), 'a[href="#route"]:not(.over-go)');
     // O-03: 담은 가구를 말없이 덮어쓰지 않는다 — 신호·재방문 집이 따로 있으면 한 번 묻고, 담기로 하면 담은 순서 뒤에 붙인다
     if (go && !go._m) { go._m = 1; go.addEventListener("click", function () {
       if (!lastToday) return;
@@ -149,15 +168,16 @@
       var extra = lastToday.route.order.filter(function (s) { return !has[s.id] && O.row(s.id); });
       if (!extra.length) return;
       var names = extra.slice(0, 3).map(function (s) { return s.label; }).join(", ") + (extra.length > 3 ? " 외 " + (extra.length - 3) + "곳" : "");
-      if (window.confirm("주민 신호·재방문 " + extra.length + "곳(" + names + ")도 경로에 담을까요?\n\n«취소»를 누르면 담은 가구 " + mine.length + "곳만으로 경로를 짭니다.")) {
-        O.setPicked(mine.concat(extra.map(function (s) { return s.id; }))); say("주민 신호·재방문 " + extra.length + "곳을 경로에 담았습니다.");
-      }
+      askTheme("경로에 더 담을까요?", "주민 신호·재방문 " + extra.length + "곳(" + names + ")도 경로에 담을까요? «담은 가구만»을 누르면 담은 가구 " + mine.length + "곳만으로 경로를 짭니다.",
+        "함께 담기", "담은 가구만", function () {
+          O.setPicked(mine.concat(extra.map(function (s) { return s.id; }))); O.refresh(); say("주민 신호·재방문 " + extra.length + "곳을 경로에 담았습니다.");
+        }, go);
     }); }
     // 닿음이 미리 정리한 일(타임라인)
     var auto = clear($("todayAuto"));
     var lines = [
       "가구 명단 " + O.rows().length + "곳을 지역 신호(주민 요청·이웃 알림·제보·지난 시도) 순으로 다시 놓았습니다(최종 순서는 담당자)",
-      "새 주민 신호 " + c.newRequests + "건의 처리 기한을 계산했습니다(긴급 1·일반 3영업일, 시연 설정)",
+      "새 주민 신호 " + c.newRequests + "건의 처리 기한을 계산했습니다(긴급 당일·일반 3영업일, 시연 설정)",
       "지난 시도 결과로 재방문·재연락 " + c.revisits + "건의 날짜·시간대를 제안했습니다",
       c.stops ? "오늘 방문 " + c.stops + "곳을 읍면별로 묶어 방문 순서를 짰습니다(총 이동 " + R.km.toFixed(1) + "km, 추정)" : "오늘 방문이 정해지지 않아 동선은 비워 두었습니다"
     ];
@@ -238,7 +258,16 @@
     var chips = h("div", { class: "chips" });
     o.groups.forEach(function (g) { chips.appendChild(h("span", { class: "chip" + (g.key === "signal" ? " r" : ""), text: g.label + " " + g.count })); });
     var sel = h("select", { id: "tipHouse", "aria-label": "제보할 가구" });
-    O.rows().slice(0, 300).forEach(function (r) { sel.appendChild(h("option", { value: r.h.id, text: r.h.label + " · " + r.h.area })); });
+    // O-15: 오늘 담은 집 → 신호 있는 집 → 나머지는 읍면별 묶음(현장에서 찾기 쉽게)
+    var pk = {}; O.picked().forEach(function (id) { pk[id] = 1; });
+    var gPick = [], gSig = [], byArea = {}, areaNames = [];
+    O.rows().slice(0, 300).forEach(function (r) {
+      if (pk[r.h.id]) gPick.push(r); else if (r.signals && r.signals.length) gSig.push(r);
+      else { if (!byArea[r.h.area]) { byArea[r.h.area] = []; areaNames.push(r.h.area); } byArea[r.h.area].push(r); }
+    });
+    function og(label, list) { if (list.length) sel.appendChild(h("optgroup", { label: label + " (" + list.length + ")" }, list.map(function (r) { return h("option", { value: r.h.id, text: r.h.label + " · " + r.h.area }); }))); }
+    og("오늘 담은 집", gPick); og("신호 있는 집", gSig);
+    areaNames.sort(function (x, y) { return String(x).localeCompare(String(y), "ko"); }).forEach(function (a) { og(a, byArea[a]); });
     var txt = h("input", { id: "tipText", type: "text", maxlength: "200", placeholder: "예) 며칠째 우편물이 쌓여 있어요", "aria-label": "이웃·통반장 제보 내용" });
     var from = h("select", { id: "tipFrom", "aria-label": "제보한 사람" }, ["이웃", "통장·이장", "집주인", "명예사회복지공무원"].map(function (x) { return h("option", { text: x }); }));
     var add = btn("제보 넣기", function () {
@@ -332,7 +361,11 @@
     var slot = q($("consultForms"), '[data-slot="forms"]'); if (!slot) return;
     clear(slot);
     var dr = F.consult.draft(d.text, { label: d.label, area: d.area, channel: "visit", aiResult: d.res, services: d.services });
-    var cs = st("consults", []); cs.unshift({ id: "K" + Date.now(), householdId: d.householdId, at: new Date().toISOString(), fields: dr.fields });
+    // O-05: 같은 가구의 최근 초안(맨 앞)이면 새로 쌓지 않고 바꿔 쓴다
+    var cs = st("consults", []), rec = { id: "K" + Date.now(), householdId: d.householdId, at: new Date().toISOString(), fields: dr.fields };
+    var same = -1; for (var ci = 0; ci < cs.length; ci++) if (cs[ci].householdId === d.householdId) { same = ci; break; }
+    if (same >= 0) { rec.id = cs[same].id; cs.splice(same, 1); }
+    cs.unshift(rec);
     put("consults", cs.slice(0, 100));
     if (dr.urgent) slot.appendChild(h("p", { class: "d-tag neg", text: "긴급 — 당일 연계 검토" }));
     var dl = h("dl", { class: "result" });

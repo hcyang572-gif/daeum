@@ -656,3 +656,12 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 .tp-body { margin: 0; padding: 0 14px 12px; white-space: pre-line; font-size: var(--fs-s); line-height: 1.6; overflow-wrap: anywhere; }
 .tp-btn { display: flex; align-items: center; justify-content: center; min-height: var(--tap); margin: 0 14px 14px; border-radius: var(--r-sm); background: var(--bg-sunk); font-size: var(--fs-s); color: var(--ink); }
 @media (max-width: 400px) { .tp-phone { padding: var(--sp-3); } .tp-bubble { margin-left: 0; } }
+/* O-06 근무 시간 넘김 경고 줄(경로·오늘) */
+.route-over { padding: var(--sp-3) var(--sp-4); margin: 0 0 var(--sp-3); }
+.route-over .warn, #todayRoute .warn { margin: 0; color: var(--warn); font-size: var(--fs-s); font-weight: var(--fw-b); }
+.route-over .rep-acts { align-items: center; margin: var(--sp-2) 0 0; }
+.route-over select { max-width: 100%; }
+/* O-14 연결 안내 줄(shared/netguard.js) — 주민 창구 citizen.css 와 같은 모양 */
+.netguard { margin: 0 0 var(--sp-3); }
+.ng-line { margin: 0 0 var(--sp-2); padding: 10px 14px; border-radius: var(--rb); background: var(--solid); box-shadow: var(--e1), inset 3px 0 0 var(--edge); font-size: var(--fs-s); }
+.ng-warn { box-shadow: var(--e1), inset 3px 0 0 var(--warn); }

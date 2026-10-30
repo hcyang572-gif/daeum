@@ -39,11 +39,12 @@
   <div class="sh-h"><h2 id="moreH">시연 설정</h2><button type="button" class="d-round" data-close aria-label="닫기"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <ul>
     <li><button type="button" class="sh-i" id="btnDemoReq" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0"/><circle cx="12" cy="12" r="1"/><path d="M12 13v7"/></svg><span>시연용 주민 신호 1건 넣기<small>주민 창구가 없을 때 흐름 확인용</small></span></button></li>
-    <li><a class="sh-i" href="../citizen/index.html"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span>주민 창구 열기<small>이웃·도움 알리기 화면</small></span></a></li>
+    <li><a class="sh-i" href="../citizen/index.html"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span>주민 화면<small>이웃·도움 알리기 화면</small></span></a></li>
   </ul>
 </dialog>
 
 <div class="work">
+  <div id="netguard" class="netguard" data-offline="인터넷에 연결되어 있지 않습니다. 명단·기록은 이 기기에 그대로 남고, AI 요약·지도·도로 경로는 연결되면 다시 됩니다." hidden></div>
   <header class="top">
     <div class="ttl">
       <p class="cnum" id="pageKicker">공무원 창구 · 상주시 적용 예시</p>
@@ -173,7 +174,7 @@
       <nav class="seg" aria-label="가구 화면 전환"><a href="#list" data-seg="list" data-h="light">명단</a><a href="#record" data-seg="record" data-h="light">상담 기록</a><a href="#contacts" data-seg="contacts" data-h="light">다시 찾을 집</a></nav>
       <p class="lead">방문·전화 시도와 결과를 한 번 눌러 남기면, 다음 시도 일정과 비해당 사유가 저절로 정리됩니다.</p>
       <article class="pane d-card feat plan" id="planRoot" aria-labelledby="h-plan" hidden>
-        <h3 id="h-plan"><span class="fno num" aria-hidden="true">2</span>닷새치 재시도 일정<small>안 해 본 시간대로 배치 · 주말·공휴일 건너뜀 · 연계 결정 뒤 1·3개월 사후관리 포함</small></h3>
+        <h3 id="h-plan">닷새치 재시도 일정<small>안 해 본 시간대로 배치 · 주말·공휴일 건너뜀 · 연계 결정 뒤 1·3개월 사후관리 포함</small></h3>
         <div data-slot="plan"></div>
       </article>
       <div class="contacts-grid">
@@ -226,7 +227,7 @@
     <section id="tab-board" class="tab" hidden>
       <!-- ⑪ 연계 누락 보드(주인공) — ⚙️ 파로 mount.js 가 채운다. 4칸 = 주민 신호 → 상담 → 안내 → 신청 다음에서 멈춘 집 -->
       <div class="panel d-card feat" id="gapRoot" data-feature="link-gaps">
-        <h3><span class="fno num" aria-hidden="true">3</span>연계 누락 보드 <small class="tag">상담 → 안내 → 신청 → 결정에서 멈춘 집</small></h3>
+        <h3>연계 누락 보드 <small class="tag">주민 신호 → 상담 → 안내 → 신청에서 멈춘 집</small></h3>
         <div data-slot="gaps"><p class="d-slot">멈춘 단계를 찾는 중입니다.</p></div>
       </div>
       <!-- 행복이음에 옮길 초안(나가는 것) — ⚙️ 파로 mount.js 가 채운다 -->
@@ -243,7 +244,7 @@
           <div data-slot="deadline"></div>
         </div>
         <div class="panel d-card" id="reportRoot" data-feature="report">
-          <h3>보조 집계</h3>
+          <h3>주간·월간 보고서</h3>
           <p class="note">주간·월간 보고서를 인쇄·PDF·한글 붙여넣기용 문안으로 만듭니다.</p>
           <div class="rep-acts" data-slot="actions">
             <button type="button" class="ghost" data-report="weekly" data-h="light" disabled>주간 보고서</button>
@@ -273,6 +274,7 @@
 <script src="../shared/ui.js"></script>
 <script src="../shared/requests.js"></script>
 <script src="../shared/ai.js"></script>
+<script src="../shared/netguard.js"></script>
 <script src="features.js"></script>
 <script src="demo_seed.js"></script>
 <script src="../shared/report.js"></script>

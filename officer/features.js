@@ -118,8 +118,8 @@
   F.route = { plan: planRoute, DETOUR: DETOUR, KMH: KMH, VISIT_MIN: VISIT_MIN };
 
   // ── 요청 처리 기한(시연 설정) ─────────────────────────────
-  // ⚠️ 지침상 개별 처리 기한은 미확인(01_리서치/현행_위기가구_발굴절차.md 3행). 시연 기본값: 긴급 1영업일·일반 3영업일.
-  var DUE = { urgent: 1, normal: 3, soonDays: 1 };
+  // ⚠️ 지침상 개별 처리 기한은 미확인(01_리서치/현행_위기가구_발굴절차.md 3행). 시연 기본값: 긴급 당일·일반 3영업일(O-08).
+  var DUE = { urgent: 0, normal: 3, soonDays: 1 }; // O-08: 긴급은 «오늘 먼저»와 맞게 접수 당일이 기한
   function requestDue(r) { return addWorkdays(new Date(r.createdAt), r.urgent ? DUE.urgent : DUE.normal); }
   function isOpen(r) { return r && r.status !== "done" && r.status !== "cancelled"; }
   // ── 주민 신호 종류(S9h C안: 주민 창구 = «이웃 제보·도움 요청 → 방문 순서 반영» 입구) ──
@@ -264,7 +264,7 @@
         counts: { newRequests: newItems.length, dueSoon: dueItems.length, revisits: revisit.length, stops: stops.length },
         sections: [
           { key: "new", title: "새 주민 신호", hint: "주민 창구로 들어온 도움 요청·이웃 알림", items: newItems },
-          { key: "due", title: "기한 임박", hint: "처리 기한(시연 설정: 긴급 1·일반 3영업일) 하루 이내·지남", items: dueItems },
+          { key: "due", title: "기한 임박", hint: "처리 기한(시연 설정: 긴급 당일·일반 3영업일) 하루 이내·지남", items: dueItems },
           { key: "revisit", title: "재방문·재연락", hint: "지난 시도 결과로 오늘 다시 할 집", items: revisit },
           { key: "route", title: "오늘 동선", hint: "읍면별로 묶고 가까운 순", items: route.order }
         ],

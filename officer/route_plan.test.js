@@ -71,5 +71,13 @@ t("S10b 읍면 배치: 시연 가구는 동(洞)이 아닌 읍면, 상위 12곳�
   assert(RP.parseHm(s.back.arrive) <= RP.parseHm("19:00"), "복귀 " + s.back.arrive + " — 하루 동선이 비현실적");
 });
 
+t("O-06 근무 시간 넘김: 18시 넘거나 8시간 넘으면 경고, 아니면 없음", function () {
+  assert.strictEqual(RP.overWork({ endMin: RP.parseHm("17:40"), end: "17:40", travelMin: 120, consultMin: 240, back: {} }).over, false);
+  var a = RP.overWork({ endMin: RP.parseHm("18:07"), end: "18:07", travelMin: 120, consultMin: 300, back: {} });
+  assert.ok(a.over && /복귀 18:07/.test(a.why[0]), a.why.join("/"));
+  var b2 = RP.overWork({ endMin: RP.parseHm("17:00"), end: "17:00", travelMin: 200, consultMin: 300 });
+  assert.ok(b2.over && /8시간/.test(b2.why[0]), b2.why.join("/"));
+});
+
 console.log("결과: 통과 " + pass + " · 실패 " + fail);
 if (fail) process.exit(1);

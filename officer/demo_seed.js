@@ -11,7 +11,7 @@
   "use strict";
   var F = root.DaeumFeatures, REQ = root.DaeumRequests, C = root.DAEUM_CONFIG || {};
   if (!F || !F.util || !F.store) return;
-  var U = F.util, TAG = "S9j", VERSION = 3, FLAG = "daeum.demo.seededFor"; // v2: 읍면 배치(S10b) — 옛 남원동 가구 번호 기록을 지우고 다시 깐다 · v3(S10n O-04): 시연 기록 가구를 모두 발굴 명단(위기 정보가 있는 집) 안 가구로 바꿈
+  var U = F.util, TAG = "S9j", VERSION = 4, FLAG = "daeum.demo.seededFor"; // v4(S10n-2 O-08): 긴급 신호는 당일 기한이라 오늘 접수로 깐다 · v2: 읍면 배치(S10b) — 옛 남원동 가구 번호 기록을 지우고 다시 깐다 · v3(S10n O-04): 시연 기록 가구를 모두 발굴 명단(위기 정보가 있는 집) 안 가구로 바꿈
   // 가구 번호 머리글자 = 읍면 코드(data/tools/make_households.py SANGJU 순서)
   var AREA_OF = { A: "함창읍", B: "사벌국면", P: "공검면", Q: "이안면" };
   function areaOf(hid) { return AREA_OF[String(hid).charAt(0)] || ""; }
@@ -76,7 +76,7 @@
   oc["LD-3"] = { result: "applied", at: cd(34, 10, 0), seed: TAG };
   F.store.set("outcomes", oc);
 
-  // ③ 주민 신호(가상) — 처리 기한(긴급 1·일반 3영업일, 시연 설정)이 «오늘·내일·지남»에 걸리게
+  // ③ 주민 신호(가상) — 처리 기한(긴급 당일·일반 3영업일, 시연 설정)이 «오늘·내일·지남»에 걸리게
   function rq(n, createdAt, o) {
     var id = "REQ-" + U.ymd(createdAt).replace(/-/g, "") + "-S" + n;
     return Object.assign({ v: 1, id: id, createdAt: createdAt, status: "new", region: areaOf(o.householdId), contactPref: "phone",
@@ -85,12 +85,12 @@
       consent: { agreed: true, at: createdAt, text: "시연용 가상 요청(S9j 시연 기록)" },
       history: [{ at: createdAt, status: "new", by: "citizen" }] }, o);
   }
-  var t0 = wd(0, 8, 40), t1 = wd(1, 16, 20), t4 = wd(4, 9, 30), t3 = wd(3, 11, 0);
+  var t0 = wd(0, 8, 40), t4 = wd(4, 9, 30), t3 = wd(3, 11, 0);
   var R = [
     rq(1, t0, { householdId: "Q-002", signal: "neighbor", place: "골목 끝 파란 대문 집", contactPref: "visit",
       proxy: { isProxy: true, relation: "이웃" }, subject: { tags: ["alone", "senior"] },
       situation: "옆집 할머니 댁 우편물이 일주일째 쌓여 있고 밤에 불이 안 켜져요" }),
-    rq(2, t1, { householdId: "P-033", urgent: true, proxy: { isProxy: true, relation: "아들" }, subject: { tags: ["alone", "energy", "senior"] },
+    rq(2, wd(0, 8, 10), { householdId: "P-033", urgent: true, proxy: { isProxy: true, relation: "아들" }, subject: { tags: ["alone", "energy", "senior"] },
       situation: "혼자 사시는 어머니 댁 보일러가 고장 났는데 가스비도 밀려서 당장 추우세요" }),
     rq(3, t4, { householdId: "A-024", status: "seen", subject: { tags: ["unemployed", "housing"] },
       situation: "공장 일을 그만두고 월세가 두 달 밀렸어요",

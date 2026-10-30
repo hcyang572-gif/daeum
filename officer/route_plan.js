@@ -97,6 +97,15 @@
     return { rows: rows, back: back, endMin: Math.round(t), end: hm(t), travelMin: Math.round(travelMin), consultMin: consult * order.length, km: +km.toFixed(1) };
   }
 
+  /** O-06: 근무 시간 넘김 — 마침(복귀) 18:00 넘음 또는 이동+상담 8시간(480분) 넘음. → { over, end, workMin, why:[] } */
+  var WORK_END = "18:00", WORK_MIN = 480;
+  function overWork(sch) {
+    var why = [], workMin = (sch.travelMin || 0) + (sch.consultMin || 0);
+    if (sch.endMin > parseHm(WORK_END)) why.push((sch.back ? "복귀 " : "마침 ") + sch.end + " — 18시를 넘습니다");
+    if (workMin > WORK_MIN) why.push("이동+상담 " + (workMin / 60).toFixed(1) + "시간 — 8시간을 넘습니다");
+    return { over: why.length > 0, end: sch.end, workMin: workMin, why: why };
+  }
+
   /** 순서 옮기기(끌어 놓기·위/아래 단추 공용) — 새 배열 */
   function move(arr, from, to) {
     var a = arr.slice(); if (from < 0 || from >= a.length || to < 0 || to >= a.length || from === to) return a;
@@ -105,7 +114,7 @@
 
   var api = { ORIGIN: ORIGIN, DETOUR: DETOUR, KMH: KMH, CONSULT_MIN: CONSULT_MIN, MAX_ROAD_STOPS: MAX_ROAD_STOPS,
     toLatLng: toLatLng, kmBetween: kmBetween, tourKm: tourKm, nearest: nearest, twoOpt: twoOpt, candidates: candidates,
-    approxLegs: approxLegs, cacheKey: cacheKey, schedule: schedule, move: move, hm: hm, parseHm: parseHm };
+    approxLegs: approxLegs, cacheKey: cacheKey, schedule: schedule, overWork: overWork, move: move, hm: hm, parseHm: parseHm };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DaeumRoutePlan = api;
 })(this);

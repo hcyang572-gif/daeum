@@ -362,6 +362,38 @@
     if (st && st.status === "fail" && rr.textContent.indexOf("네이버 지도") < 0)
       rr.textContent += " 네이버 지도를 불러오지 못해 단순 지도로 보여 드립니다(" + (MAP_WHY[st.reason] || st.reason) + ").";
   }
+  // O-06: 18시·8시간을 넘으면 경고 줄 + «내일로 미룰 집» 고르기(뒤 순서 집부터). 미룬 집은 다음 날 처음 열 때 담기 목록 앞에 다시 담긴다
+  var LS_DEFER = "daeum.officer.deferred";
+  function ymdLocal(d) { function p(n) { return (n < 10 ? "0" : "") + n; } return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
+  function renderOver(order, sch) {
+    var box = $("routeOver");
+    if (!box) { box = el("div", "route-over d-card"); box.id = "routeOver"; box.setAttribute("role", "status"); var bar = $("routeStat").closest(".bar"); bar.parentNode.insertBefore(box, bar.nextSibling); }
+    var ow = order.length ? RP.overWork(sch) : { over: false };
+    box.hidden = !ow.over; box.textContent = ""; if (!ow.over) return;
+    box.appendChild(el("p", "warn", "근무 시간을 넘습니다 — " + ow.why.join(" · ") + ". 내일로 미룰 집을 골라 주세요."));
+    var sel = el("select"); sel.id = "deferPick"; sel.setAttribute("aria-label", "내일로 미룰 집");
+    order.slice().reverse().forEach(function (s) { var o = el("option", null, s.h.label + " · " + s.h.area); o.value = s.h.id; sel.appendChild(o); });
+    var b = el("button", "ghost", "내일로 미루기"); b.type = "button"; b.setAttribute("data-h", "medium");
+    b.addEventListener("click", function () {
+      var id = sel.value, r = rowById(id); if (!id) return;
+      var tm = new Date(); tm.setDate(tm.getDate() + 1);
+      var df = lsGet(LS_DEFER, []); if (!Array.isArray(df)) df = [];
+      df = df.filter(function (x) { return x.id !== id; }); df.push({ id: id, day: ymdLocal(tm) }); lsSet(LS_DEFER, df);
+      picked = picked.filter(function (x) { return x !== id; }); lsSet(LS_PICK, picked);
+      renderNav(); renderRoute();
+      var st = $("routeStat"); if (st && r) st.textContent = r.h.label + "을(를) 내일로 미뤘습니다 · " + st.textContent;
+    });
+    var row = el("div", "rep-acts"); var lab = el("label", null, "내일로 미룰 집 "); lab.appendChild(sel); row.appendChild(lab); row.appendChild(b);
+    box.appendChild(row);
+  }
+  // 미룬 날이 된 집을 담기 목록 앞으로(명단에 없는 집은 버린다)
+  function takeDeferred() {
+    var df = lsGet(LS_DEFER, []); if (!Array.isArray(df) || !df.length) return;
+    var today = ymdLocal(new Date()), back = df.filter(function (x) { return x.day <= today; }).map(function (x) { return x.id; });
+    if (!back.length) return;
+    picked = back.filter(function (id) { return rowById(id) && picked.indexOf(id) < 0; }).concat(picked);
+    lsSet(LS_PICK, picked); lsSet(LS_DEFER, df.filter(function (x) { return x.day > today; }));
+  }
   var lastRoute = null;
   function renderRoute() {
     var ret = $("routeReturn").checked;
@@ -377,6 +409,7 @@
       ? "방문 " + order.length + "곳 · 이동 " + sch.km.toFixed(1) + "km " + (isRoad ? "(도로)" : "(근사)") + " · 이동 " + sch.travelMin + "분 · 상담 " + sch.consultMin + "분 · " +
         (ret ? "복귀 " : "마침 ") + sch.end
       : "명단에서 방문할 가구를 담아 주세요.";
+    renderOver(order, sch);
     var rr = $("routeRoad");
     rr.textContent = roadMsg.text || (isRoad ? "도로 경로(네이버 길찾기) 기준 시각표입니다." : "지금은 직선거리 근사 순서·시간입니다. «도로 기준으로 순서 짜기»를 누르면 실제 도로 시간으로 다시 짭니다.");
     rr.className = "route-road" + (roadMsg.kind ? " " + roadMsg.kind : isRoad ? " ok" : "");
@@ -488,7 +521,11 @@
     recog.onresult = function (e) {
       for (var i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) $("recText").value += (($("recText").value ? "\n" : "") + "주민: " + e.results[i][0].transcript.trim());
     };
-    recog.onerror = function (e) { $("micState").textContent = "음성인식 오류: " + e.error; };
+    // O-13: 영어 오류 코드 대신 할 일을 알려 준다
+    var MIC_ERR = { "not-allowed": "마이크 사용을 허용해 주세요(주소창 왼쪽 자물쇠 → 마이크 허용).", "service-not-allowed": "마이크 사용을 허용해 주세요(주소창 왼쪽 자물쇠 → 마이크 허용).",
+      "no-speech": "말소리가 들리지 않았습니다. 다시 눌러 말씀해 주세요.", "audio-capture": "마이크를 찾지 못했습니다. 마이크 연결을 확인해 주세요.",
+      network: "인터넷 연결이 끊겨 받아쓰기를 못 했습니다. 연결 뒤 다시 눌러 주세요.", aborted: "받아쓰기를 멈췄습니다." };
+    recog.onerror = function (e) { $("micState").textContent = MIC_ERR[e.error] || "받아쓰기가 잘 안 됐습니다. 다시 눌러 주세요."; };
     recog.onend = function () { recog = null; micBtn(false); if ($("micState").textContent === "듣는 중…") $("micState").textContent = "받아쓰기 끝"; };
     recog.start(); micBtn(true); $("micState").textContent = "듣는 중…";
   }
@@ -499,7 +536,10 @@
   function summarize() {
     var r = rowById($("recHouse").value); if (!r) return;
     var text = $("recText").value;
-    var out = $("recResult"); out.textContent = ""; out.appendChild(el("p", "muted", "요약하는 중…"));
+    var out = $("recResult"); out.textContent = "";
+    // O-05: 빈 상담이면 요약·초안을 만들지 않고 안내만
+    if (!text.trim()) { out.appendChild(el("p", "warn", "상담 내용을 먼저 적거나 받아쓰기로 넣어 주세요.")); $("btnLink").hidden = true; return; }
+    out.appendChild(el("p", "muted", "요약하는 중…"));
     AI.summarize(text, { label: r.h.label, factors: r.factors.filter(function (f) { return f.kind !== "요청"; }), services: SERVICES })
       .then(function (res) {
         lastResult = { res: res, row: r, text: text };
@@ -539,8 +579,11 @@
       label: lastResult.row.h.label, area: lastResult.row.h.area, serviceIds: ids, summary: lastResult.res.summary,
       source: lastResult.res.source, serviceNames: ids.map(function (id) { var s = svcById(id); return s ? s.name : id; }) });
     lsSet(LS_LINK, links.slice(0, 200));
-    var req = lastResult.row.h.request;
-    if (req && req.id && req.status === "new") REQ.setStatus(req.id, "seen", "officer", "연계 후보 " + ids.length + "건 저장");
+    // O-07: 이 가구 줄의 신호 + householdId로 이어진 열린 신호(시연 신호 넣기 등)를 함께 «담당자 확인»으로
+    var hid = lastResult.row.h.id, note = "연계 후보 " + ids.length + "건 저장", reqs = [];
+    if (lastResult.row.h.request) reqs.push(lastResult.row.h.request);
+    activeRequests().forEach(function (r) { if (r.householdId === hid && reqs.indexOf(r) < 0) reqs.push(r); });
+    reqs.forEach(function (req) { if (req && req.id && req.status === "new") REQ.setStatus(req.id, "seen", "officer", note); });
     $("btnLink").hidden = true;
     renderLinks();
     emit("link", { householdId: lastResult.row.h.id });
@@ -749,6 +792,7 @@
     // 예전 시연 자료(남원동 가구)의 id가 남아 있으면 지금 명단에 없는 집이라 버린다 — 다 버려지면 앞 순서로 다시 담는다(S10d)
     if (Array.isArray(picked)) picked = picked.filter(function (id) { return rowById(id); });
     if (!Array.isArray(picked) || !picked.length) pickTop(); else rebuild();
+    takeDeferred();
     $("fArea").addEventListener("change", renderList);
     $("fTop").addEventListener("change", renderList);
     $("btnPickTop").addEventListener("click", function () { pickTop(); renderList(); });
@@ -808,6 +852,9 @@
     loadData("households", "__DAEUM_HOUSEHOLDS__").then(function (j) { D = j; }),
     loadServices()
   ]).then(init).catch(function (e) {
-    document.querySelector("main").textContent = "데이터를 불러오지 못했습니다: " + e + " (http 서버로 열어 주세요)";
+    // O-13: 개발자 말 대신 할 일을. 원인은 콘솔에만
+    if (window.console) console.warn("닿음 공무원 창구 자료 불러오기 실패:", e);
+    var m = document.querySelector("main"); m.textContent = "";
+    var p = el("p", "warn", "화면 자료를 불러오지 못했습니다. 잠시 뒤 새로고침해 주세요. 계속 안 되면 인터넷 연결을 확인해 주세요."); p.setAttribute("role", "alert"); m.appendChild(p);
   });
 })();

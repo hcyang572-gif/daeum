@@ -11,7 +11,7 @@
   function render() {
     var b = el(); if (!b) return;
     var msgs = [];
-    if (state.offline) msgs.push(["warn", "인터넷에 연결되어 있지 않습니다. 이미 받은 서비스 목록으로 찾기는 됩니다. 음성 입력과 AI 안내는 연결된 뒤에 됩니다."]);
+    if (state.offline) msgs.push(["warn", b.getAttribute("data-offline") || "인터넷에 연결되어 있지 않습니다. 이미 받은 서비스 목록으로 찾기는 됩니다. 음성 입력과 AI 안내는 연결된 뒤에 됩니다."]);
     if (state.ai) msgs.push(["info", state.ai]);
     if (state.json) msgs.push(["info", "일부 자료 파일이 막혀 앱에 들어 있는 사본으로 보여 드리고 있습니다. 이용에는 지장이 없습니다."]);
     b.innerHTML = "";
