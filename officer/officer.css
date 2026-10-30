@@ -749,3 +749,17 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 .ua-tbl th[scope="row"] { font-weight: var(--fw-m); text-align: left; }
 .ua-tbl .d-tag { min-height: 20px; padding: 0 6px; font-size: .6875rem; vertical-align: middle; }
 .ua-tbl tr.rank-top th, .ua-tbl tr.rank-top td { color: var(--acc-ink); font-weight: var(--fw-b); }
+
+/* S10l ④⑤ 보조(더 보기): 도입 비용·탄소 · 다른 시군 */
+.cost-in { display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); align-items: end; margin: 0 0 var(--sp-4); }
+.cost-in label { display: grid; gap: 4px; font-size: var(--fs-s); }
+.cost-in label > span { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cost-in input, .cost-in select, .rg-pick select { min-height: var(--tap); width: 100%; }
+.cost-in button, #regionRoot .rep-acts button { min-height: var(--tap); }
+.cost-in .d-tag, #costOut .d-tag, #rgOut .d-tag { min-height: 20px; padding: 0 7px; font-size: .6875rem; vertical-align: middle; }
+#costOut .kpis, #rgOut .kpis { margin: 0 0 var(--sp-3); }
+.cost-how summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; }
+.rg-pick { display: grid; gap: 4px; max-width: 22rem; margin: 0 0 var(--sp-4); font-size: var(--fs-s); }
+.rg-tbl { width: 100%; min-width: 20rem; }
+.rg-tbl th[scope="row"] { text-align: left; font-weight: var(--fw-m); }
+#rgOut h4 { margin: var(--sp-4) 0 var(--sp-2); }

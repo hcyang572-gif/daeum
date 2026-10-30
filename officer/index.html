@@ -31,6 +31,8 @@
     <p class="nav-grp" aria-hidden="true">더 보기</p>
     <a href="#list" data-tab="list" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>가구 명단</span><em class="num" id="navList"></em></a>
     <a href="#record" data-tab="record" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록</span></a>
+    <a href="#cost" data-tab="cost" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/></svg><span>도입 비용·탄소</span></a>
+    <a href="#region" data-tab="region" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg><span>다른 시군 보기</span></a>
   </nav>
   <div class="me"><i aria-hidden="true">담</i><div><b>담당 주무관</b><span class="team" title="맞춤형복지팀 · 시연">맞춤형복지팀 · 시연</span></div>
     <button type="button" class="d-round more-btn" data-sheet="moreMenu" aria-haspopup="dialog" aria-expanded="false" aria-label="더 보기 — 보조 기능·시연 설정" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button></div>
@@ -43,6 +45,8 @@
   <ul>
     <li><a class="sh-i" href="#list"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>가구 명단<small>방문 순서를 정한 근거 · 경로에 담기</small></span></a></li>
     <li><a class="sh-i" href="#record"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록<small>행복이음에 옮길 초안 · 받아쓰기(가교)</small></span></a></li>
+    <li><a class="sh-i" href="#cost"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/></svg><span>도입 비용·탄소 계산<small>AI 월 비용·유지보수(가정)·이동·CO₂ 추정</small></span></a></li>
+    <li><a class="sh-i" href="#region"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg><span>다른 시군으로 바꿔 보기<small>경북 22개 시군 공개 통계로 읍면동·수급·서비스</small></span></a></li>
     <li><a class="sh-i" href="../shared/ai_check.html"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>AI 추천 검증<small>가상 사연 20건 측정 결과</small></span></a></li>
     <li><a class="sh-i" href="../citizen/index.html"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span>주민 화면<small>이웃·도움 알리기(주민 신호 입구)</small></span></a></li>
   </ul>
@@ -300,6 +304,17 @@
       </div>
     </section>
 
+    <!-- 보조 S10l ④ 도입 비용·탄소(MN-D02) — officer/expand.js 가 채운다 -->
+    <section id="tab-cost" class="tab" hidden>
+      <p class="lead">시군 담당자가 담당자 수·방문일을 넣으면 AI 월 비용, 연 도입 비용, 이동 거리·CO₂ 감소를 <b>추정</b>합니다.</p>
+      <div class="panel d-card" id="costRoot"></div>
+    </section>
+    <!-- 보조 S10l ⑤ 다른 시군으로 바꿔 보기(확산성 시연) — officer/expand.js -->
+    <section id="tab-region" class="tab" hidden>
+      <p class="lead">시군을 고르면 읍면동 목록·세대·1인 세대·고령 비율·기초수급 비율·시군 복지서비스 수가 그 시군 공개 통계로 바뀝니다.</p>
+      <div class="panel d-card" id="regionRoot"></div>
+    </section>
+
     <!-- ⑥ 현황·보고서(S10g 메인 메뉴) — 옛 «연계·보고서»의 아래 절반, 기능 그대로 -->
     <section id="tab-report" class="tab" hidden>
       <div class="stats-top">
@@ -351,6 +366,7 @@
 <script src="lonely_risk.js"></script>
 <script src="fit_rate.js"></script>
 <script src="mount.js"></script>
+<script src="expand.js"></script>
 <script src="officer.js"></script>
 </body>
 </html>

@@ -672,7 +672,8 @@
   var TABS = { today: ["오늘", "오늘 찾아갈 집", "today"], route: ["시각표", "① 하루 방문 시각표", "route"],
     contacts: ["재시도", "② 다시 찾을 집 · 다음 시도 제안", "contacts"], board: ["연계 누락", "③ 연계 누락 · 미신청", "board"],
     report: ["현황·보고서", "④ 현황 · 보고서", "report"], intake: ["명단 정리", "⑤ 명단 정리 입구", "intake"],
-    list: ["가구 명단", "가구 명단 · 방문 순서를 정한 근거", ""], record: ["상담 기록", "상담 기록 · 행복이음에 옮길 초안", ""] };
+    list: ["가구 명단", "가구 명단 · 방문 순서를 정한 근거", ""], record: ["상담 기록", "상담 기록 · 행복이음에 옮길 초안", ""],
+    cost: ["도입 비용·탄소", "도입 비용 · 탄소 계산(추정)", ""], region: ["다른 시군", "다른 시군으로 바꿔 보기", ""] };
   var PC = window.matchMedia ? window.matchMedia("(min-width: 1024px)") : null;
   var lastTab = "";
   function show() {
@@ -696,7 +697,7 @@
     renderNav();
     if (tab === "today") renderToday();
     if (tab === "list") renderList();
-    if (tab === "list" || tab === "record") { var mm = document.querySelector('.d-sheet .sh-i[href="#' + tab + '"]'); [].forEach.call(document.querySelectorAll('.d-sheet .sh-i[href^="#"]'), function (a) { if (a === mm) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }); }
+    if (tab === "list" || tab === "record" || tab === "cost" || tab === "region") { var mm = document.querySelector('.d-sheet .sh-i[href="#' + tab + '"]'); [].forEach.call(document.querySelectorAll('.d-sheet .sh-i[href^="#"]'), function (a) { if (a === mm) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }); }
     if (tab === "route") renderRoute();
     if (tab === "record") { fillRecHouses(); renderLinks(); }
     if (tab === "board" || tab === "report") renderBoard();
