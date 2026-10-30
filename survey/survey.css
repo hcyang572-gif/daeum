@@ -34,9 +34,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(-
 body {
   margin: 0; min-height: 100vh; min-height: 100dvh; padding: 0 24px;
   font-family: var(--f); font-size: 17px; line-height: 1.6; letter-spacing: -.015em; color: var(--ink);
-  background: var(--grain) 0 0 / var(--grain-s) no-repeat, var(--bg);
+  background: var(--bg); /* 10-30 버벅임: 긴 body 전체에 결을 그리면 폰 주소창이 접힐 때마다 다시 그려짐 → 결은 아래 화면 고정 한 장으로 */
   word-break: keep-all; overflow-wrap: break-word; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
 }
+body::before { content: ""; position: fixed; left: 0; top: 0; width: 100vw; height: 100lvh; z-index: -1; pointer-events: none; background: var(--grain) 0 0 / 100% 100% no-repeat; transform: translateZ(0); }
 [hidden] { display: none !important; }
 button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 main { max-width: 520px; margin: 0 auto; outline: none; padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
@@ -45,7 +46,7 @@ main { max-width: 520px; margin: 0 auto; outline: none; padding-bottom: calc(150
 .top {
   position: sticky; top: 0; z-index: 3; max-width: 520px; margin: 0 auto;
   display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 12px;
-  padding: calc(6px + env(safe-area-inset-top)) 0 6px; background: var(--grain) 0 0 / var(--grain-s) no-repeat, var(--bg); /* 바탕과 같은 결 — 띠가 따로 보이지 않게 */
+  padding: calc(6px + env(safe-area-inset-top)) 0 6px; background: var(--bg); /* 바탕과 같은 결 — 띠가 따로 보이지 않게 */
 }
 .back { width: 44px; height: 44px; margin-left: -12px; display: grid; place-items: center; border: 0; border-radius: 50%; background: none; color: var(--ink); cursor: pointer; }
 .back:active { opacity: .5; }
@@ -150,7 +151,7 @@ main { max-width: 520px; margin: 0 auto; outline: none; padding-bottom: calc(150
 .memo:focus { outline: none; border-color: var(--acc); }
 
 /* ── 아래 고정 단추(한 번만 만든 층) ── */
-.actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; padding: 12px 24px calc(14px + env(safe-area-inset-bottom)); background: var(--grain) 0 0 / var(--grain-s) no-repeat, var(--bg); }
+.actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; padding: 12px 24px calc(14px + env(safe-area-inset-bottom)); background: var(--bg); }
 .actions-in { max-width: 520px; margin: 0 auto; display: grid; gap: 4px; }
 .btn { width: 100%; min-height: 56px; border: 0; border-radius: 14px; cursor: pointer; font-size: 17px; font-weight: 700; letter-spacing: -.02em; transition: transform .12s var(--ease), background-color .12s; }
 .btn.main { color: var(--on-acc); background: var(--acc); box-shadow: var(--sh-btn); }
