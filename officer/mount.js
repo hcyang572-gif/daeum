@@ -65,7 +65,7 @@
 
   // ── ① 오늘 할 일 ───────────────────────────────────────
   function todayItem(it) {
-    var li = h("li", { class: it.overdue ? "is-over" : null });
+    var li = h("li", { class: it.overdue ? "is-over" : null, "data-req": it.kind === "request" ? it.requestId : null }); // data-req: shared/switcher.js «방금 온 신호» 강조(S10m)
     var tag = it.urgent ? h("span", { class: "d-tag neg", text: "긴급" }) : it.overdue ? h("span", { class: "d-tag warn", text: "기한 지남" }) : null;
     var body = h("div", { class: "grow" }, [h("b", { text: it.label }), tag ? " " : null, tag,
       h("div", { class: "small", text: it.area + " · " + it.why + (it.due ? " · 기한 " + it.due.slice(5) : "") + (it.channel ? " · " + (CH[it.channel] || it.channel) : "") })]);

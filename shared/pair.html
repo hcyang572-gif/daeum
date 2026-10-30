@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>닿음 · 나란히 보기</title>
+<meta name="description" content="시연용 — 주민 화면과 공무원 화면을 좌우로 함께 봅니다(가상 데이터).">
+<meta name="theme-color" content="#F1EFF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0A12" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="tokens.css">
+<script src="switcher.js"></script>
+</head>
+<body>
+<div class="d-aura" aria-hidden="true"></div>
+<main class="sw-pane-wrap">
+  <section class="sw-pane" aria-labelledby="swCH">
+    <h2 id="swCH"><b>주민 화면</b>폰에서 이웃·도움 알리기</h2>
+    <iframe id="swCitizen" title="주민 화면" loading="eager"></iframe>
+  </section>
+  <section class="sw-pane" aria-labelledby="swOH">
+    <h2 id="swOH"><b>공무원 화면</b>보낸 알림이 «오늘 › 새 주민 신호»에 바로 올라옵니다</h2>
+    <iframe id="swOfficer" title="공무원 화면" loading="eager"></iframe>
+  </section>
+</main>
+<script src="ui.js"></script>
+</body>
+</html>

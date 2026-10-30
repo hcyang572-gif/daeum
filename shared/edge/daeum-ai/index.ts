@@ -1,8 +1,12 @@
 // 닿음 AI — Supabase Edge Function (Deno). 배포처는 닿음 전용 프로젝트 daeum(ref gicjzrxgktpovnphtjhi) 한 곳뿐(10-29 A안).
-// 배포: supabase functions deploy daeum-ai --project-ref gicjzrxgktpovnphtjhi --no-verify-jwt
+// 배포: 임시 폴더에 supabase/functions/daeum-ai/{index.ts,redact.ts} 로 복사한 뒤 그 폴더에서
+//       npx supabase functions deploy daeum-ai --project-ref gicjzrxgktpovnphtjhi --no-verify-jwt --use-api
 //       supabase secrets set ANTHROPIC_API_KEY=...   (키는 서버 비밀에만. 화면 코드·저장소에 두지 않는다)
 // 요청: POST { situation, proxy:{isProxy, relation}, profile, services:[{id,name,target,support}] }
-// 응답: { summary, picks:[{ id, reason }] }  — id 는 반드시 services 안의 것. 화면도 한 번 더 거른다.
+// 응답: { summary, picks:[{ id, reason }], redacted:{phone:1,name:2…} }  — id 는 반드시 services 안의 것. 화면도 한 번 더 거른다.
+// 개인정보 가림(S10l-①): situation·profile 은 외부 AI로 보내기 전에 redact.ts 로 전화·주민번호·이메일·계좌·주소·이름을 표식으로 바꾼다.
+
+import { redactText, redactValue } from "./redact.ts";
 
 const MODEL = "claude-sonnet-5-5";
 const MAX_SITUATION = 1200;
@@ -78,7 +82,9 @@ Deno.serve(async (req) => {
   let body: { situation?: string; proxy?: { isProxy?: boolean; relation?: string }; profile?: unknown; services?: Svc[] };
   try { body = await req.json(); } catch { return json({ error: "JSON 형식이 아닙니다" }, 400, origin); }
 
-  const situation = String(body.situation ?? "").slice(0, MAX_SITUATION).trim();
+  const redacted: Record<string, number> = {};
+  const situation = redactText(String(body.situation ?? "").slice(0, MAX_SITUATION).trim(), redacted);
+  const profile = redactValue(body.profile ?? {}, redacted);
   const services = (Array.isArray(body.services) ? body.services : []).slice(0, MAX_SERVICES)
     .filter((s) => s && typeof s.id === "string" && typeof s.name === "string");
   if (!situation || !services.length) return json({ error: "상황 문장과 서비스 목록이 필요합니다" }, 400, origin);
@@ -98,7 +104,7 @@ Deno.serve(async (req) => {
       max_tokens: 1600,
       thinking: { type: "between_tools" },
       system: SYSTEM,
-      messages: [{ role: "user", content: `${who}\n\n[상황]\n${situation}\n\n[참고: 화면이 뽑은 조건]\n${JSON.stringify(body.profile ?? {})}\n\n[서비스 목록]\n${catalog}` }],
+      messages: [{ role: "user", content: `${who}\n\n[상황]\n${situation}\n\n[참고: 화면이 뽑은 조건]\n${JSON.stringify(profile)}\n\n[서비스 목록]\n${catalog}` }],
     }),
   });
   if (!r.ok) return json({ error: `AI 호출 실패 ${r.status}` }, 502, origin);
@@ -112,5 +118,5 @@ Deno.serve(async (req) => {
   // 지어낸 서비스 차단: 목록에 있는 ID만 남긴다
   const picks = (out.picks ?? []).filter((p) => p && ids.has(p.id)).slice(0, 8)
     .map((p) => ({ id: p.id, reason: String(p.reason ?? "").slice(0, 200) }));
-  return json({ summary: String(out.summary ?? "").slice(0, 400), picks, model: MODEL, usage: data.usage ?? null }, 200, origin);
+  return json({ summary: String(out.summary ?? "").slice(0, 400), picks, model: MODEL, usage: data.usage ?? null, redacted }, 200, origin);
 });

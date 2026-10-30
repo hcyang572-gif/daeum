@@ -2,9 +2,10 @@
    ① 문서(navigate)·데이터(.json)는 network-first(실패 시 캐시) — 옛 화면·옛 목록이 남지 않게
    ② 나머지 정적 자원은 cache-first, 프리캐시는 1회용 쿼리로 HTTP 캐시를 우회해 받는다
    ⚠ 파일을 바꾸면 CACHE 이름을 올린다. */
-const CACHE = "daeum-citizen-405132e1f8";
+const CACHE = "daeum-citizen-7f044fb93a";
 const ASSETS = ["./", "index.html", "citizen.css", "app.js", "progress.js", "manifest.json", "data/services.sample.json", "data/services.sample.js",
-  "../shared/tokens.css", "../shared/config.js", "../shared/ai.js", "../shared/requests.js", "../shared/netguard.js", "../shared/ui.js"];
+  "../shared/tokens.css", "../shared/config.js", "../shared/ai.js", "../shared/requests.js", "../shared/netguard.js", "../shared/ui.js",
+  "../shared/switcher.js", "../shared/switcher.css"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(ASSETS.map((u) => {

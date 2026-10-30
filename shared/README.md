@@ -9,7 +9,7 @@
 | `ai.js` | 국민 `DaeumAI.recommend(input, catalog)`·공무원 `DaeumAI.summarize(text, ctx)` — 같은 Edge Function 하나를 같은 형식으로 부르고, 실패하면 규칙 기반으로 돌아간다(옛 `officer/ai-officer.js` 통합) |
 | `requests.js` | `DaeumRequests` — 국민 «도움 요청» 저장·조회·상태 변경 |
 | `netguard.js` | 끊김·자료 사본·AI 미연결 안내 띠(`#netguard`) |
-| `edge/daeum-ai/index.ts` | Supabase Edge Function 소스(Claude API 호출, 키는 서버 비밀). 배포: 닿음 전용 프로젝트 daeum(7c5296b) |
+| `edge/daeum-ai/index.ts` | Supabase Edge Function 소스(Claude API 호출, 키는 서버 비밀). 배포: 닿음 전용 프로젝트 daeum(7c5296b). 보내기 전 `redact.ts`가 전화·주민번호·이메일·계좌·주소·이름을 표식으로 가리고 응답 `redacted` 건수를 화면이 «개인정보 N건을 가린 뒤 AI에 보냈어요»로 띄운다(시험 `node shared/edge/daeum-ai/redact.test.mjs`) |
 
 ## AI 모드
 - 함수 형식은 하나: POST `{situation, proxy, profile, services[{id,name,target,support}]}` → `{summary, picks[{id,reason}]}`. 허용 출처 github.io·localhost:8000·127.0.0.1:8000(그 밖은 403 → 규칙 모드).

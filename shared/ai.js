@@ -307,6 +307,12 @@
     return ((ans && ans.picks) || []).filter(function (p) { return p && typeof p.id === "string" && byId[p.id] && gateOk(byId[p.id], text); }).slice(0, max || 8);
   }
 
+  /** 서버가 외부 AI로 보내기 전에 가린 개인정보 건수(S10l-①) → 화면 한 줄 */
+  function redactNote(r) {
+    var n = 0; Object.keys(r || {}).forEach(function (k) { n += +r[k] || 0; });
+    return n ? "개인정보 " + n + "건을 가린 뒤 AI에 보냈어요." : "";
+  }
+
   function callEdge(input, profile, catalog) {
     // 규칙 관련도 순(맞는 것 → 위기 상담전화 → 나머지 원래 순서) 상위만 보낸다 — 전체 목록을 통째로 보내지 않는다
     var all = catalog.services || [];
@@ -359,7 +365,7 @@
       rules.filter(function (r) { return r.service.urgent; }).forEach(function (r) {
         if (!items.some(function (x) { return x.service.id === r.service.id; })) items.unshift(r);
       });
-      return Object.assign(base, { mode: "ai", summary: String(ans.summary || "").slice(0, 400) || ruleSummary(profile, items), items: items, notice: "" });
+      return Object.assign(base, { mode: "ai", summary: String(ans.summary || "").slice(0, 400) || ruleSummary(profile, items), items: items, redacted: ans.redacted || null, notice: redactNote(ans.redacted) });
     }).catch(function (e) {
       if (window.console) console.warn("[닿음 AI] 규칙 모드로 전환:", e && e.message);
       return Object.assign(base, { mode: "rules", summary: ruleSummary(profile, rules), items: rules,
@@ -449,7 +455,7 @@
       // 규칙이 «긴급»으로 본 서비스는 AI가 빠뜨려도 앞에 남긴다
       if (r.urgent) r.serviceIds.filter(function (id) { return (r.why[id] || []).indexOf("긴급") >= 0 && ids.indexOf(id) < 0; })
         .reverse().forEach(function (id) { ids.unshift(id); });
-      return Object.assign({}, r, { summary: String(ans.summary || "").slice(0, 400) || r.summary, serviceIds: ids, reasons: reasons, source: "ai" });
+      return Object.assign({}, r, { summary: String(ans.summary || "").slice(0, 400) || r.summary, serviceIds: ids, reasons: reasons, source: "ai", redacted: ans.redacted || null });
     }).catch(function (e) {
       if (window.console) console.warn("[닿음 AI] 공무원 요약 규칙 모드로 전환:", e && e.message);
       r.fallback = String((e && e.message) || e); return r;
