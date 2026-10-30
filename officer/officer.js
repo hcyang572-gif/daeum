@@ -128,7 +128,7 @@
   var LS_WX = "daeum.officer.wx"; // 시연 특보 고르기(heat|cold|off, 없으면 시나리오 기본값)
   function rowById(id) { for (var i = 0; i < rows.length; i++) if (rows[i].h.id === id) return rows[i]; return null; }
   function pickTop() {
-    var n = Math.max(1, Math.min(30, +$("fPick").value || 12));
+    var n = Math.max(1, Math.min(30, +$("fPick").value || 9));
     picked = rows.slice(0, n).map(function (r) { return r.h.id; });
     lsSet(LS_PICK, picked);
   }
@@ -684,7 +684,7 @@
   // — 폰엔 다시 찾을 집·상담 기록 칸이 없어 «가구»에 불을 켜고, 가구 안 전환(.seg)으로 오간다. 옛 주소(#report 등)는 그대로
   // S10o-2(10-30 호창님 확정 주 기능 5개): 메뉴 = 오늘(입구) · ①시각표 · ②재시도 · ③연계 누락 · ④현황·보고서 · ⑤명단 정리.
   // 가구 명단·상담 기록은 보조라 폰 아래 메뉴에서 빼고 «더 보기»로(셋째 값 "" = 폰에서 불 켤 칸 없음)
-  var TABS = { today: ["오늘", "오늘 찾아갈 집", "today"], route: ["시각표", "① 하루 방문 시각표", "route"],
+  var TABS = { today: ["오늘", "오늘", "today"], route: ["시각표", "① 하루 방문 시각표", "route"],
     contacts: ["재시도", "다시 찾을 집 · 재시도 일정", "route"], board: ["연계 누락", "② 연계 누락 · 미신청", "board"],
     report: ["현황·보고서", "③ 현황 · 보고서", "report"], intake: ["명단 정리", "명단 정리 입구", ""],
     list: ["가구 명단", "가구 명단 · 방문 순서를 정한 근거", ""], record: ["상담 기록", "상담 기록 · 행복이음에 옮길 초안", ""],

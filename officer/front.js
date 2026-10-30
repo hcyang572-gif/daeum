@@ -13,18 +13,20 @@
   // 감소율(%) — 순수 계산, 시험용으로 밖에 연다
   function gainPct(g) { return g && g.naive > 0 ? Math.round((g.naive - g.plan) / g.naive * 100) : null; }
 
+  // S10p-3 F-1: 첫 화면 숫자는 «시연 기본값» 스냅숏으로 고정한다(담기·앞에 두기·특보 선택이 브라우저에 남아도 발표·원고 숫자와 같게).
+  // 값은 빈 프로필 실측(_design/S10p-2_이동거리_재측정.md). 지금 담은 집 기준 값이 다르면 작게 함께 적는다.
+  var SNAP = { n: 9, naive: 127.31, plan: 65.77, pct: 48 }; // 2026-10-30 빈 프로필 실측 (127.31-65.77)/127.31 = 48.3%
   function renderGain(O) {
-    var box = $("fGain"); if (!box) return;
+    var box = $("fGain"); if (!box || !SNAP.pct) return;
     var g = null; try { g = O.gain ? O.gain() : null; } catch (e) { g = null; }
     var p = gainPct(g);
-    if (p == null || p <= 0) return; // 숫자를 못 내면 처음 글(«이동 거리를 줄이는 순서로 묶습니다») 그대로
     box.textContent = "";
     box.appendChild(doc.createTextNode("이동 거리 "));
-    box.appendChild(el("b", "num", p + "%"));
+    box.appendChild(el("b", "num", SNAP.pct + "%"));
     box.appendChild(doc.createTextNode(" 줄임 "));
     box.appendChild(tag("warn", "가상"));
-    box.appendChild(el("small", null, "명단 순서 " + g.naive.toFixed(1) + "km → 묶은 순서 " + g.plan.toFixed(1) + "km · " + g.n + "곳" +
-      (g.ret ? "·시청 복귀" : "") + " · 직선×1.3 추정"));
+    box.appendChild(el("small", null, "시연 기본값 " + SNAP.n + "곳: 명단 순서 " + SNAP.naive.toFixed(1) + "km → 묶은 순서 " + SNAP.plan.toFixed(1) + "km · 시청 복귀 · 직선×1.3 추정" +
+      (p != null && p > 0 && p !== SNAP.pct ? " (지금 담은 기준 " + p + "%)" : "")));
   }
 
   function renderWx(O) {
@@ -43,32 +45,39 @@
   function renderRisk(O) {
     var ol = $("fRisk"), L = root.DaeumLonely, d = L && L.get ? L.get() : null; if (!ol || !d) return;
     ol.textContent = "";
-    L.ranked(d).slice(0, 3).forEach(function (r) {
-      var li = el("li"); li.appendChild(el("b", null, r.name));
-      var bar = el("span", "rk"); bar.setAttribute("aria-hidden", "true");
-      var fill = el("i"); fill.style.width = Math.max(4, Math.min(100, r.index)) + "%"; bar.appendChild(fill); li.appendChild(bar);
-      li.appendChild(el("span", "v", r.index.toFixed(0)));
-      li.appendChild(el("span", "sr", " 고독사 위험도 지수 " + r.index.toFixed(1) + " · " + r.tier + " · 상주 " + d.areas.length + "곳 중 " + r.rank + "위"));
-      ol.appendChild(li);
-    });
+    L.ranked(d).slice(0, 3).forEach(function (r) { ol.appendChild(riskLi(r, d)); });
     var R = O.recipients ? O.recipients() : null, rc = $("fRecip");
     if (rc && R && R.basic_rate) {
       var basic = R.rows.filter(function (x) { return x["사업명"] === "기초생활보장(맞춤형급여)"; })[0];
       rc.textContent = "";
       rc.appendChild(doc.createTextNode("기초생활보장 수급가구 "));
       rc.appendChild(el("b", "num", basic ? basic["수급가구수"].toLocaleString() : R.basic_rate.value_pct.toFixed(1) + "%"));
-      rc.appendChild(doc.createTextNode(basic ? "가구(" + R.basic_rate.value_pct.toFixed(1) + "%) " : " "));
+      rc.appendChild(doc.createTextNode(basic ? "가구(" + R.basic_rate.value_pct.toFixed(1) + "%, 근사) " : " "));
       rc.appendChild(tag("pub", "공공데이터"));
       rc.hidden = false;
     }
-    var src = $("fRiskSrc");
-    if (src && (src.hidden || (R && src.textContent.indexOf("15062448") < 0))) { // 한 번만 쓴다 — 출처 꼬리표 장식(guide.js)이 붙인 표식·링크를 지우지 않게
+    var src = $("fRiskSrc"), dd = $("fRiskSrcD"), sum = $("fRiskSum");
+    if (src && dd && (dd.hidden || (R && src.textContent.indexOf("15062448") < 0))) { // 한 번만 쓴다 — 출처 꼬리표 장식(guide.js)이 붙인 표식·링크를 지우지 않게
+      var ym = R ? ((R.rows[0] || {})["기준년월"] || "") : "";
+      if (sum) sum.textContent = "출처: 행정안전부 인구·세대(" + d.base + ")" + (R ? " · 사회보장정보원 수급권자 현황(" + ym + ")" : "");
       src.removeAttribute("data-src-done");
-      src.textContent = "출처: 행정안전부 «주민등록 인구·세대»(15097972·15097974) 기준 " + d.base +
-        (R ? " · 한국사회보장정보원 «수급권자 현황»(15062448) 기준 " + ((R.rows[0] || {})["기준년월"] || "") : "") +
+      src.textContent = "출처: 행정안전부 «주민등록 인구·세대»(공공데이터포털 15097972·15097974) 기준 " + d.base +
+        (R ? " · 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448) 기준 " + ym +
+          " · 수급가구 비율은 분자 " + ym + "·분모 2026-09(상주시 세대수)로 시점이 다른 근사값" : "") +
         " · 위험도는 닿음 추정 지수(공식 통계 아님)";
-      src.hidden = false;
+      dd.hidden = false;
     }
+    // S10p-3 F-6: 현황·보고 화면 맨 위 — 위험 높은 읍면 5곳(같은 자료)
+    var r5 = $("rRisk");
+    if (r5) { r5.textContent = ""; L.ranked(d).slice(0, 5).forEach(function (r) { r5.appendChild(riskLi(r, d)); }); }
+  }
+  function riskLi(r, d) {
+    var li = el("li"); li.appendChild(el("b", null, r.name));
+    var bar = el("span", "rk"); bar.setAttribute("aria-hidden", "true");
+    var fill = el("i"); fill.style.width = Math.max(4, Math.min(100, r.index)) + "%"; bar.appendChild(fill); li.appendChild(bar);
+    li.appendChild(el("span", "v", r.index.toFixed(0)));
+    li.appendChild(el("span", "sr", " 고독사 위험도 지수 " + r.index.toFixed(1) + " · " + r.tier + " · 상주 " + d.areas.length + "곳 중 " + r.rank + "위"));
+    return li;
   }
 
   function render(today) {
@@ -84,7 +93,7 @@
     try { renderRisk(O); } catch (e) { }
   }
 
-  var API = { render: render, gainPct: gainPct };
+  var API = { render: render, gainPct: gainPct, SNAP: SNAP };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   else root.DaeumFront = API;
 })(typeof window !== "undefined" ? window : this);

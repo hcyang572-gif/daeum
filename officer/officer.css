@@ -856,3 +856,13 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 }
 @media (prefers-reduced-motion: reduce) { .pd-flow path { animation: none; } }
 @media print { .pd-band, .pd-cards, .pd-out { display: none !important; } }
+/* S10p-3 다듬기: 화면 머리 기관 꼬리표 · 출처 펼침 · 오늘 화면은 띠 제목이 먼저(머리 가상 안내는 띠 출처의 «가상» 꼬리표로) */
+body[data-tab="today"] .virtual { display: none; }
+.pd-orgs { margin: 0 0 var(--sp-3); font-size: var(--fs-xs); color: var(--ink2); overflow-wrap: anywhere; }
+.pd-orgs .d-tag, .pd-srcd .d-tag, .pd-rh .d-tag, .pd-rtop h3 .d-tag, .pd-line .d-tag { min-height: 22px; padding: 0 8px; vertical-align: middle; }
+.pd-srcd { margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--ink2); }
+.pd-srcd > summary { min-height: var(--tap); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; cursor: pointer; overflow-wrap: anywhere; }
+.pd-srcd .pd-src { margin-top: 0; }
+.pd-rh { margin: 0; font-size: var(--fs-s); font-weight: var(--fw-m); color: var(--ink); }
+.pd-rtop { margin-bottom: var(--sp-4); padding: var(--sp-5); }
+.pd-rtop h3 { margin: 0 0 var(--sp-3); font-size: var(--fs-b); }

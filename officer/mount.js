@@ -727,6 +727,7 @@
     if (tab === "list") renderHouseholds();
     if (tab === "contacts") renderContacts();
     if (tab === "board" || tab === "report") renderStats();
+    if (tab === "report" && window.DaeumFront) DaeumFront.render();
   }
   document.addEventListener("daeum:officer-show", onShow);
   // S10j-2: 화면별 «엑셀로»(officer/xlsx_out.js)가 화면과 같은 계산을 쓰도록 여는 창구 — 읽기 전용

@@ -68,6 +68,7 @@
   </ul>
   <p class="sh-grp">시연 설정</p>
   <ul>
+    <li><a class="sh-i" href="?demo=reset#today" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/></svg><span>시연 초기화<small>담기·앞에 두기·특보 선택을 기본값으로(발표 전 한 번)</small></span></a></li>
     <li><button type="button" class="sh-i" id="btnDemoReq" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0"/><circle cx="12" cy="12" r="1"/><path d="M12 13v7"/></svg><span>시연용 주민 신호 1건 넣기<small>주민 창구가 없을 때 흐름 확인용</small></span></button></li>
   </ul>
 </dialog>
@@ -104,46 +105,44 @@
           <path d="M100 0C100 32 200 24 200 56"/><path d="M300 0C300 32 200 24 200 56"/><path d="M500 0C500 32 200 24 200 56"/><path d="M700 0C700 32 200 24 200 56"/>
           <path d="M700 0C700 32 1000 24 1000 56"/><path d="M900 0C900 32 600 24 600 56"/><path d="M1100 0C1100 32 600 24 600 56"/><path d="M1100 0C1100 32 1000 24 1000 56"/>
         </svg>
-        <p class="pd-src"><span class="d-tag pub">공공데이터</span> 출처: 공공데이터포털 15000415·15134735·15000736·15000576·15097972·15097974·15090532·15108347·15062448 · 가구는 모두 <span class="d-tag warn">가상</span></p>
+        <details class="pd-srcd"><summary data-h="light"><span class="d-tag pub">공공데이터</span> 출처 9종 · 가구는 모두 <span class="d-tag warn">가상</span></summary>
+          <p class="pd-src">출처: 공공데이터포털 15000415(기상청 기상특보) · 15134735(국토교통부 건축물대장) · 15000736·15000576(국립중앙의료원 병·의원·약국) · 15097972·15097974(행정안전부 인구·세대, 기준 2026-09-30) · 15090532·15108347(한국사회보장정보원 복지서비스) · 15062448(한국사회보장정보원 수급권자 현황, 기준 2025-12)</p></details>
       </section>
 
       <div class="pd-cards">
         <article class="pd-card d-card" aria-labelledby="pd1">
           <h3 id="pd1"><i aria-hidden="true">1</i>하루 방문 시각표</h3>
           <p>특보·홀로 사는 어르신·오래된 집을 반영해 오늘 갈 순서와 시각을 한 장으로.</p>
-          <div class="pd-ba" aria-hidden="true">
-            <figure><svg viewBox="0 0 100 84"><path class="bad" d="M10 70 80 15 20 30 75 70 30 12 88 50"/><g class="dots off"><circle cx="10" cy="70" r="4"/><circle cx="80" cy="15" r="4"/><circle cx="20" cy="30" r="4"/><circle cx="75" cy="70" r="4"/><circle cx="30" cy="12" r="4"/><circle cx="88" cy="50" r="4"/></g></svg><figcaption>명단 순서대로</figcaption></figure>
-            <span class="ar">→</span>
-            <figure><svg viewBox="0 0 100 84"><path class="good" d="M10 70 20 30 30 12 80 15 88 50 75 70"/><g class="dots"><circle cx="10" cy="70" r="4"/><circle cx="20" cy="30" r="4"/><circle cx="30" cy="12" r="4"/><circle cx="80" cy="15" r="4"/><circle cx="88" cy="50" r="4"/><circle cx="75" cy="70" r="4"/></g></svg><figcaption>읍면 묶어 한 바퀴</figcaption></figure>
+          <div class="pd-ba">
+            <figure><svg viewBox="0 0 100 84" role="img" aria-label="명단 순서대로 다니면 동선이 엉킨 그림"><path class="bad" d="M10 70 80 15 20 30 75 70 30 12 88 50"/><g class="dots off"><circle cx="10" cy="70" r="4"/><circle cx="80" cy="15" r="4"/><circle cx="20" cy="30" r="4"/><circle cx="75" cy="70" r="4"/><circle cx="30" cy="12" r="4"/><circle cx="88" cy="50" r="4"/></g></svg><figcaption>명단 순서대로</figcaption></figure>
+            <span class="ar" aria-hidden="true">→</span>
+            <figure><svg viewBox="0 0 100 84" role="img" aria-label="읍면별로 묶어 한 바퀴로 도는 그림"><path class="good" d="M10 70 20 30 30 12 80 15 88 50 75 70"/><g class="dots"><circle cx="10" cy="70" r="4"/><circle cx="20" cy="30" r="4"/><circle cx="30" cy="12" r="4"/><circle cx="80" cy="15" r="4"/><circle cx="88" cy="50" r="4"/><circle cx="75" cy="70" r="4"/></g></svg><figcaption>읍면 묶어 한 바퀴</figcaption></figure>
           </div>
           <p class="pd-num" id="fGain">이동 거리를 줄이는 순서로 묶습니다 <span class="d-tag warn">가상</span></p>
           <p class="pd-sub" id="fWx" hidden></p>
-          <a class="pd-line" href="#contacts" id="fRevisit" data-h="light">다시 찾을 집 <b class="num" id="fRevisitN">—</b>곳 · 재시도 일정</a>
+          <a class="pd-line" href="#contacts" id="fRevisit" data-h="light">다시 찾을 집 <b class="num" id="fRevisitN">—</b>곳 <span class="d-tag warn">가상</span></a>
           <a class="d-btn d-btn-p pd-go" href="#route" data-h="medium">오늘 시각표 보기</a>
         </article>
         <article class="pd-card d-card" aria-labelledby="pd2">
           <h3 id="pd2"><i aria-hidden="true">2</i>연계 누락</h3>
           <p>안내하고 멈춘 집을 빨간 점으로 — 다음 할 일 하나만 보여 줍니다.</p>
-          <div class="pd-ba" aria-hidden="true">
-            <figure><svg viewBox="0 0 100 84"><g class="memo"><rect x="8" y="10" width="40" height="28" rx="4"/><rect x="52" y="20" width="40" height="28" rx="4"/><rect x="24" y="46" width="40" height="28" rx="4"/></g></svg><figcaption>흩어진 메모</figcaption></figure>
-            <span class="ar">→</span>
-            <figure><svg viewBox="0 0 100 84"><path class="good" d="M10 42h80"/><g class="dots"><circle cx="12" cy="42" r="6"/><circle cx="37" cy="42" r="6"/><circle cx="88" cy="42" r="6"/></g><circle class="stop" cx="63" cy="42" r="8"/><circle class="ring" cx="63" cy="42" r="13"/></svg><figcaption>신호·상담·안내·신청</figcaption></figure>
+          <div class="pd-ba">
+            <figure><svg viewBox="0 0 100 84" role="img" aria-label="흩어진 메모 그림"><g class="memo"><rect x="8" y="10" width="40" height="28" rx="4"/><rect x="52" y="20" width="40" height="28" rx="4"/><rect x="24" y="46" width="40" height="28" rx="4"/></g></svg><figcaption>흩어진 메모</figcaption></figure>
+            <span class="ar" aria-hidden="true">→</span>
+            <figure><svg viewBox="0 0 100 84" role="img" aria-label="신호·상담·안내·신청 줄기에서 멈춘 곳이 빨간 점인 그림"><path class="good" d="M10 42h80"/><g class="dots"><circle cx="12" cy="42" r="6"/><circle cx="37" cy="42" r="6"/><circle cx="88" cy="42" r="6"/></g><circle class="stop" cx="63" cy="42" r="8"/><circle class="ring" cx="63" cy="42" r="13"/></svg><figcaption>신호·상담·안내·신청</figcaption></figure>
           </div>
           <p class="pd-num">멈춘 집 <b class="num" id="fGap">—</b>곳 <span class="d-tag warn">가상</span></p>
           <a class="d-btn d-btn-p pd-go" href="#board" data-h="medium">멈춘 집 보기</a>
         </article>
         <article class="pd-card d-card" aria-labelledby="pd3">
           <h3 id="pd3"><i aria-hidden="true">3</i>현황 · 보고</h3>
-          <p>읍면별 고독사 위험을 한눈에, 보고서는 한글·엑셀로 바로 받습니다.</p>
+          <p>읍면 위험을 한눈에, 보고서는 한글·엑셀로.</p>
+          <p class="pd-rh">고독사 위험 높은 읍면 <span class="d-tag pub">공공데이터</span></p>
           <ol class="pd-risk" id="fRisk" aria-label="고독사 위험도 높은 읍면 3곳(공공데이터, 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
           <p class="pd-num" id="fRecip" hidden></p>
-          <p class="pd-src" id="fRiskSrc" hidden></p>
+          <details class="pd-srcd" id="fRiskSrcD" hidden><summary data-h="light" id="fRiskSum">출처 · 기준일</summary><p class="pd-src" id="fRiskSrc"></p></details>
           <a class="d-btn d-btn-p pd-go" href="#report" data-h="medium">이번 차수 현황</a>
         </article>
-      </div>
-
-      <div class="pd-out">
-        <b>명단 다음의 현장 하루를, 공공데이터로 한 장에.</b>
       </div>
 
       <details class="today-old d-card" id="todayOld">
@@ -225,7 +224,7 @@
           <div class="fold-body">
             <label>읍면동 <select id="fArea"><option value="">전체</option></select></label>
             <label>표시 <select id="fTop"><option>15</option><option selected>30</option><option>60</option><option value="300">전체</option></select></label>
-            <label>경로에 담을 수 <input id="fPick" type="number" min="1" max="30" value="12"></label>
+            <label>경로에 담을 수 <input id="fPick" type="number" min="1" max="30" value="9"></label>
             <button id="btnPickTop" class="ghost" data-h="light">앞 순서로 다시 담기</button>
           </div>
         </details>
@@ -248,6 +247,7 @@
 
     <!-- 방문 경로(오늘 할 일·명단에서 들어옴) -->
     <section id="tab-route" class="tab" hidden>
+      <p class="pd-orgs"><span class="d-tag pub">공공데이터</span> 기상청 특보 · 국토교통부 건축물대장 · 국립중앙의료원 병원·약국 · 행정안전부 인구·세대 — 가구는 <span class="d-tag warn">가상</span></p>
       <div class="bar d-card">
         <a class="ghost btnlike" href="#list" data-h="light">← 명단으로</a>
         <span id="routeStat" class="stat"></span>
@@ -277,7 +277,7 @@
           <ol id="routeList" class="route-list"></ol>
         </div>
       </div>
-      <p class="note" id="routeNote" tabindex="-1">순서 후보는 «가까운 곳부터 + 구간 뒤집기 다듬기»(직선거리 × 1.3 근사)로 만들고, «도로 기준으로 순서 짜기»를 누르면 후보마다 네이버 길찾기(Directions 15) 실제 도로 시간을 받아 가장 짧은 순서를 고릅니다. 같은 가구·순서는 다시 묻지 않습니다(7일 보관). 도로 결과가 없을 때 이동 시간은 평균 시속 40km 어림입니다. 가구 위치는 모두 가상이며 한 읍면동(남원동) 범위 안의 대략 위치입니다.</p>
+      <p class="note" id="routeNote" tabindex="-1">순서 후보는 «가까운 곳부터 + 구간 뒤집기 다듬기»(직선거리 × 1.3 근사)로 만들고, «도로 기준으로 순서 짜기»를 누르면 후보마다 네이버 길찾기(Directions 15) 실제 도로 시간을 받아 가장 짧은 순서를 고릅니다. 같은 가구·순서는 다시 묻지 않습니다(7일 보관). 도로 결과가 없을 때 이동 시간은 평균 시속 40km 어림입니다. 가구 위치는 모두 가상이며 함창읍·이안면·공검면·사벌국면 4개 읍면 안의 대략 위치입니다.</p>
       <p class="small src-tag" data-src-ref="V1,N1,R3">출처: 방문지·좌표는 가상 가구(시연) · 지도·도로 경로는 네이버클라우드 Maps(Web Dynamic Map·Directions 15) · 달력 파일은 RFC 5545</p>
     </section>
 
@@ -340,6 +340,7 @@
     <!-- ⑤ 연계 누락(메뉴 ③) -->
     <section id="tab-board" class="tab" hidden>
       <!-- ⑪ 연계 누락 보드(주인공) — ⚙️ 파로 mount.js 가 채운다. 4칸 = 주민 신호 → 상담 → 안내 → 신청 다음에서 멈춘 집 -->
+      <p class="pd-orgs"><span class="d-tag pub">공공데이터</span> 한국사회보장정보원 중앙부처·지자체 복지서비스(15090532·15108347) — 멈춘 집은 <span class="d-tag warn">가상</span></p>
       <div class="panel d-card feat" id="gapRoot" data-feature="link-gaps">
         <h3>연계 누락 보드 <small class="tag">주민 신호 → 상담 → 안내 → 신청에서 멈춘 집</small></h3>
         <div data-slot="gaps"><p class="d-slot">멈춘 단계를 찾는 중입니다.</p></div>
@@ -403,6 +404,11 @@
 
     <!-- ⑥ 현황·보고서(S10g 메인 메뉴) — 옛 «연계·보고서»의 아래 절반, 기능 그대로 -->
     <section id="tab-report" class="tab" hidden>
+      <div class="panel d-card pd-rtop" aria-labelledby="rRiskH">
+        <h3 id="rRiskH">고독사 위험 높은 읍면 <span class="d-tag pub">공공데이터</span></h3>
+        <ol class="pd-risk" id="rRisk" aria-label="고독사 위험도 높은 읍면 5곳(행정안전부 공개 통계로 만든 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
+        <p class="pd-src">출처: 행정안전부 «주민등록 인구·세대»(15097972·15097974) 기준 2026-09-30 · 닿음 추정 지수(공식 통계 아님) · 전체 순위는 아래 «더 보기»</p>
+      </div>
       <div class="stats-top">
         <div class="panel d-card" id="statsRoot" data-feature="stats">
           <h3>현황 대시보드 <small class="tag">이번 차수</small></h3>
@@ -411,7 +417,6 @@
         </div>
         <div class="panel d-card" id="reportRoot" data-feature="report">
           <h3>주간·월간 보고서</h3>
-          <p class="note">주간·월간 보고서를 인쇄·PDF·한글 붙여넣기용 문안으로 만듭니다.</p>
           <div class="rep-acts" data-slot="actions">
             <button type="button" class="ghost" data-report="weekly" data-h="light" disabled>주간 보고서</button>
             <button type="button" class="ghost" data-report="monthly" data-h="light" disabled>월간 보고서</button>
