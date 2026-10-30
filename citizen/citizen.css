@@ -285,3 +285,82 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
 .card.svc::before { color: var(--acc-ink); }
 .radio:has(input:checked) { box-shadow: inset 0 0 0 2px var(--acc); }
 .cta { background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--pb) 94%, transparent) 38%); }
+
+/* ══════════ S10f(🩵 미르 10-30) 주민 창구 색 «A 쪽빛 물길» — 구조·질감·단추는 공무원 창구(shared/tokens.css) 그대로, 색 토큰만 바꾼다
+   시안 _design/시안_S10f_주민색.html (호창님 선택 A). 이 파일은 주민 창구에서만 읽히므로 :root 재정의가 공무원 창구에 번지지 않는다 ══════════ */
+:root {
+  --pg: #E8EFF0; --pa: #F6FAFA; --pb: #EDF3F4; --s1b: #FAFDFD;
+  --ink: #13262B; --ink2: #4C6066; --ink3: #8BA0A5; --hair: rgba(19,38,43,.08); --ink-12: rgba(19,38,43,.12); --edge: #7F9297;
+  --acc: #1D6A78; --acc-hi: #2F8593; --acc-lo: #124E5A; --acc-ink: #175F6C; --acc-soft: #DDEDEF; --acc-top: #2A7B89;
+  --e1: 0 0 0 .5px rgba(19,38,43,.06), 1px 1px 2px rgba(14,60,72,.08);
+  --e2: 0 0 0 .5px rgba(19,38,43,.06), 1px 2px 4px -1px rgba(14,60,72,.09), 4px 18px 40px -18px rgba(20,90,105,.24);
+  --e3: 0 0 0 .5px rgba(19,38,43,.07), 1px 4px 10px -4px rgba(14,60,72,.13), 6px 28px 60px -24px rgba(20,90,105,.34);
+  --e-sm: 0 0 0 .5px rgba(19,38,43,.06), 1px 1px 2px rgba(14,60,72,.07);
+  --float: linear-gradient(180deg, #FFFFFF, #F3F8F9);
+  --dock: linear-gradient(180deg, rgba(255,255,255,.97), rgba(243,248,249,.94));
+  --bead: linear-gradient(180deg, #FFFFFF, #F0F7F8);
+  --bead-sh: inset 0 1px 0 rgba(255,255,255,.95), 0 0 0 .5px var(--ink-12), 1px 3px 8px -3px rgba(20,90,105,.3);
+  --well: linear-gradient(180deg, #E2EBED, #EAF1F2);
+  --well-sh: inset 0 1px 2px rgba(14,60,72,.09), inset 0 0 0 .5px rgba(19,38,43,.05), 0 1px 0 rgba(255,255,255,.8);
+  --aurora: radial-gradient(70% 55% at 8% -5%, rgba(70,165,178,.26), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(150,205,175,.20), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(120,150,220,.14), transparent 70%);
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .04 0 0 0 0 .15 0 0 0 0 .18 .07 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --nz-paper: var(--nz);
+  --enamel-sh: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 4px rgba(6,40,48,.25), 0 0 0 .5px rgba(10,60,70,.35), 1px 3px 6px -2px rgba(14,80,95,.32), 3px 14px 28px -12px color-mix(in srgb, var(--acc) 55%, transparent);
+  --enamel-dn: inset 0 1px 0 rgba(255,255,255,.2), inset 0 1px 5px rgba(6,40,48,.42), 0 0 0 .5px rgba(10,60,70,.4), 0 1px 1px rgba(14,80,95,.3);
+  --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.16), transparent 46%), linear-gradient(155deg, #26393E, #172A2E 55%, #0E1D20);
+  --silk-bg: #1C5866; --bg-sunk: #E2EBED;
+  --cz-aura: conic-gradient(from 90deg, rgba(70,165,178,0), rgba(70,165,178,.5), rgba(120,190,170,.32), rgba(110,150,220,.3), rgba(70,165,178,0));
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --pg: #071012; --pa: #0A1518; --pb: #060D0F; --s1a: #132125; --s1b: #101C20; --solid: #132125;
+  --ink: #E5F0F1; --ink2: #9AB1B5; --ink3: #577075; --hair: rgba(255,255,255,.07); --ink-12: rgba(229,240,241,.12); --edge: #627A7F;
+  --acc: #237A89; --acc-hi: #3A95A3; --acc-lo: #17606C; --acc-ink: #8FD3DC; --acc-soft: #14323A; --acc-top: #278090;
+  --e1: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(2,10,12,.5);
+  --e2: 0 0 0 .5px rgba(255,255,255,.06), 1px 2px 4px -1px rgba(2,10,12,.55), 4px 20px 40px -18px rgba(2,10,12,.85);
+  --e3: 0 0 0 .5px rgba(255,255,255,.07), 1px 4px 10px -4px rgba(2,10,12,.6), 6px 30px 60px -24px rgba(2,10,12,.9);
+  --e-sm: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(2,10,12,.45);
+  --float: linear-gradient(180deg, #1E2E32, #172629); --dock: linear-gradient(180deg, rgba(22,36,40,.96), rgba(14,24,27,.94));
+  --bead: linear-gradient(180deg, #213236, #1A2A2E); --bead-sh: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 .5px rgba(255,255,255,.08), 1px 3px 8px -3px rgba(0,0,0,.6);
+  --well: linear-gradient(180deg, #0C1719, #122022); --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
+  --aurora: radial-gradient(70% 55% at 8% -5%, rgba(70,165,178,.18), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(150,205,175,.09), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(120,150,220,.08), transparent 70%);
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --glass: rgba(19,33,37,.6); --bg-sunk: #0C1719;
+  --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.6), transparent 46%), linear-gradient(155deg, #EEF6F7, #D3E2E5); --on-ink-enamel: #13262B;
+} }
+:root[data-theme="dark"] {
+  --pg: #071012; --pa: #0A1518; --pb: #060D0F; --s1a: #132125; --s1b: #101C20; --solid: #132125;
+  --ink: #E5F0F1; --ink2: #9AB1B5; --ink3: #577075; --hair: rgba(255,255,255,.07); --ink-12: rgba(229,240,241,.12); --edge: #627A7F;
+  --acc: #237A89; --acc-hi: #3A95A3; --acc-lo: #17606C; --acc-ink: #8FD3DC; --acc-soft: #14323A; --acc-top: #278090;
+  --e1: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(2,10,12,.5);
+  --e2: 0 0 0 .5px rgba(255,255,255,.06), 1px 2px 4px -1px rgba(2,10,12,.55), 4px 20px 40px -18px rgba(2,10,12,.85);
+  --e3: 0 0 0 .5px rgba(255,255,255,.07), 1px 4px 10px -4px rgba(2,10,12,.6), 6px 30px 60px -24px rgba(2,10,12,.9);
+  --e-sm: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(2,10,12,.45);
+  --float: linear-gradient(180deg, #1E2E32, #172629); --dock: linear-gradient(180deg, rgba(22,36,40,.96), rgba(14,24,27,.94));
+  --bead: linear-gradient(180deg, #213236, #1A2A2E); --bead-sh: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 .5px rgba(255,255,255,.08), 1px 3px 8px -3px rgba(0,0,0,.6);
+  --well: linear-gradient(180deg, #0C1719, #122022); --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
+  --aurora: radial-gradient(70% 55% at 8% -5%, rgba(70,165,178,.18), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(150,205,175,.09), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(120,150,220,.08), transparent 70%);
+  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --glass: rgba(19,33,37,.6); --bg-sunk: #0C1719;
+  --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.6), transparent 46%), linear-gradient(155deg, #EEF6F7, #D3E2E5); --on-ink-enamel: #13262B;
+}
+.cz .d-aura { background: var(--cz-aura); }
+.orb .g { background: conic-gradient(from 0deg, var(--acc-hi), #6FB8A8, #86A6D8, #4FA3B0, var(--acc-hi)); }
+.chip[aria-pressed="true"] { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 .5px rgba(0,0,0,.4), 2px 8px 16px -8px rgba(10,40,48,.5); }
+/* 첫 카드 — 공무원 창구 «오늘 동선» 실크와 같은 재질(쪽빛). 흰 글자 대비 4.5:1 이상인 색만 쓴다 */
+.cz .ask-hero { position: relative; overflow: hidden; isolation: isolate; padding: var(--sp-6) var(--sp-5); margin-bottom: var(--sp-5); border-radius: var(--r); color: #FFFFFF;
+  background-color: #1C5866;
+  background-image: radial-gradient(60% 55% at 18% 12%, rgba(47,123,135,.8), transparent 70%), radial-gradient(55% 50% at 88% 80%, rgba(28,88,102,.9), transparent 70%), linear-gradient(160deg, #0F3A46, #1C5866 46%, #0A2A33);
+  box-shadow: var(--e3); }
+.cz .ask-hero::before { content: ""; position: absolute; inset: -40% -20%; z-index: 0; pointer-events: none; background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.14) 47%, rgba(255,255,255,.04) 52%, transparent 60%); animation: cz-sheen 14s ease-in-out 2 alternate; }
+.cz .ask-hero::after { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none; opacity: .55;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 160px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 0 0 .5px rgba(255,255,255,.1); }
+.cz .ask-hero > * { position: relative; z-index: 1; }
+.cz .ask-hero .h-big { color: #FFFFFF; }
+.cz .ask-hero .cnum { color: rgba(255,255,255,.88); }
+.cz .ask-hero .lead { color: rgba(255,255,255,.9); margin-bottom: 0; }
+@keyframes cz-sheen { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
+@media (min-width: 1024px) { .cz .ask-hero { padding: var(--sp-10) var(--sp-8); } }
+@media (prefers-reduced-motion: reduce) { .cz .ask-hero::before { animation: none; } }
+@media print { .cz .ask-hero { background: #fff !important; color: #000; box-shadow: none; border: 1px solid #ccc; } .cz .ask-hero::before, .cz .ask-hero::after { display: none; } .cz .ask-hero .h-big, .cz .ask-hero .cnum, .cz .ask-hero .lead { color: #000; } }
+.cz .brand:focus-visible { outline: 3px solid var(--acc-ink); outline-offset: 2px; border-radius: 12px; }
