@@ -58,7 +58,7 @@
   #pwa-install b { color: var(--on-acc); }
   #pwa-install [data-pwa=btn], #pwa-install [data-pwa=ext] { margin-left: auto; min-height: 44px; padding: 0 20px; background: #F5B84A; color: #2A1A05; font-weight: var(--fw-b); box-shadow: 0 3px 0 #B9802A; border: 0; }
   #pwa-install [data-pwa=btn]:active, #pwa-install [data-pwa=ext]:active { transform: translateY(2px); box-shadow: 0 1px 0 #B9802A; }
-  #pwa-install [data-pwa=ios], #pwa-install [data-pwa=and], #pwa-install [data-pwa=kakao] { flex-basis: 100%; color: var(--on-acc); opacity: .92; }
+  #pwa-install [data-pwa=msg], #pwa-install [data-pwa=ios], #pwa-install [data-pwa=and], #pwa-install [data-pwa=kakao] { flex-basis: 100%; color: var(--on-acc); opacity: .92; }
   #pwa-install [data-pwa=kakao] { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   #pwa-install[hidden], #pwa-install [hidden] { display: none; }
   html.pwa-app .pwa { display: none; }
@@ -94,6 +94,7 @@
     <div id="pwa-install" class="pwa d-card d-rise" style="--d:4" hidden>
       <span><b>홈 화면에 설치</b> · 앱처럼 전체 화면으로 열립니다</span>
       <button type="button" class="d-btn d-btn-p" data-pwa="btn" data-h="light" hidden>설치하기</button>
+      <span data-pwa="msg" role="status" aria-live="polite" hidden></span>
       <span data-pwa="ios" hidden>아이폰: 아래 공유 단추 → «홈 화면에 추가»</span>
       <span data-pwa="and" hidden>안드로이드: 오른쪽 위 ⋮ 메뉴 → «홈 화면에 추가»(또는 «앱 설치»)</span>
       <span data-pwa="kakao" hidden>카카오톡 안에서는 설치가 안 됩니다<button type="button" class="d-btn d-btn-p" data-pwa="ext" data-h="light">바깥 브라우저로 열기</button></span>
@@ -105,6 +106,6 @@
   상주시 적용 예시 시제품 · 공개 데이터와 합성(가상) 데이터만 씁니다 · 실제 개인정보 없음 · 복지 서비스 찾기·신청은 복지로</footer>
 <script src="shared/ui.js"></script>
 <script src="shared/guide.js"></script>
-<script src="shared/pwa.js"></script>
+<script src="shared/pwa.js?v=3"></script>
 </body>
 </html>
