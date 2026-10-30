@@ -354,7 +354,7 @@
     if (!RM) { showMap(false); return drawSvg(order, ret); }
     if (RM.state.status === "ready") { showMap(true); if (!go()) showMap(false); return; }
     showMap(false); drawSvg(order, ret);
-    RM.load().then(function () { if ($("tab-route") && !$("tab-route").hidden) renderRoute(); },
+    RM.load().then(function () { if (RM.state.status === "ready" && $("tab-route") && !$("tab-route").hidden) renderRoute(); },
       function () { if ($("tab-route") && !$("tab-route").hidden) mapNote(); });
   }
   function mapNote() {

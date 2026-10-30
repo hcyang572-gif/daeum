@@ -10,6 +10,9 @@
   var GAP = 34; // 번호 표지(32px)끼리 이만큼(px) 안이면 겹친 것으로 보고 둥글게 벌린다
 
   function load() {
+    // 실패로 굳은 뒤에는 예전에 «성공»으로 끝난 약속을 돌려주지 않는다 — 돌려주면 부르는 쪽(officer.js drawMap)이
+    // 성공으로 알고 다시 그리고, 다시 load 를 불러 끝없는 고리가 돈다(S10e, 10-30 재현: 1.5초에 202회)
+    if (state.status === "fail") return Promise.reject(state.reason || "fail");
     if (state.promise) return state.promise;
     var id = C.naverMapKeyId;
     if (!id) { state.status = "fail"; state.reason = "no-key"; return (state.promise = Promise.reject("no-key")); }
