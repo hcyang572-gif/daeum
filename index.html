@@ -53,6 +53,14 @@
   .pwa { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 18px; border-radius: var(--r); font-size: var(--fs-s); color: var(--ink2); }
   .pwa[hidden], .pwa [hidden] { display: none; }
   .pwa b { color: var(--ink); font-weight: var(--fw-b); }
+  /* 홈 화면 설치 카드 — 눈에 띄게: 쪽빛 채움 + 오른쪽 호박색 단추(호창님 10-30) */
+  #pwa-install { background: linear-gradient(135deg, var(--acc-top), var(--acc-lo)); color: var(--on-acc); border: 0; box-shadow: 0 6px 18px rgba(70,55,153,.35); }
+  #pwa-install b { color: var(--on-acc); }
+  #pwa-install [data-pwa=btn], #pwa-install [data-pwa=ext] { margin-left: auto; min-height: 44px; padding: 0 20px; background: #F5B84A; color: #2A1A05; font-weight: var(--fw-b); box-shadow: 0 3px 0 #B9802A; border: 0; }
+  #pwa-install [data-pwa=btn]:active, #pwa-install [data-pwa=ext]:active { transform: translateY(2px); box-shadow: 0 1px 0 #B9802A; }
+  #pwa-install [data-pwa=ios], #pwa-install [data-pwa=and], #pwa-install [data-pwa=kakao] { flex-basis: 100%; color: var(--on-acc); opacity: .92; }
+  #pwa-install [data-pwa=kakao] { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  #pwa-install[hidden], #pwa-install [hidden] { display: none; }
   html.pwa-app .pwa { display: none; }
   footer { max-width: 64rem; width: 100%; margin: 0 auto; padding: var(--sp-4) var(--sp-4) var(--sp-8); font-size: var(--fs-xs); color: var(--ink2); }
   @media (min-width: 900px) {
@@ -88,7 +96,7 @@
       <button type="button" class="d-btn d-btn-p" data-pwa="btn" data-h="light" hidden>설치하기</button>
       <span data-pwa="ios" hidden>아이폰: 아래 공유 단추 → «홈 화면에 추가»</span>
       <span data-pwa="and" hidden>안드로이드: 오른쪽 위 ⋮ 메뉴 → «홈 화면에 추가»(또는 «앱 설치»)</span>
-      <span data-pwa="kakao" hidden>카카오톡 안에서는 설치가 안 됩니다 → <button type="button" class="d-btn d-btn-p" data-pwa="ext" data-h="light">바깥 브라우저로 열기</button></span>
+      <span data-pwa="kakao" hidden>카카오톡 안에서는 설치가 안 됩니다<button type="button" class="d-btn d-btn-p" data-pwa="ext" data-h="light">바깥 브라우저로 열기</button></span>
     </div>
   </nav>
 </main>
