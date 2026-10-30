@@ -186,15 +186,20 @@
       // O-06: 이동+상담이 8시간을 넘으면 경고 줄(오늘 묶음은 추정 시간만 있어 18시 판정은 경로 화면에서)
       if (R.minutes > 480) box.appendChild(h("p", { class: "warn", role: "status" }, ["예상 " + (R.minutes / 60).toFixed(1) + "시간 — 근무 8시간을 넘습니다. ",
         h("a", { href: "#route", class: "over-go", text: "경로에서 내일로 미룰 집 고르기" })]));
-      var ol = h("ol", { class: "slot-list visits" }), lastA = null;
+      var ol = h("ol", { class: "slot-list visits" }), lastA = null, ohN = 0;
+      var OH = window.DaeumOldHouse && DaeumOldHouse.get() ? DaeumOldHouse : null;
       R.order.slice(0, 8).forEach(function (s, i) {
+        var rr = O.row(s.id), old = !!(OH && rr && OH.isOld(rr.h)); if (old) ohN++;
         ol.appendChild(h("li", { class: s.kind === "request" ? "req" : null }, [h("span", { class: "vn num", text: String(i + 1), "aria-hidden": "true" }), h("span", { class: "grow" }, [h("span", { class: "sr", text: (i + 1) + "번 " }), h("b", { text: s.label }),
+          old ? h("span", { class: "tag old", text: "오래된 집", title: "30년 넘은 집(가상 표시 — 읍면 비율로 시연용)" }) : null,
           h("span", { class: "small", text: " " + s.area + (s.kind === "request" ? " · 주민 신호" : "") + (s.alert === "noresp" ? " · 무반응 신호(가상)" : "") })]),
           O.row(s.id) ? h("div", { class: "acts" }, [btn("방문 전 카드", function () { openCard(s.id); })]) : null]));
         lastA = s.area;
       });
       if (R.order.length > 8) ol.appendChild(h("li", { class: "small", text: "외 " + (R.order.length - 8) + "곳 — «순서 다시 짜기 · 지도»에서 전부 봅니다" }));
       box.appendChild(ol);
+      // S10h ④ 오래된 집 출처 꼬리표(동선에 표식이 있을 때만)
+      if (ohN) box.appendChild(h("p", { class: "small src-tag", "data-src-ref": "D15,V1", text: OH.tagText() }));
       box.appendChild(sheetActs());
     }
     if (!R.order.length && $("todayKm")) { clear($("todayArt")); $("todayKm").textContent = ""; $("todayMeta").textContent = "가구 명단에서 방문할 집을 담으면 순서를 묶어 드립니다"; }
@@ -702,6 +707,11 @@
     var lr = window.DaeumLonely && DaeumLonely.get() ? DaeumLonely.areaLine(r.h.area) : null;
     if (lr) dlg.appendChild(h("p", { class: "small lr-card" }, [h("span", { class: "d-tag pub", text: "공공데이터" }), " " + lr,
       h("span", { class: "muted", text: " (출처: 행정안전부 주민등록 인구·세대 통계, 기준일 " + DaeumLonely.get().base + " · 닿음 추정 지수)" })]));
+    // S10h ④: 이 읍면 30년 넘은 주택 비율(공공데이터) + 이 집 «오래된 집» 가상 표식이면 살필 것 한 줄
+    var OH = window.DaeumOldHouse && DaeumOldHouse.get() ? DaeumOldHouse : null, ohl = OH ? OH.areaLine(r.h.area) : null;
+    if (ohl) dlg.appendChild(h("p", { class: "small oh-card", "data-src-ref": "D15" }, [h("span", { class: "d-tag pub", text: "공공데이터" }), " " + ohl,
+      OH.isOld(r.h) ? h("span", { class: "oh-tip" }, [h("span", { class: "d-tag virt", text: "가상" }), " 이 집은 «오래된 집» 표식(시연용) — " + OH.TIP]) : null,
+      h("span", { class: "muted", text: " (" + OH.sourceLine(OH.get()) + ")" })]));
     var med = medSection(r.h); if (med) dlg.appendChild(med);
     dlg.appendChild(sec("왜 이 집인지", [h("ul", { class: "small" }, (c.why.length ? c.why : ["명단 사유 없음"]).map(function (x) { return h("li", { text: x }); }))]));
     dlg.appendChild(sec("지난 시도", [c.tries.length ? h("ul", { class: "small" }, c.tries.map(function (t) { return h("li", { text: t.at + " " + (CH[t.channel] || "") + " — " + t.result + (t.note ? " (" + t.note + ")" : "") }); })) : h("p", { class: "small", text: "처음 찾아가는 집입니다." }),

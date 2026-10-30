@@ -22,6 +22,10 @@
   function int(c, k, w) { return { key: k, h: c, type: "int", w: w }; }
   function st(name, d) { return F.store.get(name, d); }
   function hh(id) { var r = O().row(id); return r ? r.h : null; }
+  // S10h ④ 오래된 집(국토교통부 건축HUB 집계 + 가상 표식)
+  function OH() { return window.DaeumOldHouse && DaeumOldHouse.get() ? DaeumOldHouse : null; }
+  function oldMark(h) { return OH() && h && OH().isOld(h) ? "오래된 집" : ""; }
+  function ohIds() { return OH() ? ["D15"] : []; }
 
   // ── 엑셀 부품은 누를 때 한 번만 싣는다(report_doc.js 와 같은 방식) ──
   var loading = null;
@@ -80,7 +84,7 @@
   B.today = function () {
     var t = M().today(), S = {}; t.sections.forEach(function (s) { S[s.key] = s; });
     var R = t.route, g = M().gapData(), REQ = window.DaeumRequests;
-    var route = R.order.map(function (s, i) { return [i + 1, s.label, s.area || "", s.kind === "request" ? "주민 신호" : "명단 가구", s.alert === "noresp" ? "무반응 신호(가상)" : ""]; });
+    var route = R.order.map(function (s, i) { return [i + 1, s.label, s.area || "", s.kind === "request" ? "주민 신호" : "명단 가구", s.alert === "noresp" ? "무반응 신호(가상)" : "", oldMark(hh(s.id))]; });
     var rev = S.revisit.items.map(function (x) { return [x.label, x.area || "", x.why || "", x.due || "", ch(x.channel)]; });
     var due = S.due.items.map(function (x) { return [x.label, x.area || "", x.why || "", x.due || "", x.overdue ? "지남" : ""]; });
     var gap = g.stages.map(function (s) { return [s.label, s.items.length]; });
@@ -92,7 +96,7 @@
        { k: "연계가 멈춘 집", v: g.total, u: "곳", s: "‘연계 누락’ 시트 합계(수식)", type: "int", ref: { sheet: "연계 누락", col: "n" } },
        { k: "새 주민 신호", v: t.counts.newRequests, u: "건", s: "처리 기한 임박 " + t.counts.dueSoon + "건", type: "int" }],
       [{ name: "방문 순서", title: "<표 1> 오늘 방문 순서", unit: "순번순", tags: ["가상"], note: "읍면별로 묶은 순서 후보입니다. 최종 순서는 담당자가 정합니다.", src: "※ 출처: 가상 가구(시연) · 순서는 닿음 계산(직선 × 1.3)",
-         columns: [int("순번", "no", 6), txt("가구", "l", 14), txt("읍면동", "a", 12), txt("구분", "k", 11), txt("알림", "al", 18)], rows: nonEmpty(route, 5), total: false },
+         columns: [int("순번", "no", 6), txt("가구", "l", 14), txt("읍면동", "a", 12), txt("구분", "k", 11), txt("알림", "al", 18), txt("오래된 집(가상)", "oh", 15)], rows: nonEmpty(route, 6), total: false },
        { name: "다시 찾을 집", title: "<표 2> 다시 찾을 집(다음 시도 제안)", tags: ["가상"], note: "안 해 본 시간대·요일로 다음 시도를 제안합니다. 3번 허탕이면 이웃·통반장 확인으로 넘어갑니다.", src: "※ 출처: 담당자 표시 기록(이 기기) · 가구는 가상",
          columns: [txt("가구", "l", 14), txt("읍면동", "a", 12), txt("제안 이유", "w", 46), { key: "d", h: "기한", type: "date", w: 12 }, txt("방법", "c", 9)], rows: nonEmpty(rev, 5), total: false },
        { name: "연계 누락", title: "<표 3> 연계가 멈춘 단계", unit: "단위: 곳", tags: ["가상"], note: "주민 신호 → 상담 → 안내 → 신청 → 결정에서 멈춘 집 수 · 합계와 비율은 수식입니다.", src: "※ 출처: 이 기기 연계·시도 기록(시연)",
@@ -100,7 +104,7 @@
        reqSheet(reqs),
        { name: "기한", title: "<표 5> 기한이 다가오는 일", tags: ["가상"], src: "※ 출처: 주민 요청(이 기기, 시연) · 기한은 시연 설정",
          columns: [txt("가구·요청", "l", 18), txt("읍면동", "a", 12), txt("내용", "w", 44), { key: "d", h: "기한", type: "date", w: 12 }, txt("지남", "o", 7)], rows: nonEmpty(due, 5), total: false }],
-      sec("today"), ["V1", "V2", "S2"]);
+      sec("today"), ["V1", "V2", "S2"].concat(ohIds()));
   };
   // 주민 요청만
   B.requests = function () {
@@ -219,17 +223,21 @@
     var rows = O().rows(), picked = O().picked();
     var list = rows.map(function (r) {
       var sig = (r.signals || []).map(function (x) { return (x.kind === "request" ? "요청 · " : x.kind === "tip" ? "제보 · " : "시도 · ") + x.text; }).join(" / ");
-      return [r.rank, r.h.label, r.h.area, picked.indexOf(r.h.id) >= 0 ? "담음" : "", r.pinned ? "앞으로 고정" : "", sig, O().reason(r), O().memberText(r.h)];
+      return [r.rank, r.h.label, r.h.area, picked.indexOf(r.h.id) >= 0 ? "담음" : "", r.pinned ? "앞으로 고정" : "", sig, O().reason(r), O().memberText(r.h), oldMark(r.h)];
     });
     var by = {}; rows.forEach(function (r) { by[r.h.area] = (by[r.h.area] || 0) + 1; });
     var area = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; }).map(function (a) { return [a, by[a]]; });
+    var OHd = OH(), ohRows = OHd ? area.map(function (a) { var x = OHd.get().areas[a[0]] || {}; return [a[0], x.전체동수 != null ? x.전체동수 - x.미상 : null, x.노후동수 != null ? x.노후동수 : null]; }) : [];
     return head("가구 명단 — " + ymd(), "발굴 명단 " + rows.length + "가구 · 오늘 담은 집 " + picked.length + "곳 · 가구가 가장 많은 곳은 " + (area[0] ? area[0][0] + "(" + area[0][1] + "가구)" : "—") + "입니다.",
       [{ k: "발굴 명단", v: rows.length, u: "가구", s: "‘읍면별’ 시트 합계(수식)", type: "int", ref: { sheet: "읍면별", col: "n" } }, { k: "오늘 담은 집", v: picked.length, u: "곳", type: "int" }],
       [{ name: "가구 명단", title: "<표 1> 발굴 가구 명단(방문 순서를 정한 근거)", tags: ["가상"], landscape: true, note: "위험 판단은 정보원 명단 그대로이고, 닿음은 방문 순서 근거만 붙입니다. 최종 순서는 담당자.", src: "※ 출처: 한국사회보장정보원 발굴 명단 모양을 본뜬 시연용 가상 데이터",
-         columns: [int("순번", "no", 6), txt("가구", "l", 11), txt("읍면동", "a", 10), txt("담기", "p", 7), txt("고정", "f", 10), txt("지역 신호", "s", 26), txt("방문 순서를 정한 근거", "w", 36), txt("구성", "m", 18)], rows: nonEmpty(list, 8), total: false },
+         columns: [int("순번", "no", 6), txt("가구", "l", 11), txt("읍면동", "a", 10), txt("담기", "p", 7), txt("고정", "f", 10), txt("지역 신호", "s", 26), txt("방문 순서를 정한 근거", "w", 36), txt("구성", "m", 18), txt("오래된 집(가상)", "oh", 15)], rows: nonEmpty(list, 9), total: false },
        { name: "읍면별", title: "<표 2> 읍면별 가구 수", unit: "단위: 가구", tags: ["가상"], src: "※ 출처: 가상 가구(시연)",
-         columns: [txt("읍면동", "a", 14), int("가구", "n", 10), { key: "r", h: "비율", type: "pct", w: 9, fx: "IF({n:sum}=0,0,{n}/{n:sum})", calc: function (gg, cx) { var t2 = cx.sum("n"); return t2 ? gg("n") / t2 : 0; } }], rows: nonEmpty(area, 3), total: area.length ? "합계" : false }],
-      sec("list"), ["V1"]);
+         columns: [txt("읍면동", "a", 14), int("가구", "n", 10), { key: "r", h: "비율", type: "pct", w: 9, fx: "IF({n:sum}=0,0,{n}/{n:sum})", calc: function (gg, cx) { var t2 = cx.sum("n"); return t2 ? gg("n") / t2 : 0; } }], rows: nonEmpty(area, 3), total: area.length ? "합계" : false }].concat(ohRows.length ? [
+       { name: "오래된 집", title: "<표 3> 읍면별 30년 넘은 주택 비율", unit: "단위: 동(주거용 건물 동 수 기준)", tags: ["공공데이터"], note: "사용승인일이 기준일보다 30년 이상 앞선 단독·공동주택 주건축물. 사용승인일 공란은 뺐습니다. 명단의 «오래된 집» 칸은 이 비율로 가상 가구에 붙인 시연용 표시입니다.",
+         src: "※ " + OHd.sourceLine(OHd.get()),
+         columns: [txt("읍면동", "a", 14), int("주거용 건물", "t", 12), int("30년 넘은 건물", "o", 14), { key: "r", h: "비율", type: "pct", w: 9, fx: "IF({t}=0,0,{o}/{t})", calc: function (gg) { return gg("t") ? gg("o") / gg("t") : 0; } }], rows: ohRows, total: "합계" }] : []),
+      sec("list"), ["V1"].concat(ohIds()));
   };
   // 상담 기록 — 저장된 연계
   B.record = function () {

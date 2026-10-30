@@ -148,6 +148,7 @@
     var list = rows.filter(function (r) { return !area || r.h.area === area; }).slice(0, top);
     var tb = $("listTable").tBodies[0];
     tb.textContent = "";
+    var OH = window.DaeumOldHouse && DaeumOldHouse.get() ? DaeumOldHouse : null, ohN = 0;
     list.forEach(function (r) {
       var hasReq = (r.signals || []).some(function (x) { return x.kind === "request"; });
       var tr = el("tr", hasReq ? "req" : "");
@@ -162,6 +163,7 @@
       tr.appendChild(el("td", "num c-rank", r.rank < 10 ? "0" + r.rank : r.rank));
       var tdL = el("td", "c-name"); tdL.appendChild(el("b", null, r.h.label)); if (hasReq) tdL.appendChild(el("span", "tag req", "주민 신호"));
       if (r.alert && r.alert.noResp) tdL.appendChild(el("span", "tag req", "무반응"));
+      if (OH && OH.isOld(r.h)) { var ot = el("span", "tag old", "오래된 집"); ot.title = "30년 넘은 집(가상 표시 — 읍면 비율로 시연용)"; tdL.appendChild(ot); ohN++; }
       tdL.appendChild(el("span", "small area-sm", r.h.area)); tr.appendChild(tdL);
       tr.appendChild(el("td", "c-area", r.h.area));
       // 순서 고정(담당자 결정) — 점수 칸·막대는 없앴다
@@ -188,6 +190,8 @@
       tr.appendChild(el("td", "small c-mem", memberText(r.h)));
       tb.appendChild(tr);
     });
+    // S10h ④ 오래된 집 출처 꼬리표(표식이 하나라도 있을 때)
+    var os = $("ohSrcList"); if (os) { os.hidden = !ohN; if (ohN && os.getAttribute("data-t") !== "1") { os.textContent = OH.tagText(); os.setAttribute("data-t", "1"); } }
     renderSummary();
   }
   function renderSummary() {
@@ -901,6 +905,8 @@
     loadData("medical_sangju", "__DAEUM_MEDICAL__").then(function (j) { if (window.DaeumMedical) DaeumMedical.set(j); }).catch(function () { return null; }),
     // S10h ⑧·② 시연 신호 시나리오(가상). 못 읽어도 명단은 그대로
     loadData("alerts_demo", "__DAEUM_ALERTS__").then(function (j) { if (window.DaeumAlerts) DaeumAlerts.set(j); }).catch(function () { return null; }),
+    // S10h ④ 오래된 집(국토교통부 건축HUB 건축물대장 → 읍면별 30년 넘은 주택 비율, 미리 집계한 파일). 못 읽어도 그대로
+    loadData("old_house", "__DAEUM_OLDHOUSE__").then(function (j) { if (window.DaeumOldHouse) DaeumOldHouse.set(j); }).catch(function () { return null; }),
     loadServices()
   ]).then(function () { init(); renderLonely(); }).catch(function (e) {
     // O-13: 개발자 말 대신 할 일을. 원인은 콘솔에만
