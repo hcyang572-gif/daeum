@@ -1,4 +1,4 @@
-/* 닿음 현장 설문 v3(10-30) — 시작 화면에 «닿음이 무엇인지» 그림 한 줄, 문항마다 «왜 묻나요»(why)·답하는 법(hint), 기능 판단 2화면(feat_a·feat_b → answers.feat). 이하 v2 설명:
+/* 현장 설문 v3.1(10-30) — 첫 화면 한 화면 고정(html.lock)·«개인적 관심» 톤, 제품 이름·그림 뺌. v3: 시작 화면에 «닿음이 무엇인지» 그림 한 줄, 문항마다 «왜 묻나요»(why)·답하는 법(hint), 기능 판단 2화면(feat_a·feat_b → answers.feat). 이하 v2 설명:
    위기가구 발굴 현장 설문 v2 — 한 화면 한 문항, 모두 건너뛸 수 있고, 하나만 고르는 문항은 고르면 바로 다음으로 넘어간다. 이름·개인정보는 받지 않는다.
    저장: 닿음 Supabase field_survey(anon=넣기만). 제출마다 새 토큰(서버 unique) — 10-30부터 같은 기기도 다시 응답 가능(중복은 집계 때 판단). 컬럼은 v1 그대로, 답은 answers(JSON) 안에.
    답 키는 v1 과 같은 이름을 쓴다 → 01_리서치/현장설문/read_survey.js 가 그대로 읽는다(빠진 문항은 «무응답»으로 나온다).
@@ -50,57 +50,57 @@
   ];
   var FEAT_OPTS = ["쓸 것 같다", "아니다", "모르겠다"];
 
-  // why = 왜 묻는지(닿음의 어느 기능을 맞추려는지) · hint = 어떻게 답하면 되는지(예시 한 줄)
+  // why = 왜 묻는지(v3.1: 제품 홍보 말투 없이 «궁금해서요» 톤) · hint = 어떻게 답하면 되는지(예시 한 줄)
   var Q = [
     { id: "flow", type: "flow", label: "위기가구 발굴 및 관리업무 절차 순서가 맞는지 확인해주세요.",
-      hint: "실제와 다른 단계만 눌러 주세요. 모두 맞으면 «모두 맞아요».", why: "닿음이 어느 단계부터 거들지 정하려고요." },
+      hint: "실제와 다른 단계만 눌러 주세요. 모두 맞으면 «모두 맞아요».", why: "실제 흐름을 제대로 알고 싶어서요." },
     { id: "list_count", type: "single", label: "격월로 내려오는 명단에서, 한 번에 맡는 가구는 대략 몇 곳인가요?",
-      hint: "예: 지난 차수에 25가구를 맡으셨다면 «10~30건».", why: "방문 계획을 몇 가구 규모로 짤지 정하려고요.",
+      hint: "예: 지난 차수에 25가구를 맡으셨다면 «10~30건».", why: "맡는 일의 양을 가늠해 보려고요.",
       options: ["10건 미만", "10~30건", "30~50건", "50~100건", "100건 이상", "잘 모르겠다"] },
     { id: "list_export", type: "single", label: "행복이음의 발굴 대상자 명단을 엑셀로 내려받을 수 있나요?",
-      why: "명단을 닿음으로 옮기는 방법을 정하려고요.", options: ["있다", "없다", "잘 모르겠다"] },
+      why: "명단을 다른 데서 다루기 쉬운지 궁금해서요.", options: ["있다", "없다", "잘 모르겠다"] },
     { id: "list_score", type: "single", label: "그 명단에 위험도 점수나 순위가 함께 나오나요?",
-      why: "이미 있다면 닿음이 따로 매기지 않으려고요.", options: ["있다", "없다", "잘 모르겠다"] },
+      why: "이미 있는지 알고 싶어서요.", options: ["있다", "없다", "잘 모르겠다"] },
     { id: "plan_method", type: "multi", label: "방문 순서·일정은 지금 무엇으로 정하시나요?",
-      hint: "해당하는 것을 모두 골라 주세요.", why: "쓰시던 방식 옆에서 덜어 드리려고요.",
+      hint: "해당하는 것을 모두 골라 주세요.", why: "지금 쓰시는 방식이 궁금해서요.",
       options: ["행복이음 화면", "엑셀", "수첩·종이", "지도 앱", "동료·통장과 상의", "기타"] },
     { id: "mobile_feature", type: "single", label: "모바일 행복이음(또는 업무폰)에 방문 일정이나 지도 기능이 있나요?",
-      why: "이미 있는 기능을 다시 만들지 않으려고요.",
+      why: "이미 있는 것과 겹치지 않게 보려고요.",
       options: ["일정·지도 둘 다 있다", "일정만 있다", "지도만 있다", "둘 다 없다", "안 쓴다·잘 모르겠다"] },
     { id: "visits_day", type: "single", label: "방문 나가는 날, 하루에 몇 가구쯤 도시나요?",
-      hint: "예: 보통 5곳이면 «4~6곳».", why: "하루 동선 한 장에 몇 집을 담을지 정하려고요.", options: ["1~3곳", "4~6곳", "7~10곳", "10곳 넘게"] },
+      hint: "예: 보통 5곳이면 «4~6곳».", why: "하루 일의 양을 가늠해 보려고요.", options: ["1~3곳", "4~6곳", "7~10곳", "10곳 넘게"] },
     { id: "miss_rate", type: "single", label: "가 보면 안 계시거나 대상이 아닌 집은 열 집 중 몇 집쯤인가요?",
-      hint: "체감으로 골라 주세요. 예: 열 집 중 두 집이면 «10~30%».", why: "헛걸음을 줄이는 기능이 얼마나 필요한지 보려고요.",
+      hint: "체감으로 골라 주세요. 예: 열 집 중 두 집이면 «10~30%».", why: "헛걸음이 얼마나 되는지 궁금해서요.",
       options: ["10% 미만", "10~30%", "30~50%", "절반 넘게"] },
     { id: "retry_count", type: "single", label: "연락이 닿지 않으면 몇 번까지 다시 시도하시나요?",
-      why: "다음 시도 날짜를 알려 드리는 기준으로 쓰려고요.", options: ["1~2번", "3번", "4~5번", "6번 이상", "정해진 기준 없음"] },
+      why: "다시 연락하는 기준이 있는지 궁금해서요.", options: ["1~2번", "3번", "4~5번", "6번 이상", "정해진 기준 없음"] },
     { id: "retry_where", type: "single", label: "몇 번 연락·방문했는지는 어디에 남기시나요?",
-      why: "시도 기록을 어디서 이어받을지 정하려고요.", options: ["행복이음에 적는 칸이 있다", "칸이 없어 남기지 않는다", "엑셀·수첩에 따로 적는다"] },
+      why: "기록이 어디에 남는지 궁금해서요.", options: ["행복이음에 적는 칸이 있다", "칸이 없어 남기지 않는다", "엑셀·수첩에 따로 적는다"] },
     { id: "input_time", type: "single", label: "한 가구 조사 결과를 행복이음에 입력하는 데 얼마나 걸리나요?",
-      why: "기록 정리를 얼마나 덜어 드릴 수 있을지 보려고요.", options: ["10분 미만", "10~30분", "30분~1시간", "1시간 넘게"] },
+      why: "기록 일이 얼마나 걸리는지 알고 싶어서요.", options: ["10분 미만", "10~30분", "30분~1시간", "1시간 넘게"] },
     { id: "input_fields", type: "single", label: "조사 결과 입력 화면의 칸 순서가 이와 비슷한가요?", preface: INPUT_GUESS, prefaceTitle: "저희가 짐작한 입력 순서",
-      hint: "«12칸 보기»를 눌러 보고 골라 주세요.", why: "닿음 기록을 그 순서대로 옮겨 적기 쉽게 하려고요.",
+      hint: "«12칸 보기»를 눌러 보고 골라 주세요.", why: "짐작한 순서가 맞는지 보려고요.",
       options: ["거의 같다", "일부 다르다", "많이 다르다", "잘 모르겠다"], memoOn: ["일부 다르다", "많이 다르다"], memoPh: "어떻게 다른지 한 줄 (선택)" },
     { id: "progress_report", type: "single", label: "몇 가구 방문·완료했는지 위에 보고할 때, 시스템에서 바로 뽑히나요?",
-      why: "현황 보고서를 닿음이 대신 만들지 정하려고요.", options: ["바로 뽑힌다", "손으로 집계한다", "잘 모르겠다"] },
+      why: "보고를 손으로 하시는지 궁금해서요.", options: ["바로 뽑힌다", "손으로 집계한다", "잘 모르겠다"] },
     { id: "netsep", type: "single", label: "이런 도구가 일반 인터넷 웹사이트라면, 업무 중에 열어 쓰실 수 있을까요?",
-      hint: "행복이음 업무 PC는 보통 인터넷이 막혀 있어, 따로 인터넷 PC나 폰으로 열어야 합니다.", why: "닿음을 PC·폰 중 어디에 맞출지 정하려고요.",
+      hint: "행복이음 업무 PC는 보통 인터넷이 막혀 있어, 따로 인터넷 PC나 폰으로 열어야 합니다.", why: "어떤 환경에서 쓸 수 있을지 궁금해서요.",
       options: ["사무실 인터넷 PC로 열 수 있다", "폰으로만 열 수 있다", "둘 다 어렵다", "잘 모르겠다"] },
-    { id: "rate", type: "rate", label: "닿음의 기본 기능이에요. 얼마나 도움이 될까요?",
-      hint: "1 별로 · 5 아주 많이. 아는 것만 눌러 주세요.", why: "어느 기능부터 다듬을지 정하려고요." },
-    { id: "feat_a", type: "feat", items: FEAT_A, label: "방문 나가기 전·현장에서, 이런 기능을 쓰실 것 같나요?",
-      hint: "하나씩 «쓸 것 같다 / 아니다 / 모르겠다»로 골라 주세요.", why: "현장에서 안 쓸 기능은 빼려고요." },
-    { id: "feat_b", type: "feat", items: FEAT_B, label: "기록·보고 쪽 기능도 쓰실 것 같나요?",
-      hint: "하나씩 골라 주세요. 모르는 건 건너뛰셔도 됩니다.", why: "현장에서 안 쓸 기능은 빼려고요." },
+    { id: "rate", type: "rate", label: "이런 게 있으면 도움이 될까요?",
+      hint: "1 별로 · 5 아주 많이. 아는 것만 눌러 주세요.", why: "어떤 게 쓸모 있을지 가늠해 보려고요." },
+    { id: "feat_a", type: "feat", items: FEAT_A, label: "이런 게 있으면 쓸 것 같으세요? (방문·현장)",
+      hint: "하나씩 «쓸 것 같다 / 아니다 / 모르겠다»로 골라 주세요.", why: "현장에 쓸모 있는 것만 추려 보려고요." },
+    { id: "feat_b", type: "feat", items: FEAT_B, label: "이런 게 있으면 쓸 것 같으세요? (기록·보고)",
+      hint: "하나씩 골라 주세요. 모르는 건 건너뛰셔도 됩니다.", why: "현장에 쓸모 있는 것만 추려 보려고요." },
     { id: "hardest", type: "single", label: "가장 손이 많이 가는 단계는 어디인가요?",
-      why: "닿음이 가장 먼저 덜어 드릴 곳을 정하려고요.",
+      why: "가장 힘든 곳이 어디인지 알고 싶어서요.",
       options: ["명단 받기·나누기", "방문 순서·일정", "연락·재방문", "현장 조사", "결과 입력", "현황 보고", "연계·사후관리"] },
     { id: "wish", type: "text", label: "마지막으로, 현장 일에서 이것만은 덜고 싶다는 것이 있다면 적어 주세요",
       hint: "예: 같은 내용을 두 번 적는 일. 없으시면 바로 보내셔도 됩니다." }
   ];
   var N = Q.length;
-  var INTRO_BODY = "행복이음 명단을 받은 다음의 방문·기록·연계·보고를 덜어 드리는 도구를 만들고 있습니다. 현장에 맞추려고 몇 가지 여쭙니다.";
-  var INTRO_TEXT = "복지 사각지대 현장 업무 도우미 닿음 현장 설문 명단 행복이음 방문 기록 연계·보고 닿음이 거드는 일 " + INTRO_BODY;
+  var INTRO_BODY = "개인적인 관심으로 알아보고 있습니다. 평소 일하시는 방식을 몇 가지 여쭙니다.";
+  var INTRO_TEXT = "현장 설문 현장 복지 업무, 덜 수 있는 방법이 있을까요? 약 4분 이름 없이 건너뛰어도 됩니다 " + INTRO_BODY;
 
   var $ = function (id) { return document.getElementById(id); };
   var app = $("app"), top = $("top"), fill = $("barFill"), backBtn = $("backBtn");
@@ -337,25 +337,14 @@
   function hasDraft() { return Object.keys(A).some(function (k) { var v = A[k]; return v && (typeof v !== "object" || Object.keys(v).length); }); }
   function firstOpen() { for (var i = 0; i < N; i++) if (!answered(Q[i])) return i; return N - 1; }
   function row(k, v) { return el("li", {}, [el("span", { class: "k", text: k }), el("span", { class: "v", text: v })]); }
-  // 닿음이 맡는 자리: 명단은 행복이음에서 받고, 그다음 방문·기록·연계·보고를 거든다(발굴 자체를 대신하지 않음)
-  function jobMap() {
-    var steps = [["명단", "행복이음", false], ["방문", "", true], ["기록", "", true], ["연계·보고", "", true]];
-    var ol = el("ol", { class: "jobs", "aria-label": "닿음이 거드는 일: 행복이음에서 받은 명단 다음의 방문, 기록, 연계와 보고" });
-    steps.forEach(function (s, i) {
-      ol.appendChild(el("li", { class: s[2] ? "j on" : "j" }, [
-        el("span", { class: "jn", "aria-hidden": "true", text: String(i + 1) }), el("span", { class: "jt", text: s[0] }), s[1] ? el("span", { class: "js", text: s[1] }) : null]));
-    });
-    return el("div", { class: "jobmap" }, [ol, el("p", { class: "jcap", "aria-hidden": "true" }, [el("span", {}), el("b", { text: "닿음이 거드는 일" })])]);
-  }
   function intro() {
     var resume = hasDraft();
     setActions(resume ? "이어서 답하기" : "시작하기", function () { go(resume ? firstOpen() : 0); }, null);
     return el("section", { class: "screen intro" }, [
-      el("p", { class: "kicker" }, [el("i", { class: "dot", "aria-hidden": "true" }), el("span", { text: "닿음 · 현장 설문" })]),
-      el("h1", { class: "lead", html: "복지 사각지대<br>현장 업무 도우미,<br>닿음" }),
+      el("p", { class: "kicker" }, [el("i", { class: "dot", "aria-hidden": "true" }), el("span", { text: "현장 설문" })]),
+      el("h1", { class: "lead", html: "현장 복지 업무,<br>덜 수 있는 방법이<br>있을까요?" }),
       el("p", { class: "body", text: INTRO_BODY }),
-      jobMap(),
-      el("ul", { class: "facts" }, [row("걸리는 시간", "약 4분"), row("이름", "적지 않습니다"), row("문항", "언제든 건너뛸 수 있습니다")]),
+      el("p", { class: "chips" }, [el("span", { text: "약 4분" }), el("span", { text: "이름 없이" }), el("span", { text: "건너뛰어도 됩니다" })]),
       el("p", { class: "note", text: "개인정보나 대상자 정보는 적지 말아 주세요." })
     ]);
   }
@@ -364,7 +353,7 @@
     return el("section", { class: "screen done" }, [
       el("div", { class: "seal", "aria-hidden": "true", html: '<svg viewBox="0 0 48 48" width="30" height="30"><path class="tick" d="M13 25l7.5 7.5L35 17" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' }),
       el("h1", { class: "lead sm", text: already ? "이미 응답해 주셨어요" : "고맙습니다" }),
-      el("p", { class: "body", text: already ? "이 기기에서 보내 주신 답이 이미 접수되어 있습니다." : "보내 주신 답은 닿음을 현장에 맞게 다듬는 데만 쓰겠습니다." }),
+      el("p", { class: "body", text: already ? "이 기기에서 보내 주신 답이 이미 접수되어 있습니다." : "보내 주신 답은 이 궁리에만 쓰겠습니다." }),
       el("button", { type: "button", class: "btn main close", text: "창 닫기", onclick: closeWin }),
       el("p", { class: "note", id: "closeNote", text: "" })
     ]);
@@ -423,6 +412,7 @@
     clearTimeout(advTimer);
     applyFont();
     progress();
+    document.documentElement.classList.toggle("lock", page < 0);
     var node = page < 0 ? intro() : page >= N ? thanks(already) : questionView(page);
     if (!reduce) node.classList.add("enter");
     app.replaceChildren ? app.replaceChildren(node) : (app.textContent = "", app.appendChild(node));
@@ -430,12 +420,12 @@
   function go(p) {
     page = Math.max(-1, Math.min(N, p));
     try { history.pushState({ p: page }, ""); } catch (e) {}
-    render(); window.scrollTo(0, 0); app.focus({ preventScroll: true });
+    render(); if (window.scrollY) window.scrollTo(0, 0); app.focus({ preventScroll: true });
   }
   window.addEventListener("popstate", function (e) {
     if (page >= N) return;
     page = e.state && typeof e.state.p === "number" ? e.state.p : -1;
-    render(); window.scrollTo(0, 0);
+    render(); if (window.scrollY) window.scrollTo(0, 0);
   });
   backBtn.addEventListener("click", function () { history.back(); });
 
