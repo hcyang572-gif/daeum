@@ -68,10 +68,110 @@
 /* 오늘 머리 — 고리 + 큰 숫자 */
 .today-num { display: flex; align-items: center; gap: var(--sp-4); min-width: 0; }
 
+/* ══════ S10k-2 (⚙️ 파로, 10-30) ══════ */
+/* ⑤ 하루 시간 띠 — 이동 = 점선 띠, 상담 = 채운 블록+번호, 점심 = 점 테두리, 18시 = 굵은 세로선, 8시간 넘음 = 장미색 점선, 18시 뒤 = 장미색 빗금 */
+.ch-day { margin: var(--sp-3) 0 var(--sp-2); min-width: 0; }
+.ch-dy-tr { position: relative; height: 80px; margin: 0 12px; }
+.ch-dy-h { position: absolute; left: var(--a); top: 28px; bottom: 16px; border-left: 1px solid var(--hair); }
+.ch-dy-h b { position: absolute; top: 100%; left: 0; transform: translateX(-50%); margin-top: 2px; font: 500 12px/1 var(--num); color: var(--ink2); }
+.ch-dy-b { position: absolute; left: var(--a); width: var(--w); top: 32px; height: 28px; box-sizing: border-box; display: grid; place-items: center; overflow: hidden; font-style: normal; }
+.ch-dy-b.vs { background: var(--acc); color: var(--on-acc); border-radius: 5px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-acc) 35%, transparent); }
+.ch-dy-b.vs b { font: 600 12px/1 var(--num); }
+.ch-dy-b.mv { top: 43px; height: 6px; background: repeating-linear-gradient(90deg, var(--ink3) 0 4px, transparent 4px 7px); }
+.ch-dy-b.ln { border: 1.5px dotted var(--ink3); border-radius: 5px; color: var(--ink2); }
+.ch-dy-t { display: none; font: 500 12px/1.2 var(--f); white-space: nowrap; }
+.ch-dy-b.ln .ch-dy-t { display: block; }
+.ch-dy-late { position: absolute; left: var(--a); width: var(--w); top: 28px; height: 36px; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--rose) 35%, transparent) 0 4px, transparent 4px 8px); }
+.ch-dy-end, .ch-dy-over { position: absolute; left: var(--a); width: 0; }
+.ch-dy-end { top: 0; bottom: 16px; border-left: 2px solid var(--ink); }
+.ch-dy-over { top: 14px; bottom: 16px; border-left: 2px dashed var(--rose); }
+.ch-dy-end em, .ch-dy-over em { position: absolute; right: 5px; top: 0; font: 600 12px/1.1 var(--f); font-style: normal; white-space: nowrap; color: var(--ink); }
+.ch-dy-over em { color: var(--rose); }
+.ch-dk i.ch-k-mv { height: 4px; vertical-align: 2px; background: repeating-linear-gradient(90deg, var(--ink3) 0 4px, transparent 4px 7px); }
+.ch-dk i.ch-k-vs { background: var(--acc); }
+.ch-dk i.ch-k-ln { box-shadow: inset 0 0 0 1.5px var(--ink3); }
+.ch-tag.ch-bad { color: var(--rose); }
+.ch-dk .ch-tag + .ch-tag { margin-left: 0; }
+@media (max-width: 400px) {
+  .ch-dy-tr { height: calc(var(--hrs, 9) * 40px); margin: 10px 0 14px; }
+  .ch-dy-h { top: var(--a); left: 26px; right: 0; bottom: auto; border-left: 0; border-top: 1px solid var(--hair); }
+  .ch-dy-h b { top: 0; left: -26px; transform: translateY(-50%); margin: 0; }
+  .ch-dy-b { top: var(--a); height: var(--w); left: 32px; width: 40px; overflow: visible; }
+  .ch-dy-b.mv { top: var(--a); left: 49px; width: 6px; height: var(--w); background: repeating-linear-gradient(180deg, var(--ink3) 0 4px, transparent 4px 7px); }
+  .ch-dy-t { display: block; position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%); color: var(--ink2); }
+  .ch-dy-late { top: var(--a); height: var(--w); left: 26px; right: 0; width: auto; }
+  .ch-dy-end, .ch-dy-over { top: var(--a); bottom: auto; left: 26px; right: 0; width: auto; border-left: 0; }
+  .ch-dy-end { border-top: 2px solid var(--ink); }
+  .ch-dy-over { border-top: 2px dashed var(--rose); }
+  .ch-dy-end em { right: 0; top: -17px; }
+  .ch-dy-over em { right: 0; top: 3px; }
+}
+
+/* ⑥ 재시도 요일 × 시간대 격자 — 만남 = 채운 점, 허탕 = 빈 점(장미 테두리), 방문 허탕 3번째 = 겹테두리 + «간접 확인», 다음 제안 칸 = 굵은 테두리 */
+.ch-slot { margin: var(--sp-2) 0; min-width: 0; }
+.ch-sl-g { display: grid; grid-template-columns: 2.8em repeat(var(--cols, 5), minmax(0, 1fr)); gap: 3px; font-size: var(--fs-xs); }
+.ch-sl-c { min-width: 0; min-height: 40px; display: flex; flex-wrap: wrap; align-content: center; align-items: center; justify-content: center; gap: 3px; padding: 3px 2px; border-radius: 6px; background: var(--well, var(--hair)); box-shadow: var(--well-sh, none); }
+.ch-sl-hd, .ch-sl-rh { min-height: 0; background: none; box-shadow: none; color: var(--ink2); font-weight: var(--fw-m); }
+.ch-sl-rh { justify-content: flex-start; }
+.ch-sl-c.nx { box-shadow: var(--well-sh, none), inset 0 0 0 2.5px var(--acc); }
+.ch-sl-d { width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; font: 600 12px/1 var(--num); font-style: normal; }
+.ch-sl-d.ok { background: var(--acc); color: var(--on-acc); }
+.ch-sl-d.miss { border: 2px solid var(--rose); color: var(--rose); }
+.ch-sl-d.esc { outline: 2px solid var(--rose); outline-offset: 2px; }
+.ch-sl-x, .ch-sl-nx { flex-basis: 100%; text-align: center; font: 600 12px/1.15 var(--f); font-style: normal; word-break: keep-all; }
+.ch-sl-x { color: var(--rose); } .ch-sl-nx { color: var(--ink); }
+.ch-dk i.ch-k-ok { width: 12px; height: 12px; border-radius: 50%; background: var(--acc); }
+.ch-dk i.ch-k-miss { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--rose); }
+.ch-dk i.ch-k-nx { box-shadow: inset 0 0 0 2.5px var(--acc); }
+.ch-dk i.ch-k-esc { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--rose), 0 0 0 1.5px var(--rose); }
+
+/* ⑦ 방문 이력 타임라인 — 모양 = 방법(방문 원·전화 네모·AI 마름모), 채움 = 닿음, 빈 점 = 허탕, 다음 = 점선 */
+.ch-hist { margin: var(--sp-2) 0; min-width: 0; }
+.ch-hl-tr { position: relative; height: calc(16px + var(--lanes, 1) * 28px); margin-top: 20px; }
+.ch-hl-ax { position: absolute; left: 0; right: 0; top: 15px; height: 2px; background: var(--ink3); }
+.ch-hl-t { position: absolute; left: var(--a); top: 2px; height: 26px; border-left: 2px solid var(--ink); }
+.ch-hl-t em { position: absolute; bottom: 100%; left: 0; transform: translateX(-50%); font: 600 12px/1.2 var(--f); font-style: normal; color: var(--ink); white-space: nowrap; }
+.ch-hl-p { position: absolute; left: var(--a); top: calc(16px + var(--ln, 0) * 28px); width: 22px; height: 22px; box-sizing: border-box; transform: translate(-50%, -50%); display: grid; place-items: center; font-style: normal;
+  border: 2px solid var(--acc); background: var(--well, var(--hair)); color: var(--ink); }
+.ch-hl-p b { font: 600 12px/1 var(--num); }
+.ch-hl-p.vi { border-radius: 50%; } .ch-hl-p.ph { border-radius: 4px; }
+.ch-hl-p.ai { border-radius: 3px; transform: translate(-50%, -50%) rotate(45deg); } .ch-hl-p.ai b { transform: rotate(-45deg); }
+.ch-hl-p.ok { background: var(--acc); color: var(--on-acc); }
+.ch-hl-p.miss { border-color: var(--rose); color: var(--rose); }
+.ch-hl-p.nx { width: auto; padding: 0 6px; border: 2px dashed var(--ink2); border-radius: 11px; color: var(--ink2); }
+.ch-hl-e { display: flex; justify-content: space-between; margin: 2px 0 0; font: 500 12px/1.2 var(--num); color: var(--ink2); }
+.ch-dk i.ch-k-vi { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--ink2); }
+.ch-dk i.ch-k-ph { width: 12px; height: 12px; border-radius: 2px; box-shadow: inset 0 0 0 2px var(--ink2); }
+.ch-hl-list { list-style: none; margin: var(--sp-2) 0 0; padding: 0; }
+.ch-hl-list li { padding: 3px 0; }
+.ch-hl-list li b { display: inline-block; min-width: 1.6em; font-weight: 600; }
+.ch-hl-list li.nx { color: var(--ink2); }
+
+/* ⑧ 주민 진행 단계 — PC 가로 레일, 좁은 화면 세로 레일. 완료 = ✓ 채움, 지금 = 굵은 테두리, 아직 = 번호 회색 */
+.ch-step { list-style: none; margin: var(--sp-4) 0; padding: 0; display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); }
+.ch-st { position: relative; display: grid; justify-items: center; align-content: start; gap: 4px; min-width: 0; padding: 0 2px; text-align: center; }
+.ch-st + .ch-st::before { content: ""; position: absolute; top: 17px; left: calc(-50% + 22px); right: calc(50% + 22px); height: 3px; border-radius: 2px; background: var(--hair); }
+.ch-st.st-done + .ch-st.st-done::before, .ch-st.st-done + .ch-st.st-current::before { background: var(--acc); }
+.ch-st-m { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font: 600 1rem/1 var(--num); background: var(--well, var(--hair)); box-shadow: var(--well-sh, none); color: var(--ink2); }
+.ch-st.st-done .ch-st-m { background: var(--acc); color: var(--on-acc); }
+.ch-st.st-current .ch-st-m { box-shadow: var(--well-sh, none), inset 0 0 0 3px var(--acc); color: var(--ink); }
+.ch-st b { font-size: var(--fs-s); color: var(--ink); word-break: keep-all; overflow-wrap: break-word; }
+.ch-st.st-todo b { color: var(--ink2); font-weight: var(--fw-m); }
+.ch-st-at { font-size: 12px; color: var(--ink2); overflow-wrap: anywhere; }
+.ch-st.st-current .ch-st-at { color: var(--ink); font-weight: 600; }
+.ch-step.cancel .ch-st.st-todo { opacity: .6; }
+@media (max-width: 420px) {
+  .ch-step { grid-template-columns: 1fr; }
+  .ch-st { grid-template-columns: 36px minmax(0, 1fr) auto; justify-items: start; align-items: center; gap: 0 12px; padding: 6px 0; text-align: left; }
+  .ch-st + .ch-st::before { top: -6px; left: 16.5px; right: auto; width: 3px; height: 12px; }
+  .ch-st-at { justify-self: end; text-align: right; }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .ch-seg, .ch-dd, .ch-fb i { transition: stroke .3s ease, width .5s cubic-bezier(.2, .8, .2, 1); }
 }
 @media print {
   .ch-box { --c1: #111; --c2: #6a6a6a; --c3: #a5a5a5; --c4: #cfcfcf; --c5: #e6e6e6; }
   .ch-seg.on, .ch-dd { stroke: #111; background: #111; }
+  .ch-dy-b.vs, .ch-sl-d.ok, .ch-hl-p.ok, .ch-st.st-done .ch-st-m { background: #111; color: #fff; }
 }

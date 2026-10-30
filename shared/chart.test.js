@@ -108,5 +108,82 @@ t("부품이 없을 때(옛 캐시)는 예전 숫자 칸으로 돌아간다", fu
   assert.ok(/kpi\("발굴 명단", H\.total/.test(mount) && /class: "num gs-n"/.test(mount));
 });
 
+console.log("S10k-2 새 부품");
+var RP = require(path.join(__dirname, "..", "officer", "route_plan.js"));
+t("시간 띠: 이동·상담·점심 블록, 18시 선, 문장에 시각·합계", function () {
+  var s = C.dayline({ stops: [{ arrive: "10:00", leave: "10:30", travelMin: 30 }, { arrive: "13:20", leave: "13:50", travelMin: 20, lunchBefore: true }], back: { arrive: "14:30", travelMin: 40 } });
+  assert.strictEqual((s.match(/ch-dy-b vs/g) || []).length, 2);
+  assert.strictEqual((s.match(/ch-dy-b mv/g) || []).length, 3);
+  assert.strictEqual((s.match(/ch-dy-b ln/g) || []).length, 1);
+  assert.ok(/class="ch-dy-end" style="--a:100\.00%"/.test(s), "18시 선은 09~18시 축 끝");
+  assert.strictEqual(aria(s), "하루 시각표 09:30 출발, 1번 10:00~10:30, 2번 13:20~13:50, 마침 14:30(복귀). 이동 1시간 30분 · 상담 1시간 — 18시 안");
+  assert.ok(/role="img"/.test(s) && /이동 <b class="num">1시간 30분/.test(s) && /마침 14:30/.test(s));
+  assert.ok(s.indexOf("ch-dy-over") < 0 && s.indexOf("ch-dy-late") < 0);
+});
+t("시간 띠: 8시간 넘는 시각 표지·18시 뒤 빗금·축 늘림", function () {
+  var rows = [], tt = 9 * 60 + 30;
+  for (var i = 0; i < 9; i++) { tt += 25; var a = tt; tt += 30; rows.push({ arrive: RP.hm(a), leave: RP.hm(tt), travelMin: 25 }); }
+  var s = C.dayline({ stops: rows, back: { arrive: RP.hm(tt + 30), travelMin: 30 } });
+  assert.ok(/ch-day late over/.test(s));
+  assert.ok(/ch-dy-over/.test(s) && /이동\+상담이 8시간을 넘는 때 17:30/.test(aria(s)), aria(s));
+  assert.ok(/18시를 넘음/.test(aria(s)) && /ch-dy-late/.test(s) && /8시간 넘음 17:30/.test(s));
+  assert.ok(/<b>19<\/b>/.test(s) && !/<b>20<\/b>/.test(s), "축은 마침 시각 다음 정시까지");
+});
+t("시간 띠: route_plan.schedule 결과를 그대로 받는다(점심 블록 = 도착-이동-1시간)", function () {
+  var pts = [{ id: "a", x: 3, y: 4 }, { id: "b", x: 10, y: 2 }, { id: "c", x: 12, y: -6 }, { id: "d", x: 5, y: -8 }, { id: "e", x: -4, y: -3 }];
+  var sch = RP.schedule(pts, RP.approxLegs(pts, { x: 0, y: 0 }, true), { start: "09:30", ret: true });
+  var s = C.dayline({ stops: sch.rows, back: sch.back });
+  assert.strictEqual((s.match(/ch-dy-b vs/g) || []).length, 5);
+  assert.ok(new RegExp("마침 " + sch.end).test(s));
+  assert.ok(sch.rows.some(function (r) { return r.lunchBefore; }) === /ch-dy-b ln/.test(s));
+});
+t("요일×시간대 격자: 만남·허탕 점, 방문 허탕 3번째 «간접 확인», 다음 제안 칸 테두리", function () {
+  var att = [
+    { at: "2026-10-26T10:00:00", channel: "visit", result: "no_answer" }, // 월 오전
+    { at: "2026-10-27T14:00:00", channel: "phone", result: "no_answer" }, // 화 오후
+    { at: "2026-10-28T15:00:00", channel: "visit", result: "no_answer" }, // 수 오후
+    { at: "2026-10-29T18:30:00", channel: "visit", result: "no_answer" }  // 목 저녁 → 방문 허탕 3번째
+  ];
+  var s = C.slotGrid({ attempts: att, next: { date: "2026-10-30", slot: "오전", channel: "visit" }, escalate: true, cap: 3, channels: { visit: "방문", phone: "전화" }, results: { no_answer: "부재" } });
+  assert.strictEqual((s.match(/ch-sl-d miss/g) || []).length, 4);
+  assert.strictEqual((s.match(/ch-sl-d ok/g) || []).length, 0);
+  assert.strictEqual((s.match(/ch-sl-d miss esc/g) || []).length, 1);
+  assert.ok(/ch-sl-d miss esc" title="10\.29\(목\) 저녁 방문 부재">4</.test(s));
+  assert.strictEqual((s.match(/ch-sl-c nx/g) || []).length, 1);
+  assert.ok(/<em class="ch-sl-nx">간접 확인<\/em>/.test(s));
+  assert.ok(/4\) 10\.29\(목\) 저녁 방문 부재\(방문 허탕 3번째 — 간접 확인\)/.test(aria(s)) && /다음 제안 10\.30\(금\) 오전 방문/.test(aria(s)));
+  assert.ok(/허탕 <b class="num">4/.test(s) && /방문 허탕 3번째 = 간접 확인/.test(s));
+});
+t("요일×시간대 격자: 주말 시도는 열을 더하고, 만남은 채운 점", function () {
+  var s = C.slotGrid({ attempts: [{ at: "2026-10-31T10:00:00", channel: "visit", result: "met" }], next: null });
+  assert.ok(/--cols:6/.test(s) && /ch-sl-hd">토</.test(s));
+  assert.strictEqual((s.match(/ch-sl-d ok/g) || []).length, 1);
+  assert.ok(s.indexOf("ch-sl-c nx") < 0);
+});
+t("방문 이력 타임라인: 방법별 모양·결과 채움·다음 예정 점선 + 번호 목록에 값", function () {
+  var s = C.histLine({ items: [{ at: "2026-10-20T10:00:00", channel: "phone", result: "no_answer" }, { at: "2026-10-22T15:00:00", channel: "visit", result: "met", note: "어르신 계심" }, { at: "2026-10-22T16:00:00", channel: "ai", result: "no_answer" }],
+    next: { date: "2026-11-02", slot: "저녁", channel: "visit" }, now: "2026-10-30T12:00:00", channels: { visit: "방문", phone: "전화", ai: "AI 전화" }, results: { no_answer: "부재", met: "만남" } });
+  assert.ok(/ch-hl-p ph miss/.test(s) && /ch-hl-p vi ok/.test(s) && /ch-hl-p ai miss/.test(s) && /ch-hl-p nx/.test(s));
+  assert.ok(/--ln:1/.test(s), "같은 날 두 점은 줄을 나눈다");
+  assert.strictEqual(aria(s), "지난 시도 3회: 1) 10.20(화) 전화 부재, 2) 10.22(목) 방문 만남, 3) 10.22(목) AI 전화 부재. 다음 예정 11.2(월) 저녁 방문");
+  assert.ok(/<li><b class="num">2<\/b> 10\.22\(목\) 오후 · 방문 — 만남 \(어르신 계심\)<\/li>/.test(s));
+  assert.ok(/<em>오늘<\/em>/.test(s) && /10\.20\(화\)<\/span><span>11\.2\(월\)/.test(s));
+});
+t("진행 단계 도식: 완료 ✓·지금·아직, 문장에 단계와 날짜", function () {
+  var s = C.stepper([{ label: "요청 접수", at: "2026-10-29 14:00", state: "done" }, { label: "담당자 확인", at: null, state: "current" }, { label: "방문·상담", state: "todo" }, { label: "연계 완료", state: "todo" }]);
+  assert.ok(/--n:4/.test(s) && (s.match(/class="ch-st /g) || []).length === 4);
+  assert.ok(/ch-st st-done"><span class="ch-st-m num" aria-hidden="true">✓/.test(s) && /ch-st st-current/.test(s) && /진행 중<\/span>/.test(s));
+  assert.strictEqual(aria(s), "진행 단계: 요청 접수 완료(2026-10-29 14:00) → 담당자 확인 진행 중 → 방문·상담 아직 → 연계 완료 아직");
+  assert.ok(/ch-step cancel/.test(C.stepper([{ label: "x", state: "done" }], { cancelled: true })));
+});
+t("새 화면 4곳 + 사소 1건이 부품을 쓰고 출처 꼬리표를 단다", function () {
+  var m = rd("officer/mount.js"), ci = rd("citizen/app.js"), cx = rd("citizen/index.html"), oc = rd("officer/officer.css"), css = rd("shared/chart.css");
+  assert.ok(/DaeumChart\.dayline\(DS\.chart\)/.test(m) && /DaeumChart\.slotGrid\(/.test(m) && /DaeumChart\.histLine\(/.test(m));
+  assert.ok(/"data-src-ref": "V1", text: "출처: 가상 가구 위치로 어림한 시각/.test(m) && /"data-src-ref": "V1,R4"/.test(m) && /"data-src-ref": "V1", text: "출처: 가상 가구 연락 기록/.test(m));
+  assert.ok(/DaeumChart\.stepper\(p\.steps/.test(ci) && cx.indexOf("../shared/chart.js") > 0 && cx.indexOf("../shared/chart.js") < cx.indexOf("app.js") && cx.indexOf("../shared/chart.css") > 0);
+  assert.ok(/\.over-go \{[^}]*min-height: 44px/.test(oc));
+  assert.ok(/@media \(max-width: 400px\)[\s\S]*\.ch-dy-tr \{ height: calc\(var\(--hrs/.test(css) && /@media \(max-width: 420px\)[\s\S]*\.ch-step \{ grid-template-columns: 1fr/.test(css), "좁은 화면 세로 접기");
+});
+
 console.log("결과: 통과 " + pass + " · 실패 " + fail);
 if (fail) process.exitCode = 1;

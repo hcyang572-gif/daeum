@@ -397,6 +397,11 @@
       card.appendChild(el("h2", null, p.title));
       var meta = el("p", "meta", "접수번호 " + p.id + " · " + (p.waitedDays > 0 ? p.waitedDays + "일째" : "오늘 접수") + " · 마지막 변경 " + p.lastUpdate); card.appendChild(meta);
       var now = el("p", "why"); now.appendChild(el("span", "d-tag " + (p.cancelled ? "warn" : p.finished ? "pos" : "acc"), p.current.label)); now.appendChild(document.createTextNode(" " + p.current.say)); card.appendChild(now);
+      // S10k-2 ⑧ 진행 단계 도식(PC 가로·좁은 화면 세로 레일, 지금 단계 강조) — 부품이 없으면(옛 캐시) 예전 정의 목록
+      if (window.DaeumChart) {
+        var fig = el("div"); fig.innerHTML = DaeumChart.stepper(p.steps, { cancelled: !!p.cancelled }); card.appendChild(fig.firstChild);
+        card.appendChild(el("p", "src", p.contactLine)); root.appendChild(card); return;
+      }
       var dl = el("dl");
       p.steps.forEach(function (s) {
         // 기호는 화면낭독기에 숨기고, 상태를 말로 읽힌다

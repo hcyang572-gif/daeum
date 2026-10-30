@@ -793,3 +793,6 @@ select, input[type=number], input[type=text], input[type=time], textarea { borde
 /* S10h ④ 오래된 집 표식(가상 표시) */
 .tag.old { margin-left: 6px; font-size: .75rem; font-weight: var(--fw-b); padding: 2px 8px; border-radius: var(--r-pill); background: var(--warn-soft); color: var(--warn); border: 1px solid currentColor; vertical-align: 1px; white-space: nowrap; }
 .oh-card .oh-tip { display: block; margin-top: 2px; }
+
+/* S10k-2 사소: 오늘 동선 «내일로 미룰 집» 링크 터치 높이 44px 이상(이전 41px) */
+.over-go { display: inline-flex; align-items: center; min-height: 44px; }

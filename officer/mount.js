@@ -186,13 +186,19 @@
       // O-06: 이동+상담이 8시간을 넘으면 경고 줄(오늘 묶음은 추정 시간만 있어 18시 판정은 경로 화면에서)
       if (R.minutes > 480) box.appendChild(h("p", { class: "warn", role: "status" }, ["예상 " + (R.minutes / 60).toFixed(1) + "시간 — 근무 8시간을 넘습니다. ",
         h("a", { href: "#route", class: "over-go", text: "경로에서 내일로 미룰 집 고르기" })]));
+      // S10k-2 ⑤ 시간 띠 — 09~18시 축에 이동·상담·점심 블록, 18시 선, 8시간 넘는 시각(가상 위치로 어림한 시각)
+      var DS = daySchedule(R.order);
+      if (DS && window.DaeumChart) {
+        var dl = h("div", { class: "ch-box", id: "todayDay" }); dl.innerHTML = DaeumChart.dayline(DS.chart); box.appendChild(dl);
+        box.appendChild(h("p", { class: "small src-tag", "data-src-ref": "V1", text: "출처: 가상 가구 위치로 어림한 시각(직선 거리×1.3·시속 40km·상담 30분·점심 12~13시) — 도로 시각은 «순서 다시 짜기 · 지도»에서" }));
+      }
       var ol = h("ol", { class: "slot-list visits" }), lastA = null, ohN = 0;
       var OH = window.DaeumOldHouse && DaeumOldHouse.get() ? DaeumOldHouse : null;
       R.order.slice(0, 8).forEach(function (s, i) {
         var rr = O.row(s.id), old = !!(OH && rr && OH.isOld(rr.h)); if (old) ohN++;
         ol.appendChild(h("li", { class: s.kind === "request" ? "req" : null }, [h("span", { class: "vn num", text: String(i + 1), "aria-hidden": "true" }), h("span", { class: "grow" }, [h("span", { class: "sr", text: (i + 1) + "번 " }), h("b", { text: s.label }),
           old ? h("span", { class: "tag old", text: "오래된 집", title: "30년 넘은 집(가상 표시 — 읍면 비율로 시연용)" }) : null,
-          h("span", { class: "small", text: " " + s.area + (s.kind === "request" ? " · 주민 신호" : "") + (s.alert === "noresp" ? " · 무반응 신호(가상)" : "") })]),
+          h("span", { class: "small", text: " " + s.area + (s.kind === "request" ? " · 주민 신호" : "") + (s.alert === "noresp" ? " · 무반응 신호(가상)" : "") + (DS && DS.rows[i] ? " · " + DS.rows[i].arrive + " 도착" : "") })]),
           O.row(s.id) ? h("div", { class: "acts" }, [btn("방문 전 카드", function () { openCard(s.id); })]) : null]));
         lastA = s.area;
       });
@@ -277,6 +283,15 @@
 
   // S10k ① 오늘 머리 진행 고리 — 오늘 찾아갈 집 중 «오늘 기록을 남긴 집»(방문·전화 시도 기록) / 남은 집, 지금 차례 = 첫 남은 집
   function localYmd(iso) { var d = new Date(iso); return isNaN(d) ? "" : d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); }
+  // S10k-2 ⑤ 오늘 묶음의 어림 시각표(인쇄용 sheetData 와 같은 계산: route_plan.schedule, 09:30 출발·복귀) — 위치를 모르는 집이 있으면 null
+  function daySchedule(order) {
+    var RP = window.DaeumRoutePlan, D = O.data && O.data(); if (!RP || !D || !D.meta || !order.length) return null;
+    var areaC = {}; (D.areas || []).forEach(function (a) { areaC[a.name] = a; });
+    var pts = order.map(function (s) { var r = O.row(s.id), p = r ? r.h : areaC[s.area]; return p && isFinite(p.x) && isFinite(p.y) ? { id: s.id, x: p.x, y: p.y } : null; });
+    if (pts.some(function (p) { return !p; })) return null;
+    var sch = RP.schedule(pts, RP.approxLegs(pts, D.meta.office, true), { start: "09:30", ret: true });
+    return { rows: sch.rows, chart: { stops: sch.rows.map(function (x, i) { return { no: i + 1, arrive: x.arrive, leave: x.leave, travelMin: x.travelMin, lunchBefore: x.lunchBefore }; }), back: sch.back } };
+  }
   function renderTodayRing(order) {
     var host = $("todayRing"); if (!host || !window.DaeumChart) return;
     var today = ymdNow(), did = {};
@@ -407,7 +422,7 @@
       var body = h("div", { class: "grow" }, [h("b", { text: lbl }), " ",
         h("span", { class: "d-tag " + (s.closed ? "pos" : s.escalate ? "warn" : "acc"), text: s.closed ? "끝남" : s.escalate ? "간접 확인" : "다음 시도" }),
         h("div", { class: "small", text: "시도 " + s.tries + "회 · " + line }),
-        h("div", { class: "small", text: "시간대: " + F.contacts.timeline(att, x.id).line })]);
+        slotFig(att, x.id, s)]);
       if (s.escalate) body.appendChild(indirectList(x.id, true));
       var li = h("li", null, [body]);
       var acts = h("div", { class: "acts" });
@@ -422,6 +437,17 @@
       ol.appendChild(li);
     });
     log.appendChild(ol);
+    if (window.DaeumChart && list.some(function (x) { return !x.s.closed; }))
+      log.appendChild(h("p", { class: "small src-tag", "data-src-ref": "V1,R4", text: "출처: 가상 가구 연락 기록(닿음) · 방문 허탕 3번이면 간접 확인 — 강남구 «3회 방문 뒤 간접조사» 공개 사례, 현장 설문 6명 중 4명 «재시도 3번»(시연 기본값)" }));
+  }
+  // S10k-2 ⑥ 재시도 요일 × 시간대 점 격자(끝나지 않은 집만 — 끝난 집은 한 줄 글). 부품이 없으면(옛 캐시) 예전 글 한 줄
+  function slotFig(att, id, s) {
+    var line = h("div", { class: "small", text: "시간대: " + F.contacts.timeline(att, id).line });
+    if (!window.DaeumChart || s.closed) return line;
+    var box = h("div", { class: "ch-box" });
+    box.innerHTML = DaeumChart.slotGrid({ attempts: att.filter(function (t) { return t.householdId === id; }), next: s.next, escalate: s.escalate,
+      cap: F.contacts.MAX_VISIT_TRIES || 3, channels: F.contacts.CHANNELS, results: F.contacts.RESULTS });
+    return box;
   }
 
   // ── ④ 상담 기록 → 행복이음 입력 초안·사례관리 서식 ─────────
@@ -748,6 +774,14 @@
       h("span", { class: "muted", text: " (" + OH.sourceLine(OH.get()) + ")" })]));
     var med = medSection(r.h); if (med) dlg.appendChild(med);
     dlg.appendChild(sec("왜 이 집인지", [h("ul", { class: "small" }, (c.why.length ? c.why : ["명단 사유 없음"]).map(function (x) { return h("li", { text: x }); }))]));
+    // S10k-2 ⑦ 방문 이력 타임라인(날짜 축에 전화·방문 점, 결과 = 채움/빈 점, 다음 예정 = 점선) — 부품이 없으면 예전 글 목록
+    var allAtt = st("attempts", []), mineAtt = allAtt.filter(function (t) { return t.householdId === id; }), nxs = F.contacts.suggestNext(allAtt, id);
+    if (window.DaeumChart && mineAtt.length) {
+      var hl = h("div", { class: "ch-box" });
+      hl.innerHTML = DaeumChart.histLine({ items: mineAtt, next: nxs.closed ? null : nxs.next, channels: F.contacts.CHANNELS, results: F.contacts.RESULTS });
+      dlg.appendChild(sec("지난 시도", [hl, h("p", { class: "small src-tag", "data-src-ref": "V1", text: "출처: 가상 가구 연락 기록(닿음)" }),
+        c.next ? h("p", { class: "small", text: "다음: " + c.next }) : null]));
+    } else
     dlg.appendChild(sec("지난 시도", [c.tries.length ? h("ul", { class: "small" }, c.tries.map(function (t) { return h("li", { text: t.at + " " + (CH[t.channel] || "") + " — " + t.result + (t.note ? " (" + t.note + ")" : "") }); })) : h("p", { class: "small", text: "처음 찾아가는 집입니다." }),
       c.next ? h("p", { class: "small", text: "다음: " + c.next }) : null]));
     if (c.cautions.length) dlg.appendChild(sec("주의 사항", [h("ul", { class: "small" }, c.cautions.map(function (x) { return h("li", { text: x }); }))]));
