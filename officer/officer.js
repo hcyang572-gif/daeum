@@ -360,7 +360,9 @@
   var nmapObs = null;
   function hideMapSvg(box) { [].forEach.call(box.querySelectorAll("svg:not([aria-hidden])"), function (s) { s.setAttribute("aria-hidden", "true"); s.setAttribute("focusable", "false"); }); }
   function showMap(naverOk) {
-    var box = $("nmap"); box.hidden = !naverOk; $("map").hidden = naverOk;
+    var box = $("nmap"); box.hidden = !naverOk;
+    // SVG 요소는 .hidden 속성이 없어(HTML 전용) 그림 지도가 네이버 지도 아래에 함께 보였다 — 속성으로 숨긴다(S11-b, 그림 지도 금지·인증 실패 때만 대체)
+    if (naverOk) $("map").setAttribute("hidden", ""); else $("map").removeAttribute("hidden");
     if (naverOk && !nmapObs && window.MutationObserver) { nmapObs = new MutationObserver(function () { hideMapSvg(box); }); nmapObs.observe(box, { childList: true, subtree: true }); }
     if (naverOk) hideMapSvg(box);
   }
