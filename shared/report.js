@@ -146,16 +146,19 @@
     return res;
   }
 
-  function mondayOf(d) { d = sod(d); var w = (d.getDay() + 6) % 7; return new Date(d.getTime() - w * DAY); }
+  // S11-d2: 주간 기간 = 오늘 포함 최근 7일(옛 «이번 주 월요일~오늘»은 월요일에 열면 하루짜리 보고가 됐다)
+  function periodOf(kind, now) {
+    now = sod(now || new Date());
+    return kind === "weekly" ? { from: ymd(new Date(now.getTime() - 6 * DAY)), to: ymd(now) }
+      : { from: ymd(new Date(now.getFullYear(), now.getMonth(), 1)), to: ymd(now) };
+  }
   function makeReport(kind, stats, o) {
     o = o || {};
     var now = o.now ? new Date(o.now) : new Date();
-    var p = stats.period && stats.period.from ? stats.period : (kind === "weekly"
-      ? { from: ymd(mondayOf(now)), to: ymd(now) }
-      : { from: ymd(new Date(now.getFullYear(), now.getMonth(), 1)), to: ymd(now) });
+    var p = stats.period && stats.period.from ? stats.period : periodOf(kind, now);
     var H = stats.households, Q = stats.requests, Lk = stats.links, cd = o.countdown;
     var scope = stats.scope || o.area || null;
-    var office = o.office || (scope ? "상주시 " + scope + " 행정복지센터 맞춤형복지팀" : "상주시 희망복지지원단");
+    var office = o.office || "상주시청"; // 11-02 호창님: 기관 표기는 «상주시청»만(부서·센터 이름 쓰지 않음)
     var name = kind === "weekly" ? "주간" : "월간";
     var sections = [];
     sections.push({ heading: "추진 현황", lines: [
@@ -206,7 +209,7 @@
     /** 읍면동 담당자의 «자기 동»: 명단 가구가 가장 많은 읍면동 */
     // 관할 = 가구 절반 넘게 모인 읍면동 하나. 여러 읍면에 흩어져 있으면(S10b 10-30, 시청 희망복지지원단이 읍면을 도는 시연) null → 전체·읍면동별 표.
     homeArea: function (households) { var n = {}, best = null, all = (households || []).length; (households || []).forEach(function (h) { n[h.area] = (n[h.area] || 0) + 1; if (!best || n[h.area] > n[best]) best = h.area; }); return best && n[best] * 2 > all ? best : null; },
-    currentRound: currentRound
+    currentRound: currentRound, periodOf: periodOf
   };
   // S10j: 브라우저에선 보고서 문서 모듈(report_doc.js·report_doc.css)을 이 파일 옆에서 함께 싣는다 — 화면 HTML을 고치지 않고 붙이려고
   if (typeof document !== "undefined" && document.currentScript && !root.__DAEUM_RDOC_LOADING__) {

@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="../shared/tokens.css">
 <link rel="stylesheet" href="../shared/chart.css">
 <link rel="stylesheet" href="citizen.css">
+<link rel="stylesheet" href="../shared/s11_page.css">
 <script src="../shared/switcher.js"></script>
 </head>
 <body class="cz">
@@ -57,6 +58,24 @@
   <!-- ① 알리기(S9h C안: 주민 창구 = «이웃 제보·도움 요청 → 공무원 방문 순서에 반영»하는 신호 입구.
        복지 찾기·신청 현황은 복지로 몫 — 여기서는 보조로만 남긴다) -->
   <section id="step-ask" class="step" aria-labelledby="ask-h">
+    <!-- S11-d2(11-03) 주민 A안 «두 개의 큰 문»: 첫 화면에서 한 번 눌러 «시작 + 누구 일인지»를 함께 고른다. 기능 범위(신호 입구)는 그대로 -->
+    <div class="cz-doors" id="cz-doors">
+      <p class="cz-eye">상주시 · 우리 동네 복지 담당 공무원에게</p>
+      <h1 class="cz-ttl" id="doors-h" tabindex="-1">누구의 일을<br><em>알려 주시겠어요?</em></h1>
+      <p class="cz-lead">누르면 바로 시작합니다. 1분이면 됩니다.</p>
+      <button type="button" class="door p" data-door="2" data-h="medium">
+        <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg></span>
+        <span><b>이웃이 걱정돼요</b><small>요즘 안 보이는 어르신, 우편물이 쌓인 집</small></span>
+        <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="door s" data-door="0" data-h="medium">
+        <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span>
+        <span><b>제 일이에요</b><small>저나 우리 가족이 힘들어요</small></span>
+        <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+      <div class="trust"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/></svg><span><b>알린 분은 밝히지 않습니다.</b> 담당 공무원이 확인한 뒤 연락하거나 찾아갑니다.</span></div>
+      <p class="cz-foot">위험하면 <a href="tel:119">119</a> · 생계가 갑자기 어려우면 <a href="tel:129">129</a></p>
+    </div>
     <div class="ask-hero">
       <p class="cnum d-rise" style="--d:1">주민 창구 · 우리 동네 복지 담당자에게</p>
       <h1 id="ask-h" class="h-big d-rise" style="--d:2">걱정되는 이웃, 힘든 사정<br>담당 공무원에게 알려 주세요.</h1>
@@ -210,6 +229,17 @@
       <span class="spark"><i></i><i></i><i></i><i></i><i></i><i></i></span>
     </div>
     <h1 id="done-h" class="h-big" tabindex="-1">잘 받았습니다</h1>
+    <!-- S11-d2: 보낸 뒤 «도착» 3단계. 2단계는 공무원 쪽 저장(원격 전송) 성공 때만 켠다 — 실패면 «이 기기에 저장됨» -->
+    <div class="cz-trip" id="cz-trip" data-st="sending" aria-hidden="true">
+      <svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid meet"><path class="dash" d="M 56 70 C 106 6, 214 6, 264 70"/><path class="lit" d="M 56 70 C 106 6, 214 6, 264 70"/></svg>
+      <span class="end l"><i><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 18h2"/></svg></i>보낸 분</span>
+      <span class="end r"><i><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/></svg></i>담당<br>공무원</span>
+    </div>
+    <ol class="cz-tl" id="cz-tl" aria-label="진행 단계">
+      <li class="done"><span class="n">1</span><b>보냈어요</b><span class="when" id="tl-1"></span></li>
+      <li class="wait" id="tl-row2"><span class="n">2</span><b id="tl-2b">담당 공무원에게 보내는 중…</b><span class="when" id="tl-2"></span></li>
+      <li class="wait"><span class="n">3</span><b>확인하면 알려 드려요</b><span class="when">보통 오늘 안</span></li>
+    </ol>
     <p class="lead">접수번호 <strong id="req-id" class="num"></strong></p>
     <p id="done-say">담당 공무원이 확인하면 고르신 방법으로 연락드립니다. 급하시면 <a href="tel:129">129</a>로 전화해 주세요.</p>
     <ul id="done-hot" class="cards hot-box" hidden></ul>

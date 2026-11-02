@@ -164,10 +164,10 @@ t("데이터 출처: 가상·공공데이터·공개 자료 + 기관·기준일"
   var pub = SP.sources.filter(function (s) { return s.kind === "공공데이터"; })[0]; assert.strictEqual(pub.org, "행정안전부"); assert.strictEqual(pub.date, "2026-09");
 });
 t("보고서 엑셀이 실제로 만들어지고 XML 짝 맞음(8시트)", function () { var f = unzip(X.build(SP)); f.forEach(function (x) { if (/\.xml$/.test(x.name)) wellFormed(x.text); }); assert.strictEqual(f.filter(function (x) { return /worksheets\/sheet\d+\.xml/.test(x.name); }).length, 8); });
-t("한글: 표 1 합계 칸 계산식 =SUM·접촉률 =C/B*100, 그림 데이터도 합계 계산식", function () {
+t("한글: 표 1 합계 칸 계산식 =SUM·접촉률 =C/B*100 (S11-d3: 그림은 표 칸 막대·구성비 띠 그래픽이라 «그림 데이터 합계 계산식»은 없어짐)", function () {
   var sec = get(unzip(W.build(HD)), "Contents/section0.xml"), tb = HD.blocks.filter(function (b) { return b.t === "tbl" && /<표 1>/.test(b.title); })[0];
   var n = tb.rows.length; assert.ok(sec.indexOf("=SUM(B2:B" + (n + 1) + ");" + S.households.total) >= 0); assert.ok(sec.indexOf("=C" + (n + 2) + "/B" + (n + 2) + "*100;") >= 0);
-  assert.ok((sec.match(/type="FORMULA"/g) || []).length >= 6);
+  var nf = (sec.match(/type="FORMULA"/g) || []).length; assert.ok(nf >= 2, "표 1 계산식 " + nf + "개");
   assert.ok(/Ⅰ\. 개요/.test(sec) && /Ⅴ\. 향후 계획/.test(sec) && /1부\.  끝\.<\/hp:t>/.test(sec));
 });
 t("엑셀·한글 내보내기에 가구 번호·요청 번호 없음(개인 식별값 0)", function () {
@@ -213,10 +213,10 @@ t("한글: 본문 끝 «붙임 1. … 2. … 1부.  끝.» → 쪽 넘김 → «
   var sec = get(unzip(W.build(HD)), "Contents/section0.xml"); assert.ok(sec.indexOf("끝.") < sec.lastIndexOf("데이터 이름") && sec.indexOf("Ⅴ. 향후 계획") < sec.indexOf("붙임  1."));
   assert.ok(/^보고일 \d{4}\. \d{1,2}\. \d{1,2}\.$/.test(HD.made) && /^\d{8}_주간보고서\.xlsx\) 1부/.test(HD.blocks[L - 4].text.trim().replace(/^2\. 같은 집계 엑셀 파일\(/, "")));
 });
-t("작성 부서 이름 통일: 보고서·엑셀 내보내기 모두 «상주시 희망복지지원단»", function () {
-  var fs = require("fs"); assert.strictEqual(M.office, "상주시 희망복지지원단");
-  assert.ok(/var OFFICE = "상주시 희망복지지원단\(시연\)"/.test(fs.readFileSync(path.join(__dirname, "..", "officer", "xlsx_out.js"), "utf8")));
-  assert.ok(F.report.weekly(S, { now: now, countdown: cd }).text.indexOf("상주시 희망복지지원단") >= 0);
+t("기관 표기 통일(11-02): 보고서·엑셀 내보내기 모두 «상주시청»", function () {
+  var fs = require("fs"); assert.strictEqual(M.office, "상주시청");
+  assert.ok(/var OFFICE = "상주시청\(시연\)"/.test(fs.readFileSync(path.join(__dirname, "..", "officer", "xlsx_out.js"), "utf8")));
+  var txt = F.report.weekly(S, { now: now, countdown: cd }).text; assert.ok(txt.indexOf("상주시청") >= 0 && txt.indexOf("희망복지지원단") < 0);
 });
 t("출처 시트 [그림] 지도 «쓰인 곳» = 지도(화면·PDF)", function () {
   var mp = M.body.filter(function (n) { return n.kind === "map"; })[0], row = SP.sources.filter(function (s) { return s.use.indexOf("[그림 " + mp.no + "]") === 0; })[0];

@@ -359,3 +359,56 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
 
 /* S11-c 공무원 화면 전송 결과 한 줄 */
 .done-sync { font-size: 13.5px; color: var(--ink2, #56635F); margin: 8px 0 0; }
+
+/* ── S11-d2(11-03) 주민 A안 «두 개의 큰 문» + 보낸 뒤 «도착» 3단계 — 시안 _시안/S11-d2_신고화면.html, 토큰 shared/s11_page.css «소나무빛» ── */
+#step-ask:not(.started) .ask-hero, #step-ask:not(.started) .ask-panel { display: none; }
+#step-ask.started .cz-doors { display: none; }
+.cz-doors { max-width: 560px; margin: 0 auto; padding: 8px 0 24px; }
+.cz-eye { margin: 0 0 6px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.cz-ttl { margin: 0 0 10px; font-size: clamp(26px, 6vw, 32px); line-height: 1.28; letter-spacing: -.035em; font-weight: 700; color: var(--ink); }
+.cz-ttl em { font-style: normal; color: var(--pine); }
+.cz-ttl:focus { outline: none; }
+.cz-lead { margin: 0 0 20px; font-size: 15px; color: var(--muted); }
+.door { position: relative; display: grid; grid-template-columns: 56px minmax(0, 1fr) 24px; align-items: center; gap: 14px; width: 100%; min-height: 112px; padding: 18px; border: 0; border-radius: 24px; text-align: left; font: inherit; cursor: pointer; transition: transform .12s cubic-bezier(.33,1,.68,1); }
+.door + .door { margin-top: 12px; }
+.door:active { transform: scale(.985); }
+.door .ic { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; }
+.door .ic svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.door b { display: block; font-size: 22px; line-height: 1.25; letter-spacing: -.03em; }
+.door small { display: block; font-size: 13.5px; margin-top: 4px; line-height: 1.45; }
+.door .go { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.door.p { background: var(--pine); color: #fff; box-shadow: 0 14px 30px -12px rgba(23,89,79,.55); }
+.door.p .ic { background: rgba(255,255,255,.14); } .door.p small { color: rgba(255,255,255,.88); }
+.door.s { background: var(--surface); color: var(--ink); box-shadow: var(--d1); }
+.door.s .ic { background: var(--pine-soft); color: var(--pine); } .door.s small { color: var(--muted); }
+.door.p::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; animation: czHalo 2.6s cubic-bezier(.33,1,.68,1) infinite; }
+@keyframes czHalo { 0% { box-shadow: 0 0 0 0 rgba(23,89,79,.32); } 70%, 100% { box-shadow: 0 0 0 14px rgba(23,89,79,0); } }
+.door:focus-visible { outline: 3px solid var(--mustard); outline-offset: 3px; }
+.trust { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 12px 14px; border-radius: 16px; background: var(--surface); box-shadow: var(--d1); font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.trust svg { flex: none; width: 22px; height: 22px; fill: none; stroke: var(--pine); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.trust b { color: var(--ink); font-weight: 600; }
+.cz-foot { margin: 16px 0 0; font-size: 13.5px; color: var(--muted); }
+.cz-foot a { color: var(--pine); font-weight: 600; display: inline-flex; min-height: 44px; align-items: center; }
+/* 도착 3단계 */
+.cz-trip { position: relative; height: 120px; width: 100%; max-width: 320px; margin: 4px auto 12px; }
+.cz-trip svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.cz-trip .dash { stroke: var(--line); stroke-width: 3; stroke-dasharray: 2 8; stroke-linecap: round; fill: none; }
+.cz-trip .lit { stroke: var(--pine); stroke-width: 3; fill: none; stroke-linecap: round; stroke-dasharray: 300; stroke-dashoffset: 300; transition: stroke-dashoffset 1.6s cubic-bezier(.33,1,.68,1); }
+.cz-trip[data-st="sending"] .lit { stroke-dashoffset: 150; }
+.cz-trip[data-st="arrived"] .lit { stroke-dashoffset: 0; }
+.cz-trip[data-st="local"] .lit { stroke-dashoffset: 300; }
+.cz-trip .end { position: absolute; top: 58%; translate: 0 -50%; width: 64px; display: grid; justify-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--muted); text-align: center; line-height: 1.3; }
+.cz-trip .end.l { left: 0; } .cz-trip .end.r { right: 0; }
+.cz-trip .end i { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); box-shadow: var(--d1); transition: background .3s, box-shadow .3s; }
+.cz-trip .end i svg { position: static; width: 26px; height: 26px; fill: none; stroke: var(--pine); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cz-trip[data-st="arrived"] .end.r i { background: var(--pine); box-shadow: 0 0 0 6px var(--pine-soft); animation: czLand .5s cubic-bezier(.34,1.12,.64,1) 1.4s both; }
+.cz-trip[data-st="arrived"] .end.r i svg { stroke: #fff; }
+@keyframes czLand { 0% { transform: scale(1); } 50% { transform: scale(1.14); } 100% { transform: scale(1); } }
+.cz-tl { list-style: none; margin: 0 auto 14px; padding: 14px 16px; max-width: 420px; border-radius: 16px; background: var(--surface); box-shadow: var(--d1); display: grid; text-align: left; }
+.cz-tl li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 48px; position: relative; font-size: 15px; }
+.cz-tl li + li::before { content: ""; position: absolute; left: 13px; top: -14px; height: 28px; width: 2px; background: var(--line); }
+.cz-tl .n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13.5px; font-weight: 700; background: var(--well, #ECF0EE); color: var(--muted); position: relative; z-index: 1; }
+.cz-tl .done .n { background: var(--pine); color: #fff; }
+.cz-tl .when { font-size: 13.5px; color: var(--muted); white-space: nowrap; }
+.cz-tl b { font-weight: 600; } .cz-tl .wait b { color: var(--muted); font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .door.p::after, .cz-trip .end i { animation: none !important; } .cz-trip .lit { transition: none; } }

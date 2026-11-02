@@ -810,6 +810,12 @@
     row: rowById,
     picked: function () { return picked.slice(); },
     setPicked: function (ids) { picked = (ids || []).filter(function (id) { return rowById(id); }); lsSet(LS_PICK, picked); renderNav(); },
+    // S11-d2 «오늘 경로에 끼워 넣기»: 담을 집과 방문 순서를 함께 정한다(사람이 정한 순서처럼 그대로 쓰고, 도로 시간은 다시 받게 비운다)
+    setRoute: function (ids) {
+      picked = (ids || []).filter(function (id) { return rowById(id); }); lsSet(LS_PICK, picked);
+      route = { ids: picked.slice(), ret: $("routeReturn") ? $("routeReturn").checked : true, road: null }; lsSet(LS_ROUTE, route);
+      renderNav(); show();
+    },
     services: function () { return SERVICES; },
     links: function () { return lsGet(LS_LINK, []); },
     // 방문 경로 화면에서 마지막으로 짠 시각표(담은 가구가 그 뒤 바뀌었으면 null — 하루 동선 1장은 근사로 다시 짠다)

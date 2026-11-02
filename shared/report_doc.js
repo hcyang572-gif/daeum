@@ -101,10 +101,12 @@
     var now = input.now ? new Date(input.now) : new Date();
     var name = kind === "monthly" ? "월간" : "주간", unit = kind === "monthly" ? "달" : "주";
     var period = rep ? rep.period : { from: ymd(now), to: ymd(now) };
+    // S11-d3: 주간 보고서를 월요일에 열면 «월요일~오늘»이 하루가 된다(shared/report.js:154 mondayOf) → 시작=끝이면 최근 7일로 보여 준다
+    if (kind === "weekly" && period.from && period.from === period.to) period = { from: ymd(new Date(new Date(period.to + "T00:00:00").getTime() - 6 * DAY)), to: period.to };
     var scope = stats.scope;
     var areasMine = stats.byArea.filter(function (a) { return a.households; }).map(function (a) { return a.area; });
     var scopeTxt = scope ? scope : (areasMine.length ? "담당 " + areasMine.length + "개 읍면(" + areasMine.join("·") + ")" : "담당 지역");
-    var office = o.office || (scope ? "상주시 " + scope + " 행정복지센터 맞춤형복지팀" : "상주시 희망복지지원단");
+    var office = "상주시청"; // 11-02 호창님: 기관 표기는 «상주시청»만(부서·센터 이름을 쓰지 않음)
     var other = Math.max(0, H.closed - H.met - H.nonEligible), inProg = Math.max(0, H.contacted - H.closed);
     var notC = Math.max(0, H.total - H.met - H.nonEligible - other - inProg);
     var ahead = cd.onTrack;
@@ -119,19 +121,27 @@
       { k: cd.upcoming ? "차수 시작까지" : "차수 마감", v: cd.upcoming ? String(days(ymd(now), cd.round.start)) : (cd.daysLeft >= 0 ? "D-" + cd.daysLeft : "마감"), u: cd.upcoming ? "일" : "", s: cd.upcoming ? dot(cd.round.start) + " 시작" : "하루 " + cd.perWorkday + "가구 목표", tone: cd.upcoming || ahead ? "pos" : "warn" }
     ];
     var B = []; // 본문 마디: {t:"ch"|"li"|"fig"|"tbl"|"note"}
-    function ch(t) { B.push({ t: "ch", text: t }); }
+    function ch(t, say, tone) { B.push({ t: "ch", text: t, say: say || "", tone: tone || "" }); }
     function li(lv, text) { B.push({ t: "li", lv: lv, text: text }); }
     var fig = 0, tbl = 0;
     function figure(kind2, title, data, src, tags, ex) { fig++; B.push(Object.assign({ t: "fig", no: fig, kind: kind2, title: title, data: data, src: src, tags: tags }, ex || {})); return fig; }
 
-    ch("개요");
+    var acts = [];
+    if (Q.byStatus["new"]) acts.push(["미확인 주민 신호 우선 확인", "미확인 " + Q.byStatus["new"] + "건" + (Q.urgent ? "(긴급 " + Q.urgent + "건 포함)" : "") + "은 접수 당일 확인"]);
+    if (fu && fu.retryDue) acts.push(["재방문·재연락 동선 편성", fu.retryDue + "가구를 오늘 방문 동선에 넣음"]);
+    if (fu && fu.escalate) acts.push(["간접 확인 전환", fu.escalate + "가구는 통반장·이웃 순으로 안부 확인"]);
+    if (fu && fu.gaps) acts.push(["연계 누락 점검", fu.gaps + "곳의 멈춘 단계(신청·결정·결과 확인)를 담당 기관과 확인"]);
+    if (!cd.upcoming && !ahead) acts.push(["처리 진도 보완", "하루 " + cd.perWorkday + "가구 목표로 읍면별 방문 묶기"]);
+    if (!acts.length) acts.push(["현 체계 유지", "특이사항 없음"]);
+    var warnTone = !cd.upcoming && !ahead;
+    ch("개요", "명단 " + num(H.total) + "가구·주민 신호 " + num(Q.total) + "건을 " + dot(period.from) + " ~ " + dot(period.to) + " 기준으로 점검");
     li(1, "보고 목적");
     li(2, cd.round.label + " 명단 처리와 주민 신호·서비스 연계 현황을 " + name + " 단위로 점검함");
     li(1, "보고 범위");
     li(2, "기간: " + dot(period.from) + " ~ " + dot(period.to));
     li(2, "대상: " + scopeTxt + " 발굴 명단 " + num(H.total) + "가구, 주민 신호 " + num(Q.total) + "건");
 
-    ch("현황");
+    ch("현황", "명단 " + num(H.total) + "가구 중 " + pct(H.contacted, H.total) + "% 접촉" + (H.notContacted ? ", 아직 못 만난 집 " + num(H.notContacted) + "가구" : "") + " · 서비스 연계 " + num(Lk.total) + "건");
     li(1, "발굴 명단 처리");
     li(2, num(H.total) + "가구 중 " + num(H.contacted) + "가구 접촉(" + pct(H.contacted, H.total) + "%) — 만남·상담 " + num(H.met) + ", 비해당 " + num(H.nonEligible) + ", 미접촉 " + num(H.notContacted) + "가구");
     li(3, "처리 상태별 구성은 [그림 " + (fig + 1) + "] 참조");
@@ -165,7 +175,7 @@
       cs.forEach(function (c) { li(2, c.head); li(3, c.body); });
     }
 
-    ch("문제점·분석");
+    ch("문제점·분석", cd.upcoming ? "새 차수 시작 전 — 지난 차수 마무리 단계" : "처리 " + cd.donePct + "%로 기간 경과 " + cd.elapsedPct + "%보다 " + (ahead ? "앞서 있음" : "뒤처짐") + (fu ? " · 다시 찾을 집 " + fu.retryDue + "가구, 연계 누락 " + fu.gaps + "곳" : ""), warnTone ? "warn" : "");
     li(1, "처리 진도");
     li(2, cd.upcoming ? cd.message : "기간 경과 " + cd.elapsedPct + "% 대비 처리 " + cd.donePct + "% — " + (ahead ? "일정 안에 있음" : "뒤처져 있어 하루 처리량을 " + cd.perWorkday + "가구로 높여야 함"));
     var tr = trend(input, stats, cd);
@@ -184,17 +194,10 @@
       if (fu.notApplied && fu.notApplied.length) li(3, "안내 뒤 신청 안 한 서비스: " + fu.notApplied.map(function (x) { return x.name + " " + x.n; }).join(", "));
     }
 
-    ch("대책·조치");
-    var acts = [];
-    if (Q.byStatus["new"]) acts.push(["미확인 주민 신호 우선 확인", "미확인 " + Q.byStatus["new"] + "건" + (Q.urgent ? "(긴급 " + Q.urgent + "건 포함)" : "") + "은 접수 당일 확인"]);
-    if (fu && fu.retryDue) acts.push(["재방문·재연락 동선 편성", fu.retryDue + "가구를 오늘 방문 동선에 넣음"]);
-    if (fu && fu.escalate) acts.push(["간접 확인 전환", fu.escalate + "가구는 통반장·이웃 순으로 안부 확인"]);
-    if (fu && fu.gaps) acts.push(["연계 누락 점검", fu.gaps + "곳의 멈춘 단계(신청·결정·결과 확인)를 담당 기관과 확인"]);
-    if (!cd.upcoming && !ahead) acts.push(["처리 진도 보완", "하루 " + cd.perWorkday + "가구 목표로 읍면별 방문 묶기"]);
-    if (!acts.length) acts.push(["현 체계 유지", "특이사항 없음"]);
+    ch("대책·조치", acts[0][0] + " — " + acts[0][1] + (acts.length > 1 ? " 외 " + (acts.length - 1) + "건" : ""));
     acts.forEach(function (a) { li(1, a[0]); li(2, a[1]); });
 
-    ch("향후 계획");
+    ch("향후 계획", cd.upcoming ? cd.round.label + " " + dot(cd.round.start) + " 시작 준비" : "하루 " + cd.perWorkday + "가구씩 처리하면 " + dot(cd.round.end) + " 마감 안에 끝남(남은 평일 " + cd.workdaysLeft + "일)");
     li(1, "다음 " + unit + " 목표");
     if (!cd.upcoming) li(2, "하루 " + cd.perWorkday + "가구, 주 " + cd.perWeek + "가구 처리");
     if (H.notContacted) li(2, "미접촉 " + num(H.notContacted) + "가구 방문 동선 편성");
@@ -211,7 +214,7 @@
     return {
       v: 1, kind: kind, title: title, period: period, made: ymd(now), madeTime: pad(now.getHours()) + ":" + pad(now.getMinutes()),
       office: office, scope: scope, scopeTxt: scopeTxt, verdict: verdict, onTrack: !!ahead, upcoming: !!cd.upcoming,
-      kpis: kpis, summary: summary, asks: acts.slice(0, 2).map(function (a) { return a[0] + " — " + a[1]; }),
+      kpis: kpis, gauge: cd.upcoming ? [] : [{ label: "기간 경과", pct: cd.elapsedPct, text: cd.elapsedPct + "%" }, { label: "처리 완료", pct: cd.donePct, text: cd.donePct + "% (" + num(H.closed) + "가구)", tone: ahead ? "" : "warn" }, { label: "접촉", pct: pct(H.contacted, H.total), text: pct(H.contacted, H.total) + "% (" + num(H.contacted) + "가구)" }], summary: summary, asks: acts.slice(0, 2).map(function (a) { return a[0] + " — " + a[1]; }),
       body: B, sources: [SRC.virtual, srcRound, SRC.region, SRC.calc],
       pasteText: null // 아래 text(model) 로 만든다
     };
@@ -241,7 +244,7 @@
     out.push('<section class="rp-body">');
     var c = 0, open = false;
     m.body.forEach(function (n) {
-      if (n.t === "ch") { if (open) out.push("</div>"); out.push('<div class="rp-chap"><h3 class="rp-ch"><span class="num">' + ROMAN[c++] + ".</span> " + esc(n.text) + "</h3>"); open = true; }
+      if (n.t === "ch") { if (open) out.push("</div>"); out.push('<div class="rp-chap"><h3 class="rp-ch"><span class="num">' + ROMAN[c++] + ".</span> " + esc(n.text) + "</h3>" + (n.say ? '<p class="rp-say" style="margin:2px 0 8px;padding:8px 12px;border-left:4px solid ' + (n.tone === "warn" ? "#D9A441;background:#F8EFDB" : "#17594F;background:#E3EEEB") + ';font-weight:700;font-size:.95em;line-height:1.5"><small style="display:block;color:#17594F;font-weight:700">이 파트의 한 줄 결론</small>' + esc(n.say) + "</p>" : "")); open = true; }
       else if (n.t === "li") out.push(li(n.lv, n.text));
       else if (n.t === "fig") {
         var g = n.kind === "donut" ? donut(n.data) : n.kind === "bars" ? bars(n.data) : n.kind === "map" ? map(n.data) : trendSvg(n.data);
@@ -268,7 +271,7 @@
     var L = [m.title, dot(m.period.from) + " ~ " + dot(m.period.to), dot(m.made) + " " + m.office, "", "※ 가구·주민 신호·연계 숫자는 시연용 가상 자료", "", "[한 줄 결론] " + m.verdict, ""];
     var c = 0;
     m.body.forEach(function (n) {
-      if (n.t === "ch") { L.push(""); L.push(ROMAN[c++] + ". " + n.text); }
+      if (n.t === "ch") { L.push(""); L.push(ROMAN[c++] + ". " + n.text); if (n.say) L.push("  ▶ 한 줄 결론: " + n.say); }
       else if (n.t === "li") L.push(new Array(n.lv).join("  ") + SYM[n.lv - 1] + " " + n.text);
       else if (n.t === "fig") L.push("  [그림 " + n.no + "] " + n.title + " (※ 출처: " + n.src + ")");
       else if (n.t === "tbl") { L.push("  <표 " + n.no + "> " + n.title + " " + n.unit); L.push("  " + n.head.join("\t")); n.rows.concat([n.foot]).forEach(function (r) { L.push("  " + r.join("\t")); }); }
@@ -373,14 +376,16 @@
   }
   /** 모델 → DaeumHwpx.build(doc) 의 doc. 표 합계 칸은 한글 표 계산식(=SUM), 접촉률은 =C/B*100 */
   function hwpxDoc(m) {
-    var B = [{ t: "box", label: "한 줄 결론", text: m.verdict }];
-    B.push({ t: "tbl", title: "핵심 숫자", head: m.kpis.map(function (k) { return k.k; }), rows: [m.kpis.map(function (k) { return k.v + (k.u || ""); })], align: "center", src: "" });
+    var B = [{ t: "box", label: "한 줄 결론", text: m.verdict, tone: m.upcoming || m.onTrack ? "" : "warn" }];
+    B.push({ t: "kpi", items: m.kpis });
+    if (m.gauge && m.gauge.length) B.push({ t: "bars", title: "한눈에 보는 진도 — 기간이 지나간 만큼 처리가 따라가고 있는가", max: 100, wl: 7000, wv: 9000,
+      items: m.gauge.map(function (g) { return { label: g.label, done: g.pct, text: g.text, tone: g.label === "기간 경과" ? "grey" : g.tone }; }), src: "※ 출처: 닿음 자동 집계(가상 자료) · 차수 일정은 공개 자료" });
     B.push({ t: "li", lv: 1, text: "핵심 현황" }); m.summary.forEach(function (s) { B.push({ t: "li", lv: 2, text: s }); });
     B.push({ t: "li", lv: 1, text: "조치 사항" }); m.asks.forEach(function (s) { B.push({ t: "li", lv: 2, text: s }); });
     B.push({ t: "break" });
-    var c = 0;
+    var c = 0, srcOf = function (n) { return "※ 출처: " + n.src + " [" + (n.tags || []).join("·") + "]"; };
     m.body.forEach(function (n) {
-      if (n.t === "ch") B.push({ t: "ch", text: ROMAN[c++] + ". " + n.text });
+      if (n.t === "ch") B.push({ t: "hd", text: ROMAN[c++] + ". " + n.text, say: n.say, tone: n.tone });
       else if (n.t === "li") B.push({ t: "li", lv: n.lv, text: n.text });
       else if (n.t === "tbl") {
         var R = n.rate, head = n.head.map(function (h, i) { return R && i === R.col ? h + "(%)" : h; });
@@ -388,16 +393,20 @@
         var sum = []; for (var i = 1; i < head.length; i++) if (!R || i !== R.col) sum.push(i);
         var fx = {}, val = {};
         if (R) { var A = String.fromCharCode(65 + R.num), Bc = String.fromCharCode(65 + R.den); fx[R.col] = "=" + A + "{r}/" + Bc + "{r}*100"; val[R.col] = numOf(n.foot[R.den]) ? Math.round(numOf(n.foot[R.num]) / numOf(n.foot[R.den]) * 1000) / 10 : 0; }
-        B.push({ t: "tbl", title: "<표 " + n.no + "> " + n.title, unit: n.unit, head: head, rows: rows, foot: { label: "합계", sum: sum, fx: fx, val: val }, src: "※ 출처: " + n.src + " [" + (n.tags || []).join("·") + "]" });
+        B.push({ t: "tbl", title: "<표 " + n.no + "> " + n.title, unit: n.unit, head: head, rows: rows, foot: { label: "합계", sum: sum, fx: fx, val: val }, src: srcOf(n) });
       } else if (n.t === "fig") {
-        if (n.kind === "donut" || n.kind === "bars") {
-          var share = n.agg !== "funnel";
-          B.push({ t: "tbl", title: "[그림 " + n.no + "] " + n.title, unit: "(단위: " + (n.unitName || "건") + ")", head: [n.item || "항목", n.unitName || "건수"], rows: n.data.map(function (x) { return [x.label, x.n]; }),
-            foot: share ? { label: "합계", sum: [1] } : null, src: "※ 출처: " + n.src + " [" + (n.tags || []).join("·") + "]" + (share ? "" : " — 단계는 앞 단계에 포함") });
+        var ttl = "[그림 " + n.no + "] " + n.title;
+        if (n.kind === "donut") B.push({ t: "stack", title: ttl, items: n.data, unit: n.unitName || "건", src: srcOf(n) });
+        else if (n.kind === "bars") {
+          var tot = n.data.reduce(function (x, y) { return x + y.n; }, 0), share = n.agg !== "funnel";
+          B.push({ t: "bars", title: ttl, items: n.data.map(function (x) { return { label: x.label, done: x.n, text: num(x.n) + (n.unitName || "건") + (share && tot ? " (" + pct(x.n, tot) + "%)" : "") }; }), src: srcOf(n) + (share ? "" : " — 단계는 앞 단계에 포함") });
         } else if (n.kind === "trend") {
           var d = n.data, last = d.points[d.points.length - 1] || 0, goal = Math.round(d.total * (d.points.length - 1) / d.span);
-          B.push({ t: "p", kind: "src", text: "※ [그림 " + n.no + "] " + n.title + " — 누적 접촉 " + last + "가구, 같은 날 목표선 " + goal + "가구 (출처: " + n.src + ")" });
-        } else B.push({ t: "p", kind: "src", text: "※ [그림 " + n.no + "] " + n.title + " — 읍면별 숫자는 <표 1> 참조, 지도는 화면·PDF 보고서에 있음" });
+          B.push({ t: "bars", title: ttl, max: Math.max(last, goal, 1), items: [{ label: "누적 접촉", done: last, text: last + "가구", tone: last >= goal ? "" : "warn" }, { label: "같은 날 목표선", done: goal, text: goal + "가구", tone: "grey" }], src: srcOf(n) + " — 목표선 = 마감까지 고르게 처리할 때" });
+        } else {
+          var top = n.data.filter(function (x) { return x.n > 0; }).sort(function (x, y) { return y.n - x.n; }).slice(0, 8);
+          B.push({ t: "bars", title: "[그림 " + n.no + "] 읍면별 명단 가구와 접촉(짙은 색 = 접촉한 가구)", items: top.map(function (x) { return { label: x.name, done: x.c, total: x.n, text: x.c + " / " + x.n + "가구" }; }), src: "※ 출처: " + n.src + " [" + (n.tags || []).join("·") + "] — 지도는 화면·PDF 보고서에 있음" });
+        }
       }
     });
     // S11-d(11-02): 시·군청 내부 보고서 끝맺음 — «붙임 1. … 1부.  끝.» 뒤 쪽을 넘겨 붙임 문서. [편람] 행정업무운영 편람 «붙임 표시»

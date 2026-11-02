@@ -127,8 +127,9 @@ t("homeArea: 읍면에 흩어진 시연 가구 → null(전체 보고), 한 동�
 var HOME = HH[HH.length - 1].area; // 함창읍(요청 기본 지역)이 아닌 곳
 var stHome = F.report.aggregate({ households: HH, requests: reqs2.concat([req("R5", { region: HOME })]), attempts: att2, links: links, now: NOW, area: HOME });
 var wk = F.report.weekly(stHome, { now: NOW, countdown: cd });
-t("주간 보고서(자기 동): 기간 월~오늘, 동 이름 제목, 개조식 문안, 동 지표 표 8행", function () {
-  assert.strictEqual(wk.period.from, "2026-10-26"); assert.ok(new RegExp("^" + HOME + " 복지 사각지대 발굴 주간").test(wk.text));
+t("주간 보고서(자기 동): 기간 최근 7일(S11-d2 — 월요일에도 하루짜리가 되지 않게), 동 이름 제목, 개조식 문안, 동 지표 표 8행", function () {
+  assert.strictEqual(wk.period.from, F.report.periodOf("weekly", NOW).from); assert.strictEqual(wk.period.to, F.report.periodOf("weekly", NOW).to);
+  var mon = F.report.periodOf("weekly", new Date("2026-11-02T09:00:00")); assert.deepStrictEqual(mon, { from: "2026-10-27", to: "2026-11-02" }); // 월요일 → 지난 화~오늘 7일 assert.ok(new RegExp("^" + HOME + " 복지 사각지대 발굴 주간").test(wk.text));
   assert.ok(/□ 추진 현황/.test(wk.text) && new RegExp("○ 발굴 명단 " + HH.filter(function (h) { return h.area === HOME; }).length + "가구").test(wk.text)); assert.ok(/추정/.test(wk.text));
   assert.ok(/□ 현장 후속 업무/.test(wk.text)); assert.strictEqual(wk.table.rows.length, 8);
   assert.strictEqual(stHome.requests.total, 1); // 다른 동 주민 신호(함창읍 4건)는 자기 동 보고에서 빠진다

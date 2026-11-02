@@ -98,6 +98,7 @@
     ["addr", "위치(이 기기 안에서만)", /^(\(행복이음\)\s*주소|주소)$/],
     ["prio", "발굴우선순위", /^발굴\s*우선\s*순위$/],
     ["cnt", "발굴횟수", /^발굴\s*횟수$/],
+    ["ym", "발굴년월", /^발굴\s*년월$/], // S11-d2: 미처리 기간 계산(우선순위 근거 E)
     ["proc", "처리여부", /^처리\s*여부$/],
     ["lonely", "우선방문(고독사)", /^우선\s*방문\s*대상자?_?\s*고독사$/],
     ["child", "우선방문(e아동)", /^우선\s*방문\s*대상자?_?\s*e\s*아동$/i],
@@ -197,14 +198,16 @@
     if (hd.m.prio != null) body = body.map(function (r, i) { return { r: r, i: i, p: parseFloat(cell(r, "prio")) }; })
       .sort(function (a, b) { var x = isFinite(a.p) ? a.p : 1e9, y = isFinite(b.p) ? b.p : 1e9; return x - y || a.i - b.i; }).map(function (x) { return x.r; });
     var ix = hd.m.addr != null ? addrIndex() : null, ids = [], miss = 0, seen = {}, meta = {}, cnt = { lonely: 0, child: 0, todo: 0, ben: 0, ai: 0 };
+    var listAddr = []; // S11-d2 명단 밖 메모 대조용(이 기기 메모리 안에서만, 저장·전송 0)
     body.forEach(function (r) {
+      if (hd.m.addr != null) listAddr.push({ id: cell(r, "id"), addr: cell(r, "addr"), prio: cell(r, "prio") });
       var id = cell(r, "id").toUpperCase();
       if (!(id && o.row(id)) && ix) id = ix[addrKey(cell(r, "addr"))] || "";
       if (!id || !o.row(id)) { miss++; return; }
       if (seen[id]) return; seen[id] = 1; ids.push(id);
       var ben = benCol.filter(function (j) { return yes(r[j]); }).map(function (j) { return String(head[j]).trim(); });
       var mm = { prio: cell(r, "prio"), cnt: +cell(r, "cnt") || 0, proc: cell(r, "proc"), lonely: yes(cell(r, "lonely")), child: yes(cell(r, "child")),
-        ben: ben, hasBen: benCol.length > 0, aiReq: cell(r, "aiReq"), aiRes: cell(r, "aiRes"), vars: cell(r, "sig") };
+        ben: ben, hasBen: benCol.length > 0, aiReq: cell(r, "aiReq"), aiRes: cell(r, "aiRes"), vars: cell(r, "sig"), ym: cell(r, "ym").slice(0, 7) };
       meta[id] = mm;
       if (mm.lonely) cnt.lonely++; if (mm.child) cnt.child++; if (/미처리/.test(mm.proc)) cnt.todo++; if (ben.length) cnt.ben++; if (mm.aiRes || (mm.aiReq && !/미요청/.test(mm.aiReq))) cnt.ai++;
     });
@@ -222,8 +225,11 @@
     msg.innerHTML = '<b>' + esc(fname) + '</b> · ' + cut.length + '곳을 오늘 방문에 담았습니다' + (hd.m.prio != null ? '(발굴우선순위 순)' : '') + (miss ? ' · 못 찾은 줄 ' + miss : "") + (ids.length > 30 ? ' · 30곳까지만' : "") +
       (sum ? '<br>' + sum : '') +
       '<br>열 맞춤: ' + used.join(" · ") + (skipped.length ? ' · 읽지 않음: ' + skipped.join(" ") : "") + ' · 서버 전송 0 <a class="s11-lnk" href="#route">방문 순서 보기 ›</a>';
+    // S11-d2 A안: 명단 밖 가구 메모를 새 명단과 주소로 맞춰 본다(이 기기 안에서만) → 요약 한 줄
+    if (root.DaeumS11d2 && root.DaeumS11d2.matchImported) { var ms = root.DaeumS11d2.matchImported(listAddr, metaRound(meta)); if (ms) msg.innerHTML += '<br>' + esc(ms); }
     emptyToday(false); tm.key = ""; todayMap();
   }
+  function metaRound(meta) { var ys = Object.keys(meta).map(function (k) { return meta[k].ym; }).filter(Boolean).sort(); return ys.length ? ys[ys.length - 1] : new Date().toISOString().slice(0, 7); }
   function bindImport() {
     var f = $("s11File"); if (!f) return;
     f.addEventListener("change", function () {

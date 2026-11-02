@@ -11,7 +11,7 @@
   "use strict";
   var F = root.DaeumFeatures, REQ = root.DaeumRequests, C = root.DAEUM_CONFIG || {};
   if (!F || !F.util || !F.store) return;
-  var U = F.util, TAG = "S9j", VERSION = 4, FLAG = "daeum.demo.seededFor"; // v4(S10n-2 O-08): 긴급 신호는 당일 기한이라 오늘 접수로 깐다 · v2: 읍면 배치(S10b) — 옛 남원동 가구 번호 기록을 지우고 다시 깐다 · v3(S10n O-04): 시연 기록 가구를 모두 발굴 명단(위기 정보가 있는 집) 안 가구로 바꿈
+  var U = F.util, TAG = "S9j", VERSION = 5, FLAG = "daeum.demo.seededFor"; // v5(S11-d2): 정보원 명단 열(발굴순위·횟수·처리여부·발굴년월)·명단 밖 가구 메모 4건·확정 기록 2건도 깐다 · v4(S10n-2 O-08): 긴급 신호는 당일 기한이라 오늘 접수로 깐다 · v2: 읍면 배치(S10b) — 옛 남원동 가구 번호 기록을 지우고 다시 깐다 · v3(S10n O-04): 시연 기록 가구를 모두 발굴 명단(위기 정보가 있는 집) 안 가구로 바꿈
   // 가구 번호 머리글자 = 읍면 코드(data/tools/make_households.py SANGJU 순서)
   var AREA_OF = { A: "함창읍", B: "사벌국면", P: "공검면", Q: "이안면" };
   function areaOf(hid) { return AREA_OF[String(hid).charAt(0)] || ""; }
@@ -41,7 +41,9 @@
     Object.keys(fu).forEach(function (k) { if (/^LD-/.test(k)) delete fu[k]; });
     F.store.set("outcomes", oc); F.store.set("followups", fu);
     lsSet(RKEY, (lsGet(RKEY, []) || []).filter(notSeed));
+    [OUT_KEY, REC_KEY].forEach(function (k) { lsSet(k, (lsGet(k, []) || []).filter(notSeed)); });
   }
+  var OUT_KEY = "daeum.officer.outside", REC_KEY = "daeum.officer.records", META_KEY = "daeum.s11.importMeta";
 
   var now = new Date(), today = U.ymd(now);
   var seeded = lsGet(FLAG, null);
@@ -107,6 +109,43 @@
       history: [{ at: t4, status: "new", by: "citizen" }, { at: t3, status: "seen", by: "officer", note: "연계 후보 확인" }] })
   ];
   lsSet(RKEY, (lsGet(RKEY, []) || []).filter(notSeed).concat(R));
+
+  // ④ S11-d2: 정보원 «발굴대상자 조회» 서식 열(시연 명단 data/demo_list.xlsx 9가구와 같은 값) — 명단을 불러오지 않아도 «정보원 N순위» 근거가 보이게.
+  //    담당자가 실제 파일을 불러왔으면(seed 표시 없는 meta) 건드리지 않는다.
+  var meta0 = lsGet(META_KEY, null);
+  if (!meta0 || !Object.keys(meta0).length || meta0.__seed === TAG) {
+    var M = { __seed: TAG }, L9 = [["A-009", 1, "미처리", 1], ["Q-033", 1, "미처리", 1], ["P-026", 1, "처리중", 0], ["P-033", 1, "미처리", 1], ["P-013", 1, "미처리", 1],
+      ["B-015", 3, "처리중", 1], ["A-056", 2, "미처리", 1], ["B-059", 2, "미처리", 1], ["A-086", 1, "미처리", 1]];
+    L9.forEach(function (x, i) { M[x[0]] = { prio: String(i + 1), cnt: x[1], proc: x[2], lonely: !!x[3], child: false, ben: x[0] === "P-033" ? ["기초생계급여"] : [], hasBen: true, aiReq: "", aiRes: "", vars: "", ym: "2026-10" }; });
+    lsSet(META_KEY, M);
+    lsSet("daeum.s11.import", { name: "시연용 가상 명단(발굴대상자 조회 서식).xlsx", n: 9, at: now.getTime(), demo: true });
+  }
+
+  // ⑤ S11-d2: 명단 밖 가구 메모(A안) — 현장에서 본 «명단에 없는 걱정되는 집». 주소는 대조 전용(화면에는 «○○읍 일대»까지만)
+  function memo(n, area, from, signs, status, at, o) {
+    return Object.assign({ id: "OUT-" + U.ymd(at).replace(/-/g, "") + "-" + n, at: at, area: area, addr: "", place: "", from: from, signs: signs, ageBand: "80대 이상", alone: "예",
+      urgent: false, status: status, match: null, history: [{ at: at, status: "registered", by: "officer" }], seed: TAG }, o || {});
+  }
+  var O = [
+    memo(1, "함창읍", "leader", ["우편물 쌓임", "난방 안 됨"], "not_in_list", cd(12, 15, 0), { addr: "경상북도 상주시 함창읍 가상리 140", place: "마을회관 뒤 파란 지붕",
+      match: { round: "2026-10", status: "not_in_list", listId: null, twice: false } }),
+    memo(2, "공검면", "field", ["거동 불편"], "in_list", cd(9, 11, 20), { addr: "경상북도 상주시 공검면 가상리 13", ageBand: "80대 이상",
+      match: { round: "2026-10", status: "in_list", listId: "P-013", listRank: "5", twice: false } }),
+    memo(3, "이안면", "request", ["우편물 쌓임", "불 꺼짐"], "registered", t0, { place: "골목 끝 파란 대문 집", requestId: R[0].id, alone: "모름" }),
+    memo(4, "사벌국면", "neighbor", ["끼니 거름"], "referred", cd(19, 10, 0), { addr: "경상북도 상주시 사벌국면 가상리 210", referredAt: cd(5, 16, 0), alone: "예",
+      match: { round: "2026-10", status: "not_in_list", listId: null, twice: false } })
+  ];
+  lsSet(OUT_KEY, (lsGet(OUT_KEY, []) || []).filter(notSeed).concat(O));
+
+  // ⑥ S11-d2: 확정한 상담 기록(행복이음 입력 순서) — 기록 화면이 비지 않게
+  function rec(id, hid, at, needs, sum, svc, next) {
+    return { id: "RC-" + id, at: at, label: "가구 " + hid, area: areaOf(hid), seed: TAG,
+      text: ["[행복이음 입력 초안 — 공무원 확정]", "주요 욕구: " + needs, "상담 요약: " + sum, "연계 후보: " + svc, "다음 할 일: " + next].join("\n") };
+  }
+  lsSet(REC_KEY, [
+    rec(1, "A-080", wd(2, 10, 40), "생계, 일자리", "실직 뒤 생활비 부족. 월세 두 달 밀림. 구직 의사 있음.", "긴급복지 생계지원, 국민취업지원제도", "신청서 안내 후 3영업일 뒤 전화 확인"),
+    rec(2, "P-017", cd(21, 11, 0), "에너지, 돌봄", "홀로 사는 84세. 난방비 부담·보일러 노후. 안부 확인 원함.", "에너지바우처, 노인맞춤돌봄서비스", "1개월 뒤 재방문(사후관리)")
+  ].concat((lsGet(REC_KEY, []) || []).filter(notSeed)));
 
   lsSet(FLAG, { day: today, v: VERSION, at: now.toISOString() });
 })(typeof window !== "undefined" ? window : globalThis);

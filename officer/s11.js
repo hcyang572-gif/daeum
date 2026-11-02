@@ -246,6 +246,8 @@
       if (!REC.st || REC.st === "ok") return; setSt("ok");
       var fx = qa("#s11Draft .done-fx")[0]; if (fx && !RM) { fx.classList.remove("on"); void fx.offsetWidth; fx.classList.add("on"); }
       qa("#s11Draft .ed").forEach(function (e) { e.setAttribute("contenteditable", "false"); });
+      // S11-d2: 확정본을 «지난 확정 기록»에 남긴다(s11d2.js 가 이 기기 저장소에 보관 — 이름·연락처·주소 없음)
+      try { doc.dispatchEvent(new CustomEvent("daeum:record-confirmed", { detail: { text: draftText(), label: REC.label || "", area: REC.area || "" } })); } catch (e) { /* 구형 */ }
     });
     cp.addEventListener("click", function () {
       if (REC.st !== "ok") return; var t = draftText(), sp = cp.querySelector("span");
@@ -264,7 +266,7 @@
       var old = $("s11PrintHost"); if (old) old.remove();
       var host = doc.createElement("div"); host.id = "s11PrintHost";
       host.innerHTML = '<h1>상담 기록 확정본</h1><p class="m">' + esc(made) + " · " + esc(REC.area || "") + " · " + esc(lb) + ' · 행복이음 입력 순서</p><table>' + L + "</table>" +
-        '<p class="n">○ 공무원 확정 완료 · 정식 기록은 행복이음에 입력합니다.<br>○ 개인정보 가림: 성명·주민등록번호·연락처·주소 없음, 가구 번호 일부 가림 · ' + (REC.res && REC.res.source === "ai" ? "AI 초안(외부 AI로 보낼 때 이름·연락처 가림) → 공무원 수정·확정" : "규칙 초안(외부 전송 0건) → 공무원 수정·확정") + "</p><p class=\"f\">닿음 · 상주시 희망복지지원단(시연, 가상 자료)</p>";
+        '<p class="n">○ 공무원 확정 완료 · 정식 기록은 행복이음에 입력합니다.<br>○ 개인정보 가림: 성명·주민등록번호·연락처·주소 없음, 가구 번호 일부 가림 · ' + (REC.res && REC.res.source === "ai" ? "AI 초안(외부 AI로 보낼 때 이름·연락처 가림) → 공무원 수정·확정" : "규칙 초안(외부 전송 0건) → 공무원 수정·확정") + "</p><p class=\"f\">닿음 · 상주시청(시연, 가상 자료)</p>";
       doc.body.appendChild(host); doc.documentElement.classList.add("s11-printing");
       var done = false; function clean() { if (done) return; done = true; doc.documentElement.classList.remove("s11-printing"); host.remove(); root.removeEventListener("afterprint", clean); }
       root.addEventListener("afterprint", clean);
@@ -333,8 +335,8 @@
 
   // ── 첫 실행 둘러보기 4컷 ──
   var TOUR = [["1/4", "닿음 시작", "위기가구 명단 이후의 현장 업무를 오늘 → 방문 → 기록 → 보고 순서로 정리합니다. 데이터는 한국사회보장정보원 복지서비스 정보 외 6종입니다.", "home"],
-    ["2/4", "오늘 · 방문", "방문할 집과 다시 찾을 집을 한 화면에 모읍니다. 방문 순서는 가까운 집끼리 묶어 이동 거리를 줄입니다.", "route"],
-    ["3/4", "기록 · AI 초안", "상담 내용을 AI가 행복이음 입력 순서로 정리합니다. 근거 낱말을 확인하고 확정하면 복사할 수 있습니다.", "record"],
+    ["2/4", "오늘 · 두 입구", "정보원 정기 명단과 주민·이웃의 실시간 신고가 한 경로로 모입니다. 신고가 도착하면 «오늘 경로에 끼워 넣기» 한 번으로 순서를 다시 짭니다. 집마다 «왜 먼저인지» 한 줄이 붙습니다.", "today"],
+    ["3/4", "방문 · 기록", "끼워 넣은 집까지 차례로 방문하고, 상담 내용을 AI가 행복이음 입력 순서로 정리합니다. 근거 낱말을 확인하고 확정하면 복사할 수 있습니다.", "record"],
     ["4/4", "보고", "이번 차수 숫자와 주간 보고서를 한글(hwpx) 파일 단추 하나로 받습니다. 엑셀·PDF도 됩니다.", "report"]];
   var tourEl, tourI = 0, LS_TOUR = "daeum.s11.tour";
   function buildTour() {

@@ -53,7 +53,14 @@
     if (step === "checklist") renderChecklist();
     if (step === "progress") renderProgress();
     window.scrollTo(0, 0);
-    if (focus !== false) { var h = document.querySelector("#step-" + step + " h1"); if (h) h.focus(); }
+    if (focus !== false) { var h = [].filter.call(document.querySelectorAll("#step-" + step + " h1"), function (x) { return x.offsetParent !== null; })[0]; if (h) h.focus(); }
+  }
+  // S11-d2 주민 A안: 첫 화면 «두 개의 큰 문» — 누르면 누구 일인지 정해지고 입력 칸이 열린다(가족 일은 열린 뒤 3택에서 고름)
+  function started(on) { $("step-ask").classList.toggle("started", !!on); }
+  function openDoor(key) {
+    setProxy(WHO_BY_KEY[key]); started(true); ui("light");
+    window.scrollTo(0, 0);
+    var t = $("situation"); if (t) try { t.focus({ preventScroll: true }); } catch (e) { t.focus(); }
   }
   function go(step) {
     if (location.hash === "#" + step) show(step); else location.hash = step;
@@ -350,7 +357,15 @@
     // S11-c: 다른 기기(공무원 화면)로 보낸 결과 한 줄 — 보낸 값은 신호 종류·읍면동·급함·분야 꼬리표·번호뿐
     var sl = $("done-sync"); if (!sl) { sl = el("p", "done-sync"); sl.id = "done-sync"; sl.setAttribute("role", "status"); $("done-say").parentNode.insertBefore(sl, $("done-say").nextSibling); }
     sl.textContent = "공무원 화면으로 보내는 중…";
+    // S11-d2 도착 3단계: 2단계는 원격 저장이 실제로 성공했을 때만 «도착»
+    var trip = $("cz-trip"), r2 = $("tl-row2"), now0 = new Date(), hhmm = ("0" + now0.getHours()).slice(-2) + ":" + ("0" + now0.getMinutes()).slice(-2);
+    if (trip) { trip.dataset.st = "sending"; $("tl-1").textContent = hhmm; r2.className = "wait"; $("tl-2b").textContent = "담당 공무원에게 보내는 중…"; $("tl-2").textContent = ""; }
     (rec.sync || Promise.resolve(false)).then(function (ok) {
+      if (trip) {
+        trip.dataset.st = ok ? "arrived" : "local"; r2.className = ok ? "done live" : "wait";
+        $("tl-2b").textContent = ok ? "담당 공무원에게 도착했어요" : "이 기기에만 저장됨 · 같은 기기의 공무원 화면에서만 보입니다";
+        $("tl-2").textContent = ok ? hhmm : "";
+      }
       sl.textContent = ok ? "공무원 화면에 신호가 도착했습니다 · 번호 " + rec.code + " (이름·연락처·적으신 글은 보내지 않았습니다)"
         : "이 기기에만 저장했습니다(인터넷 연결을 확인해 주세요). 급하시면 129로 전화해 주세요.";
     });
@@ -364,7 +379,7 @@
     S.result = null; S.done = null; S.input = null; S.chips = {};
     $("situation").value = ""; $("display-name").value = ""; $("place").value = ""; $("region").value = "";
     document.querySelectorAll(".chip").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
-    setProxy("neighbor");
+    setProxy("neighbor"); started(false);
     go("ask");
   }
 
@@ -398,7 +413,16 @@
     var root = $("progress-root"); if (!root || !FX.progress) return;
     var list = FX.progress.mine(DaeumRequests.list(), FX.progress.myIds());
     root.innerHTML = "";
-    if (!list.length) { root.appendChild(el("p", "d-slot", "이 기기에서 보낸 알림이 아직 없어요. 첫 화면에서 «담당 공무원에게 알리기»를 누르면 여기서 확인할 수 있어요.")); return; }
+    if (!list.length) {
+      // S11-d2 «빈 화면 0»: 보낸 알림이 없으면 어떻게 보이는지 가상 예시 한 장(실제로 보내면 사라짐)
+      root.appendChild(el("p", "d-slot", "이 기기에서 보낸 알림이 아직 없어요. 아래는 보낸 뒤 보이는 모습의 가상 예시입니다."));
+      var d0 = new Date(Date.now() - 86400000), iso = d0.toISOString(), seen = new Date(d0.getTime() + 3 * 3600000).toISOString();
+      var ex = { v: 1, id: "예시-0001", code: "EX01", createdAt: iso, status: "seen", region: "공검면", signal: "neighbor", place: "", contactPref: "visit",
+        proxy: { isProxy: true, relation: "이웃" }, subject: { tags: ["alone", "senior"] }, situation: "옆집 할머니 댁 우편물이 일주일째 쌓여 있어요", matched: [], urgent: false, demo: true,
+        history: [{ at: iso, status: "new", by: "citizen" }, { at: seen, status: "seen", by: "officer", note: "오늘 경로에 넣음" }] };
+      list = FX.progress.mine([ex], [ex.id]);
+      list.forEach(function (p) { p.title = "[가상 예시] " + p.title; });
+    }
     list.forEach(function (p) {
       var card = el("article", "card d-card");
       card.appendChild(el("h2", null, p.title));
@@ -438,6 +462,7 @@
     $("region").value = "";
 
     document.querySelectorAll(".who-btn").forEach(function (b) { b.addEventListener("click", function () { setProxy(WHO_BY_KEY[b.dataset.proxy]); }); });
+    document.querySelectorAll("[data-door]").forEach(function (b) { b.addEventListener("click", function () { openDoor(b.dataset.door); }); });
     document.querySelectorAll("[data-go]").forEach(function (b) {
       b.addEventListener("click", function () { b.dataset.go === "new" ? reset() : go(b.dataset.go); });
     });
