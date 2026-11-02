@@ -13,6 +13,8 @@
   --d1: 0 0 0 1px var(--line), 0 1px 2px rgba(20,33,31,.04);
   --d2: 0 0 0 1px rgba(20,33,31,.04), 0 12px 32px rgba(20,33,31,.12);
   --t1: 12px; --t2: 13.5px; --t3: 15px; --t4: 17px; --t5: 22px; --t6: 30px; --t7: 40px;
+  /* S11-c 토큰 실측(11-02) 뒤 옛 글자 크기 변수를 B 7단계에 맞춤: 14→13.5 · 19→17 · 21→22 · 26→22 · 머리 제목 30 */
+  --fs-xs: 13.5px; --fs-s: 15px; --fs-b: 17px; --fs-l: 17px; --fs-h3: 22px; --fs-h2: 22px; --fs-h1: 30px;
   --r1: 12px; --r2: 16px; --r3: 24px;
   /* 옛 토큰을 B 값으로(officer.css 가 쓰는 이름) */
   --pg: #F3F5F4; --pa: #F3F5F4; --pb: #F3F5F4; --s1a: #FFFFFF; --s1b: #FFFFFF; --solid: #FFFFFF;
@@ -313,3 +315,69 @@ body.of[data-tab="home"] .top { justify-content: flex-end; }
 body.of .tabs a em { display: none !important; }
 body.of .tabs a .step { font-style: normal; }
 @media (min-width: 1024px) { body.of .tabs a .step { margin-right: 2px; } }
+
+/* ── S11-c 재구축 2 ── */
+.sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* 상태 화면: 불러오는 중(스켈레톤 1.4초 반짝임) · 빈 상태 · 오류 */
+.s11-skel { display: grid; gap: 14px; padding: 8px 0 24px; max-width: 920px; }
+.s11-skel[hidden] { display: none; }
+.sk { display: block; border-radius: var(--r1); background: linear-gradient(90deg, #E7ECEA 0%, #F4F7F6 50%, #E7ECEA 100%); background-size: 200% 100%; animation: s11sk 1.4s linear infinite; }
+.sk-t { width: 38%; height: 14px; } .sk-h { width: 64%; height: 34px; } .sk-b { height: 56px; }
+.sk-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; } .sk-c { height: 88px; border-radius: var(--r2); }
+@keyframes s11sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+body.s11-loading main > .tab { display: none !important; }
+.s11-state:not(.s11-skel) { display: grid; justify-items: center; text-align: center; gap: 10px; padding: 28px 18px; }
+.s11-state svg { width: 96px; height: 72px; }
+.s11-state h2 { font-size: var(--t4); font-weight: 700; margin: 4px 0 0; }
+.s11-state p { font-size: var(--t2); color: var(--muted); margin: 0; max-width: 420px; }
+.s11-state .s11-btn { max-width: 320px; }
+.s11-err { background: var(--surface); border-radius: var(--r2); box-shadow: var(--d1); margin: 16px 0; }
+#s11Today.is-empty > .vg, #s11Today.is-empty > .kpis4 { display: none; }
+/* 명단 불러오기 */
+.s11-imp { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+.s11-impbtn { cursor: pointer; }
+#s11File:focus-visible + .s11-demo, .s11-impbtn:focus-within { outline: 2px solid var(--pine); }
+#s11ImpMsg .bad { color: var(--err); font-weight: 600; }
+#s11ImpMsg .s11-lnk { min-height: 32px; }
+/* PC 오늘 가운데 지도 */
+.s11-tmap { display: none; }
+.tmap { width: 100%; height: 340px; border-radius: var(--r1); overflow: hidden; background: var(--well); }
+.tline { list-style: none; margin: 12px 0 8px; padding: 0; display: grid; gap: 0; max-height: 220px; overflow-y: auto; }
+.tline li { display: grid; grid-template-columns: 48px 24px minmax(0, 1fr); gap: 8px; align-items: center; min-height: 32px; font-size: var(--t2); border-top: 1px solid var(--line); }
+.tline li:first-child { border-top: 0; }
+.tline b { font-weight: 600; color: var(--muted); }
+.tline i { font-style: normal; width: 22px; height: 22px; border-radius: 50%; background: var(--pine); color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+.tline li.end i { background: var(--well); color: var(--muted); }
+@media (min-width: 1024px) {
+  .s11-tmap { display: grid; }
+  #s11Today > .vg { grid-template-columns: minmax(0, .8fr) minmax(0, 1.45fr) minmax(0, .95fr); gap: 20px; }
+  .tmap-card { padding: 12px; }
+}
+/* 경로 그리기: 번호 핀이 차례로 톡톡 */
+.nm-stop.pop { animation: s11pin .42s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes s11pin { from { transform: scale(0); opacity: 0; } }
+/* 길안내 */
+.s11-nav { display: grid; gap: 8px; margin-top: 4px; }
+.s11-nav .s11-btn { gap: 8px; }
+.s11-nav .s11-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linejoin: round; }
+.s11-segs { display: flex; flex-wrap: wrap; gap: 8px; }
+.s11-segs[hidden] { display: none; }
+.s11-seg { flex: 1 1 160px; min-height: 48px; border: 0; border-radius: var(--r1); background: var(--pine-soft); color: var(--pine); font: 600 var(--t2) var(--f); cursor: pointer; }
+.s11-seg.next { background: var(--pine); color: #fff; }
+/* 주민 신호 실시간 */
+.s11-live { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; }
+.s11-live i { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); margin-right: 4px; }
+.s11-live[data-mode="live"] i { background: var(--pos); box-shadow: 0 0 0 3px var(--ok-soft); }
+.s11-live[data-mode="poll"] i { background: var(--mustard); }
+.s11-live[data-mode="poll-fail"] i { background: var(--err); }
+.s11-toast { position: fixed; z-index: 92; top: 12px; left: 50%; transform: translateX(-50%); width: min(420px, calc(100vw - 32px)); display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 12px; align-items: center;
+  background: var(--surface); border-radius: var(--r2); box-shadow: var(--d2); padding: 12px 12px 12px 16px; animation: s11toast .45s cubic-bezier(.34,1.56,.64,1) both; }
+.s11-toast .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--mustard); box-shadow: 0 0 0 4px var(--mustard-soft); }
+.s11-toast b { display: block; font-size: var(--t2); font-weight: 600; }
+.s11-toast small { font-size: var(--t1); color: var(--muted); }
+.s11-toast.out { opacity: 0; transform: translate(-50%, -12px); transition: opacity .3s, transform .3s; }
+@keyframes s11toast { from { transform: translate(-50%, -24px) scale(.96); opacity: 0; } }
+.s11-req.bump { display: inline-block; animation: s11bump .6s cubic-bezier(.34,1.56,.64,1); color: var(--mustard-ink); }
+@keyframes s11bump { 40% { transform: scale(1.35); } }
+@media (prefers-reduced-motion: reduce) { .sk, .nm-stop.pop, .s11-toast, .s11-req.bump { animation: none !important; } }
+@media print { .s11-toast, .s11-skel, .s11-nav, .s11-imp, #s11ImpMsg, .s11-live { display: none !important; } }

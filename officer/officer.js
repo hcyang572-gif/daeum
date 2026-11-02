@@ -810,6 +810,8 @@
     links: function () { return lsGet(LS_LINK, []); },
     // 방문 경로 화면에서 마지막으로 짠 시각표(담은 가구가 그 뒤 바뀌었으면 null — 하루 동선 1장은 근사로 다시 짠다)
     route: function () { return lastRoute && lastRoute.order.slice().sort().join() === picked.slice().sort().join() ? lastRoute : null; },
+    // S11-c PC «오늘» 지도·길안내용: 방문 화면을 열지 않아도 같은 방식으로 짠 순서(가구 id)와 복귀 여부
+    plan: function () { if (!D || !$("routeReturn")) return null; var ret = $("routeReturn").checked; return { ids: routeStops(ret).map(function (r) { return r.h.id; }), ret: ret }; },
     memberText: memberText,
     // S10o-2 미신청 칸 보강용: 서비스별 동네 미신청(가상 수요 보드) · 사보원 수급권자 공개 통계(실제, 없으면 null)
     svcGaps: function () {
@@ -933,7 +935,9 @@
   ]).then(function () { init(); renderLonely(); }).catch(function (e) {
     // O-13: 개발자 말 대신 할 일을. 원인은 콘솔에만
     if (window.console) console.warn("닿음 공무원 창구 자료 불러오기 실패:", e);
+    // S11-c 오류 상태 화면: 원인 한 줄 + 행동 하나(다시 시도)
     var m = document.querySelector("main"); m.textContent = "";
+    if (window.DaeumS11c && DaeumS11c.errorState) { DaeumS11c.errorState(m, navigator.onLine === false ? "인터넷 연결이 끊겨 있습니다." : "방문 명단·지역 자료 파일을 받지 못했습니다."); return; }
     var p = el("p", "warn", "화면 자료를 불러오지 못했습니다. 잠시 뒤 새로고침해 주세요. 계속 안 되면 인터넷 연결을 확인해 주세요."); p.setAttribute("role", "alert"); m.appendChild(p);
   });
 })();

@@ -83,6 +83,10 @@
   <p class="virtual"><span class="d-tag warn">가상</span> 가구·좌표·문의는 모두 <b>가상 데이터</b>(실제 주민 0명) · 읍면동 이름과 통계만 공개 자료입니다.</p>
 
   <main id="main">
+    <!-- S11-c 상태 화면: 불러오는 중(스켈레톤 1.4초 반짝임) — 첫 화면이 그려지면 s11c.js 가 숨긴다. ?state=loading|empty|error 로 바꿔 보기 -->
+    <div id="s11Boot" class="s11-state s11-skel" role="status" aria-live="polite"><span class="sr">화면 자료를 불러오는 중입니다</span>
+      <i class="sk sk-t"></i><i class="sk sk-h"></i><div class="sk-row"><i class="sk sk-c"></i><i class="sk sk-c"></i><i class="sk sk-c"></i></div><i class="sk sk-b"></i><i class="sk sk-b"></i>
+    </div>
     <!-- ① 오늘 — 하루 한 장(S10b 시안 A): 동선 1장이 주인공, 오른쪽에 다시 찾을 집·연계 누락. ⚙️ 파로 features.js·mount.js 가 data-slot 을 채운다 -->
     <!-- S11-b 첫 화면(시안 B «intro»): 출처 꼬리표 → 제목 → AI 두 줄 → 숫자 셋 → 단추 하나. 숫자는 s11.js 가 실제 자료로 채운다 -->
     <section id="tab-home" class="tab s11" hidden>
@@ -132,8 +136,20 @@
             <p class="sm" id="s11Date"></p>
             <h2 class="h1">오늘 방문할 집 <em><span class="s11-todayn">9</span>곳</em></h2>
             <div class="ring no-pc"><svg width="128" height="128" viewBox="0 0 128 128" aria-hidden="true"><circle cx="64" cy="64" r="54" fill="none" stroke="#ECF0EE" stroke-width="10"/><circle class="arc" id="s11Arc" cx="64" cy="64" r="54" fill="none" stroke="#17594F" stroke-width="10" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3"/></svg><div class="c"><b class="s11-done">0</b><span>/ <span class="s11-todayn">9</span> 방문 완료</span></div></div>
-            <a class="s11-btn" href="#route" data-h="medium">방문 시작</a>
+            <a class="s11-btn" href="#route" data-h="medium" id="s11Start">방문 시작</a>
+            <!-- S11-c 명단 불러오기: 행복이음에서 내려받은 엑셀·CSV를 이 브라우저 안에서만 읽는다(서버 전송 0) -->
+            <div class="s11-imp">
+              <label class="s11-lnk s11-impbtn" for="s11File"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M5 15v4h14v-4"/></svg>명단 불러오기(엑셀·CSV)</label>
+              <input type="file" id="s11File" accept=".csv,.xlsx,.xls,text/csv" class="sr">
+              <a class="s11-lnk s11-demo" href="../data/demo_list.csv" download="닿음_시연용_가상명단.csv">시연용 가상 명단 받기</a>
+            </div>
+            <p class="s11-xs" id="s11ImpMsg" role="status" aria-live="polite">파일은 이 기기 브라우저 안에서만 읽습니다(서버로 보내지 않음).</p>
             <span class="s11-xs" id="s11Wx"><button type="button" class="s11-di" data-card="wx" aria-label="데이터 카드"><i class="mk virt"></i></button>특보 시나리오에 따라 홀로 사는 75세 이상 가구 순서를 앞당깁니다 · 가상</span>
+          </div>
+          <div class="col s11-tmap" aria-label="오늘 방문 경로">
+            <div class="card tmap-card"><div id="s11TodayMap" class="tmap" role="img" aria-label="네이버 지도 — 오늘 방문 순서 번호와 경로(가상 가구)"></div>
+              <ol class="tline" id="s11TLine"></ol>
+              <span class="s11-xs">경로는 직선×1.3 근사 · 도로 기준 시간은 방문 화면 · 가구 위치는 가상</span></div>
           </div>
           <div class="col">
             <span class="lbl2">할 일</span>
@@ -142,6 +158,7 @@
               <li class="stg" style="--i:1"><a href="#board"><i class="r"></i><span><b>연계가 멈춘 집</b><small>안내 뒤 신청 확인이 필요한 집</small></span><em class="s11-gap">—</em></a></li>
               <li class="stg" style="--i:2"><a href="#moreToday" data-open-more><i></i><span><b>새 주민 신호</b><small>주민 창구에서 들어온 알림</small></span><em class="s11-req">—</em></a></li>
             </ul>
+            <p class="s11-live s11-xs" data-mode="off" role="status"><i aria-hidden="true"></i><span>주민 신호 연결 확인 중</span><br>다른 기기 신호는 신호 종류·읍면동·번호만 옵니다</p>
             <span class="s11-xs"><button type="button" class="s11-di" data-card="list" aria-label="데이터 카드"><i class="mk virt"></i></button>명단은 발굴관리시스템 명단 형식의 가상 가구</span>
           </div>
         </div>
@@ -308,7 +325,13 @@
     <section id="tab-route" class="tab" hidden>
       <div class="s11 s11-visit-head">
         <div class="vg">
-          <div class="col"><h2 class="h1">방문 순서</h2><p class="sm">가까운 집끼리 묶어 오늘 갈 순서와 시각을 정합니다. 지도는 네이버 지도입니다.</p></div>
+          <div class="col"><h2 class="h1">방문 순서</h2><p class="sm">가까운 집끼리 묶어 오늘 갈 순서와 시각을 정합니다. 지도는 네이버 지도입니다.</p>
+            <!-- S11-c 네이버 지도 차량 길안내: 출발=현재 위치, 경유 최대 5곳 + 도착 1곳(6곳씩 구간), 이름 대신 «방문 1·2…»만 넘긴다 -->
+            <div class="s11-nav" id="s11Nav">
+              <button type="button" class="s11-btn" id="s11NavGo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg><span>네이버 지도로 길안내</span></button>
+              <div class="s11-segs" id="s11Segs" hidden></div>
+              <p class="s11-xs" id="s11NavMsg">출발은 지금 위치 · 집 이름 대신 «방문 1·2…»만 네이버 지도로 넘깁니다 · 앱이 없으면 웹 길찾기</p>
+            </div></div>
           <div class="card dist" id="s11Dist" aria-label="이동 거리 비교">
             <div class="row"><span>묶기 전</span><span class="tr"><i data-w="100" style="background:#E0612B;opacity:.75"></i></span><b>127.3km</b></div>
             <div class="row"><span>묶은 뒤</span><span class="tr"><i data-w="51.7" style="background:#17594F"></i></span><b>65.8km</b></div>
@@ -589,6 +612,7 @@
 <script src="officer.js"></script>
 <script src="front.js"></script>
 <script src="s11.js"></script>
+<script src="s11c.js"></script>
 <script src="../shared/pwa.js"></script>
 </body>
 </html>

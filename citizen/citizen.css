@@ -356,3 +356,6 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
 .cz .brand:focus-visible { outline: 3px solid var(--acc-ink); outline-offset: 2px; border-radius: 12px; }
 /* S10p-5(2026-11-02 호창님 지시): 어느 기기에서도 라이트 화면 한 벌로 고정 — 시스템 다크 선호용 @media 를 없앴다(data-theme="dark" 블록은 아무도 켜지 않는 보존용) */
 :root { color-scheme: light; }
+
+/* S11-c 공무원 화면 전송 결과 한 줄 */
+.done-sync { font-size: 13.5px; color: var(--ink2, #56635F); margin: 8px 0 0; }

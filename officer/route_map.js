@@ -6,7 +6,11 @@
   "use strict";
   var C = window.DAEUM_CONFIG || {};
   var LS_ROAD = "daeum.officer.road";
-  var state = { status: "idle", reason: "", promise: null, map: null, overlays: [], stops: [] };
+  var state = { status: "idle", reason: "", promise: null, map: null, overlays: [], stops: [], animateNext: true, anim: 0 };
+  // S11-c 경로 그리기 움직임(고도화 #16): 방문 화면에 «들어올 때마다» 묶은 뒤 경로를 1.1초 동안 그리고 번호 핀을 차례로 띄운다.
+  // 같은 화면 안에서 순서만 바꿀 때는 움직이지 않는다(바뀐 것만 움직인다). 움직임 줄이기 설정이면 끈다.
+  var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.addEventListener("hashchange", function () { if (location.hash === "#route") state.animateNext = true; });
   var GAP = 34; // 번호 표지(32px)끼리 이만큼(px) 안이면 겹친 것으로 보고 둥글게 벌린다
 
   function load() {
@@ -45,9 +49,9 @@
   // ── 가까운 집 번호 겹침 풀기(S10d 🩵 미르) ─────────────────
   // 화면 픽셀로 GAP 안에 모인 표지를 한 무리로 묶어, 무리 가운데를 중심으로 고르게 벌려 놓는다.
   // 실제 집 자리에는 작은 점을 남기고 지시선으로 번호와 잇는다. 확대·이동이 끝날 때마다(idle) 다시 계산한다.
-  function stopHtml(s, dx, dy) {
-    var cls = "nm-stop" + (s.req ? " req" : "");
-    if (!dx && !dy) return '<div class="nm-spot" aria-hidden="true"><div class="' + cls + '">' + s.no + "</div></div>";
+  function stopHtml(s, dx, dy, pop) {
+    var cls = "nm-stop" + (s.req ? " req" : "") + (pop ? " pop" : "");
+    if (!dx && !dy) return '<div class="nm-spot" aria-hidden="true"><div class="' + cls + '"' + (pop ? ' style="animation-delay:' + (180 + s.no * 90) + 'ms"' : "") + '>' + s.no + "</div></div>";
     var len = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dy, dx) * 180 / Math.PI;
     return '<div class="nm-spot spread" aria-hidden="true"><i class="nm-lead" style="width:' + len.toFixed(1) + "px;transform:rotate(" + ang.toFixed(1) + 'deg)"></i><i class="nm-dot"></i>' +
       '<div class="' + cls + '" style="transform:translate(' + dx.toFixed(1) + "px," + dy.toFixed(1) + 'px)">' + s.no + "</div></div>";
@@ -119,18 +123,40 @@
       line = [o].concat(opts.stops.map(function (s) { return new N.LatLng(s.lat, s.lng); }));
       if (opts.ret && opts.stops.length) line.push(o);
     }
-    if (line.length > 1) state.overlays.push(new N.Polyline({ map: map, path: line, strokeColor: opts.color || "#5B4FD0", strokeOpacity: .9,
-      strokeWeight: 5, strokeStyle: opts.path ? "solid" : "shortdash", strokeLineCap: "round", strokeLineJoin: "round" }));
+    var anim = state.animateNext && !REDUCED && !!window.requestAnimationFrame; state.animateNext = false;
+    if (line.length > 1) {
+      var poly = new N.Polyline({ map: map, path: anim ? line.slice(0, 1).concat(line.slice(0, 1)) : line, strokeColor: opts.color || "#5B4FD0", strokeOpacity: .9,
+        strokeWeight: 5, strokeStyle: opts.path ? "solid" : "shortdash", strokeLineCap: "round", strokeLineJoin: "round" });
+      state.overlays.push(poly);
+      if (anim) growLine(poly, line, N);
+    }
     opts.stops.forEach(function (s) {
       var p = new N.LatLng(s.lat, s.lng); bounds.extend(p);
       var mk = new N.Marker({ map: map, position: p, title: s.no + ". " + s.label, zIndex: 100 + s.no,
-        icon: { content: stopHtml(s, 0, 0), anchor: new N.Point(0, 0) } });
+        icon: { content: stopHtml(s, 0, 0, anim), anchor: new N.Point(0, 0) } });
       state.overlays.push(mk); state.stops.push({ m: mk, s: s, key: "0,0" });
     });
     line.forEach(function (p) { bounds.extend(p); });
     map.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
     declutter(); // fitBounds 가 바로 끝나 idle 이 늦을 때도 첫 그림부터 풀어 둔다
     return true;
+  }
+  // 경로선을 1.1초 동안 앞에서부터 그린다(감속 곡선). 새로 그리면 이전 움직임은 멈춘다
+  function growLine(poly, line, N) {
+    var id = ++state.anim, cum = [0];
+    for (var i = 1; i < line.length; i++) { var a = line[i - 1], b = line[i], dx = b.lng() - a.lng(), dy = b.lat() - a.lat(); cum.push(cum[i - 1] + Math.sqrt(dx * dx + dy * dy)); }
+    var L = cum[cum.length - 1] || 1, t0 = null;
+    function step(t) {
+      if (id !== state.anim) return;
+      if (t0 === null) t0 = t;
+      var k = Math.min(1, (t - t0) / 1100), e = 1 - Math.pow(1 - k, 3), want = L * e, out = [line[0]], j = 1;
+      while (j < line.length && cum[j] <= want) { out.push(line[j]); j++; }
+      if (j < line.length) { var a = line[j - 1], b = line[j], f = (want - cum[j - 1]) / ((cum[j] - cum[j - 1]) || 1); out.push(new N.LatLng(a.lat() + (b.lat() - a.lat()) * f, a.lng() + (b.lng() - a.lng()) * f)); }
+      if (out.length < 2) out.push(line[0]);
+      try { poly.setPath(out); } catch (x) { return; }
+      if (k < 1) window.requestAnimationFrame(step);
+    }
+    window.requestAnimationFrame(step);
   }
   function refresh() { if (state.map && window.naver) { try { naver.maps.Event.trigger(state.map, "resize"); state.map.refreshStyles && state.map.refreshStyles(); } catch (e) { /* 무시 */ } } }
 

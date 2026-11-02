@@ -28,5 +28,12 @@ window.DAEUM_CONFIG = {
   serviceScriptFallback: "data/services.js",
 
   // 국민 «도움 요청» 저장소(localStorage 키). 형식은 shared/README.md
-  requestsKey: "daeum.requests"
+  requestsKey: "daeum.requests",
+
+  // S11-c 주민 폰 → 공무원 화면 실시간 신호(닿음 전용 Supabase daeum, 표 daeum_signal — db/migration_signal.sql).
+  // 공개용(publishable) 키만 — 이 키로는 «넣기»와 «최근 2일 읽기»만 된다. ⛔ service_role·secret 키는 절대 여기 두지 않는다.
+  // 보내는 값은 신호 종류·읍면동·급함·필요 분야 꼬리표·짧은 번호뿐(이름·연락처·주소·상황 글 없음). 비우면 같은 기기 저장만 쓴다.
+  signalUrl: "https://gicjzrxgktpovnphtjhi.supabase.co",
+  signalKey: "sb_publishable_Gh5BZa8H-8YP4cLT3fW2-g_l0Bqn7ZR",
+  signalTable: "daeum_signal"
 };

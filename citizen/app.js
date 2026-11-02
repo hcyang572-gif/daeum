@@ -347,6 +347,13 @@
       ? "담당 공무원이 그 집을 찾아가는 순서에 반영합니다. 지금 위험해 보이면 <a href=\"tel:112\">112</a>·<a href=\"tel:119\">119</a>로 먼저 연락해 주세요."
       : "담당 공무원이 확인하면 고르신 방법으로 연락드립니다. 급하시면 <a href=\"tel:129\">129</a>로 전화해 주세요.";
     renderHot("done-hot", p);
+    // S11-c: 다른 기기(공무원 화면)로 보낸 결과 한 줄 — 보낸 값은 신호 종류·읍면동·급함·분야 꼬리표·번호뿐
+    var sl = $("done-sync"); if (!sl) { sl = el("p", "done-sync"); sl.id = "done-sync"; sl.setAttribute("role", "status"); $("done-say").parentNode.insertBefore(sl, $("done-say").nextSibling); }
+    sl.textContent = "공무원 화면으로 보내는 중…";
+    (rec.sync || Promise.resolve(false)).then(function (ok) {
+      sl.textContent = ok ? "공무원 화면에 신호가 도착했습니다 · 번호 " + rec.code + " (이름·연락처·적으신 글은 보내지 않았습니다)"
+        : "이 기기에만 저장했습니다(인터넷 연결을 확인해 주세요). 급하시면 129로 전화해 주세요.";
+    });
     // 완료 화면은 요청 화면 자리를 대신한다 — 뒤로 가기로 양식이 다시 열려 같은 내용이 또 접수되지 않게(S10n C-02)
     history.replaceState(null, "", "#done");
     show("done");
