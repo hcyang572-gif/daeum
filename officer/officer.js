@@ -356,7 +356,14 @@
     m.appendChild(svg("text", { x: sx + km / 2, y: sy - 0.8 * k, class: "olabel" }, "직선 " + km + "km"));
   }
   var MAP_WHY = { auth: "지도 인증 실패", network: "지도 서버 연결 실패", timeout: "응답 늦음", "no-key": "지도 키 없음", "no-api": "지도 기능 없음" };
-  function showMap(naverOk) { $("nmap").hidden = !naverOk; $("map").hidden = naverOk; }
+  // S10p-4 R-4: 네이버 지도가 안에 만드는 경로 그림(svg)은 이름이 없다 — 지도 상자(role=region)에 이미 설명이 있고 같은 내용이 시각표에 있으므로 장식으로 숨긴다
+  var nmapObs = null;
+  function hideMapSvg(box) { [].forEach.call(box.querySelectorAll("svg:not([aria-hidden])"), function (s) { s.setAttribute("aria-hidden", "true"); s.setAttribute("focusable", "false"); }); }
+  function showMap(naverOk) {
+    var box = $("nmap"); box.hidden = !naverOk; $("map").hidden = naverOk;
+    if (naverOk && !nmapObs && window.MutationObserver) { nmapObs = new MutationObserver(function () { hideMapSvg(box); }); nmapObs.observe(box, { childList: true, subtree: true }); }
+    if (naverOk) hideMapSvg(box);
+  }
   function drawMap(order, ret, road) {
     var go = function () {
       var o = RP.toLatLng(D.meta.office);
@@ -375,7 +382,7 @@
   function mapNote() {
     var st = RM && RM.state, rr = $("routeRoad");
     if (st && st.status === "fail" && rr.textContent.indexOf("네이버 지도") < 0)
-      rr.textContent += " 네이버 지도를 불러오지 못해 단순 지도로 보여 드립니다(" + (MAP_WHY[st.reason] || st.reason) + ").";
+      { rr.textContent += " 네이버 지도를 불러오지 못해 단순 지도로 보여 드립니다(" + (MAP_WHY[st.reason] || st.reason) + ")."; rr.hidden = false; }
   }
   // O-06: 18시·8시간을 넘으면 경고 줄 + «내일로 미룰 집» 고르기(뒤 순서 집부터). 미룬 집은 다음 날 처음 열 때 담기 목록 앞에 다시 담긴다
   var LS_DEFER = "daeum.officer.deferred";
@@ -426,12 +433,14 @@
       : "명단에서 방문할 가구를 담아 주세요.";
     renderOver(order, sch);
     var rr = $("routeRoad");
-    rr.textContent = roadMsg.text || (isRoad ? "도로 경로(네이버 길찾기) 기준 시각표입니다." : "지금은 직선거리 근사 순서·시간입니다. «도로 기준으로 순서 짜기»를 누르면 실제 도로 시간으로 다시 짭니다.");
+    // S10p-4 R-2: 기본(직선거리 근사) 안내는 아래 #routeNote 에 있고 시각표 줄에 «(근사)»가 붙는다 — 이 줄은 도로 결과·오류 때만 보인다
+    rr.textContent = roadMsg.text || (isRoad ? "도로 경로(네이버 길찾기) 기준 시각표입니다." : "");
     rr.className = "route-road" + (roadMsg.kind ? " " + roadMsg.kind : isRoad ? " ok" : "");
     $("btnRoad").disabled = roadBusy || !order.length;
     $("btnRoad").setAttribute("aria-busy", roadBusy ? "true" : "false");
     drawMap(order, ret, isRoad ? road : null);
     mapNote();
+    rr.hidden = !rr.textContent;
 
     var ol = $("routeList"); ol.textContent = "";
     order.forEach(function (s, i) {
@@ -685,7 +694,7 @@
   // S10o-2(10-30 호창님 확정 주 기능 5개): 메뉴 = 오늘(입구) · ①시각표 · ②재시도 · ③연계 누락 · ④현황·보고서 · ⑤명단 정리.
   // 가구 명단·상담 기록은 보조라 폰 아래 메뉴에서 빼고 «더 보기»로(셋째 값 "" = 폰에서 불 켤 칸 없음)
   var TABS = { today: ["오늘", "오늘", "today"], route: ["시각표", "① 하루 방문 시각표", "route"],
-    contacts: ["재시도", "다시 찾을 집 · 재시도 일정", "route"], board: ["연계 누락", "② 연계 누락 · 미신청", "board"],
+    contacts: ["재시도", "다시 찾을 집 · 재시도 일정", "route"], board: ["연계 누락", "② 멈춘 집 — 다음 할 일", "board"],
     report: ["현황·보고서", "③ 현황 · 보고서", "report"], intake: ["명단 정리", "명단 정리 입구", ""],
     list: ["가구 명단", "가구 명단 · 방문 순서를 정한 근거", ""], record: ["상담 기록", "상담 기록 · 행복이음에 옮길 초안", ""],
     cost: ["도입 비용·탄소", "도입 비용 · 탄소 계산(추정)", ""], region: ["다른 시군", "다른 시군으로 바꿔 보기", ""] };
@@ -701,6 +710,7 @@
       a.classList.toggle("on", on);
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
+    var navMore = $("navMore"); if (navMore && navMore.querySelector("a.on")) navMore.open = true; // S10p-4 R-1: 접힌 «더 보기» 안 탭이면 펼쳐 둔다
     [].forEach.call(document.querySelectorAll(".seg a"), function (a) {
       if (a.dataset.seg === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });

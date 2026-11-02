@@ -499,7 +499,9 @@
     // 위 숫자는 담당 읍면 가구만 센다 — 시군구 전체는 아래 수요 보드(읍면 × 서비스)에 있다(S10d)
     var mine = []; households().forEach(function (x) { if (x.area && mine.indexOf(x.area) < 0) mine.push(x.area); });
     var scope = home ? home + " 담당 가구" : mine.length ? "담당 " + mine.length + "개 읍면(" + mine.join("·") + ") 가구" : "담당 가구";
-    dash.appendChild(h("p", { class: "small", text: scope + " 기준입니다. 시군구 전체 현황은 아래 수요 보드에서 볼 수 있어요. 닿음 보조 집계라 공식 실적은 행복이음 숫자와 맞춰 봅니다." }));
+    // S10p-4 R-3: 한 줄로(읍면 이름·수요 보드 안내는 title 로)
+    var scopeS = home ? home + " 담당" : mine.length ? "담당 " + mine.length + "개 읍면" : "담당 가구";
+    dash.appendChild(h("p", { class: "small", title: scope + " 기준 · 시군구 전체 현황은 아래 수요 보드 · 닿음 보조 집계", text: scopeS + " 기준 · 공식 실적은 행복이음" }));
     var CH = window.DaeumChart;
     if (CH) {
       // S10k ②: KPI 숫자 7칸·순위 목록 → 가구 깔때기(발굴→접촉→만남→연계) + 비해당 사유 도넛. 주민 신호·오늘 재시도는 숫자 하나라 숫자 칸으로 남긴다

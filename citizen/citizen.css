@@ -315,22 +315,6 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
   --silk-bg: #1C5866; --bg-sunk: #E2EBED;
   --cz-aura: conic-gradient(from 90deg, rgba(70,165,178,0), rgba(70,165,178,.5), rgba(120,190,170,.32), rgba(110,150,220,.3), rgba(70,165,178,0));
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --pg: #071012; --pa: #0A1518; --pb: #060D0F; --s1a: #132125; --s1b: #101C20; --solid: #132125;
-  --ink: #E5F0F1; --ink2: #9AB1B5; --ink3: #577075; --hair: rgba(255,255,255,.07); --ink-12: rgba(229,240,241,.12); --edge: #627A7F;
-  --acc: #237A89; --acc-hi: #3A95A3; --acc-lo: #17606C; --acc-ink: #8FD3DC; --acc-soft: #14323A; --acc-top: #278090;
-  --e1: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(2,10,12,.5);
-  --e2: 0 0 0 .5px rgba(255,255,255,.06), 1px 2px 4px -1px rgba(2,10,12,.55), 4px 20px 40px -18px rgba(2,10,12,.85);
-  --e3: 0 0 0 .5px rgba(255,255,255,.07), 1px 4px 10px -4px rgba(2,10,12,.6), 6px 30px 60px -24px rgba(2,10,12,.9);
-  --e-sm: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(2,10,12,.45);
-  --float: linear-gradient(180deg, #1E2E32, #172629); --dock: linear-gradient(180deg, rgba(22,36,40,.96), rgba(14,24,27,.94));
-  --bead: linear-gradient(180deg, #213236, #1A2A2E); --bead-sh: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 .5px rgba(255,255,255,.08), 1px 3px 8px -3px rgba(0,0,0,.6);
-  --well: linear-gradient(180deg, #0C1719, #122022); --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
-  --aurora: radial-gradient(70% 55% at 8% -5%, rgba(70,165,178,.18), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(150,205,175,.09), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(120,150,220,.08), transparent 70%);
-  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --glass: rgba(19,33,37,.6); --bg-sunk: #0C1719;
-  --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.6), transparent 46%), linear-gradient(155deg, #EEF6F7, #D3E2E5); --on-ink-enamel: #13262B;
-} }
 :root[data-theme="dark"] {
   --pg: #071012; --pa: #0A1518; --pb: #060D0F; --s1a: #132125; --s1b: #101C20; --solid: #132125;
   --ink: #E5F0F1; --ink2: #9AB1B5; --ink3: #577075; --hair: rgba(255,255,255,.07); --ink-12: rgba(229,240,241,.12); --edge: #627A7F;
@@ -370,3 +354,5 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
 @media (prefers-reduced-motion: reduce) { .cz .ask-hero::before { animation: none; } }
 @media print { .cz .ask-hero { background: #fff !important; color: #000; box-shadow: none; border: 1px solid #ccc; } .cz .ask-hero::before, .cz .ask-hero::after { display: none; } .cz .ask-hero .h-big, .cz .ask-hero .cnum, .cz .ask-hero .lead { color: #000; } }
 .cz .brand:focus-visible { outline: 3px solid var(--acc-ink); outline-offset: 2px; border-radius: 12px; }
+/* S10p-5(2026-11-02 호창님 지시): 어느 기기에서도 라이트 화면 한 벌로 고정 — 시스템 다크 선호용 @media 를 없앴다(data-theme="dark" 블록은 아무도 켜지 않는 보존용) */
+:root { color-scheme: light; }

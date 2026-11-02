@@ -76,28 +76,6 @@
   --glass: rgba(255,255,255,.72); --glass-hl: rgba(255,255,255,.95); --glass-brd: rgba(27,24,48,.07);
 }
 /* 다크 — 우리가족 밤 종이(시스템 설정을 따르고, data-theme 으로 고정할 수 있다) */
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  color-scheme: dark;
-  --pg: #0B0A12; --pa: #0F0E18; --pb: #0A0911; --s1a: #1A1928; --s1b: #16152A; --solid: #1A1928;
-  --ink: #EEECF7; --ink2: #A9A5BF; --ink3: #6F6B88; --hair: rgba(255,255,255,.07); --ink-12: rgba(238,236,247,.12); --edge: #6E6C84;
-  --acc: #6B5BD2; --acc-hi: #8576E0; --acc-lo: #5243B0; --acc-ink: #B9AEFF; --acc-soft: #25223F; --acc-top: #6E5FD6;
-  --sage: #7DB8AE; --rose: #E29AB0; --champ: #D9B977;
-  --pos: #6CC6A0; --pos-soft: rgba(108,198,160,.14); --neg: #F2A097; --neg-soft: rgba(242,120,110,.14); --on-neg: #2B0805; --warn: #E3A55A; --warn-soft: rgba(227,165,90,.14);
-  --hl: inset 0 1px 0 rgba(255,255,255,.09); --hlb: inset 0 -1px 0 rgba(0,0,0,.3);
-  --e1: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(4,3,14,.5);
-  --e2: 0 0 0 .5px rgba(255,255,255,.06), 1px 2px 4px -1px rgba(4,3,14,.55), 4px 20px 40px -18px rgba(4,3,14,.85);
-  --e3: 0 0 0 .5px rgba(255,255,255,.07), 1px 4px 10px -4px rgba(4,3,14,.6), 6px 30px 60px -24px rgba(4,3,14,.9);
-  --e-sm: 0 0 0 .5px rgba(255,255,255,.05), 1px 1px 2px rgba(4,3,14,.45);
-  --float: linear-gradient(180deg, #2A2840, #221F36); --dock: linear-gradient(180deg, rgba(30,28,46,.96), rgba(20,19,32,.94));
-  --bead: linear-gradient(180deg, #2C2A44, #24223A); --bead-sh: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 .5px rgba(255,255,255,.08), 1px 3px 8px -3px rgba(0,0,0,.6);
-  --well: linear-gradient(180deg, #131221, #19182A); --well-sh: inset 0 1px 2px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
-  --aurora: radial-gradient(70% 55% at 8% -5%, rgba(140,120,235,.18), transparent 70%), radial-gradient(55% 45% at 98% 4%, rgba(226,150,186,.10), transparent 72%), radial-gradient(60% 50% at 60% 110%, rgba(110,170,200,.08), transparent 70%);
-  --aura-o: .5; --bg-sunk: #131221;
-  --glass: rgba(26,25,42,.6); --glass-hl: rgba(255,255,255,.1); --glass-brd: rgba(255,255,255,.08);
-  --nz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .08 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --nz-paper: var(--nz); --nz-card: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .05 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); --nz-dock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .065 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --ink-enamel: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.6), transparent 46%), linear-gradient(155deg, #F4F2FA, #DCD8EA); --on-ink-enamel: #1B1830;
-} }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --pg: #0B0A12; --pa: #0F0E18; --pb: #0A0911; --s1a: #1A1928; --s1b: #16152A; --solid: #1A1928;
@@ -222,3 +200,5 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
 :root { --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px); --sar: env(safe-area-inset-right, 0px); }
 body { padding-top: var(--sat); padding-bottom: var(--sab); padding-left: var(--sal); padding-right: var(--sar); }
 .d-sheet { max-height: calc(100dvh - 48px - var(--sat) - var(--sab)); }
+/* S10p-5(2026-11-02 호창님 지시): 어느 기기에서도 라이트 화면 한 벌로 고정 — 시스템 다크 선호용 @media 를 없앴다(data-theme="dark" 블록은 아무도 켜지 않는 보존용) */
+:root { color-scheme: light; }

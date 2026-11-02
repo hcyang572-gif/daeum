@@ -25,8 +25,10 @@
     box.appendChild(el("b", "num", SNAP.pct + "%"));
     box.appendChild(doc.createTextNode(" 줄임 "));
     box.appendChild(tag("warn", "가상"));
-    box.appendChild(el("small", null, "시연 기본값 " + SNAP.n + "곳: 명단 순서 " + SNAP.naive.toFixed(1) + "km → 묶은 순서 " + SNAP.plan.toFixed(1) + "km · 시청 복귀 · 직선×1.3 추정" +
-      (p != null && p > 0 && p !== SNAP.pct ? " (지금 담은 기준 " + p + "%)" : "")));
+    // S10p-4 R-3: km 내역은 한 줄로(명단 순서 → 묶은 순서 · 시청 복귀는 #routeNote·출처에)
+    var sm = el("small", null, "시연 기본값 " + SNAP.n + "곳 · " + SNAP.naive.toFixed(1) + "→" + SNAP.plan.toFixed(1) + "km · 직선×1.3 추정" +
+      (p != null && p > 0 && p !== SNAP.pct ? " (지금 담은 기준 " + p + "%)" : ""));
+    sm.title = "명단 순서 " + SNAP.naive.toFixed(1) + "km → 묶은 순서 " + SNAP.plan.toFixed(1) + "km · 시청 복귀"; box.appendChild(sm);
   }
 
   function renderWx(O) {
@@ -45,7 +47,7 @@
   function renderRisk(O) {
     var ol = $("fRisk"), L = root.DaeumLonely, d = L && L.get ? L.get() : null; if (!ol || !d) return;
     ol.textContent = "";
-    L.ranked(d).slice(0, 3).forEach(function (r) { ol.appendChild(riskLi(r, d)); });
+    L.ranked(d).slice(0, 2).forEach(function (r) { ol.appendChild(riskLi(r, d)); }); // S10p-4 R-1: 오늘 카드는 2곳(전체 순위는 ③ 현황 › 더 보기)
     var R = O.recipients ? O.recipients() : null, rc = $("fRecip");
     if (rc && R && R.basic_rate) {
       var basic = R.rows.filter(function (x) { return x["사업명"] === "기초생활보장(맞춤형급여)"; })[0];
@@ -67,9 +69,9 @@
         " · 위험도는 닿음 추정 지수(공식 통계 아님)";
       dd.hidden = false;
     }
-    // S10p-3 F-6: 현황·보고 화면 맨 위 — 위험 높은 읍면 5곳(같은 자료)
+    // S10p-3 F-6 → S10p-4 R-2: 현황·보고 화면 맨 위 — 위험 높은 읍면 3곳(같은 자료, 전체 순위는 아래 «더 보기»)
     var r5 = $("rRisk");
-    if (r5) { r5.textContent = ""; L.ranked(d).slice(0, 5).forEach(function (r) { r5.appendChild(riskLi(r, d)); }); }
+    if (r5) { r5.textContent = ""; L.ranked(d).slice(0, 3).forEach(function (r) { r5.appendChild(riskLi(r, d)); }); }
   }
   function riskLi(r, d) {
     var li = el("li"); li.appendChild(el("b", null, r.name));

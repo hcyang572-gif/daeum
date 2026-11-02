@@ -11,8 +11,8 @@
 <meta name="apple-mobile-web-app-title" content="닿음">
 <title>닿음 · 공무원 창구</title>
 <meta name="description" content="복지 사각지대 현장 업무 도우미 닿음 — 공무원 창구: 하루 방문 시각표·재시도·연계 누락·현황 보고서·명단 정리">
-<meta name="theme-color" content="#F1EFF8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0B0A12" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F1EFF8">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%237B70E2%27/%3E%3Cstop offset=%271%27 stop-color=%27%234236A8%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2715%27 fill=%27url(%23g)%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="../shared/tokens.css">
 <link rel="stylesheet" href="../shared/chart.css">
@@ -34,13 +34,15 @@
     <a href="#route" data-tab="route" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg><span><i class="pc-only">하루 방문 </i>시각표</span></a>
     <a href="#board" data-tab="board" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>연계<i class="pc-only"> 누락</i></span><em class="num" id="navGap"></em></a>
     <a href="#report" data-tab="report" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>현황<i class="pc-only"> · 보고서</i></span></a>
-    <p class="nav-grp" aria-hidden="true">더 보기</p>
+    <!-- S10p-4 R-1: 옆 메뉴 보조 6줄은 «더 보기» 하나로 접는다(기능·주소 그대로, 지금 탭이 안에 있으면 저절로 펼침) -->
+    <details class="nav-more pc-only" id="navMore"><summary class="nav-grp" data-h="light">더 보기</summary>
     <a href="#contacts" data-tab="contacts" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg><span>다시 찾을 집 · 재시도</span><em class="num" id="navRevisit"></em></a>
     <a href="#intake" data-tab="intake" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8M8 4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/><path d="m9 12 2 2 4-4M9 17h6"/></svg><span>명단 정리</span><em class="num" id="navIntake"></em></a>
     <a href="#list" data-tab="list" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>가구 명단</span><em class="num" id="navList"></em></a>
     <a href="#record" data-tab="record" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록</span></a>
     <a href="#cost" data-tab="cost" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/></svg><span>도입 비용·탄소</span></a>
     <a href="#region" data-tab="region" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg><span>다른 시군 보기</span></a>
+    </details>
   </nav>
   <div class="me"><i aria-hidden="true">담</i><div><b>담당 주무관</b><span class="team" title="맞춤형복지팀 · 시연">맞춤형복지팀 · 시연</span></div>
     <button type="button" class="d-round more-btn" data-sheet="moreMenu" aria-haspopup="dialog" aria-expanded="false" aria-label="더 보기 — 보조 기능·시연 설정" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button></div>
@@ -138,7 +140,7 @@
           <h3 id="pd3"><i aria-hidden="true">3</i>현황 · 보고</h3>
           <p>읍면 위험을 한눈에, 보고서는 한글·엑셀로.</p>
           <p class="pd-rh">고독사 위험 높은 읍면 <span class="d-tag pub">공공데이터</span></p>
-          <ol class="pd-risk" id="fRisk" aria-label="고독사 위험도 높은 읍면 3곳(공공데이터, 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
+          <ol class="pd-risk" id="fRisk" aria-label="고독사 위험도 높은 읍면 2곳(공공데이터, 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
           <p class="pd-num" id="fRecip" hidden></p>
           <details class="pd-srcd" id="fRiskSrcD" hidden><summary data-h="light" id="fRiskSum">출처 · 기준일</summary><p class="pd-src" id="fRiskSrc"></p></details>
           <a class="d-btn d-btn-p pd-go" href="#report" data-h="medium">이번 차수 현황</a>
@@ -247,7 +249,7 @@
 
     <!-- 방문 경로(오늘 할 일·명단에서 들어옴) -->
     <section id="tab-route" class="tab" hidden>
-      <p class="pd-orgs"><span class="d-tag pub">공공데이터</span> 기상청 특보 · 국토교통부 건축물대장 · 국립중앙의료원 병원·약국 · 행정안전부 인구·세대 — 가구는 <span class="d-tag warn">가상</span></p>
+      <p class="pd-orgs"><span class="d-tag pub">공공데이터</span> 기상청 특보 · 국토교통부 건축물대장 · 국립중앙의료원 병원·약국 · 행정안전부 인구·세대 — 가구·좌표는 <span class="d-tag warn">가상</span>(실제 주민 0명)</p>
       <div class="bar d-card">
         <a class="ghost btnlike" href="#list" data-h="light">← 명단으로</a>
         <span id="routeStat" class="stat"></span>
@@ -406,7 +408,7 @@
     <section id="tab-report" class="tab" hidden>
       <div class="panel d-card pd-rtop" aria-labelledby="rRiskH">
         <h3 id="rRiskH">고독사 위험 높은 읍면 <span class="d-tag pub">공공데이터</span></h3>
-        <ol class="pd-risk" id="rRisk" aria-label="고독사 위험도 높은 읍면 5곳(행정안전부 공개 통계로 만든 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
+        <ol class="pd-risk" id="rRisk" aria-label="고독사 위험도 높은 읍면 3곳(행정안전부 공개 통계로 만든 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
         <p class="pd-src">출처: 행정안전부 «주민등록 인구·세대»(15097972·15097974) 기준 2026-09-30 · 닿음 추정 지수(공식 통계 아님) · 전체 순위는 아래 «더 보기»</p>
       </div>
       <div class="stats-top">
