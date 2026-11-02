@@ -693,20 +693,22 @@
   // — 폰엔 다시 찾을 집·상담 기록 칸이 없어 «가구»에 불을 켜고, 가구 안 전환(.seg)으로 오간다. 옛 주소(#report 등)는 그대로
   // S10o-2(10-30 호창님 확정 주 기능 5개): 메뉴 = 오늘(입구) · ①시각표 · ②재시도 · ③연계 누락 · ④현황·보고서 · ⑤명단 정리.
   // 가구 명단·상담 기록은 보조라 폰 아래 메뉴에서 빼고 «더 보기»로(셋째 값 "" = 폰에서 불 켤 칸 없음)
-  var TABS = { today: ["오늘", "오늘", "today"], route: ["시각표", "① 하루 방문 시각표", "route"],
-    contacts: ["재시도", "다시 찾을 집 · 재시도 일정", "route"], board: ["연계 누락", "② 멈춘 집 — 다음 할 일", "board"],
-    report: ["현황·보고서", "③ 현황 · 보고서", "report"], intake: ["명단 정리", "명단 정리 입구", ""],
-    list: ["가구 명단", "가구 명단 · 방문 순서를 정한 근거", ""], record: ["상담 기록", "상담 기록 · 행복이음에 옮길 초안", ""],
-    cost: ["도입 비용·탄소", "도입 비용 · 탄소 계산(추정)", ""], region: ["다른 시군", "다른 시군으로 바꿔 보기", ""] };
+  // S11-b(11-03 시안 B): 메뉴 4칸 = 오늘 → 방문 → 기록 → 보고. 첫 화면(home)·데이터 활용(data) 추가. 셋째 값 = 불 켤 메뉴 칸(폰·PC 같음)
+  var TABS = { home: ["닿음", "닿음", ""], today: ["오늘", "1 오늘", "today"], route: ["방문", "2 방문", "route"],
+    contacts: ["재시도", "다시 찾을 집 · 재시도 일정", "route"], board: ["연계 누락", "멈춘 집 — 다음 할 일", "report"],
+    report: ["보고", "4 보고", "report"], intake: ["명단 정리", "명단 정리 입구", "report"],
+    list: ["가구 명단", "가구 명단 · 방문 순서를 정한 근거", "report"], record: ["기록", "3 기록", "record"],
+    cost: ["도입 비용·탄소", "도입 비용 · 탄소 계산(추정)", "report"], region: ["다른 시군", "다른 시군으로 바꿔 보기", "report"],
+    data: ["데이터 활용", "데이터 활용", ""] };
   var PC = window.matchMedia ? window.matchMedia("(min-width: 1024px)") : null;
   var lastTab = "";
   function show() {
-    var tab = (location.hash || "#today").slice(1);
-    if (!TABS[tab]) tab = "today";
+    var tab = (location.hash || "#home").slice(1);
+    if (!TABS[tab]) tab = "home";
     Object.keys(TABS).forEach(function (t) { $("tab-" + t).hidden = t !== tab; });
     var wide = PC && PC.matches;
     [].forEach.call(document.querySelectorAll(".tabs a"), function (a) {
-      var on = a.dataset.tab === (wide ? tab : TABS[tab][2]);
+      var on = a.dataset.tab === TABS[tab][2]; void wide;
       a.classList.toggle("on", on);
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });

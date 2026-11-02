@@ -465,7 +465,7 @@
   window.DaeumAI = {
     recommend: recommend, analyze: analyze, matchRules: matchRules,
     summarize: summarize, ruleSummarize: ruleSummarize, needFromIndicator: NEED_FROM_INDICATOR,
-    gateOk: gateOk, needsFromRule: needsFromRule, GATES: GATES,
+    gateOk: gateOk, needsFromRule: needsFromRule, GATES: GATES, needKeywords: NEED_KEYWORDS,
     chips: CHIPS, reasonLabel: REASON,
     mode: function () { return cfg().aiEndpoint ? "ai" : "rules"; }
   };

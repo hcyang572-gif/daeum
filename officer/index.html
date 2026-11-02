@@ -12,11 +12,12 @@
 <title>닿음 · 공무원 창구</title>
 <meta name="description" content="복지 사각지대 현장 업무 도우미 닿음 — 공무원 창구: 하루 방문 시각표·재시도·연계 누락·현황 보고서·명단 정리">
 <meta name="color-scheme" content="light">
-<meta name="theme-color" content="#F1EFF8">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%237B70E2%27/%3E%3Cstop offset=%271%27 stop-color=%27%234236A8%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2715%27 fill=%27url(%23g)%27/%3E%3C/svg%3E">
+<meta name="theme-color" content="#F3F5F4">
+<link rel="icon" href="../shared/icons/daeum.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../shared/tokens.css">
 <link rel="stylesheet" href="../shared/chart.css">
 <link rel="stylesheet" href="officer.css">
+<link rel="stylesheet" href="s11.css">
 <script src="../shared/switcher.js"></script>
 </head>
 <body class="of">
@@ -27,23 +28,14 @@
      다시 찾을 집·상담 기록은 폰에선 «가구» 안 전환(.seg)으로 들어간다. 더보기는 시연 설정만 -->
 <aside class="rail" aria-label="업무 메뉴">
   <a class="logo" href="../index.html" aria-label="닿음 첫 화면으로"><i aria-hidden="true"></i>닿음</a>
-  <nav class="tabs" aria-label="공무원 메뉴">
-    <!-- S10p-2(10-30 A안): 주 화면 3개 = ①시각표 ②연계 누락 ③현황·보고 / 재시도·명단 정리는 «더 보기»(기능 그대로). 옛 주석: S10o-2(10-30 호창님 확정 주 기능 5개): 오늘(입구) → ①시각표 ②재시도 ③연계 누락 ④현황·보고서 ⑤명단 정리 / 보조는 «더 보기» -->
-    <a href="#today" data-tab="today" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>오늘</span><em class="num" id="navToday"></em></a>
-    <p class="nav-grp" aria-hidden="true">주 기능</p>
-    <a href="#route" data-tab="route" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg><span><i class="pc-only">하루 방문 </i>시각표</span></a>
-    <a href="#board" data-tab="board" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>연계<i class="pc-only"> 누락</i></span><em class="num" id="navGap"></em></a>
-    <a href="#report" data-tab="report" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>현황<i class="pc-only"> · 보고서</i></span></a>
-    <!-- S10p-4 R-1: 옆 메뉴 보조 6줄은 «더 보기» 하나로 접는다(기능·주소 그대로, 지금 탭이 안에 있으면 저절로 펼침) -->
-    <details class="nav-more pc-only" id="navMore"><summary class="nav-grp" data-h="light">더 보기</summary>
-    <a href="#contacts" data-tab="contacts" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg><span>다시 찾을 집 · 재시도</span><em class="num" id="navRevisit"></em></a>
-    <a href="#intake" data-tab="intake" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8M8 4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/><path d="m9 12 2 2 4-4M9 17h6"/></svg><span>명단 정리</span><em class="num" id="navIntake"></em></a>
-    <a href="#list" data-tab="list" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>가구 명단</span><em class="num" id="navList"></em></a>
-    <a href="#record" data-tab="record" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록</span></a>
-    <a href="#cost" data-tab="cost" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/></svg><span>도입 비용·탄소</span></a>
-    <a href="#region" data-tab="region" class="pc-only" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg><span>다른 시군 보기</span></a>
-    </details>
+  <!-- S11-b(11-03, 시안 B): 메뉴 4칸 = 오늘 → 방문 → 기록 → 보고. 그 밖의 화면(재시도·연계 누락·명단 정리·가구 명단·비용·다른 시군)은 «보고 › 더 보기»·머리줄 «더 보기»에서(주소 그대로) -->
+  <nav class="tabs" aria-label="공무원 메뉴 — 업무 순서">
+    <a href="#today" data-tab="today" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><span><i class="step">1</i> 오늘</span> <em class="num" id="navToday"></em></a>
+    <a href="#route" data-tab="route" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.4-6-10.5a6 6 0 0 1 12 0C18 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/></svg><span><i class="step">2</i> 방문</span></a>
+    <a href="#record" data-tab="record" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span><i class="step">3</i> 기록</span></a>
+    <a href="#report" data-tab="report" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-6"/></svg><span><i class="step">4</i> 보고</span></a>
   </nav>
+  <a class="rail-data" href="#data" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg><span>데이터 활용</span></a>
   <div class="me"><i aria-hidden="true">담</i><div><b>담당 주무관</b><span class="team" title="맞춤형복지팀 · 시연">맞춤형복지팀 · 시연</span></div>
     <button type="button" class="d-round more-btn" data-sheet="moreMenu" aria-haspopup="dialog" aria-expanded="false" aria-label="더 보기 — 보조 기능·시연 설정" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button></div>
 </aside>
@@ -77,12 +69,14 @@
 
 <div class="work">
   <div id="netguard" class="netguard" data-offline="인터넷에 연결되어 있지 않습니다. 명단·기록은 이 기기에 그대로 남고, AI 요약·지도·도로 경로는 연결되면 다시 됩니다." hidden></div>
+  <span hidden><em id="navGap"></em><em id="navRevisit"></em><em id="navIntake"></em><em id="navList"></em></span>
   <header class="top">
     <div class="ttl">
       <p class="cnum" id="pageKicker">복지 사각지대 현장 업무 도우미</p>
       <h1 id="pageTitle">오늘</h1>
     </div>
     <div class="mode" id="aiMode"></div>
+    <button type="button" class="s11-info" id="s11Info" aria-label="이 화면에 쓰인 데이터" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></svg></button>
     <button type="button" class="d-round more-btn ph-only" data-sheet="moreMenu" aria-haspopup="dialog" aria-expanded="false" aria-label="더 보기 — 보조 기능·시연 설정" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button>
   </header>
 
@@ -90,10 +84,72 @@
 
   <main id="main">
     <!-- ① 오늘 — 하루 한 장(S10b 시안 A): 동선 1장이 주인공, 오른쪽에 다시 찾을 집·연계 누락. ⚙️ 파로 features.js·mount.js 가 data-slot 을 채운다 -->
+    <!-- S11-b 첫 화면(시안 B «intro»): 출처 꼬리표 → 제목 → AI 두 줄 → 숫자 셋 → 단추 하나. 숫자는 s11.js 가 실제 자료로 채운다 -->
+    <section id="tab-home" class="tab s11" hidden>
+      <div class="vg">
+        <div class="col">
+          <span class="tagline"><i class="mk api"></i>한국사회보장정보원 공공데이터 활용</span>
+          <h2 class="hero2">위기가구 명단 이후<br><em>현장 업무</em> 도우미</h2>
+          <p class="sm">방문 순서 · 서비스 후보 · 상담 기록 · 보고</p>
+          <div class="ai2" aria-label="AI 기능">
+            <div><span class="ab">AI</span><span><b>사연·상담 내용 → 복지서비스 후보</b><span>정보원 복지서비스 <span class="s11-svcn">369</span>건 안에서 선택, 근거 표시</span></span></div>
+            <div><span class="ab">AI</span><span><b>상담 내용 → 행복이음 입력 초안</b><span>공무원 확인·확정 후 복사</span></span></div>
+          </div>
+          <button type="button" class="s11-btn" data-tour-start>1분 둘러보기</button>
+          <div class="hlinks"><a class="s11-lnk" href="#today">바로 시작</a><a class="s11-lnk" href="#data"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg>데이터 활용</a></div>
+        </div>
+        <div class="col">
+          <button type="button" class="stat stg" style="--i:0" data-card="svc"><div><b>복지서비스</b><span><i class="mk api"></i>정보원 중앙부처·지자체</span></div><em class="s11-svcn">369</em></button>
+          <button type="button" class="stat stg" style="--i:1" data-card="d5"><div><b>상주 기초생계급여 수급가구</b><span><i class="mk file"></i>정보원 수급권자 현황 · <span id="s11RcpMonth">2025-12</span></span></div><em id="s11Rcp">3,868</em></button>
+          <button type="button" class="stat stg" style="--i:2" data-card="list"><div><b>오늘 방문할 집</b><span><i class="mk virt"></i>발굴관리시스템 명단 형식 · 가상</span></div><em class="s11-todayn">9</em></button>
+          <div class="steps" aria-label="업무 순서"><a href="#today"><i>1</i>오늘</a><hr><a href="#route"><i>2</i>방문</a><hr><a href="#record"><i>3</i>기록</a><hr><a href="#report"><i>4</i>보고</a></div>
+          <span class="s11-xs">가구·좌표·상담은 가상 데이터(실제 주민 0명) · 통계와 서비스 목록은 공공데이터</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- S11-b 데이터 활용(시안 B «data»): 데이터 → 닿음이 하는 일 → 얻는 것. 넓은 화면은 곡선 연결(s11.js) -->
+    <section id="tab-data" class="tab s11" hidden>
+      <div class="col">
+        <h2 class="h1">닿음이 쓰는 데이터</h2>
+        <p class="sm">데이터를 누르면 쓰이는 곳과 카드가 표시됩니다.</p>
+        <div class="dflow" id="s11Flow"><svg class="links" aria-hidden="true"></svg></div>
+        <span class="s11-xs"><i class="mk api"></i> OpenAPI(실제) &nbsp; <i class="mk file"></i> 파일(실제) &nbsp; <i class="mk virt"></i> 가상 &nbsp; <i class="mk soon"></i> 확장 예정</span>
+      </div>
+    </section>
+
     <section id="tab-today" class="tab" data-feature="today" hidden>
+      <!-- S11-b 오늘(시안 B): 진행 고리 + 할 일 3줄 + «방문 시작». PC는 숫자 칸 4개. 값은 s11.js 가 기존 칸(kpi*)에서 옮긴다 -->
+      <div class="s11" id="s11Today">
+        <div class="kpis4" aria-label="오늘 숫자">
+          <a class="kpi4" href="#route"><span>오늘 방문</span><b><span class="s11-done">0</span><small> / <span class="s11-todayn">9</span>곳</small></b><small>방문 화면에서 도착 표시</small></a>
+          <a class="kpi4" href="#contacts"><span>다시 찾을 집</span><b class="s11-rev">—</b><small>지난 부재 · 재시도</small></a>
+          <a class="kpi4" href="#board"><span>연계가 멈춘 집</span><b class="s11-gap">—</b><small>안내 뒤 신청 전</small></a>
+          <a class="kpi4" href="#moreToday" data-open-more><span>주민 신호</span><b class="s11-req">—</b><small>새로 들어온 신호</small></a>
+        </div>
+        <div class="vg">
+          <div class="col">
+            <p class="sm" id="s11Date"></p>
+            <h2 class="h1">오늘 방문할 집 <em><span class="s11-todayn">9</span>곳</em></h2>
+            <div class="ring no-pc"><svg width="128" height="128" viewBox="0 0 128 128" aria-hidden="true"><circle cx="64" cy="64" r="54" fill="none" stroke="#ECF0EE" stroke-width="10"/><circle class="arc" id="s11Arc" cx="64" cy="64" r="54" fill="none" stroke="#17594F" stroke-width="10" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3"/></svg><div class="c"><b class="s11-done">0</b><span>/ <span class="s11-todayn">9</span> 방문 완료</span></div></div>
+            <a class="s11-btn" href="#route" data-h="medium">방문 시작</a>
+            <span class="s11-xs" id="s11Wx"><button type="button" class="s11-di" data-card="wx" aria-label="데이터 카드"><i class="mk virt"></i></button>특보 시나리오에 따라 홀로 사는 75세 이상 가구 순서를 앞당깁니다 · 가상</span>
+          </div>
+          <div class="col">
+            <span class="lbl2">할 일</span>
+            <ul class="inbox">
+              <li class="stg" style="--i:0"><a href="#contacts"><i class="w"></i><span><b>다시 찾을 집</b><small>부재 뒤 다음 시도 시간 제안</small></span><em class="s11-rev">—</em></a></li>
+              <li class="stg" style="--i:1"><a href="#board"><i class="r"></i><span><b>연계가 멈춘 집</b><small>안내 뒤 신청 확인이 필요한 집</small></span><em class="s11-gap">—</em></a></li>
+              <li class="stg" style="--i:2"><a href="#moreToday" data-open-more><i></i><span><b>새 주민 신호</b><small>주민 창구에서 들어온 알림</small></span><em class="s11-req">—</em></a></li>
+            </ul>
+            <span class="s11-xs"><button type="button" class="s11-di" data-card="list" aria-label="데이터 카드"><i class="mk virt"></i></button>명단은 발굴관리시스템 명단 형식의 가상 가구</span>
+          </div>
+        </div>
+      </div>
+      <details class="s11-more" id="s11TodayCards"><summary data-h="light">주 기능 세 가지 · 공공데이터 출처</summary><div class="in">
       <!-- S10p-2(10-30 A안): 첫 화면 = «공공데이터 → 닿음 → 현장 개선» 띠 1장 + 주 화면 3카드. 숫자는 officer/front.js 가 채운다. 옛 «오늘» 내용은 아래 «자세히»에 접어 둔다(기능 그대로) -->
       <section class="pd-band d-card" aria-labelledby="pdH">
-        <h2 id="pdH">이 공공데이터로 현장의 하루를 바꿉니다</h2>
+        <h2 id="pdH">닿음이 쓰는 공공데이터 6묶음</h2>
         <ul class="pd-chips" aria-label="닿음이 쓰는 공공데이터 6묶음">
           <li class="pd-chip c-wx"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="13" r="6"/><path d="M6 26h20"/></svg><b>기상청</b><span>기상특보</span></li>
           <li class="pd-chip c-house"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 15 16 6l11 9v11H5Z"/><path d="M13 26v-6h6v6"/></svg><b>국토교통부</b><span>건축물대장</span></li>
@@ -146,9 +202,10 @@
           <a class="d-btn d-btn-p pd-go" href="#report" data-h="medium">이번 차수 현황</a>
         </article>
       </div>
+      </div></details>
 
       <details class="today-old d-card" id="todayOld">
-        <summary data-h="light">더 보기 — 오늘 동선·특보·무반응 신호·명단 정리</summary>
+        <summary data-h="light">자세히 — 오늘 동선·특보·무반응 신호·명단 정리</summary>
         <div class="to-body" id="todayOldBody">
       <div class="today-hero">
         <div><p class="d"><span id="todayDate"></span> · 오늘 찾아갈 집</p>
@@ -249,6 +306,16 @@
 
     <!-- 방문 경로(오늘 할 일·명단에서 들어옴) -->
     <section id="tab-route" class="tab" hidden>
+      <div class="s11 s11-visit-head">
+        <div class="vg">
+          <div class="col"><h2 class="h1">방문 순서</h2><p class="sm">가까운 집끼리 묶어 오늘 갈 순서와 시각을 정합니다. 지도는 네이버 지도입니다.</p></div>
+          <div class="card dist" id="s11Dist" aria-label="이동 거리 비교">
+            <div class="row"><span>묶기 전</span><span class="tr"><i data-w="100" style="background:#E0612B;opacity:.75"></i></span><b>127.3km</b></div>
+            <div class="row"><span>묶은 뒤</span><span class="tr"><i data-w="51.7" style="background:#17594F"></i></span><b>65.8km</b></div>
+            <p class="sm" style="margin:0"><span class="pct">48% 줄임</span> <span class="s11-xs" style="display:inline"><button type="button" class="s11-di" data-card="list" aria-label="데이터 카드"><i class="mk virt"></i></button>가상 9곳 · 직선×1.3 추정(본문 48.3%)</span></p>
+          </div>
+        </div>
+      </div>
       <p class="pd-orgs"><span class="d-tag pub">공공데이터</span> 기상청 특보 · 국토교통부 건축물대장 · 국립중앙의료원 병원·약국 · 행정안전부 인구·세대 — 가구·좌표는 <span class="d-tag warn">가상</span>(실제 주민 0명)</p>
       <div class="bar d-card">
         <a class="ghost btnlike" href="#list" data-h="light">← 명단으로</a>
@@ -304,38 +371,63 @@
       <p class="small src-tag" data-src-ref="V1,S2,R4">출처: 시도 기록은 담당자 표시 기록(이 기기) · 가구는 가상(시연) · 3회 뒤 간접 확인 순서는 서울 강남구 공개 사례</p>
     </section>
 
-    <!-- ④ 상담 기록 -->
+    <!-- ④ 기록(S11-b 시안 B «record»): AI 초안이 주인공 — 상담 내용(근거 형광) · AI 처리 4칸(늘 보임) · 확인 단계 꼬리표(AI 초안 → 수정됨 → 공무원 확정) · 확정 전 복사 잠금.
+         officer.js 가 쓰는 id(recHouse·recText·btnSummarize·recResult·btnLink·linkList…)는 그대로, 연계 고르기·서식·적합률은 «자세히» 안으로 -->
     <section id="tab-record" class="tab" hidden>
-      <nav class="seg" aria-label="보조 화면 전환"><a href="#list" data-seg="list" data-h="light">가구 명단</a><a href="#record" data-seg="record" data-h="light">상담 기록</a></nav>
-      <p class="bridge" role="note"><b>정식 상담 기록은 행복이음(모바일 행복이음 포함)에 합니다.</b> 이 화면의 받아쓰기·요약은 행복이음 상담 요약 기능이 정식 도입(2028 계획)되기 전까지 입력을 돕는 다리이며, 결과는 «행복이음에 옮길 초안»으로만 나옵니다.</p>
-      <div class="bar d-card">
-        <label>상담 가구 <select id="recHouse"></select></label>
-        <button id="btnSample" class="ghost" data-h="light">가상 상담 대본 넣기</button>
-        <button id="btnMic" class="ghost mic" data-h="light"><span class="dot" aria-hidden="true"></span>받아쓰기(입력 보조)</button>
-        <span id="micState" class="stat" role="status"></span>
-      </div>
-      <div class="rec-wrap">
-        <div class="panel d-card">
-          <h3>상담 내용</h3>
-          <div id="recHouseInfo" class="hinfo"></div>
-          <label for="recText" class="sr">상담 내용</label>
-          <textarea id="recText" rows="12" placeholder="상담 내용을 적거나 «받아쓰기(입력 보조)»를 누르세요."></textarea>
-          <p class="note">음성 받아쓰기는 브라우저의 음성인식을 씁니다. 온라인 인식이라 음성이 브라우저 제공사 서버로 전송될 수 있습니다. 실제 상담에 쓰려면 기관 내부 인식기로 바꿔야 합니다.</p>
-          <button id="btnSummarize" class="ghost" data-h="medium">행복이음에 옮길 초안 만들기(요약·연계 후보)</button>
+      <div class="s11">
+        <div class="vg">
+          <div class="col">
+            <p class="sm" id="s11RecMeta">상담 가구를 고르고 상담 내용을 넣습니다</p>
+            <h2 class="h1">AI 상담 초안</h2>
+            <div class="card rec-in">
+              <div class="rbar"><label>상담 가구 <select id="recHouse"></select></label></div>
+              <div class="rbar">
+                <button type="button" id="btnSample" class="ghost2" data-h="light">가상 상담 대본 넣기</button>
+                <button type="button" id="btnMic" class="ghost2 mic" data-h="light"><span class="dot" aria-hidden="true"></span>받아쓰기(입력 보조)</button>
+                <span id="micState" class="s11-xs" role="status"></span>
+              </div>
+              <div id="recHouseInfo" class="hinfo"></div>
+              <label for="recText" class="sr">상담 내용</label>
+              <textarea id="recText" rows="6" placeholder="상담 내용을 적거나 «가상 상담 대본 넣기»를 누르세요."></textarea>
+              <button type="button" id="btnSummarize" class="s11-btn" data-h="medium">AI 초안 만들기</button>
+            </div>
+            <div class="card talk" id="s11Talk" hidden><span class="lbl2">상담 내용 · 근거 낱말 표시</span><p></p></div>
+            <div class="card" style="display:grid;gap:10px" aria-labelledby="s11PipeH">
+              <span class="lbl2" id="s11PipeH">AI 처리 과정</span>
+              <ol class="pipe" id="s11Pipe">
+                <li><b data-k="red">0</b><span>개인정보<br>가림</span></li>
+                <li><b data-k="cand">50</b><span>규칙으로<br>후보 추림</span></li>
+                <li class="ai"><b data-k="pick">—</b><span>AI 선택<br>+ 근거</span></li>
+                <li class="ok"><b data-k="out">0</b><span>목록 밖<br>답</span></li>
+              </ol>
+              <span class="ailine" id="s11AiLine">이름·연락처를 가린 뒤 외부 AI(Claude)로 보냅니다 · 후보는 정보원 복지서비스 <span class="s11-svcn">369</span>건 안</span>
+            </div>
+          </div>
+          <div class="col">
+            <div class="state" id="s11State" aria-label="확인 단계"><span data-st="ai">AI 초안</span><i></i><span data-st="edit">수정됨</span><i></i><span data-st="ok">공무원 확정</span></div>
+            <div class="card draft" id="s11Draft" aria-live="polite">
+              <span class="s11-xs" style="font-weight:600">행복이음 입력 순서 초안</span>
+              <div class="s11-draft-body"><p class="sm">상담 내용을 넣고 «AI 초안 만들기»를 누르면 주요 욕구 · 상담 요약 · 연계 후보(근거) · 다음 할 일 순서로 초안이 나옵니다.</p></div>
+              <div class="done-fx" aria-hidden="true"><div class="disc"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><span class="sp" style="--x:-60px;--y:-40px"></span><span class="sp" style="--x:60px;--y:-44px"></span><span class="sp" style="--x:-70px;--y:20px"></span><span class="sp" style="--x:72px;--y:16px"></span><span class="sp" style="--x:-24px;--y:-70px"></span><span class="sp" style="--x:26px;--y:64px"></span></div>
+            </div>
+            <button type="button" class="s11-btn" id="s11Confirm" disabled>공무원 확정</button>
+            <button type="button" class="copy" id="s11Copy" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>확정 후 복사 가능</span></button>
+            <span class="s11-xs">정식 상담 기록은 행복이음에 합니다. 이 초안은 옮겨 적기를 돕는 용도입니다.</span>
+            <details class="s11-more" id="s11RecMore"><summary data-h="light">자세히 — 연계 후보 고르기 · 저장된 연계 · 서식 · 적합률</summary><div class="in">
+              <div id="recResult" class="result" aria-live="polite"><p class="muted">AI 초안을 만들면 연계 후보를 골라 저장할 수 있습니다.</p></div>
+              <button id="btnLink" class="primary" hidden data-h="success">선택한 서비스로 연계 저장</button>
+              <h3>저장된 연계 <small id="linkCount"></small></h3>
+              <ul id="linkList" class="links"></ul>
+              <div class="panel d-card fit-box" aria-live="polite"><h3>추천 현장 적합률</h3><p class="muted">불러오는 중…</p></div>
+              <div class="panel d-card" id="consultForms" data-feature="consult">
+                <h3>행복이음에 옮길 초안 · 사례관리 서식</h3>
+                <div data-slot="forms"><p class="d-slot">요약을 받으면 입력 초안과 서식이 여기에 채워집니다.</p></div>
+              </div>
+              <p class="note">음성 받아쓰기는 브라우저의 음성인식을 씁니다. 온라인 인식이라 음성이 브라우저 제공사 서버로 전송될 수 있습니다. 실제 상담에 쓰려면 기관 내부 인식기로 바꿔야 합니다.</p>
+              <p class="bridge" role="note">행복이음 상담 요약 기능이 정식 도입(2028 계획)되기 전까지 입력을 돕는 다리이며, 결과는 «행복이음에 옮길 초안»으로만 나옵니다.</p>
+            </div></details>
+          </div>
         </div>
-        <div class="panel d-card">
-          <h3>요약</h3>
-          <div id="recResult" class="result" aria-live="polite"><p class="muted">왼쪽에서 요약을 누르면 쟁점·욕구·연계 후보가 나옵니다.</p></div>
-          <button id="btnLink" class="primary" hidden data-h="success">선택한 서비스로 연계 저장</button>
-          <h3>저장된 연계 <small id="linkCount"></small></h3>
-          <ul id="linkList" class="links"></ul>
-        </div>
-      </div>
-      <div class="panel d-card fit-box" aria-live="polite"><h3>추천 현장 적합률</h3><p class="muted">불러오는 중…</p></div>
-      <!-- 행복이음에 옮길 초안·사례관리 서식 — ⚙️ 파로 features.js 가 채운다 -->
-      <div class="panel d-card" id="consultForms" data-feature="consult">
-        <h3>행복이음에 옮길 초안 · 사례관리 서식</h3>
-        <div data-slot="forms"><p class="d-slot">요약을 받으면 입력 초안과 서식이 여기에 채워집니다.</p></div>
       </div>
     </section>
 
@@ -406,6 +498,34 @@
 
     <!-- ⑥ 현황·보고서(S10g 메인 메뉴) — 옛 «연계·보고서»의 아래 절반, 기능 그대로 -->
     <section id="tab-report" class="tab" hidden>
+      <!-- S11-b 보고(시안 B «report»): 이번 차수 · 보고서 받기 · 읍면 지표(실제 값) · 더 보기. 아래 기존 현황판·보고서 칸은 그대로 -->
+      <div class="s11" id="s11Report">
+        <div class="vg">
+          <div class="col">
+            <h2 class="h1">이번 차수</h2>
+            <p class="sm">방문·상담 기록이 쌓이면 서비스 연계 현황과 한글·엑셀 보고서가 채워집니다.</p>
+            <button type="button" class="s11-btn" id="s11Dl">보고서 받기</button>
+            <span class="s11-xs" id="s11RcpLine"><button type="button" class="s11-di" data-card="d5" aria-label="데이터 카드"><i class="mk file"></i></button>비교 기준: 상주 기초생계급여 수급가구 <b id="s11Rcp2">3,868</b>(정보원 수급권자 현황, <span id="s11RcpMonth2">2025-12</span>)</span>
+          </div>
+          <div class="col">
+            <div class="card" id="s11Area" aria-labelledby="s11AreaH">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px"><b id="s11AreaH" style="font-size:var(--t3);font-weight:600">읍면 지표</b><span class="s11-xs">실제 값</span></div>
+              <div class="area" id="s11AreaT"><p class="sm">공공데이터를 불러오는 중입니다.</p></div>
+              <span class="s11-xs" id="s11AreaSrc" style="margin-top:8px">출처: 행정안전부 주민등록 인구·세대(2026-09-30) · 국토교통부 건축HUB 건축물대장(2026-10-30) · 위험도 순위는 닿음 추정 지수(공식 통계 아님)</span>
+            </div>
+            <details class="s11-more"><summary data-h="light">더 보기</summary><div class="in">
+              <ul class="mlist">
+                <li><a href="#contacts">다시 찾을 집 · 닷새치 재시도 일정</a></li>
+                <li><a href="#board">연계가 멈춘 집 · 미신청 표</a></li>
+                <li><a href="#intake">명단 정리</a></li>
+                <li><a href="#list">가구 명단 · 방문 순서 근거</a></li>
+                <li><a href="#cost">도입 비용 · 탄소 계산(추정)</a></li>
+                <li><a href="#region">다른 시군으로 바꿔 보기</a></li>
+              </ul>
+            </div></details>
+          </div>
+        </div>
+      </div>
       <div class="panel d-card pd-rtop" aria-labelledby="rRiskH">
         <h3 id="rRiskH">고독사 위험 높은 읍면 <span class="d-tag pub">공공데이터</span></h3>
         <ol class="pd-risk" id="rRisk" aria-label="고독사 위험도 높은 읍면 3곳(행정안전부 공개 통계로 만든 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
@@ -468,6 +588,7 @@
 <script src="xlsx_out.js"></script>
 <script src="officer.js"></script>
 <script src="front.js"></script>
+<script src="s11.js"></script>
 <script src="../shared/pwa.js"></script>
 </body>
 </html>
