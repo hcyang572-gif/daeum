@@ -28,11 +28,11 @@
   /* ── 활용 데이터 표(정본) ── kind: pub 공공데이터 · virt 가상(시연) · self 닿음 자체 · ref 참고 자료 */
   var DATA = [
     { id: "D1", kind: "pub", org: "한국사회보장정보원", name: "중앙부처복지서비스", no: "15090532", url: "https://www.data.go.kr/data/15090532/openapi.do",
-      how: "OpenAPI · 받아서 저장(키는 화면에 두지 않음)", cycle: "필요할 때 다시 받음", base: "2026-10-30 조회",
+      how: "OpenAPI · 받아서 저장(키는 화면에 두지 않음)", cycle: "필요할 때 다시 받음", base: "2026-11-02 조회",
       screens: [["주민", "받을 수 있는 도움"], ["공무원", "기록 › 연계 후보"], ["공무원", "AI 추천 검증"]],
       does: "상황에 맞는 국가 복지서비스 후보 · 대상·신청 방법" },
     { id: "D2", kind: "pub", org: "한국사회보장정보원", name: "지자체복지서비스", no: "15108347", url: "https://www.data.go.kr/data/15108347/openapi.do",
-      how: "OpenAPI · 받아서 저장", cycle: "필요할 때 다시 받음", base: "2026-10-30 조회",
+      how: "OpenAPI · 받아서 저장", cycle: "필요할 때 다시 받음", base: "2026-11-02 조회",
       screens: [["주민", "받을 수 있는 도움"], ["공무원", "기록 › 연계 후보"], ["공무원", "다른 시군 보기"]],
       does: "상주시(시군) 자체 사업 후보 · 시군별 서비스 수" },
     { id: "D5", kind: "pub", org: "한국사회보장정보원", name: "복지사업 시군구별 수급권자 현황", no: "15062448", url: "https://www.data.go.kr/data/15062448/fileData.do",

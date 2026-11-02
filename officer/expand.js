@@ -6,24 +6,25 @@
 (function (root) {
   "use strict";
   // ── ④ MN-D02 §9 그대로 ──
-  var DEFAULTS = { households: 48817, officers: 10, visitDays: 8, visitsPerDay: 12, aiPerVisit: 1, dailyCap: 200, kmPerL: 10, saveRate: 0.20 };
-  var K = { won_per_call: 32, naive_km_per_day12: 30.78, grouped_km_per_day12: 17.55, demo_save_rate: 0.483, co2_kg_per_L: 2.174, maintenance_year_won: [2000000, 5000000] };
+  var DEFAULTS = { households: 48817, officers: 10, visitDays: 8, visitsPerDay: 12, aiPerVisit: 1, dailyCap: 300, kmPerL: 10, saveRate: 0.20 };
+  var K = { won_per_call: 44.6, sigungu: 227, naive_km_per_day12: 30.78, grouped_km_per_day12: 17.55, demo_save_rate: 0.483, co2_kg_per_L: 2.174, maintenance_year_won: [2000000, 5000000] };
   function num(v, d) { v = +v; return isFinite(v) && v >= 0 ? v : d; }
   function calc(inp) {
     var i = {}; Object.keys(DEFAULTS).forEach(function (k) { i[k] = num(inp && inp[k], DEFAULTS[k]); });
     var days = i.officers * i.visitDays, visits = days * i.visitsPerDay;
     var aiCap = i.dailyCap * 30 * K.won_per_call;
     var aiMonth = Math.min(visits * i.aiPerVisit, i.dailyCap * 30) * K.won_per_call;
+    var nationCapYear = aiCap * 12 * K.sigungu;  // 원고 [11]: 300회×44.6원×30일×12×227 ≈ 10.9억원(상한 사용, 유지보수 제외)
     var yearLow = aiMonth * 12 + K.maintenance_year_won[0], yearHigh = aiMonth * 12 + K.maintenance_year_won[1];
     var kmNaive = visits * (K.naive_km_per_day12 / 12), kmCut = kmNaive * i.saveRate;
     var co2Cut = i.kmPerL ? kmCut / i.kmPerL * K.co2_kg_per_L : 0;
-    return { input: i, days: days, visits: visits, aiCap: aiCap, aiMonth: aiMonth, yearLow: yearLow, yearHigh: yearHigh,
+    return { input: i, days: days, visits: visits, aiCap: aiCap, nationCapYear: nationCapYear, aiMonth: aiMonth, yearLow: yearLow, yearHigh: yearHigh,
       perHousehold: i.households ? [yearLow / i.households, yearHigh / i.households] : null,
       kmNaive: kmNaive, kmCut: kmCut, co2Cut: co2Cut, co2Year: co2Cut * 12 };
   }
   var COST_SRC = {
     co2: "출처: 한국석유관리원·충북대, 한국유화학회지 2016(33권 4호) — 국내 유통 휘발유 실측 기반 2.174 kgCO₂/L",
-    ai: "출처: Anthropic 가격표(2026-10-29 확인)·한국자금중개 매매기준율 2026-10-28 · 1회 토큰은 닿음 실측(AI 추천 20건)",
+    ai: "출처: Anthropic 가격표(2026-10-29 확인)·한국자금중개 매매기준율 2026-10-28(1,324.3원/$) · 1회 토큰은 닿음 실측(AI 추천 20건, 2026-11-02 측정 평균 입력 12,928·출력 782) → 1회 약 45원(44.6원)",
     km: "출처: 닿음 시연 재측정(가상 가구 12곳, 직선×1.3) — 방문 1곳당 명단 순 2.565km",
     hh: "출처: 행정안전부 주민등록 세대수 2026-09",
     mn: "산식 정본: 01_리서치/MN-D02_도입비용_탄소_추정.md"
@@ -52,6 +53,7 @@
     (kids || []).forEach(function (c) { if (c != null) e.appendChild(typeof c === "string" ? doc.createTextNode(c) : c); });
     return e;
   }
+  function eok(n) { return "약 " + (Math.round(n / 1e7) / 10).toLocaleString("ko-KR") + "억원"; }
   function won(n) { return n >= 10000 ? (Math.round(n / 1000) / 10).toLocaleString("ko-KR") + "만원" : Math.round(n).toLocaleString("ko-KR") + "원"; }
   function pct(r) { return (r * 100).toFixed(1) + "%"; }
   function tag(t, cls) { return h("span", { class: "d-tag " + (cls || "warn"), text: t }); }
@@ -98,9 +100,11 @@
     ]));
     out.appendChild(h("p", { class: "small" }, ["유지보수 연 200~500만원 ", tag("가정"), " 근거 없음 — 시범 운영 뒤 확정, 견적 아님."]));
     if (r.perHousehold) out.appendChild(h("p", { class: "small", text: "세대당 연 " + Math.round(r.perHousehold[0]) + "~" + Math.round(r.perHousehold[1]) + "원(추정, 규모 감각용)" }));
+    out.appendChild(h("p", { class: "small", text: "전국 시군구 " + K.sigungu + "곳이 모두 상한까지 쓰면 AI 운영비 연 " + eok(r.nationCapYear) + "(추정, 유지보수 제외)" }));
     out.appendChild(h("details", { class: "cost-how" }, [h("summary", { text: "산식 펼치기" }), h("ul", { class: "small" }, [
       "방문 건수/월 = 담당자 " + r.input.officers + " × 방문일 " + r.input.visitDays + " × 하루 " + r.input.visitsPerDay + " = " + r.visits + "건",
-      "AI 월 = min(방문 건수, 하루 상한 200×30) × 1회 32원 = " + won(r.aiMonth),
+      "AI 월 = min(방문 건수, 하루 상한 " + r.input.dailyCap + "회(전체)×30) × 1회 약 45원(44.6원, 11-02 측정) = " + won(r.aiMonth),
+      "운영비(최대) = 상한 " + won(r.aiCap) + "/월 × 12 × 전국 시군구 " + K.sigungu + "곳 ≈ " + eok(r.nationCapYear) + "/년(유지보수 제외)",
       "연 도입 = AI 월 × 12 + 유지보수 200~500만원(가정)",
       "명단 순 km/월 = 방문 건수 × 2.565km · 감소 km = × 단축률 " + Math.round(r.input.saveRate * 100) + "%",
       "CO₂ = 감소 km ÷ 연비 " + r.input.kmPerL + " × 2.174 kg/L"

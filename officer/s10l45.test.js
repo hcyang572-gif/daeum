@@ -1,5 +1,5 @@
 /* 닿음 S10l ④ 도입 비용·탄소 · ⑤ 다른 시군 바꿔 보기 시험 — 실행: node officer/s10l45.test.js (03_시제품 폴더에서)
-   ④ 기대값은 01_리서치/MN-D02_도입비용_탄소_추정.md §6(상주 기본값) 그대로. */
+   ④ 기대값은 MN-D02 §6(상주 기본값) — AI 1회·상한은 원고 [11](11-02 측정 44.6원·하루 300회)로 갱신. */
 "use strict";
 var assert = require("assert");
 var path = require("path");
@@ -11,11 +11,12 @@ function near(a, b, eps) { assert.ok(Math.abs(a - b) <= (eps || 0.05), a + " ≠
 
 console.log("④ 도입 비용·탄소(MN-D02)");
 var r = X.calc({});
-t("상주 기본값 = MN-D02 §6: 방문 960건 · AI 월 30,720원 · 상한 192,000원", function () {
-  assert.strictEqual(r.visits, 960); assert.strictEqual(r.aiMonth, 30720); assert.strictEqual(r.aiCap, 192000);
+t("상주 기본값 = MN-D02 §6: 방문 960건 · AI 월 42,816원 · 상한 401,400원(300회×44.6원×30)", function () {
+  assert.strictEqual(r.visits, 960); near(r.aiMonth, 42816, 0.01); near(r.aiCap, 401400, 0.01);
+  near(r.nationCapYear, 1093413600, 1); // 원고 [11] 약 10.9억원
 });
-t("연 도입 비용 약 237~537만원(유지보수 200~500만원 가정 포함)", function () {
-  assert.strictEqual(r.yearLow, 30720 * 12 + 2000000); assert.strictEqual(r.yearHigh, 30720 * 12 + 5000000);
+t("연 도입 비용 약 251~551만원(유지보수 200~500만원 가정 포함)", function () {
+  near(r.yearLow, 42816 * 12 + 2000000, 0.01); near(r.yearHigh, 42816 * 12 + 5000000, 0.01);
 });
 t("이동: 명단 순 2,462km → 20% 감소 492km, CO₂ 107.1kg/월(2.174 kg/L)", function () {
   near(r.kmNaive, 2462.4); near(r.kmCut, 492.48); near(r.co2Cut, 107.07, 0.01);
@@ -23,7 +24,7 @@ t("이동: 명단 순 2,462km → 20% 감소 492km, CO₂ 107.1kg/월(2.174 kg/L
 t("배출계수는 국내 실측 2.174(EPA 2.348 아님)", function () { assert.strictEqual(X.K.co2_kg_per_L, 2.174); assert.ok(/한국석유관리원/.test(X.COST_SRC.co2)); });
 t("시연 단축률 43%면 CO₂ 230.2kg/월", function () { near(X.calc({ saveRate: 0.43 }).co2Cut, 230.2, 0.1); });
 t("AI 비용은 하루 상한을 넘지 않음 · 이상한 입력은 기본값", function () {
-  assert.strictEqual(X.calc({ officers: 1000 }).aiMonth, 192000);
+  near(X.calc({ officers: 1000 }).aiMonth, 401400, 0.01);
   assert.strictEqual(X.calc({ officers: "abc", visitDays: -3 }).visits, 960);
 });
 
