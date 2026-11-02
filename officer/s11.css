@@ -381,3 +381,7 @@ body.s11-loading main > .tab { display: none !important; }
 @keyframes s11bump { 40% { transform: scale(1.35); } }
 @media (prefers-reduced-motion: reduce) { .sk, .nm-stop.pop, .s11-toast, .s11-req.bump { animation: none !important; } }
 @media print { .s11-toast, .s11-skel, .s11-nav, .s11-imp, #s11ImpMsg, .s11-live { display: none !important; } }
+
+/* S11-d 잔여 — 접힌 «자세히»(todayOld·reportMore·s11RecMore·출처 펼침) 안에 남은 옛 13px(.8125rem) 글자를 B 토큰 --t2(13.5px)로.
+   12px(--t1 과 같은 값)은 그대로 둔다. 크기만 바꾸고 칸·색은 건드리지 않는다. */
+body.of main details :is(.d-tag, .fno, .vn, .ch .exp, .lr-val, thead th), body.of main details .panel.real .small, body.of main details .a-map .cap > small { font-size: var(--t2); }
