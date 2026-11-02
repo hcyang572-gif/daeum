@@ -1,6 +1,6 @@
 /* 닿음 공무원 창구 기능 로직 ①~④ — S9b-1(⚙️ 파로, 2026-10-29)
    화면 그리기·CSS 없음. 순수 함수 위주이고 저장은 store.* 만 localStorage 를 만진다.
-   이름공간: window.DaeumFeatures (shared/report.js·citizen/progress.js 와 같은 이름공간을 함께 채운다).
+   이름공간: window.DaeumFeatures (shared/report.js·shared/progress.js 와 같은 이름공간을 함께 채운다).
    node 에서는 require("./features.js") 로 같은 객체를 받는다(features.test.js).
 
    ⛔ 원칙

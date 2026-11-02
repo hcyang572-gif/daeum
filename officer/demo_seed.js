@@ -11,7 +11,7 @@
   "use strict";
   var F = root.DaeumFeatures, REQ = root.DaeumRequests, C = root.DAEUM_CONFIG || {};
   if (!F || !F.util || !F.store) return;
-  var U = F.util, TAG = "S9j", VERSION = 5, FLAG = "daeum.demo.seededFor"; // v5(S11-d2): 정보원 명단 열(발굴순위·횟수·처리여부·발굴년월)·명단 밖 가구 메모 4건·확정 기록 2건도 깐다 · v4(S10n-2 O-08): 긴급 신호는 당일 기한이라 오늘 접수로 깐다 · v2: 읍면 배치(S10b) — 옛 남원동 가구 번호 기록을 지우고 다시 깐다 · v3(S10n O-04): 시연 기록 가구를 모두 발굴 명단(위기 정보가 있는 집) 안 가구로 바꿈
+  var U = F.util, TAG = "S9j", VERSION = 7, FLAG = "daeum.demo.seededFor"; // v7(S11-k 재구축): 신고 4건 걷어냄 · 발굴년월을 «열어 본 날» 기준(이번 차수 경과 56일 미만) · Q-033 AI 초기상담 안 닿음 · 방문 계획(1일차 = 지난 근무일, 2일차 = 그다음)·방문 결과 기록 · v6(S11-i): 신고는 «공무원 접수»(전화·통장·이웃 방문)·지난 차수 명단·이웃 탐문·주의 꼬리표·약속·사후관리(1·3·6개월)도 깐다 · v5(S11-d2): 정보원 명단 열(발굴순위·횟수·처리여부·발굴년월)·명단 밖 가구 메모 4건·확정 기록 2건도 깐다 · v4(S10n-2 O-08): 긴급 신호는 당일 기한이라 오늘 접수로 깐다 · v2: 읍면 배치(S10b) — 옛 남원동 가구 번호 기록을 지우고 다시 깐다 · v3(S10n O-04): 시연 기록 가구를 모두 발굴 명단(위기 정보가 있는 집) 안 가구로 바꿈
   // 가구 번호 머리글자 = 읍면 코드(data/tools/make_households.py SANGJU 순서)
   var AREA_OF = { A: "함창읍", B: "사벌국면", P: "공검면", Q: "이안면" };
   function areaOf(hid) { return AREA_OF[String(hid).charAt(0)] || ""; }
@@ -42,6 +42,11 @@
     F.store.set("outcomes", oc); F.store.set("followups", fu);
     lsSet(RKEY, (lsGet(RKEY, []) || []).filter(notSeed));
     [OUT_KEY, REC_KEY].forEach(function (k) { lsSet(k, (lsGet(k, []) || []).filter(notSeed)); });
+    // S11-i 새 저장소(시연 표시가 있는 것만 지움)
+    ["rounds", "neighborLog", "promises"].forEach(function (n) { F.store.set(n, (F.store.get(n, []) || []).filter(notSeed)); });
+    ["homeNotes", "afterThree"].forEach(function (n) { var o = F.store.get(n, {}) || {}; if (o.__seed === TAG) F.store.set(n, {}); });
+    // S11-k 방문 결과 기록(시연분만)
+    lsSet("daeum.visit.log", (lsGet("daeum.visit.log", []) || []).filter(notSeed));
   }
   var OUT_KEY = "daeum.officer.outside", REC_KEY = "daeum.officer.records", META_KEY = "daeum.s11.importMeta";
 
@@ -60,9 +65,9 @@
   // ① 시도 이력 → 재시도(오늘·내일·모레에 고르게 걸리도록 «영업일 전»으로 정의 — 규칙은 features.js suggestNext)
   var A = [
     att(1, "A-003", "phone", "no_answer", wd(1, 10, 20)),                           // 부재 1회 → 오늘 오후 재연락
-    att(2, "A-059", "ai", "no_answer", wd(1, 11, 0), "정보원 AI 초기상담 전화 안 닿음"), // AI 전화 안 닿음 → 오늘 방문
-    att(3, "P-013", "visit", "no_answer", wd(3, 10, 0)),
-    att(4, "P-013", "visit", "no_answer", wd(1, 14, 30), "현관에 우편물 쌓임"),        // 부재 2회 → 다음 영업일 저녁
+    att(2, "A-059", "ai", "no_answer", wd(1, 11, 0), "한국사회보장정보원 AI 초기상담 전화 안 닿음"), // AI 전화 안 닿음 → 오늘 방문
+    att(3, "P-013", "visit", "no_answer", wd(4, 10, 0)),
+    att(4, "P-013", "visit", "no_answer", wd(2, 10, 30), "현관에 우편물 쌓임"),        // 이번 차수 부재 2번 → 닿지 않음 +1 · 오후로
     att(5, "Q-032", "visit", "no_answer", wd(6, 10, 30)),
     att(6, "Q-032", "visit", "no_answer", wd(4, 15, 0)),
     att(7, "Q-032", "visit", "no_answer", wd(1, 18, 10), "저녁에도 불 꺼져 있음"),     // 방문 3회 부재 → 간접 확인 전환
@@ -88,35 +93,20 @@
   oc["LD-3"] = { result: "applied", at: cd(34, 10, 0), seed: TAG };
   F.store.set("outcomes", oc);
 
-  // ③ 주민 신호(가상) — 처리 기한(긴급 당일·일반 3영업일, 시연 설정)이 «오늘·내일·지남»에 걸리게
-  function rq(n, createdAt, o) {
-    var id = "REQ-" + U.ymd(createdAt).replace(/-/g, "") + "-S" + n;
-    return Object.assign({ v: 1, id: id, createdAt: createdAt, status: "new", region: areaOf(o.householdId), contactPref: "phone",
-      proxy: { isProxy: false, relation: "" }, subject: { age: null, ageBand: null, tags: [], childAges: [] }, summary: "", matched: [],
-      urgent: false, mode: "rules", demo: true, seed: TAG,
-      consent: { agreed: true, at: createdAt, text: "시연용 가상 요청(S9j 시연 기록)" },
-      history: [{ at: createdAt, status: "new", by: "citizen" }] }, o);
-  }
-  var t0 = wd(0, 8, 40), t4 = wd(4, 9, 30), t3 = wd(3, 11, 0);
-  var R = [
-    rq(1, t0, { householdId: "Q-002", signal: "neighbor", place: "골목 끝 파란 대문 집", contactPref: "visit",
-      proxy: { isProxy: true, relation: "이웃" }, subject: { tags: ["alone", "senior"] },
-      situation: "옆집 할머니 댁 우편물이 일주일째 쌓여 있고 밤에 불이 안 켜져요" }),
-    rq(2, wd(0, 8, 10), { householdId: "P-033", urgent: true, proxy: { isProxy: true, relation: "아들" }, subject: { tags: ["alone", "energy", "senior"] },
-      situation: "혼자 사시는 어머니 댁 보일러가 고장 났는데 가스비도 밀려서 당장 추우세요" }),
-    rq(3, t4, { householdId: "A-024", status: "seen", subject: { tags: ["unemployed", "housing"] },
-      situation: "공장 일을 그만두고 월세가 두 달 밀렸어요",
-      history: [{ at: t4, status: "new", by: "citizen" }, { at: t3, status: "seen", by: "officer", note: "연계 후보 확인" }] })
-  ];
-  lsSet(RKEY, (lsGet(RKEY, []) || []).filter(notSeed).concat(R));
+  // ③ (S11-k) 주민 신고 시연 4건은 걷어냈다(신고 접수 제거, 11-03 호창님). 옛 시연 신고는 clear() 가 지운다.
+  var t0 = wd(0, 8, 40);
+  // 이번 차수(발굴년월): 열어 본 날이 20일 이하면 지난달, 아니면 이번 달 → 1회 발굴 집의 경과일이 늘 56일 미만(처리 기한 축이 시연마다 흔들리지 않게)
+  var RYM = (function () { var d = new Date(now.getFullYear(), now.getMonth() - (now.getDate() <= 20 ? 1 : 0), 1); return d.getFullYear() + "-" + (d.getMonth() < 9 ? "0" : "") + (d.getMonth() + 1); })();
+  var PYM = (function () { var p = RYM.split("-"), d = new Date(+p[0], +p[1] - 2, 1); return d.getFullYear() + "-" + (d.getMonth() < 9 ? "0" : "") + (d.getMonth() + 1); })();
 
   // ④ S11-d2: 정보원 «발굴대상자 조회» 서식 열(시연 명단 data/demo_list.xlsx 9가구와 같은 값) — 명단을 불러오지 않아도 «정보원 N순위» 근거가 보이게.
   //    담당자가 실제 파일을 불러왔으면(seed 표시 없는 meta) 건드리지 않는다.
+  var L9C = [["A-009", 1], ["Q-033", 1], ["P-026", 1], ["P-033", 1], ["P-013", 1], ["B-015", 3], ["A-056", 2], ["B-059", 2], ["A-086", 1]]; // A1 차수 대조용(= 아래 시연 명단)
   var meta0 = lsGet(META_KEY, null);
   if (!meta0 || !Object.keys(meta0).length || meta0.__seed === TAG) {
     var M = { __seed: TAG }, L9 = [["A-009", 1, "미처리", 1], ["Q-033", 1, "미처리", 1], ["P-026", 1, "처리중", 0], ["P-033", 1, "미처리", 1], ["P-013", 1, "미처리", 1],
       ["B-015", 3, "처리중", 1], ["A-056", 2, "미처리", 1], ["B-059", 2, "미처리", 1], ["A-086", 1, "미처리", 1]];
-    L9.forEach(function (x, i) { M[x[0]] = { prio: String(i + 1), cnt: x[1], proc: x[2], lonely: !!x[3], child: false, ben: x[0] === "P-033" ? ["기초생계급여"] : [], hasBen: true, aiReq: "", aiRes: "", vars: "", ym: "2026-10" }; });
+    L9.forEach(function (x, i) { M[x[0]] = { prio: String(i + 1), cnt: x[1], proc: x[2], lonely: !!x[3], child: false, ben: x[0] === "P-033" ? ["기초생계급여"] : [], hasBen: true, aiReq: x[0] === "Q-033" ? "요청" : "", aiRes: x[0] === "Q-033" ? "안 닿음" : "", vars: "", ym: RYM }; });
     lsSet(META_KEY, M);
     lsSet("daeum.s11.import", { name: "시연용 가상 명단(발굴대상자 조회 서식).xlsx", n: 9, at: now.getTime(), demo: true });
   }
@@ -128,24 +118,94 @@
   }
   var O = [
     memo(1, "함창읍", "leader", ["우편물 쌓임", "난방 안 됨"], "not_in_list", cd(12, 15, 0), { addr: "경상북도 상주시 함창읍 가상리 140", place: "마을회관 뒤 파란 지붕",
-      match: { round: "2026-10", status: "not_in_list", listId: null, twice: false } }),
+      match: { round: RYM, status: "not_in_list", listId: null, twice: false } }),
     memo(2, "공검면", "field", ["거동 불편"], "in_list", cd(9, 11, 20), { addr: "경상북도 상주시 공검면 가상리 13", ageBand: "80대 이상",
-      match: { round: "2026-10", status: "in_list", listId: "P-013", listRank: "5", twice: false } }),
-    memo(3, "이안면", "request", ["우편물 쌓임", "불 꺼짐"], "registered", t0, { place: "골목 끝 파란 대문 집", requestId: R[0].id, alone: "모름" }),
+      match: { round: RYM, status: "in_list", listId: "P-013", listRank: "5", twice: false } }),
+    memo(3, "이안면", "field", ["우편물 쌓임", "불 꺼짐"], "registered", t0, { place: "골목 끝 파란 대문 집", alone: "모름" }),
     memo(4, "사벌국면", "neighbor", ["끼니 거름"], "referred", cd(19, 10, 0), { addr: "경상북도 상주시 사벌국면 가상리 210", referredAt: cd(5, 16, 0), alone: "예",
-      match: { round: "2026-10", status: "not_in_list", listId: null, twice: false } })
+      match: { round: RYM, status: "not_in_list", listId: null, twice: false } })
   ];
   lsSet(OUT_KEY, (lsGet(OUT_KEY, []) || []).filter(notSeed).concat(O));
 
   // ⑥ S11-d2: 확정한 상담 기록(행복이음 입력 순서) — 기록 화면이 비지 않게
   function rec(id, hid, at, needs, sum, svc, next) {
-    return { id: "RC-" + id, at: at, label: "가구 " + hid, area: areaOf(hid), seed: TAG,
+    return { id: "RC-" + id, at: at, householdId: hid, label: "가구 " + hid, area: areaOf(hid), seed: TAG,
       text: ["[행복이음 입력 초안 — 공무원 확정]", "주요 욕구: " + needs, "상담 요약: " + sum, "연계 후보: " + svc, "다음 할 일: " + next].join("\n") };
   }
   lsSet(REC_KEY, [
-    rec(1, "A-080", wd(2, 10, 40), "생계, 일자리", "실직 뒤 생활비 부족. 월세 두 달 밀림. 구직 의사 있음.", "긴급복지 생계지원, 국민취업지원제도", "신청서 안내 후 3영업일 뒤 전화 확인"),
+    rec(1, "A-080", wd(2, 10, 40), "생계, 일자리", "실직 뒤 생활비 부족. 월세 두 달 밀림. 구직 의사 있음.", "긴급복지 생계지원, 국민취업지원제도", "신청서 안내 후 3근무일 뒤 전화 확인"),
     rec(2, "P-017", cd(21, 11, 0), "에너지, 돌봄", "홀로 사는 84세. 난방비 부담·보일러 노후. 안부 확인 원함.", "에너지바우처, 노인맞춤돌봄서비스", "1개월 뒤 재방문(사후관리)")
   ].concat((lsGet(REC_KEY, []) || []).filter(notSeed)));
+
+  // ⑦ S11-i — 공무원 업무 도우미 보강(A1·A2·B2·C1·C2) 시연 데이터. 모두 가상, 이름·연락처·주소 없음
+  if (F.rounds) {
+    // A1 지난 차수(2026-09) ↔ 이번 차수(2026-10 = ④ 시연 명단 9가구): 새로 6 · 계속 3(발굴 2~3회째) · 빠짐 4(우리 기록으로 이유)
+    var cur = { ym: RYM, ids: L9C.map(function (x) { return x[0]; }), ranks: {}, cnts: {}, name: "시연용 가상 명단(발굴대상자 조회 서식).xlsx", seed: TAG };
+    L9C.forEach(function (x, i) { cur.ranks[x[0]] = String(i + 1); cur.cnts[x[0]] = x[1]; });
+    var prev = { ym: PYM, ids: ["B-015", "A-018", "A-056", "P-017", "B-059", "Q-017", "B-055"], ranks: { "B-015": "1", "A-018": "2", "A-056": "3", "P-017": "4", "B-059": "5", "Q-017": "6", "B-055": "7" }, cnts: {}, name: PYM + " 발굴대상자 조회(가상).xlsx", seed: TAG };
+    F.store.set("rounds", (F.store.get("rounds", []) || []).filter(notSeed).concat([prev, cur]));
+  }
+  if (F.visitTime) {
+    // A2 이웃 탐문 — Q-032(방문 3회 부재 → 간접 확인 단계) · P-013(부재 2회)
+    F.store.set("neighborLog", (F.store.get("neighborLog", []) || []).filter(notSeed).concat([
+      { id: "NB-1", householdId: "Q-032", at: wd(1, 18, 30), text: "옆집: 요즘 저녁 7시 넘어 들어오시는 것 같다, 낮엔 읍내 병원 다니심", seed: TAG },
+      { id: "NB-2", householdId: "P-013", at: wd(1, 14, 50), text: "앞집: 오후 늦게 4시쯤엔 집에 계심, 귀가 어두우셔서 문을 크게 두드려야 함", seed: TAG }]));
+    F.store.set("afterThree", { __seed: TAG, "Q-032": { tong: wd(0, 9, 10) } });
+  }
+  if (F.homeCard) {
+    // C1 주의 꼬리표(오늘 방문 집 위주)
+    F.store.set("homeNotes", { __seed: TAG, "P-013": ["개가 있음", "귀가 어두우심"], "A-009": ["오후에만 계심"], "Q-033": ["거동 불편"], "P-033": ["문 두드리기보다 전화 먼저"], "B-015": ["보호자 동석 원함"] });
+  }
+  if (F.promises) {
+    // C2 약속 — 오늘·지남·다음 주. 확정 기록(⑥)·지난 방문 때 한 약속
+    var nextMon = (function () { var d = U.startOfDay(now); d = new Date(d.getTime() + ((8 - d.getDay()) % 7 || 7) * 86400000); return U.ymd(d); })();
+    var pr = function (n, hid, text, kind, due, at) { return { id: "PR-S" + n, householdId: hid, label: "가구 " + hid, area: areaOf(hid), text: text, kind: kind, due: due, src: "상담 기록", at: at, done: false, doneAt: null, seed: TAG }; };
+    F.store.set("promises", (F.store.get("promises", []) || []).filter(notSeed).concat([
+      pr(1, "P-013", "에너지바우처 신청서 가져다 드리기", "doc", today, wd(2, 10, 0)),
+      pr(2, "A-080", "신청서 안내 후 3근무일 뒤 전화 확인", "call", U.ymd(U.addWorkdays(U.subWorkdays(now, 2), 3)), wd(2, 10, 40)),
+      pr(3, "B-015", "다음 주 월요일 보호자에게 전화 드리기", "call", nextMon, wd(3, 11, 0)),
+      pr(4, "Q-017", "노인맞춤돌봄 제공 시작했는지 알아봐 드리기", "check", U.ymd(U.subWorkdays(now, 2)), cd(12, 10, 0)),
+      pr(5, "A-009", "주거급여 서류 목록 큰 글씨로 드리기", "doc", today, wd(1, 16, 0))]));
+  }
+  // B2 사후관리 1·3·6개월 — 오늘 재확인 1집(LD-4), 6개월 차례 1집(LD-5, 1·3개월은 했음). 결정 확인된 연계만 더해 «연계 누락» 숫자는 그대로
+  F.store.set("links", (F.store.get("links", []) || []).concat([
+    link(4, "A-056", cd(37, 10, 0), ["노인맞춤돌봄서비스"]),
+    link(5, "B-059", cd(190, 14, 0), ["기초연금", "에너지바우처"])]));
+  var oc2 = F.store.get("outcomes", {}) || {}, fu2 = F.store.get("followups", {}) || {};
+  oc2["LD-4"] = { result: "decided", at: cd(30, 10, 0), seed: TAG };
+  oc2["LD-5"] = { result: "decided", at: cd(170, 10, 0), seed: TAG };
+  fu2["LD-5:m1"] = cd(140, 11, 0); fu2["LD-5:m3"] = cd(80, 11, 0);
+  F.store.set("outcomes", oc2); F.store.set("followups", fu2);
+
+  // ⑧ S11-k: 방문 계획(visit_plan 모양)과 방문 결과(visit_log 모양) — 계획은 2근무일 전 오후에 확정, 1일차 = 지난 근무일(5집 모두 다녀옴),
+  //    2일차 = 다음 근무일(4집 남음). 담당자가 직접 확정한 계획(seed 표시 없음)은 덮지 않는다. 메모는 모두 가상 문장(이름·주소·연락처 없음).
+  var PLAN_KEY = "daeum.visit.plan", LOG_KEY = "daeum.visit.log";
+  var d0 = U.subWorkdays(now, 2), d1 = U.subWorkdays(now, 1), d2 = U.addWorkdays(d1, 1);
+  function at(d, hh, mm) { var x = new Date(d); x.setHours(hh, mm || 0, 0, 0); return x.toISOString(); }
+  var plan0 = lsGet(PLAN_KEY, null);
+  if (!plan0 || plan0.seed === TAG) {
+    var DAY1 = [["P-033", 10, 48, 4], ["P-026", 11, 23, 3], ["Q-033", 13, 19, 2], ["A-009", 14, 0, 1], ["P-013", 14, 44, 5]],
+      DAY2 = [["B-015", 9, 46, 6], ["B-059", 10, 20, 8], ["A-086", 11, 9, 9], ["A-056", 13, 6, 7]];
+    var VR = { "A-009": 1, "Q-033": 2, "P-033": 3, "P-026": 4, "P-013": 5, "A-056": 6, "B-015": 7, "B-059": 8, "A-086": 9 };
+    var rows = [];
+    DAY1.forEach(function (x, i) { rows.push({ day: 1, seq: i + 1, household_no: x[0], planned_at: at(d1, x[1], x[2]), status: x[0] === "Q-033" ? "absent" : "done", list_rank: x[3], visit_rank: VR[x[0]] }); });
+    DAY2.forEach(function (x, i) { rows.push({ day: 2, seq: i + 1, household_no: x[0], planned_at: at(d2, x[1], x[2]), status: "planned", list_rank: x[3], visit_rank: VR[x[0]] }); });
+    lsSet(PLAN_KEY, { round_ym: RYM, ranked_at: at(d0, 16, 0), until: U.ymd(U.addWorkdays(d0, 7)), per_day: 5, rows: rows, seed: TAG });
+    function vl(n, hid, hh, mm, result, memo, tags) { return { id: "VL-S" + n, household_no: hid, at: at(d1, hh, mm), result: result, memo: memo, tags: tags || [], promises: [], seed: TAG }; }
+    lsSet(LOG_KEY, (lsGet(LOG_KEY, []) || []).filter(notSeed).concat([
+      vl(1, "P-033", 11, 12, "met", "통신비 3달 체납. 기초생활 수급 중. 통신비 감면 신청 방법을 안내함. 아들이 가끔 들른다고 함.", ["주거", "생계"]),
+      vl(2, "P-026", 11, 47, "met", "대출 연체로 독촉 전화가 잦음. 일거리가 줄어 소득이 줄었다고 함. 서민금융 상담 연결하기로.", ["생계"]),
+      vl(3, "Q-033", 13, 25, "absent", "부재. 현관 앞에 신문이 3일치 쌓여 있음.", []),
+      vl(4, "A-009", 14, 24, "met", "월세 2개월 밀림. 혼자 사심. 주거급여 신청을 안내하고 서류 목록을 큰 글씨로 드리기로.", ["주거"]),
+      vl(5, "P-013", 15, 8, "met", "보일러 안 돌아감, 가스비 3달 밀림. 무릎 아파 병원 못 감. 아들과 연락 뜸함. 에너지바우처 신청서 다음 주 화요일에 가져다 드리기로.", ["주거", "건강"])
+    ]));
+    if (F.promises) {
+      var pl = (F.store.get("promises", []) || []).map(function (p) { return p.id === "PR-S1" ? Object.assign({}, p, { done: true, doneAt: at(d1, 15, 8) }) : p; });
+      var tue = (function () { var x = U.startOfDay(d1); x = new Date(x.getTime() + ((9 - x.getDay()) % 7 || 7) * 86400000); return U.ymd(x); })();
+      pl.push({ id: "PR-S6", householdId: "P-013", label: "가구 P-013", area: "공검면", text: "에너지바우처 신청서 다음 주 화요일에 가져다 드리기", kind: "doc", due: tue, src: "방문 메모", at: at(d1, 15, 8), done: false, doneAt: null, seed: TAG });
+      F.store.set("promises", pl);
+    }
+  }
 
   lsSet(FLAG, { day: today, v: VERSION, at: now.toISOString() });
 })(typeof window !== "undefined" ? window : globalThis);

@@ -73,17 +73,16 @@ t("가상 주소 열쇠: «경상북도 상주시 함창읍 가상리 9» → �
   assert.strictEqual(S.addrKey("경상북도 상주시 사벌국면 가상리 15"), "사벌국면|15");
   assert.strictEqual(S.addrKey("경상북도 상주시 함창읍 무엇로 12"), "");
 });
-t("시연 명단 xlsx 있음·옛 CSV 없음·링크 두 곳이 xlsx", function () {
+t("시연 명단 xlsx 있음·옛 CSV 없음·공무원 화면 링크 두 곳(① 화면·계정 창)이 xlsx", function () {
   assert.ok(fs.existsSync(path.join(ROOT, "data/demo_list.xlsx"))); assert.ok(!fs.existsSync(path.join(ROOT, "data/demo_list.csv")));
-  var html = fs.readFileSync(path.join(ROOT, "officer/index.html"), "utf8"), js = fs.readFileSync(path.join(ROOT, "officer/s11c.js"), "utf8");
-  assert.ok(/data\/demo_list\.xlsx/.test(html) && /data\/demo_list\.xlsx/.test(js)); assert.ok(!/demo_list\.csv/.test(html + js));
+  var js = fs.readFileSync(path.join(ROOT, "officer/flow.js"), "utf8");
+  assert.strictEqual((js.match(/data\/demo_list\.xlsx/g) || []).length, 2); assert.ok(!/demo_list\.csv/.test(js));
 });
-t("특보 기본값 한파 · 감소율 48.3% 한 숫자 · 2028 문구 없음", function () {
+t("특보 기본값 한파 · 감소율은 «48.3%» 한 숫자만(새 흐름 화면에는 띄우지 않음) · 2028 문구 없음", function () {
   var A = JSON.parse(fs.readFileSync(path.join(ROOT, "data/alerts_demo.json"), "utf8"));
   assert.strictEqual(A.weather.active, "cold");
-  var html = fs.readFileSync(path.join(ROOT, "officer/index.html"), "utf8"), mount = fs.readFileSync(path.join(ROOT, "officer/mount.js"), "utf8");
-  assert.ok(/48\.3% 줄임/.test(html) && !/48% 줄임/.test(html) && !/본문 48\.3%/.test(html));
-  assert.ok(!/2028/.test(html + mount));
+  var html = fs.readFileSync(path.join(ROOT, "officer/index.html"), "utf8") + fs.readFileSync(path.join(ROOT, "officer/flow.js"), "utf8");
+  assert.ok(!/(^|[^.\d])48%/.test(html) && !/(43|46|41\.6)%/.test(html)); assert.ok(!/2028/.test(html));
 });
 
 (async function () {

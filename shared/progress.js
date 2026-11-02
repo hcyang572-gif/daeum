@@ -1,5 +1,5 @@
 /* 닿음 국민 창구 ⑥ 신청 준비물 체크리스트 · ⑦ 내 요청 진행 상황 — S9b-1(⚙️ 파로, 2026-10-29). 화면 그리기·CSS 없음.
-   이름공간 window.DaeumFeatures.checklist / .progress. 데이터: citizen/data/services.json(doc_sets·services[].docs·apply·contact·url),
+   이름공간 window.DaeumFeatures.checklist / .progress. 데이터: data/services.json(doc_sets·services[].docs·apply·contact·url),
    shared/requests.js(DaeumRequests — 같은 localStorage «daeum.requests»).
 
    ── S9b-2 마운트 약속 ─────────────────────────────────────────────

@@ -48,20 +48,18 @@ t("화면 출처 글 → 데이터 줄", function () {
   assert.deepStrictEqual(G.infer("AI 요약"), []);
 });
 t("정체성 문구 — 첫 화면 제목·설명에 «현장 업무 도우미», «발굴 도우미» 없음", function () {
-  ["index.html", "officer/index.html", "citizen/index.html", "shared/guide.js", "shared/data.html"].forEach(function (f) {
+  ["index.html", "officer/index.html", "shared/guide.js", "shared/data.html"].forEach(function (f) {
     var s = fs.readFileSync(path.join(ROOT, f), "utf8");
     assert.ok(!/발굴 도우미/.test(s), f);
   });
   var ix = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
   assert.ok(/<title>[^<]*복지 사각지대 현장 업무 도우미/.test(ix) && /name="description" content="[^"]*현장 업무 도우미/.test(ix));
 });
-t("두 창구·첫 화면이 안내 부품을 싣고 더보기에 사용 방법·활용 데이터", function () {
-  ["index.html", "officer/index.html", "citizen/index.html"].forEach(function (f) {
-    var s = fs.readFileSync(path.join(ROOT, f), "utf8");
-    assert.ok(/guide\.js/.test(s), f + " guide.js");
-    assert.ok(/data-guide="help"/.test(s), f + " 사용 방법");
-  });
-  ["officer/index.html", "citizen/index.html"].forEach(function (f) { assert.ok(/data-guide="data"/.test(fs.readFileSync(path.join(ROOT, f), "utf8")), f); });
+t("첫 화면이 안내 부품을 싣고 사용 방법 · 공무원 화면은 흐름 ①~⑨와 «활용 데이터» 링크(S11-k)", function () {
+  var s = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  assert.ok(/guide\.js/.test(s), "index.html guide.js"); assert.ok(/data-guide="help"/.test(s), "index.html 사용 방법");
+  assert.ok(/\.\.\/shared\/data\.html/.test(fs.readFileSync(path.join(ROOT, "officer/flow.js"), "utf8")), "공무원 화면 → 활용 데이터");
+  var g = fs.readFileSync(path.join(ROOT, "shared/guide.js"), "utf8"); assert.ok(/officer\/index\.html#s1/.test(g) && /officer\/index\.html#s9/.test(g) && !/#today|신고 접수/.test(g), "사용 방법 = 새 흐름");
 });
 
 console.log("\n결과: 통과 " + pass + " · 실패 " + fail);

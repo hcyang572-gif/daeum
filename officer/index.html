@@ -7,630 +7,70 @@
 <link rel="apple-touch-icon" href="../shared/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="닿음">
-<title>닿음 · 공무원 창구</title>
-<meta name="description" content="복지 사각지대 현장 업무 도우미 닿음 — 공무원 창구: 하루 방문 시각표·재시도·연계 누락·현황 보고서·명단 정리">
+<title>닿음 · 공무원 화면</title>
+<meta name="description" content="복지 사각지대 현장 업무 도우미 닿음 — 한국사회보장정보원 발굴 명단을 받은 날부터 방문·기록·보고·사후관리까지(담당 공무원 전용, 시연 가구는 모두 가상)">
 <meta name="color-scheme" content="light">
-<meta name="theme-color" content="#F3F5F4">
+<meta name="theme-color" content="#E6EBEA">
 <link rel="icon" href="../shared/icons/daeum.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../shared/tokens.css">
-<link rel="stylesheet" href="../shared/chart.css">
-<link rel="stylesheet" href="officer.css">
-<link rel="stylesheet" href="s11.css">
-<link rel="stylesheet" href="s11d2.css">
-<script src="../shared/switcher.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="flow.css">
 </head>
-<body class="of">
-<a class="skip" href="#main">본문으로 건너뛰기</a>
-<div class="d-aura" aria-hidden="true"></div>
-
-<!-- 메뉴(S10g 1안, 10-30 호창님 선택): 폰 아래 5칸 오늘·경로·연계 누락·가구·현황 / PC 옆 메뉴 7칸 두 묶음(하루 일 · 기록·현황).
-     다시 찾을 집·상담 기록은 폰에선 «가구» 안 전환(.seg)으로 들어간다. 더보기는 시연 설정만 -->
-<aside class="rail" aria-label="업무 메뉴">
-  <a class="logo" href="../index.html" aria-label="닿음 첫 화면으로"><i aria-hidden="true"></i>닿음</a>
-  <!-- S11-b(11-03, 시안 B): 메뉴 4칸 = 오늘 → 방문 → 기록 → 보고. 그 밖의 화면(재시도·연계 누락·명단 정리·가구 명단·비용·다른 시군)은 «보고 › 더 보기»·머리줄 «더 보기»에서(주소 그대로) -->
-  <nav class="tabs" aria-label="공무원 메뉴 — 업무 순서">
-    <a href="#today" data-tab="today" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><span><i class="step">1</i> 오늘</span> <em class="num" id="navToday"></em></a>
-    <a href="#route" data-tab="route" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.4-6-10.5a6 6 0 0 1 12 0C18 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/></svg><span><i class="step">2</i> 방문</span></a>
-    <a href="#record" data-tab="record" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span><i class="step">3</i> 기록</span></a>
-    <a href="#report" data-tab="report" data-h="selection"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-6"/></svg><span><i class="step">4</i> 보고</span></a>
-  </nav>
-  <a class="rail-data" href="#data" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg><span>데이터 활용</span></a>
-  <div class="me"><i aria-hidden="true">담</i><div><b>담당 주무관</b><span class="team" title="맞춤형복지팀 · 시연">맞춤형복지팀 · 시연</span></div>
-    <button type="button" class="d-round more-btn" data-sheet="moreMenu" aria-haspopup="dialog" aria-expanded="false" aria-label="더 보기 — 보조 기능·시연 설정" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button></div>
-</aside>
-
-<!-- 더 보기(S10o-2) — 보조 기능(가구 명단·상담 기록·AI 추천 검증·주민 화면) + 시연 설정. 기능은 지우지 않고 자리만 뒤로 -->
-<dialog id="moreMenu" class="d-sheet" aria-labelledby="moreH">
-  <div class="sh-h"><h2 id="moreH">더 보기</h2><button type="button" class="d-round" data-close aria-label="닫기"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-  <p class="sh-grp">보조 기능</p>
-  <ul>
-    <li><a class="sh-i" href="#contacts"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg><span>다시 찾을 집 · 재시도 일정<small>부재 뒤 다음 시도 제안 · 3번 허탕이면 이웃 확인</small></span></a></li>
-    <li><a class="sh-i" href="#intake"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8M8 4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/><path d="m9 12 2 2 4-4M9 17h6"/></svg><span>명단 정리<small>지난 비해당 표시 · 확인만 할 집 / 다시 볼 집</small></span></a></li>
-    <li><a class="sh-i" href="#list"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>가구 명단<small>방문 순서를 정한 근거 · 경로에 담기</small></span></a></li>
-    <li><a class="sh-i" href="#record"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>상담 기록<small>행복이음에 옮길 초안 · 받아쓰기(가교)</small></span></a></li>
-    <li><a class="sh-i" href="#cost"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/></svg><span>도입 비용·탄소 계산<small>AI 월 비용·유지보수(가정)·이동·CO₂ 추정</small></span></a></li>
-    <li><a class="sh-i" href="#region"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg><span>다른 시군으로 바꿔 보기<small>경북 22개 시군 공개 통계로 읍면동·수급·서비스</small></span></a></li>
-    <li><a class="sh-i" href="../shared/ai_check.html"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>AI 추천 검증<small>가상 사연 20건 측정 결과</small></span></a></li>
-    <li><a class="sh-i" href="../citizen/index.html"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span>주민 화면<small>이웃·도움 알리기(주민 신호 입구)</small></span></a></li>
-  </ul>
-  <p class="sh-grp">안내</p>
-  <ul>
-    <li><button type="button" class="sh-i" data-guide="help" data-guide-side="officer" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span>사용 방법<small>화면별 그림 · 공무원·주민</small></span></button></li>
-    <li><button type="button" class="sh-i" data-guide="data" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg><span>활용 데이터<small>공공데이터 9종 · 가상 데이터 · 출처</small></span></button></li>
-    <li><button type="button" class="sh-i" data-guide="intro" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></svg><span>닿음 소개<small>짧은 소개 4장</small></span></button></li>
-  </ul>
-  <p class="sh-grp">시연 설정</p>
-  <ul>
-    <li><a class="sh-i" href="?demo=reset#today" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/></svg><span>시연 초기화<small>담기·앞에 두기·특보 선택을 기본값으로(발표 전 한 번)</small></span></a></li>
-    <li><button type="button" class="sh-i" id="btnDemoReq" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0"/><circle cx="12" cy="12" r="1"/><path d="M12 13v7"/></svg><span>시연용 주민 신호 1건 넣기<small>주민 창구가 없을 때 흐름 확인용</small></span></button></li>
-  </ul>
-</dialog>
-
-<div class="work">
-  <div id="netguard" class="netguard" data-offline="인터넷에 연결되어 있지 않습니다. 명단·기록은 이 기기에 그대로 남고, AI 요약·지도·도로 경로는 연결되면 다시 됩니다." hidden></div>
-  <span hidden><em id="navGap"></em><em id="navRevisit"></em><em id="navIntake"></em><em id="navList"></em></span>
-  <header class="top">
-    <div class="ttl">
-      <p class="cnum" id="pageKicker">복지 사각지대 현장 업무 도우미</p>
-      <h1 id="pageTitle">오늘</h1>
-    </div>
-    <div class="mode" id="aiMode"></div>
-    <button type="button" class="s11-info" id="s11Info" aria-label="이 화면에 쓰인 데이터" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></svg></button>
-    <button type="button" class="d-round more-btn ph-only" data-sheet="moreMenu" aria-haspopup="dialog" aria-expanded="false" aria-label="더 보기 — 보조 기능·시연 설정" data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button>
-  </header>
-
-  <p class="virtual"><span class="d-tag warn">가상</span> 가구·좌표·문의는 모두 <b>가상 데이터</b>(실제 주민 0명) · 읍면동 이름과 통계만 공개 자료입니다.</p>
-
-  <main id="main">
-    <!-- S11-c 상태 화면: 불러오는 중(스켈레톤 1.4초 반짝임) — 첫 화면이 그려지면 s11c.js 가 숨긴다. ?state=loading|empty|error 로 바꿔 보기 -->
-    <div id="s11Boot" class="s11-state s11-skel" role="status" aria-live="polite"><span class="sr">화면 자료를 불러오는 중입니다</span>
-      <i class="sk sk-t"></i><i class="sk sk-h"></i><div class="sk-row"><i class="sk sk-c"></i><i class="sk sk-c"></i><i class="sk sk-c"></i></div><i class="sk sk-b"></i><i class="sk sk-b"></i>
-    </div>
-    <!-- ① 오늘 — 하루 한 장(S10b 시안 A): 동선 1장이 주인공, 오른쪽에 다시 찾을 집·연계 누락. ⚙️ 파로 features.js·mount.js 가 data-slot 을 채운다 -->
-    <!-- S11-b 첫 화면(시안 B «intro»): 출처 꼬리표 → 제목 → AI 두 줄 → 숫자 셋 → 단추 하나. 숫자는 s11.js 가 실제 자료로 채운다 -->
-    <section id="tab-home" class="tab s11" hidden>
-      <div class="vg">
-        <div class="col">
-          <span class="tagline"><i class="mk api"></i>한국사회보장정보원 공공데이터 활용</span>
-          <h2 class="hero2">위기가구 명단 이후<br><em>현장 업무</em> 도우미</h2>
-          <p class="sm">방문 순서 · 서비스 후보 · 상담 기록 · 보고</p>
-          <div class="ai2" aria-label="AI 기능">
-            <div><span class="ab">AI</span><span><b>사연·상담 내용 → 복지서비스 후보</b><span>정보원 복지서비스 <span class="s11-svcn">369</span>건 안에서 선택, 근거 표시</span></span></div>
-            <div><span class="ab">AI</span><span><b>상담 내용 → 행복이음 입력 초안</b><span>공무원 확인·확정 후 복사</span></span></div>
-          </div>
-          <button type="button" class="s11-btn" data-tour-start>1분 둘러보기</button>
-          <div class="hlinks"><a class="s11-lnk" href="#today">바로 시작</a><a class="s11-lnk" href="#data"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg>데이터 활용</a></div>
-        </div>
-        <div class="col">
-          <button type="button" class="stat stg" style="--i:0" data-card="svc"><div><b>복지서비스</b><span><i class="mk api"></i>정보원 중앙부처·지자체</span></div><em class="s11-svcn">369</em></button>
-          <button type="button" class="stat stg" style="--i:1" data-card="d5"><div><b>상주 기초생계급여 수급가구</b><span><i class="mk file"></i>정보원 수급권자 현황 · <span id="s11RcpMonth">2025-12</span></span></div><em id="s11Rcp">3,868</em></button>
-          <button type="button" class="stat stg" style="--i:2" data-card="list"><div><b>오늘 방문할 집</b><span><i class="mk virt"></i>발굴관리시스템 명단 형식 · 가상</span></div><em class="s11-todayn">9</em></button>
-          <div class="steps" aria-label="업무 순서"><a href="#today"><i>1</i>오늘</a><hr><a href="#route"><i>2</i>방문</a><hr><a href="#record"><i>3</i>기록</a><hr><a href="#report"><i>4</i>보고</a></div>
-          <span class="s11-xs">가구·좌표·상담은 가상 데이터(실제 주민 0명) · 통계와 서비스 목록은 공공데이터</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- S11-b 데이터 활용(시안 B «data»): 데이터 → 닿음이 하는 일 → 얻는 것. 넓은 화면은 곡선 연결(s11.js) -->
-    <section id="tab-data" class="tab s11" hidden>
-      <div class="col">
-        <h2 class="h1">닿음이 쓰는 데이터</h2>
-        <p class="sm">데이터를 누르면 쓰이는 곳과 카드가 표시됩니다.</p>
-        <div class="dflow" id="s11Flow"><svg class="links" aria-hidden="true"></svg></div>
-        <span class="s11-xs"><i class="mk api"></i> OpenAPI(실제) &nbsp; <i class="mk file"></i> 파일(실제) &nbsp; <i class="mk virt"></i> 가상 &nbsp; <i class="mk soon"></i> 확장 예정</span>
-      </div>
-    </section>
-
-    <section id="tab-today" class="tab" data-feature="today" hidden>
-      <!-- S11-b 오늘(시안 B): 진행 고리 + 할 일 3줄 + «방문 시작». PC는 숫자 칸 4개. 값은 s11.js 가 기존 칸(kpi*)에서 옮긴다 -->
-      <div class="s11" id="s11Today">
-        <div class="kpis4" aria-label="오늘 숫자">
-          <a class="kpi4" href="#route"><span>오늘 방문</span><b><span class="s11-done">0</span><small> / <span class="s11-todayn">9</span>곳</small></b><small>방문 화면에서 도착 표시</small></a>
-          <a class="kpi4" href="#contacts"><span>다시 찾을 집</span><b class="s11-rev">—</b><small>지난 부재 · 재시도</small></a>
-          <a class="kpi4" href="#board"><span>연계가 멈춘 집</span><b class="s11-gap">—</b><small>안내 뒤 신청 전</small></a>
-          <a class="kpi4" href="#moreToday" data-open-more><span>주민 신호</span><b class="s11-req">—</b><small>처리 중 신고(확인 전·확인함)</small></a>
-        </div>
-        <div class="vg">
-          <div class="col">
-            <p class="sm" id="s11Date"></p>
-            <h2 class="h1">오늘 방문할 집 <em><span class="s11-todayn">9</span>곳</em></h2>
-            <div class="ring no-pc"><svg width="128" height="128" viewBox="0 0 128 128" aria-hidden="true"><circle cx="64" cy="64" r="54" fill="none" stroke="#ECF0EE" stroke-width="10"/><circle class="arc" id="s11Arc" cx="64" cy="64" r="54" fill="none" stroke="#17594F" stroke-width="10" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3"/></svg><div class="c"><b class="s11-done">0</b><span>/ <span class="s11-todayn">9</span> 방문 완료</span></div></div>
-            <a class="s11-btn" href="#route" data-h="medium" id="s11Start">방문 시작</a>
-            <!-- S11-c 명단 불러오기: 행복이음에서 내려받은 엑셀·CSV를 이 브라우저 안에서만 읽는다(서버 전송 0) -->
-            <div class="s11-imp">
-              <label class="s11-lnk s11-impbtn" for="s11File"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M5 15v4h14v-4"/></svg>명단 불러오기(엑셀·CSV)</label>
-              <input type="file" id="s11File" accept=".csv,.xlsx,.xls,text/csv" class="sr">
-              <a class="s11-lnk s11-demo" href="../data/demo_list.xlsx" download="닿음_시연용_가상명단(발굴대상자 조회 서식).xlsx">시연용 가상 명단 받기</a>
-            </div>
-            <p class="s11-xs" id="s11ImpMsg" role="status" aria-live="polite">파일은 이 기기 브라우저 안에서만 읽습니다(서버로 보내지 않음).</p>
-            <span class="s11-xs" id="s11Wx"><button type="button" class="s11-di" data-card="wx" aria-label="데이터 카드"><i class="mk virt"></i></button>특보 시나리오에 따라 홀로 사는 75세 이상 가구 순서를 앞당깁니다 · 가상</span>
-          </div>
-          <div class="col s11-tmap" aria-label="오늘 방문 경로">
-            <div class="card tmap-card"><div id="s11TodayMap" class="tmap" role="img" aria-label="네이버 지도 — 오늘 방문 순서 번호와 경로(가상 가구)"></div>
-              <ol class="tline" id="s11TLine"></ol>
-              <span class="s11-xs">경로는 직선×1.3 근사 · 도로 기준 시간은 방문 화면 · 가구 위치는 가상</span></div>
-          </div>
-          <div class="col">
-            <span class="lbl2">할 일</span>
-            <ul class="inbox">
-              <li class="stg" style="--i:0"><a href="#contacts"><i class="w"></i><span><b>다시 찾을 집</b><small>부재 뒤 다음 시도 시간 제안</small></span><em class="s11-rev">—</em></a></li>
-              <li class="stg" style="--i:1"><a href="#board"><i class="r"></i><span><b>연계가 멈춘 집</b><small>안내 뒤 신청 확인이 필요한 집</small></span><em class="s11-gap">—</em></a></li>
-              <li class="stg" style="--i:2"><a href="#moreToday" data-open-more><i></i><span><b>처리 중 주민 신호</b><small>주민 창구에서 들어온 신고 · 확인 전 포함</small></span><em class="s11-req">—</em></a></li>
-            </ul>
-            <p class="s11-live s11-xs" data-mode="off" role="status"><i aria-hidden="true"></i><span>주민 신호 연결 확인 중</span><br>다른 기기 신호는 신호 종류·읍면동·번호만 옵니다</p>
-            <span class="s11-xs"><button type="button" class="s11-di" data-card="list" aria-label="데이터 카드"><i class="mk virt"></i></button>명단은 발굴관리시스템 명단 형식의 가상 가구</span>
-          </div>
-        </div>
-      </div>
-      <details class="s11-more" id="s11TodayCards"><summary data-h="light">주 기능 세 가지 · 공공데이터 출처</summary><div class="in">
-      <!-- S10p-2(10-30 A안): 첫 화면 = «공공데이터 → 닿음 → 현장 개선» 띠 1장 + 주 화면 3카드. 숫자는 officer/front.js 가 채운다. 옛 «오늘» 내용은 아래 «자세히»에 접어 둔다(기능 그대로) -->
-      <section class="pd-band d-card" aria-labelledby="pdH">
-        <h2 id="pdH">닿음이 쓰는 공공데이터 6묶음</h2>
-        <ul class="pd-chips" aria-label="닿음이 쓰는 공공데이터 6묶음">
-          <li class="pd-chip c-wx"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="13" r="6"/><path d="M6 26h20"/></svg><b>기상청</b><span>기상특보</span></li>
-          <li class="pd-chip c-house"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 15 16 6l11 9v11H5Z"/><path d="M13 26v-6h6v6"/></svg><b>국토교통부</b><span>건축물대장</span></li>
-          <li class="pd-chip c-med"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="6" y="6" width="20" height="20" rx="5"/><path d="M16 11v10M11 16h10"/></svg><b>국립중앙의료원</b><span>병원·약국</span></li>
-          <li class="pd-chip c-pop"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="11" r="4"/><circle cx="22" cy="13" r="3"/><path d="M4 26c1-6 13-6 14 0M17 26c1-4 9-4 10 0"/></svg><b>행정안전부</b><span>인구·세대</span></li>
-          <li class="pd-chip c-svc"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="7" y="5" width="18" height="22" rx="3"/><path d="M11 12h10M11 17h10M11 22h6"/></svg><b>사회보장정보원</b><span>복지서비스</span></li>
-          <li class="pd-chip c-rcp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 26V16M13 26V9M20 26v-7M27 26V12"/></svg><b>사회보장정보원</b><span>수급권자 현황</span></li>
-        </ul>
-        <!-- 선: 띠 6칸 → 주 화면 3카드(①시각표 ← 기상·건축·의료·인구 / ②연계 누락 ← 복지서비스·수급 / ③현황 ← 인구·수급) -->
-        <svg class="pd-flow" viewBox="0 0 1200 56" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M100 0C100 32 200 24 200 56"/><path d="M300 0C300 32 200 24 200 56"/><path d="M500 0C500 32 200 24 200 56"/><path d="M700 0C700 32 200 24 200 56"/>
-          <path d="M700 0C700 32 1000 24 1000 56"/><path d="M900 0C900 32 600 24 600 56"/><path d="M1100 0C1100 32 600 24 600 56"/><path d="M1100 0C1100 32 1000 24 1000 56"/>
-        </svg>
-        <details class="pd-srcd"><summary data-h="light"><span class="d-tag pub">공공데이터</span> 출처 9종 · 가구는 모두 <span class="d-tag warn">가상</span></summary>
-          <p class="pd-src">출처: 공공데이터포털 15000415(기상청 기상특보) · 15134735(국토교통부 건축물대장) · 15000736·15000576(국립중앙의료원 병·의원·약국) · 15097972·15097974(행정안전부 인구·세대, 기준 2026-09-30) · 15090532·15108347(한국사회보장정보원 복지서비스) · 15062448(한국사회보장정보원 수급권자 현황, 기준 2025-12)</p></details>
-      </section>
-
-      <div class="pd-cards">
-        <article class="pd-card d-card" aria-labelledby="pd1">
-          <h3 id="pd1"><i aria-hidden="true">1</i>하루 방문 시각표</h3>
-          <p>특보·홀로 사는 어르신·오래된 집을 반영해 오늘 갈 순서와 시각을 한 장으로.</p>
-          <div class="pd-ba">
-            <figure><svg viewBox="0 0 100 84" role="img" aria-label="명단 순서대로 다니면 동선이 엉킨 그림"><path class="bad" d="M10 70 80 15 20 30 75 70 30 12 88 50"/><g class="dots off"><circle cx="10" cy="70" r="4"/><circle cx="80" cy="15" r="4"/><circle cx="20" cy="30" r="4"/><circle cx="75" cy="70" r="4"/><circle cx="30" cy="12" r="4"/><circle cx="88" cy="50" r="4"/></g></svg><figcaption>명단 순서대로</figcaption></figure>
-            <span class="ar" aria-hidden="true">→</span>
-            <figure><svg viewBox="0 0 100 84" role="img" aria-label="읍면별로 묶어 한 바퀴로 도는 그림"><path class="good" d="M10 70 20 30 30 12 80 15 88 50 75 70"/><g class="dots"><circle cx="10" cy="70" r="4"/><circle cx="20" cy="30" r="4"/><circle cx="30" cy="12" r="4"/><circle cx="80" cy="15" r="4"/><circle cx="88" cy="50" r="4"/><circle cx="75" cy="70" r="4"/></g></svg><figcaption>읍면 묶어 한 바퀴</figcaption></figure>
-          </div>
-          <p class="pd-num" id="fGain">이동 거리를 줄이는 순서로 묶습니다 <span class="d-tag warn">가상</span></p>
-          <p class="pd-sub" id="fWx" hidden></p>
-          <a class="pd-line" href="#contacts" id="fRevisit" data-h="light">다시 찾을 집 <b class="num" id="fRevisitN">—</b>곳 <span class="d-tag warn">가상</span></a>
-          <a class="d-btn d-btn-p pd-go" href="#route" data-h="medium">오늘 시각표 보기</a>
-        </article>
-        <article class="pd-card d-card" aria-labelledby="pd2">
-          <h3 id="pd2"><i aria-hidden="true">2</i>연계 누락</h3>
-          <p>안내하고 멈춘 집을 빨간 점으로 — 다음 할 일 하나만 보여 줍니다.</p>
-          <div class="pd-ba">
-            <figure><svg viewBox="0 0 100 84" role="img" aria-label="흩어진 메모 그림"><g class="memo"><rect x="8" y="10" width="40" height="28" rx="4"/><rect x="52" y="20" width="40" height="28" rx="4"/><rect x="24" y="46" width="40" height="28" rx="4"/></g></svg><figcaption>흩어진 메모</figcaption></figure>
-            <span class="ar" aria-hidden="true">→</span>
-            <figure><svg viewBox="0 0 100 84" role="img" aria-label="신호·상담·안내·신청 줄기에서 멈춘 곳이 빨간 점인 그림"><path class="good" d="M10 42h80"/><g class="dots"><circle cx="12" cy="42" r="6"/><circle cx="37" cy="42" r="6"/><circle cx="88" cy="42" r="6"/></g><circle class="stop" cx="63" cy="42" r="8"/><circle class="ring" cx="63" cy="42" r="13"/></svg><figcaption>신호·상담·안내·신청</figcaption></figure>
-          </div>
-          <p class="pd-num">멈춘 집 <b class="num" id="fGap">—</b>곳 <span class="d-tag warn">가상</span></p>
-          <a class="d-btn d-btn-p pd-go" href="#board" data-h="medium">멈춘 집 보기</a>
-        </article>
-        <article class="pd-card d-card" aria-labelledby="pd3">
-          <h3 id="pd3"><i aria-hidden="true">3</i>현황 · 보고</h3>
-          <p>읍면 위험을 한눈에, 보고서는 한글·엑셀로.</p>
-          <p class="pd-rh">고독사 위험 높은 읍면 <span class="d-tag pub">공공데이터</span></p>
-          <ol class="pd-risk" id="fRisk" aria-label="고독사 위험도 높은 읍면 2곳(공공데이터, 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
-          <p class="pd-num" id="fRecip" hidden></p>
-          <details class="pd-srcd" id="fRiskSrcD" hidden><summary data-h="light" id="fRiskSum">출처 · 기준일</summary><p class="pd-src" id="fRiskSrc"></p></details>
-          <a class="d-btn d-btn-p pd-go" href="#report" data-h="medium">이번 차수 현황</a>
-        </article>
-      </div>
-      </div></details>
-
-      <details class="today-old d-card" id="todayOld">
-        <summary data-h="light">자세히 — 오늘 동선·특보·무반응 신호·명단 정리</summary>
-        <div class="to-body" id="todayOldBody">
-      <div class="today-hero">
-        <div><p class="d"><span id="todayDate"></span> · 오늘 찾아갈 집</p>
-          <div class="today-num"><div id="todayRing" class="ch-box"></div><div class="n bignum" id="todayCount" aria-live="polite">0<small>가구</small></div></div></div>
-        <div class="acts">
-          <a class="d-btn d-btn-s" href="#route" data-h="medium"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l8 10h4M4 17h4l2.5-3M14 10l2-3h4M18 5l2 2-2 2M18 15l2 2-2 2"/></svg>순서 다시 짜기 · 지도</a>
-        </div>
-      </div>
-
-      <!-- S10h ⑧·②: 무반응 신호(협약 시, 가상)·폭염·한파 특보(시연 시나리오) — mount.js 가 채운다. 없으면 비어 있음 -->
-      <div id="todayAlerts" data-slot="alerts"></div>
-
-      <div class="a-grid">
-        <article class="d-card a-route d-rise" style="--d:1" aria-labelledby="h-route">
-          <div class="a-map d-silk" data-silk="night">
-            <svg id="todayArt" class="art" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
-            <div class="cap"><h3 id="h-route"><span class="fno" aria-hidden="true">①</span>하루 방문 시각표</h3><span class="num km" id="todayKm"></span><small id="todayMeta">방문 순서 · 시각표 · 1장 인쇄</small></div>
-          </div>
-          <div class="a-list">
-            <a class="sig" href="#moreToday" id="sigLine" data-h="light"><span class="dot" aria-hidden="true"></span><span class="grow"><b>새 주민 신호 <span class="num" id="kpiReq">—</span>건</b> · 기한 임박 <span class="num" id="kpiDue">—</span>건</span><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
-            <div id="todayRoute" data-slot="route"><p class="d-slot">담은 가구로 방문 순서를 묶는 중입니다.</p></div>
-          </div>
-        </article>
-        <div class="a-side">
-          <article class="d-card side d-rise" style="--d:2" aria-labelledby="h-rev">
-            <div class="ch"><h3 id="h-rev"><span class="fno" aria-hidden="true">②</span>다시 찾을 집</h3><span class="c num" id="kpiRevisit">—</span><a class="link" href="#contacts" data-h="light">모두<span class="sr"> 보기 — 닷새치 재시도 일정</span><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
-              <span class="exp">다음 시도 제안 · 3번 허탕이면 이웃·통반장 확인 순서</span></div>
-            <ol class="slot-list" id="todayRevisit" data-slot="revisit"><li class="d-slot">재시도 일정을 불러오는 중입니다.</li></ol>
-          </article>
-          <article class="d-card side d-rise" style="--d:3" aria-labelledby="h-gap">
-            <div class="ch"><h3 id="h-gap"><span class="fno" aria-hidden="true">③</span>연계 누락</h3><span class="c num" id="kpiGap">—</span><a class="link" href="#board" data-h="light">보드<span class="sr"> 열기 — 연계 누락 보드</span><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
-              <span class="exp">상담 → 안내 → 신청 → 결정에서 멈춘 집</span></div>
-            <ol class="gap-steps" id="todayGaps" data-slot="gaps"><li class="d-slot">멈춘 단계를 찾는 중입니다.</li></ol>
-          </article>
-        </div>
-      </div>
-
-      <!-- S10o-2: 오늘 = 주 기능 ①~④의 «오늘 몫» 입구 + ⑤ 명단 정리 바로가기. ⚙️ mount.js 가 채운다 -->
-      <div class="a-duo">
-        <article class="d-card side d-rise" style="--d:4" aria-labelledby="h-rep">
-          <div class="ch"><h3 id="h-rep"><span class="fno" aria-hidden="true">④</span>현황 · 보고</h3><span class="c num" id="kpiRound">—</span><a class="link" href="#report" data-h="light">보고서<span class="sr"> 열기 — 현황·보고서</span><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
-            <span class="exp">차수 마감까지 남은 날 · 하루 처리량</span></div>
-          <div id="todayReport" data-slot="report"><p class="d-slot">차수 진도를 계산하는 중입니다.</p></div>
-        </article>
-        <article class="d-card side d-rise" style="--d:5" aria-labelledby="h-int">
-          <div class="ch"><h3 id="h-int"><span class="fno" aria-hidden="true">⑤</span>명단 정리</h3><span class="c num" id="kpiIntake">—</span><a class="link" href="#intake" data-h="light">열기<span class="sr"> — 명단 정리 입구</span><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
-            <span class="exp">받은 명단 → 지난 비해당 표시 → 확인만 할 집 / 다시 볼 집</span></div>
-          <div id="todayIntake" data-slot="intake"><p class="d-slot">아직 정리한 명단이 없습니다.</p></div>
-        </article>
-      </div>
-
-      <!-- 오늘 카드 10장 → 3장: 새 신호·기한·미리 정리한 일은 접어 둔다(기능 그대로) -->
-      <details class="today-more d-card" id="moreToday">
-        <summary data-h="light">새 주민 신호 · 기한 · 닿음이 미리 정리한 일</summary>
-        <div class="tm-body">
-          <section aria-labelledby="h-req"><h3 id="h-req"><span class="d-tag acc">신호</span>새로 들어온 주민 신호</h3>
-            <ol class="slot-list" id="todayRequests" data-slot="requests"><li class="d-slot">새 신호를 불러오는 중입니다.</li></ol></section>
-          <section aria-labelledby="h-due"><h3 id="h-due"><span class="d-tag warn">기한</span>기한이 다가오는 일</h3>
-            <ol class="slot-list" id="todayDue" data-slot="due"><li class="d-slot">처리 기한을 계산하는 중입니다.</li></ol></section>
-          <section class="tl" aria-labelledby="h-auto"><h3 id="h-auto">닿음이 미리 정리한 일</h3>
-            <ol class="slot-list" id="todayAuto" data-slot="auto"><li class="d-slot">정리한 일을 불러오는 중입니다.</li></ol></section>
-        </div>
-      </details>
-        </div>
-      </details>
-    </section>
-
-    <!-- ② 가구 명단 -->
-    <section id="tab-list" class="tab" hidden>
-      <nav class="seg" aria-label="보조 화면 전환"><a href="#list" data-seg="list" data-h="light">가구 명단</a><a href="#record" data-seg="record" data-h="light">상담 기록</a></nav>
-      <div class="bar d-card list-bar">
-        <!-- 폰(860px 이하)은 접힌 «거르기·담기» 한 단추, PC는 펼친 그대로 -->
-        <details class="fold">
-          <summary data-h="light"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>거르기·담기</summary>
-          <div class="fold-body">
-            <label>읍면동 <select id="fArea"><option value="">전체</option></select></label>
-            <label>표시 <select id="fTop"><option>15</option><option selected>30</option><option>60</option><option value="300">전체</option></select></label>
-            <label>경로에 담을 수 <input id="fPick" type="number" min="1" max="30" value="9"></label>
-            <button id="btnPickTop" class="ghost" data-h="light">앞 순서로 다시 담기</button>
-          </div>
-        </details>
-        <span class="spacer"></span>
-        <a class="ghost btnlike" href="#record" data-h="light">상담 기록 남기기</a>
-        <a class="ghost btnlike" href="#route" data-h="light">방문 경로 보기</a>
-      </div>
-      <div class="households" data-feature="households" id="householdsSignals"></div>
-      <p class="src-line"><span class="d-tag acc">출처</span>한국사회보장정보원 발굴 명단(행복이음 통보) 모양을 본뜬 시연용 <b>가상</b> 데이터 · 위험 판단은 정보원 명단 그대로, 닿음은 방문 순서 근거만 붙입니다</p>
-      <div class="summary" id="listSummary"></div>
-      <div class="tbl d-card">
-        <table class="grid" id="listTable">
-          <caption class="sr">발굴 가구 명단(가상) — 방문 순서를 정한 근거, 최종 순서는 담당자</caption>
-          <thead><tr><th scope="col">담기</th><th scope="col" class="num">순번</th><th scope="col">가구</th><th scope="col">읍면</th><th scope="col">순서</th><th scope="col">방문 순서를 정한 근거</th><th scope="col">구성</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <p class="small src-tag" id="ohSrcList" data-src-ref="D15,V1" hidden></p>
-    </section>
-
-    <!-- 방문 경로(오늘 할 일·명단에서 들어옴) -->
-    <section id="tab-route" class="tab" hidden>
-      <div class="s11 s11-visit-head">
-        <div class="vg">
-          <div class="col"><h2 class="h1">방문 순서</h2><p class="sm">가까운 집끼리 묶어 오늘 갈 순서와 시각을 정합니다. 지도는 네이버 지도입니다.</p>
-            <!-- S11-c 네이버 지도 차량 길안내: 출발=현재 위치, 경유 최대 5곳 + 도착 1곳(6곳씩 구간), 이름 대신 «방문 1·2…»만 넘긴다 -->
-            <div class="s11-nav" id="s11Nav">
-              <button type="button" class="s11-btn" id="s11NavGo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg><span>네이버 지도로 길안내</span></button>
-              <div class="s11-segs" id="s11Segs" hidden></div>
-              <p class="s11-xs" id="s11NavMsg">출발은 지금 위치 · 집 이름 대신 «방문 1·2…»만 네이버 지도로 넘깁니다 · 앱이 없으면 웹 길찾기</p>
-            </div></div>
-          <div class="card dist" id="s11Dist" aria-label="이동 거리 비교">
-            <div class="row"><span>묶기 전</span><span class="tr"><i data-w="100" style="background:#E0612B;opacity:.75"></i></span><b>127.3km</b></div>
-            <div class="row"><span>묶은 뒤</span><span class="tr"><i data-w="51.7" style="background:#17594F"></i></span><b>65.8km</b></div>
-            <p class="sm" style="margin:0"><span class="pct">48.3% 줄임</span> <span class="s11-xs" style="display:inline"><button type="button" class="s11-di" data-card="list" aria-label="데이터 카드"><i class="mk virt"></i></button>가상 9곳 · 직선×1.3 추정</span></p>
-          </div>
-        </div>
-      </div>
-      <p class="pd-orgs"><span class="d-tag pub">공공데이터</span> 기상청 특보 · 국토교통부 건축물대장 · 국립중앙의료원 병원·약국 · 행정안전부 인구·세대 — 가구·좌표는 <span class="d-tag warn">가상</span>(실제 주민 0명)</p>
-      <div class="bar d-card">
-        <a class="ghost btnlike" href="#list" data-h="light">← 명단으로</a>
-        <span id="routeStat" class="stat"></span>
-        <span class="spacer"></span>
-        <label><input type="checkbox" id="routeReturn" checked> 시청으로 복귀</label>
-      </div>
-      <div class="bar d-card route-plan">
-        <details class="plan-set" id="routePlanSet"><summary>시각·점심 설정</summary><div class="plan-in">
-        <label>출발 <input type="time" id="routeStart" value="09:30" step="300"></label>
-        <label>상담 <select id="routeConsult"><option value="20">20분</option><option value="30" selected>30분</option><option value="40">40분</option><option value="60">60분</option></select></label>
-        <label><input type="checkbox" id="routeLunch" checked> 점심 12:00~13:00 비우기</label>
-        </div></details>
-        <span class="spacer"></span>
-        <button type="button" id="btnRoad" class="d-btn d-btn-p" data-h="medium">도로 기준으로 순서 짜기</button>
-      </div>
-      <p id="routeRoad" class="route-road" role="status" aria-live="polite"></p>
-      <div class="route-wrap">
-        <div class="mapbox d-card">
-          <div id="nmap" class="nmap" role="region" aria-label="네이버 지도 — 방문 순서 번호와 경로. 가구 위치는 가상(실제 주민 아님). 같은 내용이 오른쪽 시각표에 있습니다" hidden></div>
-          <svg id="map" viewBox="-27 -23 54 46" role="img" aria-label="방문 경로 단순 지도 — 가상 가구(실제 주민 아님), 읍면동 중심은 대략 위치"></svg>
-        </div>
-        <div class="route-side d-card">
-          <h3 class="route-h">하루 방문 시각표</h3>
-          <a class="pd-line" href="#contacts" id="routeRevisit" data-h="light">다시 찾을 집 <b class="num" id="routeRevisitN">—</b>곳 · 재시도 일정</a>
-          <p class="small route-hint">순서를 바꾸려면 ≡ 손잡이를 끌거나, 손잡이에 초점을 두고 위·아래 화살표를 누르세요.</p>
-          <button type="button" class="skip-in" id="skipRoute">시각표 건너뛰기(줄마다 단추가 3~4개 있습니다)</button>
-          <ol id="routeList" class="route-list"></ol>
-        </div>
-      </div>
-      <p class="note" id="routeNote" tabindex="-1">순서 후보는 «가까운 곳부터 + 구간 뒤집기 다듬기»(직선거리 × 1.3 근사)로 만들고, «도로 기준으로 순서 짜기»를 누르면 후보마다 네이버 길찾기(Directions 15) 실제 도로 시간을 받아 가장 짧은 순서를 고릅니다. 같은 가구·순서는 다시 묻지 않습니다(7일 보관). 도로 결과가 없을 때 이동 시간은 평균 시속 40km 어림입니다. 가구 위치는 모두 가상이며 함창읍·이안면·공검면·사벌국면 4개 읍면 안의 대략 위치입니다.</p>
-      <p class="small src-tag" data-src-ref="V1,N1,R3">출처: 방문지·좌표는 가상 가구(시연) · 지도·도로 경로는 네이버클라우드 Maps(Web Dynamic Map·Directions 15) · 달력 파일은 RFC 5545</p>
-    </section>
-
-    <!-- ③ 방문·연락 기록 — ⚙️ 파로 features.js 가 #contactsRoot 를 채운다 -->
-    <section id="tab-contacts" class="tab" data-feature="contacts" hidden>
-      
-      <p class="lead">방문·전화 결과를 한 번 누르면 <b>다음 시도 제안</b>(안 해 본 시간대·요일)이 잡히고, 3번째 허탕이면 이웃·통반장 확인 순서표가 뜹니다. 시도 횟수의 정식 기록은 행복이음에 합니다.</p>
-      <article class="pane d-card feat plan" id="planRoot" aria-labelledby="h-plan" hidden>
-        <h3 id="h-plan">닷새치 재시도 일정<small>안 해 본 시간대로 배치 · 주말·공휴일 건너뜀 · 연계 결정 뒤 1·3개월 사후관리 포함</small></h3>
-        <div data-slot="plan"></div>
-      </article>
-      <div class="contacts-grid">
-        <article class="pane d-card" aria-labelledby="h-cnew">
-          <h3 id="h-cnew">기록 남기기</h3>
-          <div id="contactForm" data-slot="form"><p class="d-slot">기록 양식을 불러오는 중입니다.</p></div>
-        </article>
-        <article class="pane d-card" aria-labelledby="h-clog">
-          <h3 id="h-clog">시도 기록과 다음 일정</h3>
-          <div id="contactsRoot" data-slot="log"><p class="d-slot">방문·연락 기록을 불러오는 중입니다.</p></div>
-        </article>
-      </div>
-      <p class="small src-tag" data-src-ref="V1,S2,R4">출처: 시도 기록은 담당자 표시 기록(이 기기) · 가구는 가상(시연) · 3회 뒤 간접 확인 순서는 서울 강남구 공개 사례</p>
-    </section>
-
-    <!-- ④ 기록(S11-b 시안 B «record»): AI 초안이 주인공 — 상담 내용(근거 형광) · AI 처리 4칸(늘 보임) · 확인 단계 꼬리표(AI 초안 → 수정됨 → 공무원 확정) · 확정 전 복사 잠금.
-         officer.js 가 쓰는 id(recHouse·recText·btnSummarize·recResult·btnLink·linkList…)는 그대로, 연계 고르기·서식·적합률은 «자세히» 안으로 -->
-    <section id="tab-record" class="tab" hidden>
-      <div class="s11">
-        <div class="vg">
-          <div class="col">
-            <p class="sm" id="s11RecMeta">상담 가구를 고르고 상담 내용을 넣습니다</p>
-            <h2 class="h1">AI 상담 초안</h2>
-            <div class="card rec-in">
-              <div class="rbar"><label>상담 가구 <select id="recHouse"></select></label></div>
-              <div class="rbar">
-                <button type="button" id="btnSample" class="ghost2" data-h="light">가상 상담 대본 넣기</button>
-                <button type="button" id="btnMic" class="ghost2 mic" data-h="light"><span class="dot" aria-hidden="true"></span>받아쓰기(입력 보조)</button>
-                <span id="micState" class="s11-xs" role="status"></span>
-              </div>
-              <div id="recHouseInfo" class="hinfo"></div>
-              <label for="recText" class="sr">상담 내용</label>
-              <textarea id="recText" rows="6" placeholder="상담 내용을 적거나 «가상 상담 대본 넣기»를 누르세요."></textarea>
-              <button type="button" id="btnSummarize" class="s11-btn" data-h="medium">AI 초안 만들기</button>
-            </div>
-            <div class="card talk" id="s11Talk" hidden><span class="lbl2">상담 내용 · 근거 낱말 표시</span><p></p></div>
-            <div class="card" style="display:grid;gap:10px" aria-labelledby="s11PipeH">
-              <span class="lbl2" id="s11PipeH">AI 처리 과정</span>
-              <ol class="pipe" id="s11Pipe">
-                <li><b data-k="red">0</b><span>개인정보<br>가림</span></li>
-                <li><b data-k="cand">50</b><span>규칙으로<br>후보 추림</span></li>
-                <li class="ai"><b data-k="pick">—</b><span>AI 선택<br>+ 근거</span></li>
-                <li class="ok"><b data-k="out">0</b><span>목록 밖<br>답</span></li>
-              </ol>
-              <span class="ailine" id="s11AiLine">이름·연락처를 가린 뒤 외부 AI(Claude)로 보냅니다 · 후보는 정보원 복지서비스 <span class="s11-svcn">369</span>건 안</span>
-            </div>
-          </div>
-          <div class="col">
-            <div class="state" id="s11State" aria-label="확인 단계"><span data-st="ai">AI 초안</span><i></i><span data-st="edit">수정됨</span><i></i><span data-st="ok">공무원 확정</span></div>
-            <div class="card draft" id="s11Draft" aria-live="polite">
-              <span class="s11-xs" style="font-weight:600">행복이음 입력 순서 초안</span>
-              <div class="s11-draft-body"><p class="sm">상담 내용을 넣고 «AI 초안 만들기»를 누르면 주요 욕구 · 상담 요약 · 연계 후보(근거) · 다음 할 일 순서로 초안이 나옵니다.</p></div>
-              <div class="done-fx" aria-hidden="true"><div class="disc"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><span class="sp" style="--x:-60px;--y:-40px"></span><span class="sp" style="--x:60px;--y:-44px"></span><span class="sp" style="--x:-70px;--y:20px"></span><span class="sp" style="--x:72px;--y:16px"></span><span class="sp" style="--x:-24px;--y:-70px"></span><span class="sp" style="--x:26px;--y:64px"></span></div>
-            </div>
-            <button type="button" class="s11-btn" id="s11Confirm" disabled>공무원 확정</button>
-            <button type="button" class="copy" id="s11Copy" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>확정 후 복사 가능</span></button>
-            <button type="button" class="copy" id="s11Print" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg><span>확정본 인쇄·PDF</span></button>
-            <span class="s11-xs">정식 상담 기록은 행복이음에 합니다. 이 초안은 옮겨 적기를 돕는 용도입니다.</span>
-            <details class="s11-more" id="s11RecMore"><summary data-h="light">자세히 — 연계 후보 고르기 · 저장된 연계 · 서식 · 적합률</summary><div class="in">
-              <div id="recResult" class="result" aria-live="polite"><p class="muted">AI 초안을 만들면 연계 후보를 골라 저장할 수 있습니다.</p></div>
-              <button id="btnLink" class="primary" hidden data-h="success">선택한 서비스로 연계 저장</button>
-              <h3>저장된 연계 <small id="linkCount"></small></h3>
-              <ul id="linkList" class="links"></ul>
-              <div class="panel d-card fit-box" aria-live="polite"><h3>추천 현장 적합률</h3><p class="muted">불러오는 중…</p></div>
-              <div class="panel d-card" id="consultForms" data-feature="consult">
-                <h3>행복이음에 옮길 초안 · 사례관리 서식</h3>
-                <div data-slot="forms"><p class="d-slot">요약을 받으면 입력 초안과 서식이 여기에 채워집니다.</p></div>
-              </div>
-              <p class="note">음성 받아쓰기는 브라우저의 음성인식을 씁니다. 온라인 인식이라 음성이 브라우저 제공사 서버로 전송될 수 있습니다. 실제 상담에 쓰려면 기관 내부 인식기로 바꿔야 합니다.</p>
-              <p class="bridge" role="note">행복이음 입력을 돕는 다리이며, 결과는 «행복이음에 옮길 초안»으로만 나옵니다. 정식 기록은 행복이음에 남깁니다.</p>
-            </div></details>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ⑤ 연계 누락(메뉴 ③) -->
-    <section id="tab-board" class="tab" hidden>
-      <!-- ⑪ 연계 누락 보드(주인공) — ⚙️ 파로 mount.js 가 채운다. 4칸 = 주민 신호 → 상담 → 안내 → 신청 다음에서 멈춘 집 -->
-      <p class="pd-orgs"><span class="d-tag pub">공공데이터</span> 한국사회보장정보원 중앙부처·지자체 복지서비스(15090532·15108347) — 멈춘 집은 <span class="d-tag warn">가상</span></p>
-      <div class="panel d-card feat" id="gapRoot" data-feature="link-gaps">
-        <h3>연계 누락 보드 <small class="tag">주민 신호 → 상담 → 안내 → 신청에서 멈춘 집</small></h3>
-        <div data-slot="gaps"><p class="d-slot">멈춘 단계를 찾는 중입니다.</p></div>
-      </div>
-      <!-- S10o-2(S10l ⑥ 합침): «미신청» 칸 보강 — 서비스별 멈춘 집 + 동네 미신청(가상) + 실제 수급가구(공개 통계, 참고) -->
-      <div class="panel d-card" id="unappliedRoot">
-        <h3>미신청 칸 보강 <small class="tag">덜 신청된 서비스 순서</small></h3>
-        <div data-slot="unapplied"><p class="d-slot">서비스별 미신청을 모으는 중입니다.</p></div>
-      </div>
-      <p class="note">동네 단위 미신청 — «물었는데 아직 신청하지 않은» 수요입니다. 문의·신청 수는 가상 값이고, 이 브라우저의 주민 신호와 연계 저장 건이 더해집니다.</p>
-      <div class="board-wrap">
-        <div class="panel d-card"><h3>서비스별 미신청</h3><ul id="rankSvc" class="rank"></ul></div>
-        <div class="panel d-card"><h3>읍면별 미신청</h3><ul id="rankArea" class="rank"></ul></div>
-      </div>
-      <div class="panel d-card">
-        <h3>읍면 × 서비스 (미신청 / 문의)</h3>
-        <div class="scroll" tabindex="0" aria-label="읍면 × 서비스 표(가로로 넘겨 보기)"><table class="grid heat" id="boardTable"></table></div>
-      </div>
-      <!-- (보조) 행복이음에 옮길 초안(나가는 것) — ⚙️ 파로 mount.js 가 채운다 -->
-      <div class="panel d-card" id="handoffRoot" data-feature="handoff"></div>
-      <p class="note">현황 대시보드·주간/월간 보고서는 메뉴 <a href="#report">현황 · 보고서</a>에 있습니다.</p>
-    </section>
-
-    <!-- 주 기능 ⑤ 명단 정리 입구(S10o-2) — ⚙️ mount.js renderIntake 가 채운다 -->
-    <section id="tab-intake" class="tab" data-feature="intake" hidden>
-      <p class="lead">받은 명단의 가구 번호를 붙여넣거나 하나씩 넣으면, 지난 차수에 비해당이었던 집에 <b>배지와 지난 사유</b>가 붙고 <b>확인만 할 집 / 다시 볼 집</b>으로 갈립니다.</p>
-      <div class="intake-grid">
-        <article class="pane d-card" aria-labelledby="h-inin">
-          <h3 id="h-inin">명단 넣기</h3>
-          <label for="inText">가구 번호 붙여넣기 <small class="muted">(줄바꿈·쉼표 구분, 예: A-005)</small></label>
-          <textarea id="inText" rows="6" placeholder="A-005&#10;B-048&#10;P-021"></textarea>
-          <div class="bar in-one">
-            <label class="grow">한 집씩 넣기 <input id="inOne" type="text" inputmode="text" autocomplete="off" maxlength="8" placeholder="예) B-048"></label>
-            <button type="button" id="inAdd" class="ghost" data-h="light">넣기</button>
-          </div>
-          <div class="rep-acts">
-            <button type="button" id="inRun" class="primary" data-h="success">정리하기</button>
-            <button type="button" id="inSample" class="ghost" data-h="light">가상 명단 예시 넣기</button>
-            <button type="button" id="inClear" class="ghost" data-h="light">비우기</button>
-          </div>
-          <p class="src-line"><span class="d-tag warn">가상</span>가구 번호·지난 차수 기록은 모두 시연용 가상 값입니다(실제 주민 0명). 행복이음 명단을 내려받는 방식은 확인 전이라 붙여넣기·손입력 두 길을 둡니다.</p>
-          <p id="inStatus" class="small" role="status" aria-live="polite"></p>
-        </article>
-        <article class="pane d-card" aria-labelledby="h-inout">
-          <h3 id="h-inout">정리 결과</h3>
-          <div id="intakeOut" data-slot="out"><p class="d-slot">명단을 넣고 «정리하기»를 누르세요.</p></div>
-        </article>
-      </div>
-    </section>
-
-    <!-- 보조 S10l ④ 도입 비용·탄소(MN-D02) — officer/expand.js 가 채운다 -->
-    <section id="tab-cost" class="tab" hidden>
-      <p class="lead">시군 담당자가 담당자 수·방문일을 넣으면 AI 월 비용, 연 도입 비용, 이동 거리·CO₂ 감소를 <b>추정</b>합니다.</p>
-      <div class="panel d-card" id="costRoot"></div>
-    </section>
-    <!-- 보조 S10l ⑤ 다른 시군으로 바꿔 보기(확산성 시연) — officer/expand.js -->
-    <section id="tab-region" class="tab" hidden>
-      <p class="lead">시군을 고르면 읍면동 목록·세대·1인 세대·고령 비율·기초수급 비율·시군 복지서비스 수가 그 시군 공개 통계로 바뀝니다.</p>
-      <div class="panel d-card" id="regionRoot"></div>
-    </section>
-
-    <!-- ⑥ 현황·보고서(S10g 메인 메뉴) — 옛 «연계·보고서»의 아래 절반, 기능 그대로 -->
-    <section id="tab-report" class="tab" hidden>
-      <!-- S11-b 보고(시안 B «report»): 이번 차수 · 보고서 받기 · 읍면 지표(실제 값) · 더 보기. 아래 기존 현황판·보고서 칸은 그대로 -->
-      <div class="s11" id="s11Report">
-        <div class="vg">
-          <div class="col">
-            <h2 class="h1">이번 차수</h2>
-            <!-- S11-d 채점 8: 빈 상태 문구 대신 시연 수치(아래 현황 대시보드와 같은 집계) + 시범 목표 + 도입 한 줄 -->
-            <div class="s11-rnum" id="s11RNum" aria-live="polite">
-              <div><em data-k="total">—</em><span>발굴 명단<small>가구</small></span></div>
-              <div><em data-k="contacted">—</em><span>접촉<small data-k="cpct">가구</small></span></div>
-              <div><em data-k="linked">—</em><span>서비스 연계<small>가구</small></span></div>
-            </div>
-            <span class="s11-xs"><i class="mk virt"></i>시연 수치 · 가상 명단·방문 기록의 닿음 집계(공식 실적은 행복이음)</span>
-            <div class="s11-goal"><b>시범 6개월 목표</b>
-              <ol><li>받은 명단 가구 차수 마감 안 첫 접촉 100%</li><li>연계가 멈춘 집 주 1회 점검</li><li>주간 보고는 한글 파일 단추 하나로</li></ol>
-            </div>
-            <p class="s11-adopt"><b>우리 시군 도입하면</b> 정보원 «발굴대상자 조회» 엑셀을 그대로 불러와 첫 차수부터 씁니다 · <a href="#region" class="s11-lnk">시군 바꿔 보기</a> · <a href="#cost" class="s11-lnk">도입 비용</a></p>
-            <div class="s11-dl">
-              <button type="button" class="s11-btn" id="s11Hwpx">한글(hwpx) 보고서 받기</button>
-              <button type="button" class="s11-btn ghost" id="s11Dl">보고서 보기·PDF</button>
-            </div>
-            <p class="s11-xs" id="s11DlSt" role="status" aria-live="polite"></p>
-            <span class="s11-xs" id="s11RcpLine"><button type="button" class="s11-di" data-card="d5" aria-label="데이터 카드"><i class="mk file"></i></button>비교 기준: 상주 기초생계급여 수급가구 <b id="s11Rcp2">3,868</b>(정보원 수급권자 현황, <span id="s11RcpMonth2">2025-12</span>)</span>
-          </div>
-          <div class="col">
-            <div class="card" id="s11Area" aria-labelledby="s11AreaH">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px"><b id="s11AreaH" style="font-size:var(--t3);font-weight:600">읍면 지표</b><span class="s11-xs">실제 값</span></div>
-              <div class="area" id="s11AreaT"><p class="sm">공공데이터를 불러오는 중입니다.</p></div>
-              <span class="s11-xs" id="s11AreaSrc" style="margin-top:8px">출처: 행정안전부 주민등록 인구·세대(2026-09-30) · 국토교통부 건축HUB 건축물대장(2026-10-30) · 위험도 순위는 닿음 추정 지수(공식 통계 아님)</span>
-            </div>
-            <details class="s11-more"><summary data-h="light">더 보기</summary><div class="in">
-              <ul class="mlist">
-                <li><a href="#contacts">다시 찾을 집 · 닷새치 재시도 일정</a></li>
-                <li><a href="#board">연계가 멈춘 집 · 미신청 표</a></li>
-                <li><a href="#intake">명단 정리</a></li>
-                <li><a href="#list">가구 명단 · 방문 순서 근거</a></li>
-                <li><a href="#cost">도입 비용 · 탄소 계산(추정)</a></li>
-                <li><a href="#region">다른 시군으로 바꿔 보기</a></li>
-              </ul>
-            </div></details>
-          </div>
-        </div>
-      </div>
-      <div class="panel d-card pd-rtop" aria-labelledby="rRiskH">
-        <h3 id="rRiskH">고독사 위험 높은 읍면 <span class="d-tag pub">공공데이터</span></h3>
-        <ol class="pd-risk" id="rRisk" aria-label="고독사 위험도 높은 읍면 3곳(행정안전부 공개 통계로 만든 닿음 추정 지수)"><li class="d-slot">공공데이터를 불러오는 중입니다.</li></ol>
-        <p class="pd-src">출처: 행정안전부 «주민등록 인구·세대»(15097972·15097974) 기준 2026-09-30 · 닿음 추정 지수(공식 통계 아님) · 전체 순위는 아래 «더 보기»</p>
-      </div>
-      <div class="stats-top">
-        <div class="panel d-card" id="statsRoot" data-feature="stats">
-          <h3>현황 대시보드 <small class="tag">이번 차수</small></h3>
-          <div data-slot="dashboard"><p class="d-slot">발굴·방문·연계 현황을 집계하는 중입니다.</p></div>
-          <div data-slot="deadline"></div>
-        </div>
-        <div class="panel d-card" id="reportRoot" data-feature="report">
-          <h3>주간·월간 보고서</h3>
-          <div class="rep-acts" data-slot="actions">
-            <button type="button" class="ghost" data-report="weekly" data-h="light" disabled>주간 보고서</button>
-            <button type="button" class="ghost" data-report="monthly" data-h="light" disabled>월간 보고서</button>
-          </div>
-          <div data-slot="preview"></div>
-        </div>
-      </div>
-      <!-- S10o-2: 보조 지표(현장 적합률·상주시 실제 현황·고독사 위험도)는 접어 둔다 — 기능 그대로 -->
-      <details class="aux-more d-card" id="reportMore">
-        <summary data-h="light">더 보기 — 추천 현장 적합률 · 상주시 실제 현황 · 읍면동 고독사 위험도</summary>
-        <div class="aux-body">
-          <div class="panel d-card fit-box"><h3>추천 현장 적합률</h3><p class="muted">불러오는 중…</p></div>
-          <div class="panel d-card real" id="regionStat">
-            <h3>상주시 실제 현황 <small class="tag">공개 통계 · 실제 값</small></h3>
-            <p class="muted">불러오는 중…</p>
-          </div>
-          <div class="panel d-card real" id="lonelyRisk">
-            <h3>읍면동 고독사 위험도 <small class="tag">공공데이터 · 추정 지수</small></h3>
-            <p class="muted">불러오는 중…</p>
-          </div>
-        </div>
-      </details>
-    </section>
-  </main>
-</div>
-
+<body>
+<!-- 닿음 S11-k 흐름 ①~⑨ — 화면은 officer/flow.js 가 그린다. 아이콘 묶음(20 격자 · 선 1.7 · 둥근 끝)은 시안과 같다. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-list" viewBox="0 0 20 20"><path d="M7 5h10M7 10h10M7 15h10"/><circle cx="3.5" cy="5" r="1"/><circle cx="3.5" cy="10" r="1"/><circle cx="3.5" cy="15" r="1"/></symbol>
+  <symbol id="i-route" viewBox="0 0 20 20"><circle cx="5" cy="15" r="2"/><path d="M15 9.5c2-2.2 2.5-3.4 2.5-4.3a2.5 2.5 0 0 0-5 0c0 .9.5 2.1 2.5 4.3Z"/><path d="M7 15h5.5a2.5 2.5 0 0 0 0-5H8a2.5 2.5 0 0 1 0-5h2"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 20 20"><path d="M5 2.5h7l3.5 3.5v11.5H5z"/><path d="M12 2.5V6h3.5M8 10h5M8 13h5"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2.5v3M13 2.5v3M7.5 12.5l2 2 3.5-3.5"/></symbol>
+  <symbol id="i-up" viewBox="0 0 20 20"><path d="M4 13v3.5h12V13M10 3v10M6.5 6.5 10 3l3.5 3.5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 20 20"><path d="M4 13v3.5h12V13M10 3v10M6.5 9.5 10 13l3.5-3.5"/></symbol>
+  <symbol id="i-next" viewBox="0 0 20 20"><path d="M4.5 10h11M11 5.5l4.5 4.5-4.5 4.5"/></symbol>
+  <symbol id="i-back" viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 20 20"><path d="M10 2 4 4.5v5c0 4 2.7 6.7 6 8.5 3.3-1.8 6-4.5 6-8.5v-5L10 2Z"/><path d="m7.3 10 2 2 3.6-4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 20 20"><path d="M3 9.5 10 4l7 5.5V17H3z"/><path d="M8 17v-4h4v4"/></symbol>
+  <symbol id="i-file" viewBox="0 0 20 20"><path d="M5 2.5h7l3.5 3.5v11.5H5z"/><path d="M12 2.5V6h3.5M8 9h4M8 12h4M8 15h2"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 20 20"><path d="M10 2.5 18 17H2z"/><path d="M10 8v4M10 14.5v.3"/></symbol>
+  <symbol id="i-map" viewBox="0 0 20 20"><path d="M7 3 2 5v12l5-2 6 2 5-2V3l-5 2-6-2Z"/><path d="M7 3v12M13 5v12"/></symbol>
+  <symbol id="i-nav" viewBox="0 0 20 20"><path d="M10 2 3.5 17.5 10 14l6.5 3.5z"/></symbol>
+  <symbol id="i-loc" viewBox="0 0 20 20"><circle cx="10" cy="10" r="3"/><circle cx="10" cy="10" r="6.5"/><path d="M10 1.5v2M10 16.5v2M1.5 10h2M16.5 10h2"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 20 20"><path d="M10 3 2.5 7 10 11l7.5-4z"/><path d="m2.5 10.5 7.5 4 7.5-4M2.5 14l7.5 4 7.5-4"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 20 20"><rect x="7" y="2.5" width="6" height="10" rx="3"/><path d="M4 10a6 6 0 0 0 12 0M10 16v2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><path d="m6.8 10.2 2.2 2.2 4.2-4.6"/></symbol>
+  <symbol id="i-door" viewBox="0 0 20 20"><path d="M5 17.5V3h10v14.5M3 17.5h14"/><circle cx="12" cy="10.5" r=".8"/></symbol>
+  <symbol id="i-x" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><path d="m7.5 7.5 5 5M12.5 7.5l-5 5"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 20 20"><path d="M6 10V5.5a1.5 1.5 0 0 1 3 0V9M9 9V4a1.5 1.5 0 0 1 3 0v5M12 9V5.5a1.5 1.5 0 0 1 3 0V12a6 6 0 0 1-6 6h-.5A5.5 5.5 0 0 1 4 15l-1.6-3a1.4 1.4 0 0 1 2.3-1.5L6 12"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 20 20"><path d="M3 3h6.5L17 10.5 10.5 17 3 9.5z"/><circle cx="6.5" cy="6.5" r="1.2"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 20 20"><rect x="6.5" y="6.5" width="10" height="10" rx="2"/><path d="M13.5 6.5V4.5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2"/></symbol>
+  <symbol id="i-print" viewBox="0 0 20 20"><path d="M5.5 7V3h9v4M5.5 14H3.5V8a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v6h-2"/><rect x="5.5" y="11" width="9" height="6"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 20 20"><path d="M4 10a6 6 0 0 1 10.2-4.3L16 7.5M16 3.5v4h-4M16 10a6 6 0 0 1-10.2 4.3L4 12.5M4 16.5v-4h4"/></symbol>
+  <symbol id="i-car" viewBox="0 0 20 20"><path d="M3.5 13V9.5l1.8-4h9.4l1.8 4V13M3.5 13h13v2.5h-2V13M5.5 13v2.5h-2V13"/><circle cx="6.5" cy="10.5" r=".6"/><circle cx="13.5" cy="10.5" r=".6"/></symbol>
+  <symbol id="i-cup" viewBox="0 0 20 20"><path d="M4 8h10v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM14 9.5h1.5a2 2 0 0 1 0 4H14M7 3.5v2M10 3.5v2"/></symbol>
+  <symbol id="i-snow" viewBox="0 0 20 20"><path d="M10 2v16M3 6l14 8M17 6 3 14M8 3.5l2 1.5 2-1.5M8 16.5l2-1.5 2 1.5"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 20 20"><rect x="5.5" y="2" width="9" height="16" rx="2"/><path d="M9 15.5h2"/></symbol>
+  <symbol id="i-pc" viewBox="0 0 20 20"><rect x="2" y="3.5" width="16" height="10.5" rx="1.5"/><path d="M7 17.5h6M10 14v3.5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 20 20"><path d="m7.5 4.5 5.5 5.5-5.5 5.5"/></symbol>
+  <symbol id="i-sheet" viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M3 7.5h14M3 12h14M8 3v14"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2.5v3M13 2.5v3"/></symbol>
+</svg>
+<div id="app" aria-live="polite"><p style="padding:24px">닿음을 불러오는 중…</p></div>
+<noscript><p style="padding:24px">닿음 공무원 화면은 자바스크립트가 켜져 있어야 합니다.</p></noscript>
 <script src="../shared/config.js"></script>
-<script src="../shared/ui.js"></script>
-<script src="../shared/guide.js"></script>
-<script src="../shared/requests.js"></script>
-<script src="../shared/ai.js"></script>
-<script src="../shared/netguard.js"></script>
+<script src="../data/households.js"></script>
+<script src="../data/alerts_demo.js"></script>
 <script src="features.js"></script>
-<script src="demo_seed.js"></script>
-<script src="../shared/chart.js"></script>
-<script src="../shared/report.js"></script>
+<script src="fieldwork.js"></script>
+<script src="priority.js"></script>
 <script src="route_plan.js"></script>
 <script src="route_map.js"></script>
-<script src="notify.js"></script>
-<script src="alerts.js"></script>
-<script src="priority.js"></script>
-<script src="medical.js"></script>
-<script src="lonely_risk.js"></script>
-<script src="old_house.js"></script>
-<script src="fit_rate.js"></script>
-<script src="mount.js"></script>
-<script src="expand.js"></script>
-<script src="xlsx_out.js"></script>
-<script src="officer.js"></script>
-<script src="front.js"></script>
-<script src="s11.js"></script>
-<script src="s11c.js"></script>
-<script src="s11d2.js"></script>
+<script src="import_list.js"></script>
+<script src="demo_seed.js"></script>
+<script src="../shared/sync.js"></script>
+<script src="flow.js"></script>
 <script src="../shared/pwa.js"></script>
 </body>
 </html>

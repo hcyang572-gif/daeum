@@ -1,6 +1,6 @@
 /* 닿음 안내 부품(S10i, 🩵 미르 10-30) — 첫 방문 소개 4장 · 사용 방법 · 활용 데이터 표 · 출처 꼬리표 통일.
    각 화면에 이 한 줄만 둔다: <script src="../shared/guide.js"></script> (스타일 guide.css 는 스스로 붙인다)
-   - 단추: [data-guide="intro|help|data"] 를 누르면 해당 대화상자. data-guide-side="officer|citizen" 으로 사용 방법 첫 칸을 고른다.
+   - 단추: [data-guide="intro|help|data"] 를 누르면 해당 대화상자. (S11-i: 주민 화면 제거 — 사용 방법은 공무원 화면 하나)
    - 출처 꼬리표: 화면의 .src-tag · .src-line · p.src, 그리고 «출처»로 시작하는 문단을 찾아
      «공공데이터»/«가상» 표식을 붙이고 «자료 표» 연결(→ 활용 데이터 해당 줄)을 단다. data-src-ref="D13,D12" 를 달면 그 줄로 바로 간다.
      화면이 다시 그려져도(MutationObserver) 같은 규칙을 다시 건다 — 각 창구 코드는 꼬리표 글만 쓰면 된다.
@@ -14,7 +14,7 @@
   var ROOT = new URL("../", SHARED);
   var DATA_URL = new URL("data.html", SHARED).href;
   var path = location.pathname;
-  var SIDE = /\/citizen\//.test(path) ? "citizen" : /\/officer\//.test(path) ? "officer" : "";
+  var SIDE = "officer";
   var ON_DATA_PAGE = /\/shared\/data\.html$/.test(path);
 
   (function css() {
@@ -29,11 +29,11 @@
   var DATA = [
     { id: "D1", kind: "pub", org: "한국사회보장정보원", name: "중앙부처복지서비스", no: "15090532", url: "https://www.data.go.kr/data/15090532/openapi.do",
       how: "OpenAPI · 받아서 저장(키는 화면에 두지 않음)", cycle: "필요할 때 다시 받음", base: "2026-11-02 조회",
-      screens: [["주민", "받을 수 있는 도움"], ["공무원", "기록 › 연계 후보"], ["공무원", "AI 추천 검증"]],
+      screens: [["공무원", "기록 › 연계 후보"], ["공무원", "AI 추천 검증"]],
       does: "상황에 맞는 국가 복지서비스 후보 · 대상·신청 방법" },
     { id: "D2", kind: "pub", org: "한국사회보장정보원", name: "지자체복지서비스", no: "15108347", url: "https://www.data.go.kr/data/15108347/openapi.do",
       how: "OpenAPI · 받아서 저장", cycle: "필요할 때 다시 받음", base: "2026-11-02 조회",
-      screens: [["주민", "받을 수 있는 도움"], ["공무원", "기록 › 연계 후보"], ["공무원", "다른 시군 보기"]],
+      screens: [["공무원", "기록 › 연계 후보"], ["공무원", "다른 시군 보기"]],
       does: "상주시(시군) 자체 사업 후보 · 시군별 서비스 수" },
     { id: "D5", kind: "pub", org: "한국사회보장정보원", name: "복지사업 시군구별 수급권자 현황", no: "15062448", url: "https://www.data.go.kr/data/15062448/fileData.do",
       how: "파일(CSV) · 상주시 행만 뽑음", cycle: "포털 갱신 때", base: "기준 2025-12",
@@ -72,10 +72,10 @@
       how: "손으로 쓴 파일 data/alerts_demo.json", cycle: "고정", base: "2026-10-30",
       screens: [["공무원", "오늘 › 무반응 신호 · 오늘 특보"]],
       does: "협약 기관(AI 스피커·IoT) 무반응 신호와 오늘 특보 상황(실제 신호 아님)" },
-    { id: "V3", kind: "virt", org: "닿음(시연)", name: "지난 차수 기록 · 동네 미신청 · 주민 신호 예시", no: "", url: "",
+    { id: "V3", kind: "virt", org: "닿음(시연)", name: "지난 차수 기록 · 방문 결과·메모 예시", no: "", url: "",
       how: "시연 기본값", cycle: "고정", base: "—",
-      screens: [["공무원", "보고 › 명단 정리"], ["공무원", "보고 › 연계가 멈춘 집"], ["공무원", "오늘 › 새 주민 신호"]],
-      does: "지난 차수 비해당 사유·미신청 칸·시연용 주민 신호" },
+      screens: [["공무원", "보고 › 명단 정리"], ["공무원", "보고 › 연계가 멈춘 집"], ["공무원", "⑧ 보고서 › 방문 결과"]],
+      does: "지난 차수 명단·비해당 사유·시연용 방문 결과와 메모(모두 가상)" },
     { id: "V4", kind: "virt", org: "닿음(시연)", name: "AI 추천 검증 사연 20건", no: "", url: "",
       how: "손으로 쓴 가상 사연", cycle: "고정", base: "2026-10-29",
       screens: [["공무원", "AI 추천 검증"]],
@@ -198,48 +198,32 @@
   /* ── 사용 방법 ── */
   var HELP = {
     officer: [
-      ["today", "1 오늘", "officer/index.html#today", "오늘 방문할 집 · 새 주민 신호 · 오늘 특보"],
-      ["route", "2 방문", "officer/index.html#route", "가까운 집끼리 묶은 방문 순서와 도착 시각 · 네이버 길안내 · 인쇄·엑셀"],
-      ["record", "3 기록", "officer/index.html#record", "상담 내용 → AI 초안(행복이음 입력 순서) → 공무원 확정 → 복사"],
-      ["report", "4 보고", "officer/index.html#report", "이번 차수 숫자 · 주간·월간 보고서 한글(hwpx)·엑셀·PDF"],
-      ["contacts", "더 보기 · 다시 찾을 집", "officer/index.html#contacts", "방문·전화 결과 한 번 → 안 해 본 시간대로 다음 시도 제안"],
-      ["board", "더 보기 · 연계가 멈춘 집", "officer/index.html#board", "주민 신호 → 상담 → 안내 → 신청 중 멈춘 집"],
-      ["intake", "더 보기 · 명단 정리", "officer/index.html#intake", "정보원 «발굴대상자 조회» 엑셀 불러오기 · 지난 차수 비해당 집 표시"],
-      ["list", "더 보기 · 가구 명단", "officer/index.html#list", "방문 순서를 정한 근거 · 경로에 담기"]
-    ],
-    citizen: [
-      ["ask", "알리기", "citizen/index.html#ask", "누구의 일인지 고르고 말하거나 적기 → 읍면동 복지 담당 공무원에게"],
-      ["progress", "보낸 알림", "citizen/index.html#progress", "보낸 알림의 확인 · 방문 예정 · 완료"],
-      ["find", "다른 도움 찾기", "citizen/index.html#ask", "받을 수 있는 복지서비스 · 복지로 · 129 상담"]
+      ["s1", "① 명단 불러오기", "officer/index.html#s1", "행복이음에서 내보낸 «발굴대상자 조회» 엑셀 · 열 자동 맞춤 · 개인정보 열은 읽지 않음 · 지난 차수와 견주기"],
+      ["s2", "② 전체 명단·기한", "officer/index.html#s2", "확인 기한(근무일) → 하루 몇 집·며칠 · 새로·계속·빠짐"],
+      ["s3", "③ 우선순위 근거", "officer/index.html#s3", "한국사회보장정보원 순위 → 방문 순서 · 현장 사정 4가지만큼(최대 7칸) 앞당김"],
+      ["s4", "④ 일차별 방문", "officer/index.html#s4", "하루 상한씩 묶은 동선·시간줄·지도 · 확정하면 같은 계정 폰에 바로"],
+      ["s5", "⑤ 집 앞 30초 요약(폰)", "officer/index.html#s5", "문 두드리기 전 수치 3칸·세 줄 요약·주의할 점·지난번 약속·꼭 물을 것"],
+      ["s6", "⑥ 동선·길안내(폰)", "officer/index.html#s6", "다음 집·하루 진행 · 네이버 지도 길안내(이름·주소 대신 «방문 N»)"],
+      ["s7", "⑦ 확인·메모(폰)", "officer/index.html#s7", "만남·부재·거절 · 메모에서 약속·어려움 찾기 · 부재 3회째 간접 확인"],
+      ["s8", "⑧ 보고서", "officer/index.html#s8", "폰 메모가 들어온 결과 보고서 초안 · 한글(hwpx) · 행복이음 입력 초안 · 연계 의뢰서"],
+      ["s9", "⑨ 사후관리", "officer/index.html#s9", "1·3·6개월 재확인·약속·다시 갈 집을 달력 한 장에"]
     ]
   };
-  function renderHelp(box, side) {
+  function renderHelp(box) {
+    // S11-i(11-02): 주민 화면 제거 — 공무원 화면 하나만 보여 준다
     box.innerHTML = "";
-    var seg = el("div", "dg-seg"); seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "창구 고르기");
-    var lists = {};
-    [["officer", "공무원 창구"], ["citizen", "주민 창구"]].forEach(function (s) {
-      var b = el("button", null, s[1]); b.type = "button"; b.setAttribute("data-side", s[0]); b.setAttribute("data-h", "selection");
-      seg.appendChild(b);
-      var ul = el("ul", "dg-help"); ul.setAttribute("aria-label", s[1] + " 화면");
-      HELP[s[0]].forEach(function (it) {
-        var li = el("li"); var a = el("a", "dg-hi"); a.href = u(it[2]);
-        a.innerHTML = mini(it[0], it[1]);
-        var t = el("span"); t.appendChild(el("b", null, it[1])); t.appendChild(el("small", null, it[3])); a.appendChild(t);
-        li.appendChild(a); ul.appendChild(li);
-      });
-      lists[s[0]] = ul;
+    var ul = el("ul", "dg-help"); ul.setAttribute("aria-label", "공무원 화면");
+    HELP.officer.forEach(function (it) {
+      var li = el("li"); var a = el("a", "dg-hi"); a.href = u(it[2]);
+      a.innerHTML = mini(it[0], it[1]);
+      var t = el("span"); t.appendChild(el("b", null, it[1])); t.appendChild(el("small", null, it[3])); a.appendChild(t);
+      li.appendChild(a); ul.appendChild(li);
     });
-    box.appendChild(seg); box.appendChild(lists.officer); box.appendChild(lists.citizen);
+    box.appendChild(ul);
     var foot = el("p", "dg-foot");
     var b1 = el("button", "d-btn d-btn-s", "소개 다시 보기"); b1.type = "button"; b1.setAttribute("data-guide", "intro");
     var b2 = el("button", "d-btn d-btn-s", "활용 데이터"); b2.type = "button"; b2.setAttribute("data-guide", "data");
     foot.appendChild(b1); foot.appendChild(b2); box.appendChild(foot);
-    function pick(sd) {
-      [].forEach.call(seg.children, function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-side") === sd)); });
-      lists.officer.hidden = sd !== "officer"; lists.citizen.hidden = sd !== "citizen";
-    }
-    seg.addEventListener("click", function (e) { var b = e.target.closest("button[data-side]"); if (b) pick(b.getAttribute("data-side")); });
-    pick(side || "officer");
   }
 
   /* ── 활용 데이터 표 ── */
@@ -290,20 +274,14 @@
         '<rect class="en" x="98" y="20" width="84" height="68" rx="16"/><circle class="w" cx="122" cy="46" r="5"/><circle class="w2" cx="140" cy="46" r="5"/><rect class="w2" x="114" y="62" width="52" height="6" rx="3"/>' +
         '<rect class="f2" x="212" y="34" width="62" height="40" rx="12"/><path class="ln" d="M224 48h38M224 58h28M224 66h20"/>' +
         '<path class="ln ar" d="M72 54h20M188 54h20"/><path class="ln" d="M87 49l5 5-5 5M203 49l5 5-5 5"/>' +
-        '<text class="tx" x="37" y="92" text-anchor="middle">정보원 명단</text><text class="tx b" x="140" y="104" text-anchor="middle">닿음</text><text class="tx" x="243" y="92" text-anchor="middle">행복이음 기록</text>',
-      label: "정보원 명단에서 닿음을 거쳐 행복이음 기록으로" },
+        '<text class="tx" x="37" y="92" text-anchor="middle">발굴 명단</text><text class="tx b" x="140" y="104" text-anchor="middle">닿음</text><text class="tx" x="243" y="92" text-anchor="middle">행복이음 기록</text>',
+      label: "한국사회보장정보원 발굴 명단에서 닿음을 거쳐 행복이음 기록으로" },
     { h: "공무원의 하루", p: "오늘 방문할 집 확인 → 방문 → 상담 기록(AI 초안·확정) → 보고서. 다시 찾을 집·명단 정리는 «더 보기»에.",
       pic: (function () {
-        var s = '<path class="ln" d="M40 56h200"/>', xs = [40, 107, 173, 240], t = ["1 오늘", "2 방문", "3 기록", "4 보고"], w = ["아침", "현장", "오후", "주·월"];
+        var s = '<path class="ln" d="M40 56h200"/>', xs = [40, 107, 173, 240], t = ["명단", "계획", "현장", "보고"], w = ["사무실", "사무실", "폰", "사무실"];
         xs.forEach(function (x, i) { s += '<circle class="' + (i === 0 ? "en" : "dt") + '" cx="' + x + '" cy="56" r="' + (i === 0 ? 11 : 8) + '"/><text class="tx" x="' + x + '" y="32" text-anchor="middle">' + w[i] + '</text><text class="tx b" x="' + x + '" y="88" text-anchor="middle">' + t[i] + "</text>"; });
         return s;
-      })(), label: "오늘·방문·기록·보고 네 단계" },
-    { h: "주민 창구", p: "걱정되는 이웃·힘든 사정을 알리면 담당 공무원의 «오늘 › 새 주민 신호»에 들어갑니다.",
-      pic: '<rect class="f2" x="20" y="18" width="70" height="80" rx="14"/><circle class="hl" cx="55" cy="48" r="14"/><path class="w" d="M55 58s-9-5.6-9-12.4a5 5 0 0 1 9-3 5 5 0 0 1 9 3C64 52.4 55 58 55 58Z"/><rect class="f3" x="32" y="74" width="46" height="6" rx="3"/>' +
-        '<path class="ln ar" d="M100 58h70"/><path class="ln" d="M165 52l6 6-6 6"/>' +
-        '<rect class="f2" x="180" y="18" width="84" height="80" rx="14"/><rect class="hl" x="192" y="32" width="60" height="14" rx="7"/><rect class="f3" x="192" y="54" width="60" height="10" rx="5"/><rect class="f3" x="192" y="70" width="44" height="10" rx="5"/>' +
-        '<text class="tx" x="55" y="112" text-anchor="middle">주민</text><text class="tx" x="222" y="112" text-anchor="middle">공무원 · 오늘</text>',
-      label: "주민 알림이 공무원 오늘 화면의 새 신호로" },
+      })(), label: "명단·계획·현장·보고 — 명단을 받은 날부터 사후관리까지" },
     { h: "공공데이터 + 가상 가구", p: "숫자·지도·추천 옆 «출처» 꼬리표 → 활용 데이터 표의 해당 줄.",
       pic: '<rect class="f2" x="24" y="22" width="232" height="72" rx="14"/><rect class="f3" x="40" y="38" width="96" height="7" rx="3.5"/><rect class="f3" x="40" y="52" width="70" height="7" rx="3.5"/>' +
         '<rect class="pb" x="40" y="70" width="64" height="14" rx="7"/><text class="tx pt" x="72" y="80.5" text-anchor="middle">공공데이터</text>' +

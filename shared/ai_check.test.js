@@ -61,8 +61,8 @@ t("HTML: 모든 출처 칸·제목 id 존재, 44px 이상 누름 칸", function 
   });
   assert.ok(/\.cell \{[^}]*min-height: 64px/.test(html)); assert.ok(/\.ac-back \{[^}]*min-height: var\(--tap\)/.test(html));
 });
-t("공무원 화면 메뉴에 검증 화면 링크 한 줄", function () {
-  var oh = fs.readFileSync(path.join(ROOT, "officer/index.html"), "utf8");
+t("공무원 화면(계정 창 «더 보기»)에 검증 화면 링크 한 줄", function () {
+  var oh = fs.readFileSync(path.join(ROOT, "officer/flow.js"), "utf8");
   assert.strictEqual((oh.match(/\.\.\/shared\/ai_check\.html/g) || []).length, 1);
 });
 

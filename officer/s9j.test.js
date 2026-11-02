@@ -38,20 +38,19 @@ console.log("S9j 시험");
   t(c[1] + " " + today + " — 시연 기록이 오늘 기준으로 깔리고 지난 날짜가 «밀림»으로 쌓이지 않음", function () {
     withNow(c[0], seed);
     var b = build(NOW), sec = {}; b.sections.forEach(function (s) { sec[s.key] = s.items; });
-    assert.ok(sec.new.length >= 2, "새 주민 신호 " + sec.new.length);
+    assert.strictEqual(sec.new.length, 0, "시연 신고 0건(S11-k 신고 접수 제거)");
     assert.ok(sec.revisit.length >= 2, "오늘 재방문 " + sec.revisit.length);
     sec.revisit.forEach(function (x) { assert.strictEqual(x.due, today, "재방문 기한이 오늘이 아님 " + x.due); assert.ok(!x.overdue, "재방문이 밀림으로 표시"); });
-    var due = sec.due.map(function (x) { return x.why; }).join("/");
-    assert.ok(/오늘 기한/.test(due), "기한 임박에 «오늘 기한» 없음: " + due);
+    // «기한 임박»은 신고 처리 기한이라 신고 접수 제거(S11-k) 뒤 비어 있는 것이 맞다
     var pl = F.contacts.plan(F.store.get("attempts", []), HH, NOW, 5, { links: F.store.get("links", []), outcomes: F.store.get("outcomes", {}), followups: F.store.get("followups", {}) });
     assert.strictEqual(pl[0].date, today);
     var n = pl.reduce(function (a, d) { return a + d.items.length; }, 0);
     assert.ok(n >= 6, "닷새치 일정 " + n + "건");
     assert.ok(pl.slice(1).some(function (d) { return d.items.length; }), "내일 이후 일정이 비어 있음");
     var fu = pl[0].items.filter(function (x) { return x.kind === "followup"; });
-    assert.strictEqual(fu.length, 1, "오늘 칸 사후관리 1건이어야 함");
+    assert.strictEqual(fu.length, 2, "오늘 칸 사후관리 2건이어야 함(LD-2 밀린 1개월 + S11-i LD-4 오늘 1개월)");
     var g = F.linkGap.build({ households: HH, requests: DaeumRequests.list(), attempts: F.store.get("attempts", []), links: F.store.get("links", []), outcomes: F.store.get("outcomes", {}), now: NOW });
-    g.stages.forEach(function (s) { assert.ok(s.items.length >= 1, "연계 누락 «" + s.label + "» 비어 있음"); });
+    g.stages.filter(function (s) { return s.items.length || !/신호|신고|접수/.test(s.label + (s.key || "")); }).forEach(function (s) { assert.ok(s.items.length >= 1, "연계 누락 «" + s.label + "» 비어 있음"); });
   });
 });
 

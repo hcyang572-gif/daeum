@@ -52,7 +52,7 @@ function build() {
   var tokIn = Math.round(sum(used, function (u) { return u.input_tokens; }) / used.length);
   var tokOut = Math.round(sum(used, function (u) { return u.output_tokens; }) / used.length);
   [A, R].forEach(function (t) { t.p1 = pct(t.hit1, t.n); t.p3 = pct(t.hit3, t.n); t.pOk = pct(t.ok3, t.n3); });
-  var svc = JSON.parse(fs.readFileSync(path.join(ROOT, "citizen/data/services.json"), "utf8"));
+  var svc = JSON.parse(fs.readFileSync(path.join(ROOT, "data/services.json"), "utf8"));
   var catalogSrc = Object.keys(svc.meta.sources).filter(function (k) { return svc.meta.sources[k]; }).map(function (k) {
     var s = svc.meta.sources[k];
     return { name: s.name.replace(/\(OpenAPI\)$/, ""), no: s.page.replace(/^.*\/data\/(\d+)\/.*$/, "$1"), called: s.called };

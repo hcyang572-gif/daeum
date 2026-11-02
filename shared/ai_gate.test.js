@@ -10,7 +10,7 @@ global.window = globalThis; window.console.warn = function () {}; console.info =
 eval(fs.readFileSync(path.join(ROOT, "shared/config.js"), "utf8"));
 eval(fs.readFileSync(path.join(ROOT, "shared/ai.js"), "utf8"));
 var AI = window.DaeumAI;
-var catalog = JSON.parse(fs.readFileSync(path.join(ROOT, "citizen/data/services.json"), "utf8"));
+var catalog = JSON.parse(fs.readFileSync(path.join(ROOT, "data/services.json"), "utf8"));
 var cases = JSON.parse(fs.readFileSync(path.join(ROOT, "../01_리서치/AI정확도_측정도구/cases.json"), "utf8"));
 var D = JSON.parse(fs.readFileSync(path.join(ROOT, "data/households.json"), "utf8"));
 var pass = 0, fail = 0;

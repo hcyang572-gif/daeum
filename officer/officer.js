@@ -750,7 +750,7 @@
   }
   function loadServices() {
     // 국민 창구가 만든 서비스 목록이 있으면 합친다(없으면 내장 목록만)
-    var srcs = (C.serviceSources || ["data/services.sample.json"]).map(function (x) { return "../citizen/" + x; });
+    var srcs = (C.serviceSources || ["data/services.sample.json"]).map(function (x) { return "../" + x; });
     var used = "";
     function tryAt(i) {
       if (i >= srcs.length) return Promise.reject(0);
@@ -758,7 +758,7 @@
         .catch(function () { return tryAt(i + 1); });
     }
     return tryAt(0)
-      .catch(function () { used = "citizen/" + (C.serviceScriptFallback || "data/services.js"); return loadJs("../" + used, "__DAEUM_SERVICES__"); })
+      .catch(function () { used = (C.serviceScriptFallback || "data/services.js"); return loadJs("../" + used, "__DAEUM_SERVICES__"); })
       .then(function (j) {
         var arr = Array.isArray(j) ? j : (j.services || []), added = 0;
         arr.forEach(function (s) {

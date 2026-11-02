@@ -35,7 +35,7 @@ t("이웃 알림은 전화 희망이 아니어도 오늘 방문 묶음에 들어
 });
 
 t("이웃 알림의 «보낸 알림 확인»은 접수·확인까지만(그 집 상담·지원 내용은 안 보임)", function () {
-  require(path.join(base, "citizen/progress.js"));
+  require(path.join(base, "shared/progress.js"));
   var r = req("N2", { signal: "neighbor", status: "visiting", history: [{ at: "2026-10-28T10:00:00", status: "new" }, { at: "2026-10-28T15:00:00", status: "seen" }, { at: "2026-10-29T08:00:00", status: "visiting" }] });
   var p = F.progress.of(r, NOW);
   assert.strictEqual(p.steps.length, 2); assert.ok(/개인정보/.test(p.current.say)); assert.ok(!/방문·상담/.test(JSON.stringify(p)));
@@ -128,7 +128,7 @@ t("자기 동 집계에 재시도 예정·연계 누락이 들어감", function 
 
 console.log("문구 금지어(재제안 금지·겹침 주장)");
 t("«줄인 시간» 띠·수치, «위기 점수», «우리가 개발한 행복이음 기능» 류 문구 없음", function () {
-  ["officer/mount.js", "officer/features.js", "shared/report.js", "citizen/app.js", "citizen/index.html"].forEach(function (f) {
+  ["officer/mount.js", "officer/features.js", "shared/report.js"].forEach(function (f) { // S11-i: 주민 화면 제거
     var s = fs.readFileSync(path.join(base, f), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
     assert.ok(!/줄인 시간/.test(s), f + " — 줄인 시간"); assert.ok(!/위기 점수/.test(s), f + " — 위기 점수");
   });

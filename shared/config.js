@@ -22,18 +22,21 @@ window.DAEUM_CONFIG = {
     "화동면", "화서면", "화북면", "외서면", "은척면", "공검면", "이안면", "화남면",
     "남원동", "북문동", "계림동", "동문동", "동성동", "신흥동"],
 
-  // 국민 창구가 읽는 서비스 데이터(citizen/ 기준 상대경로). 앞에서부터 시도한다.
+  // 서비스 데이터(앱 뿌리 기준 상대경로 — S11-i 주민 화면 제거로 citizen/data → data 로 옮김). 앞에서부터 시도한다.
   serviceSources: ["data/services.json", "data/services.sample.json"],
   // .json 이 막힌 환경(행정망 등)에서 쓰는 짝 .js(window.__DAEUM_SERVICES__)
   serviceScriptFallback: "data/services.js",
 
-  // 국민 «도움 요청» 저장소(localStorage 키). 형식은 shared/README.md
-  requestsKey: "daeum.requests",
+  // S11-k PC↔폰 실시간 연동(방문 계획·방문 결과) — 닿음 전용 Supabase «daeum»(shared/sync.js 가 이 주소만 허용). 공개(publishable) 키만.
+  //   표: db/migration_visit_sync.sql(visit_plan·visit_log, RLS 본인 행만). 로그인 전·서버 준비 전에는 이 기기에만 저장한다.
+  syncUrl: "https://gicjzrxgktpovnphtjhi.supabase.co",
+  syncKey: "sb_publishable_Gh5BZa8H-8YP4cLT3fW2-g_l0Bqn7ZR",
 
   // S11-c 주민 폰 → 공무원 화면 실시간 신호(닿음 전용 Supabase daeum, 표 daeum_signal — db/migration_signal.sql).
-  // 공개용(publishable) 키만 — 이 키로는 «넣기»와 «최근 2일 읽기»만 된다. ⛔ service_role·secret 키는 절대 여기 두지 않는다.
-  // 보내는 값은 신호 종류·읍면동·급함·필요 분야 꼬리표·짧은 번호뿐(이름·연락처·주소·상황 글 없음). 비우면 같은 기기 저장만 쓴다.
-  signalUrl: "https://gicjzrxgktpovnphtjhi.supabase.co",
+  // ⛔ S11-i(11-02 호창님 «주민용 화면 전면 제거»): 주민 화면이 없어져 이 신호 입구는 «쓰지 않음». 서버 함수·표는 지우지 않았다(되돌릴 수 있게).
+  //    되살리려면 signalUrl 에 "https://gicjzrxgktpovnphtjhi.supabase.co" 를 다시 넣는다(공개용 키는 아래 그대로).
+  //    지금 «실시간 신고»는 공무원이 전화·통장·이웃 방문으로 받은 신고를 공무원 화면에서 직접 «신고 접수»(이 기기 저장, 서버 전송 0).
+  signalUrl: "",
   signalKey: "sb_publishable_Gh5BZa8H-8YP4cLT3fW2-g_l0Bqn7ZR",
   signalTable: "daeum_signal"
 };

@@ -34,11 +34,10 @@ t("S11-d4 C안: 보고서 그림은 [그림 1] 처리 추세 하나 — 화면 H
   var figs = M.body.filter(function (n) { return n.t === "fig"; });
   assert.strictEqual(figs.length, 1); assert.strictEqual(figs[0].kind, "pace"); assert.ok(H.indexOf('class="rpc-pace"') >= 0);
 });
-t("보고서 공유 보기·공무원 화면이 chart.js 를 report_doc.js 보다 먼저 싣는다", function () {
+t("보고서 공유 보기는 chart.js 를 report_doc.js 보다 먼저 싣는다 · 공무원 화면은 흐름 그림을 flow.js 가 직접 그림(S11-k)", function () {
   var rv = rd("shared/report_view.html"), of = rd("officer/index.html");
   assert.ok(rv.indexOf('src="chart.js"') > 0 && rv.indexOf('src="chart.js"') < rv.indexOf('src="report_doc.js"'));
-  assert.ok(of.indexOf("../shared/chart.js") > 0 && of.indexOf("../shared/chart.js") < of.indexOf("../shared/report.js"));
-  assert.ok(of.indexOf("../shared/chart.css") > 0);
+  assert.ok(of.indexOf("flow.js") > 0 && of.indexOf("flow.css") > 0);
 });
 
 console.log("새 부품");
@@ -89,11 +88,9 @@ t("새 부품·화면 CSS 에 하드코딩 색 없음(인쇄 회색 단계만 �
 
 console.log("공무원 화면 4곳");
 var mount = rd("officer/mount.js");
-t("① 오늘 ④ 현황 = 두 겹 막대 · ② 대시보드 = 깔때기+도넛 · ③ 연계 누락 = 흐름도 · ④ 오늘 머리 = 진행 고리", function () {
-  assert.ok(/DaeumChart\.dualBar\(\{ done: cd\.donePct/.test(mount));
-  assert.ok(/CH\.funnel\(\[\{ label: "발굴 명단"/.test(mount) && /CH\.donut\(S\.nonEligibleBy/.test(mount));
-  assert.ok(/DaeumChart\.flow\(stages\)/.test(mount));
-  assert.ok(/DaeumChart\.ring\(\{ total: order\.length, states: states/.test(mount) && /id="todayRing"/.test(rd("officer/index.html")));
+t("S11-k 흐름 그림: ③ 순위 이동선 · ④ 시간줄·지도 · ⑨ 달력·진척 고리를 flow.js 가 그림", function () {
+  var fl = rd("officer/flow.js");
+  assert.ok(/id="bump"/.test(fl) && /id="tl4"/.test(fl) && /class="cal"/.test(fl) && /ring-wrap/.test(fl));
 });
 t("그림마다 출처 꼬리표(가상 자료 번호 V1·V2) — guide.js 가 «가상» 표식을 붙인다", function () {
   var n = (mount.match(/src-tag[^\n]*data-src-ref[^\n]*V1|data-src-ref": "V1"/g) || []).length;
@@ -173,10 +170,9 @@ t("진행 단계 도식: 완료 ✓·지금·아직, 문장에 단계와 날짜"
   assert.ok(/ch-step cancel/.test(C.stepper([{ label: "x", state: "done" }], { cancelled: true })));
 });
 t("새 화면 4곳 + 사소 1건이 부품을 쓰고 출처 꼬리표를 단다", function () {
-  var m = rd("officer/mount.js"), ci = rd("citizen/app.js"), cx = rd("citizen/index.html"), oc = rd("officer/officer.css"), css = rd("shared/chart.css");
+  var m = rd("officer/mount.js"), oc = rd("officer/officer.css"), css = rd("shared/chart.css");
   assert.ok(/DaeumChart\.dayline\(DS\.chart\)/.test(m) && /DaeumChart\.slotGrid\(/.test(m) && /DaeumChart\.histLine\(/.test(m));
   assert.ok(/"data-src-ref": "V1", text: "출처: 가상 가구 위치로 어림한 시각/.test(m) && /"data-src-ref": "V1,R4"/.test(m) && /"data-src-ref": "V1", text: "출처: 가상 가구 연락 기록/.test(m));
-  assert.ok(/DaeumChart\.stepper\(p\.steps/.test(ci) && cx.indexOf("../shared/chart.js") > 0 && cx.indexOf("../shared/chart.js") < cx.indexOf("app.js") && cx.indexOf("../shared/chart.css") > 0);
   assert.ok(/\.over-go \{[^}]*min-height: 44px/.test(oc));
   assert.ok(/@media \(max-width: 400px\)[\s\S]*\.ch-dy-tr \{ height: calc\(var\(--hrs/.test(css) && /@media \(max-width: 420px\)[\s\S]*\.ch-step \{ grid-template-columns: 1fr/.test(css), "좁은 화면 세로 접기");
 });

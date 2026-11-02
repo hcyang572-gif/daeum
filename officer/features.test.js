@@ -1,14 +1,14 @@
 /* 닿음 S9b-1 기능 로직 자체 시험 — 실행: node officer/features.test.js (03_시제품 폴더에서)
-   의존성 없음(node 내장 assert). 데이터는 data/households.json(가상)·citizen/data/services.json 을 그대로 읽는다. */
+   의존성 없음(node 내장 assert). 데이터는 data/households.json(가상)·data/services.json 을 그대로 읽는다. */
 "use strict";
 var assert = require("assert");
 var path = require("path");
 var base = path.join(__dirname, "..");
 var F = require(path.join(base, "officer/features.js"));
 require(path.join(base, "shared/report.js"));
-require(path.join(base, "citizen/progress.js"));
+require(path.join(base, "shared/progress.js"));
 var D = require(path.join(base, "data/households.json"));
-var S = require(path.join(base, "citizen/data/services.json"));
+var S = require(path.join(base, "data/services.json"));
 
 var pass = 0, fail = 0;
 function t(name, fn) { try { fn(); pass++; console.log("  통과 " + name); } catch (e) { fail++; console.log("  실패 " + name + " — " + e.message); } }
