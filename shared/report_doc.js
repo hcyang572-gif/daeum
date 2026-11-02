@@ -94,129 +94,141 @@
     return out;
   }
 
+  /** S11-d4 C안 [그림 1] — 누적 처리 완료(굵은 초록) vs 목표선(회색 점선), 누적 접촉은 옅은 회색 보조선. 가구 수로만 말함(% 없음). d = {start,end,span,total,done:[일별 누적],contact:[일별 누적],goal}.
+      색은 직접 지정(PNG 로 구울 때도 같은 그림) — 초록 #2F5D50 · 경고 빨강 #B42318 */
+  function paceSvg(d) {
+    var W = 670, H = 215, L = 34, R = 56, T = 12, B = 34, pw = W - L - R, ph = H - T - B, mx = Math.max(150, d.total), span = Math.max(1, d.span);
+    var X = function (i) { return (L + pw * i / span).toFixed(1); }, Y = function (v) { return (T + ph * (1 - v / mx)).toFixed(1); };
+    var line = function (a) { return a.map(function (v, i) { return X(i) + "," + Y(v); }).join(" "); };
+    var last = d.done.length - 1, dn = d.done[last] || 0, ct = d.contact[d.contact.length - 1] || 0, goal = d.goal, gap = dn - goal;
+    var grid = [0, 50, 100, 150].filter(function (v) { return v <= mx; }).map(function (v) { return '<line x1="' + L + '" x2="' + (W - R + 10) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="' + (v ? "#D9D9D9" : "#B3B3B3") + '" stroke-width=".8"/><text x="' + (L - 6) + '" y="' + (+Y(v) + 3) + '" text-anchor="end" font-size="9" fill="#595959">' + v + "</text>"; }).join("");
+    var md = function (iso) { var q = String(iso).split("-"); return +q[1] + ". " + +q[2] + "."; };
+    var tk = function (i, l1, l2) { return '<text x="' + X(i) + '" y="' + (H - 20) + '" text-anchor="middle" font-size="9" fill="#595959">' + esc(l1) + "</text>" + (l2 ? '<text x="' + X(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="9" fill="#595959">' + esc(l2) + "</text>" : ""); };
+    var ticks = tk(0, md(d.start), "시작") + tk(last, md(d.today || d.start), "보고일") + tk(span, md(d.end), "마감");
+    var lab = function (x, y, txt, col, w, an) { return '<text x="' + x + '" y="' + y + '" font-size="10" font-weight="' + (w || 400) + '" fill="' + col + '"' + (an ? ' text-anchor="' + an + '"' : "") + ">" + esc(txt) + "</text>"; };
+    var gapTxt = (gap < 0 ? "−" + (-gap) : "+" + gap) + "가구";
+    var yd = +Y(dn), yg = +Y(goal);
+    return '<svg class="rpc-pace" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="누적 처리 완료 ' + dn + "가구, 목표선 " + goal + "가구, 누적 접촉 " + ct + "가구, 명단 " + d.total + '가구" font-family="Malgun Gothic, Pretendard, sans-serif">' +
+      '<rect width="' + W + '" height="' + H + '" fill="#fff"/>' + grid + ticks +
+      '<line x1="' + X(0) + '" y1="' + Y(0) + '" x2="' + X(span) + '" y2="' + Y(d.total) + '" stroke="#B3B3B3" stroke-width="1.3" stroke-dasharray="5 4"/>' +
+      '<polyline points="' + line(d.contact) + '" fill="none" stroke="#A6A6A6" stroke-width="1.2"/>' +
+      '<polyline points="' + line(d.done) + '" fill="none" stroke="#2F5D50" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="' + X(last) + '" cy="' + yd + '" r="3.4" fill="#2F5D50"/><circle cx="' + X(last) + '" cy="' + yg + '" r="3" fill="#fff" stroke="#595959"/>' +
+      (gap < 0 ? '<line x1="' + X(last) + '" x2="' + X(last) + '" y1="' + (yd - 4) + '" y2="' + (yg + 4) + '" stroke="#B42318" stroke-width="1.5"/>' : "") +
+      lab(+X(last) + 8, (yd + yg) / 2 + 3, gapTxt, gap < 0 ? "#B42318" : "#2F5D50", 700) + lab(+X(last) + 8, yd + 14, "처리 완료 " + dn, "#2F5D50", 700) + lab(+X(last) + 8, yg - 8, "목표선 " + goal, "#595959") +
+      lab(+X(last) - 6, +Y(ct) - 6, "접촉 " + ct, "#8C8C8C", 400, "end") + lab(+X(span) + 6, +Y(d.total) + 3, "명단 " + d.total, "#595959") + "</svg>";
+  }
+
+  // ═══ S11-d4 C안(공문 정제형) 모델 — 내용: 02_원고/S11-d4_보고서_내용안.md §1 산식 · 글 속 **굵게** !!빨강!! 표시는 화면·한글이 글자 모양으로 바꾼다 ═══
+  var WD = ["일", "월", "화", "수", "목", "금", "토"];
+  function isOff(d) { return F.util && F.util.isOff ? F.util.isOff(d) : (d.getDay() === 0 || d.getDay() === 6); }
+  function md(iso) { var p = String(iso).slice(0, 10).split("-"); return +p[1] + ". " + +p[2] + "."; }
+  function plain(s) { return String(s == null ? "" : s).replace(/\*\*|!!/g, ""); }
+  function minus(n) { return n < 0 ? "−" + (-n) : String(n); }
+  function nextWork(from, n) { var d = new Date(from.getTime()); while (n > 0) { d = new Date(d.getTime() + DAY); if (!isOff(d)) n--; } return d; }
+  function wdLabel(d) { return (d.getMonth() + 1) + ". " + d.getDate() + ".(" + WD[d.getDay()] + ")"; }
+  /** 읍면 목표선: 명단 × 경과 ÷ 차수, 합계에 맞춰 «가장 큰 나머지» 순으로 올림 */
+  function areaGoals(rows, total, goal) {
+    var raw = rows.map(function (a) { return total ? a.households * goal / total : 0; }), g = raw.map(Math.floor), left = goal - g.reduce(function (s, x) { return s + x; }, 0);
+    raw.map(function (r, i) { return [r - g[i], i]; }).sort(function (x, y) { return y[0] - x[0]; }).forEach(function (x) { if (left > 0) { g[x[1]]++; left--; } });
+    return g;
+  }
+
   function build(kind, stats, input, cd, o) {
     o = o || {};
-    var rep = (F.report && F.report[kind]) ? F.report[kind](stats, { countdown: cd, office: o.office, now: input.now }) : null;
-    var H = stats.households, Q = stats.requests, Lk = stats.links, fu = stats.followUp;
+    var H = stats.households, Q = stats.requests, Lk = stats.links, fu = stats.followUp || { retryDue: 0, escalate: 0, gaps: 0, notApplied: [] };
     var now = input.now ? new Date(input.now) : new Date();
-    var name = kind === "monthly" ? "월간" : "주간", unit = kind === "monthly" ? "달" : "주";
+    var name = kind === "monthly" ? "월간" : "주간", thisW = kind === "monthly" ? "이번 달" : "이번 주";
+    var rep = (F.report && F.report[kind]) ? F.report[kind](stats, { countdown: cd, office: o.office, now: input.now }) : null;
     var period = rep ? rep.period : { from: ymd(now), to: ymd(now) };
-    // S11-d3: 주간 보고서를 월요일에 열면 «월요일~오늘»이 하루가 된다(shared/report.js:154 mondayOf) → 시작=끝이면 최근 7일로 보여 준다
     if (kind === "weekly" && period.from && period.from === period.to) period = { from: ymd(new Date(new Date(period.to + "T00:00:00").getTime() - 6 * DAY)), to: period.to };
-    var scope = stats.scope;
+    var scope = stats.scope, office = "상주시청"; // 11-02 호창님: 기관 표기는 «상주시청»만
     var areasMine = stats.byArea.filter(function (a) { return a.households; }).map(function (a) { return a.area; });
     var scopeTxt = scope ? scope : (areasMine.length ? "담당 " + areasMine.length + "개 읍면(" + areasMine.join("·") + ")" : "담당 지역");
-    var office = "상주시청"; // 11-02 호창님: 기관 표기는 «상주시청»만(부서·센터 이름을 쓰지 않음)
-    var other = Math.max(0, H.closed - H.met - H.nonEligible), inProg = Math.max(0, H.contacted - H.closed);
-    var notC = Math.max(0, H.total - H.met - H.nonEligible - other - inProg);
-    var ahead = cd.onTrack;
-    var verdict = cd.upcoming ? cd.round.label + " 시작 " + dot(cd.round.start) + " 전 — 지난 차수 마무리 단계입니다."
-      : "처리 " + cd.donePct + "%로 기간 경과 " + cd.elapsedPct + "%보다 " + (ahead ? "앞서 있음" : "뒤처져 있음") + " — 남은 " + num(cd.remaining) + "가구는 하루 " + cd.perWorkday + "가구씩이면 " + dot(cd.round.end) + " 마감 안에 끝남";
-    var srcRound = { tag: "공개 자료", text: "발굴 차수 일정: " + cd.round.source };
-    var kpis = [
-      { k: "발굴 명단", v: num(H.total), u: "가구", s: scopeTxt },
-      { k: "접촉률", v: String(pct(H.contacted, H.total)), u: "%", s: num(H.contacted) + "가구 접촉 · 기간 경과 " + cd.elapsedPct + "%" },
-      { k: "만남·상담", v: num(H.met), u: "가구", s: "비해당 " + num(H.nonEligible) + "가구" },
-      { k: "서비스 연계", v: num(Lk.total), u: "건", s: Lk.households + "가구" + (fu ? " · 누락 " + fu.gaps + "곳" : "") },
-      { k: cd.upcoming ? "차수 시작까지" : "차수 마감", v: cd.upcoming ? String(days(ymd(now), cd.round.start)) : (cd.daysLeft >= 0 ? "D-" + cd.daysLeft : "마감"), u: cd.upcoming ? "일" : "", s: cd.upcoming ? dot(cd.round.start) + " 시작" : "하루 " + cd.perWorkday + "가구 목표", tone: cd.upcoming || ahead ? "pos" : "warn" }
-    ];
-    var B = []; // 본문 마디: {t:"ch"|"li"|"fig"|"tbl"|"note"}
-    function ch(t, say, tone) { B.push({ t: "ch", text: t, say: say || "", tone: tone || "" }); }
+    var r = cd.round, today = ymd(now), span = Math.max(1, days(r.start, r.end)), el = Math.max(0, Math.min(span, days(r.start, today)));
+    var total = H.total, done = H.closed, goal = Math.round(total * el / span), diff = done - goal;
+    var remain = total - done, inContact = Math.max(0, H.contacted - done), notC = Math.max(0, total - H.contacted);
+    // 남은 평일(보고일 다음 날 ~ 마감) → 하루 목표 → 주 목표 = 하루 목표 × 다음 주 평일 수(공휴일 주 보정)
+    var wdL = 0, endD = new Date(r.end + "T00:00:00"), c = new Date(today + "T00:00:00");
+    while (c < endD) { c = new Date(c.getTime() + DAY); if (c <= endD && !isOff(c)) wdL++; }
+    var perDay = wdL ? Math.ceil(remain / wdL) : remain, wk = 0, k;
+    for (k = 1; k <= 7; k++) if (!isOff(new Date(new Date(today + "T00:00:00").getTime() + k * DAY))) wk++;
+    wk = Math.min(5, wk) || 5;
+    var weekGoal = perDay * wk, weekDone = (stats.closedDays || []).filter(function (d) { return d >= period.from && d <= period.to; }).length;
+    var retry = fu.retryDue || 0, esc = Math.min(fu.escalate || 0, retry), newVisit = Math.max(0, weekGoal - (retry - esc)), retryPart = Math.min(Math.max(0, retry - esc), weekGoal);
+    var short = Math.max(0, weekGoal - weekDone);
+    // 읍면별: 명단 있는 곳만, 목표선·차이
+    var rowsA = stats.byArea.filter(function (a) { return a.households; }), goalsA = areaGoals(rowsA, total, goal);
+    var areaRows = rowsA.map(function (a, i) { return [a.area, a.households, a.closed || 0, goalsA[i], (a.closed || 0) - goalsA[i], a.retry || 0, a.open || 0]; });
+    var worst = null; areaRows.forEach(function (x, i) { if (x[4] < 0 && (worst === null || x[4] < areaRows[worst][4])) worst = i; });
+    // 누적 처리·접촉(날마다)
+    var tr = trend(input, stats, cd), doneDaily = [], i2;
+    for (i2 = 0; i2 <= el; i2++) doneDaily.push((stats.closedDays || []).filter(function (d) { return Math.max(0, days(r.start, d)) <= i2; }).length);
+    var contactDaily = tr.points.slice(0, el + 1); while (contactDaily.length < el + 1) contactDaily.push(contactDaily[contactDaily.length - 1] || 0);
+    var contactN = contactDaily[contactDaily.length - 1] || 0;
+    var pace = { start: r.start, end: r.end, today: today, span: span, total: total, done: doneDaily, contact: contactDaily, goal: goal };
+
+    var up = !!cd.upcoming, B = [];
+    var diffTxt = diff < 0 ? "!!" + (-diff) + "가구 뒤처짐!!" : diff > 0 ? "**" + diff + "가구 앞섬**" : "같은 수준";
+    var L1 = "명단 " + num(total) + "가구 중 **" + num(done) + "가구 처리 완료** — 고르게 처리했을 때(" + num(goal) + "가구)보다 " + diffTxt;
+    var L2 = "다음 주 **" + weekGoal + "가구(하루 " + perDay + "가구)**를 처리하면 " + md(r.end) + " 마감 안에 끝남";
+    var verdicts = up ? [r.label + " 시작 " + dot(r.start) + " 전 — 지난 차수 마무리 단계"] : [L1, L2];
+    function ch(t) { B.push({ t: "ch", text: t }); }
     function li(lv, text) { B.push({ t: "li", lv: lv, text: text }); }
-    var fig = 0, tbl = 0;
-    function figure(kind2, title, data, src, tags, ex) { fig++; B.push(Object.assign({ t: "fig", no: fig, kind: kind2, title: title, data: data, src: src, tags: tags }, ex || {})); return fig; }
-
-    var acts = [];
-    if (Q.byStatus["new"]) acts.push(["미확인 주민 신호 우선 확인", "미확인 " + Q.byStatus["new"] + "건" + (Q.urgent ? "(긴급 " + Q.urgent + "건 포함)" : "") + "은 접수 당일 확인"]);
-    if (fu && fu.retryDue) acts.push(["재방문·재연락 동선 편성", fu.retryDue + "가구를 오늘 방문 동선에 넣음"]);
-    if (fu && fu.escalate) acts.push(["간접 확인 전환", fu.escalate + "가구는 통반장·이웃 순으로 안부 확인"]);
-    if (fu && fu.gaps) acts.push(["연계 누락 점검", fu.gaps + "곳의 멈춘 단계(신청·결정·결과 확인)를 담당 기관과 확인"]);
-    if (!cd.upcoming && !ahead) acts.push(["처리 진도 보완", "하루 " + cd.perWorkday + "가구 목표로 읍면별 방문 묶기"]);
-    if (!acts.length) acts.push(["현 체계 유지", "특이사항 없음"]);
-    var warnTone = !cd.upcoming && !ahead;
-    ch("개요", "명단 " + num(H.total) + "가구·주민 신호 " + num(Q.total) + "건을 " + dot(period.from) + " ~ " + dot(period.to) + " 기준으로 점검");
-    li(1, "보고 목적");
-    li(2, cd.round.label + " 명단 처리와 주민 신호·서비스 연계 현황을 " + name + " 단위로 점검함");
-    li(1, "보고 범위");
-    li(2, "기간: " + dot(period.from) + " ~ " + dot(period.to));
-    li(2, "대상: " + scopeTxt + " 발굴 명단 " + num(H.total) + "가구, 주민 신호 " + num(Q.total) + "건");
-
-    ch("현황", "명단 " + num(H.total) + "가구 중 " + pct(H.contacted, H.total) + "% 접촉" + (H.notContacted ? ", 아직 못 만난 집 " + num(H.notContacted) + "가구" : "") + " · 서비스 연계 " + num(Lk.total) + "건");
-    li(1, "발굴 명단 처리");
-    li(2, num(H.total) + "가구 중 " + num(H.contacted) + "가구 접촉(" + pct(H.contacted, H.total) + "%) — 만남·상담 " + num(H.met) + ", 비해당 " + num(H.nonEligible) + ", 미접촉 " + num(H.notContacted) + "가구");
-    li(3, "처리 상태별 구성은 [그림 " + (fig + 1) + "] 참조");
-    figure("donut", "명단 " + num(H.total) + "가구 중 " + pct(H.closed, H.total) + "%는 처리를 마침", [
-      { label: "만남·상담", n: H.met, c: 1 }, { label: "비해당", n: H.nonEligible, c: 2 }, { label: "전출 등 종결", n: other, c: 3 }, { label: "접촉 중", n: inProg, c: 4 }, { label: "미접촉", n: notC, c: 5 }
-    ].filter(function (x) { return x.n; }), "닿음 집계(가상 가구)", ["가상"], { sheet: "명단 처리", item: "처리 상태", unitName: "가구", agg: "share" });
-    li(1, "주민 신호(도움 요청·이웃 알림)");
-    li(2, num(Q.total) + "건 접수(긴급 " + Q.urgent + "·대신·이웃 " + Q.proxy + ") — 완료 " + Q.byStatus.done + ", 진행 " + (Q.byStatus.seen + Q.byStatus.visiting) + ", 미확인 " + Q.byStatus["new"] + (Q.avgDays != null ? ", 평균 처리 " + Q.avgDays + "일" : ""));
-    if (Q.total) figure("bars", "요청 " + num(stats.funnel[0].n) + "건 중 " + num(stats.funnel[3].n) + "건이 연계 완료까지 감", stats.funnel.map(function (f) { return { label: f.label, n: f.n }; }), "닿음 집계(가상 주민 신호)", ["가상"], { sheet: "요청 단계", item: "처리 단계", unitName: "건", agg: "funnel" });
-    li(1, "서비스 연계");
-    li(2, num(Lk.total) + "건(" + Lk.households + "가구)" + (Lk.byService.length ? " — 많은 순: " + Lk.byService.slice(0, 3).map(function (s) { return s.name + " " + s.n; }).join(", ") : ""));
-    if (Lk.byService.length) figure("bars", Lk.byService[0].name + " 연계가 " + Lk.byService[0].n + "건으로 가장 많음", Lk.byService.slice(0, 6).map(function (s) { return { label: s.name, n: s.n }; }), "닿음 집계(가상 연계 기록)", ["가상"], { sheet: "연계 서비스", item: "서비스", unitName: "건", agg: "share" });
-    var pts = areaPoints(input, stats);
-    if (stats.byArea.length) {
-      li(1, "읍면별 현황");
-      var topA = stats.byArea.slice().sort(function (a, b) { return b.households - a.households; })[0];
-      li(2, topA.area + " 명단이 " + num(topA.households) + "가구로 가장 많고, 접촉률은 " + pct(topA.contacted, topA.households) + "%");
-      var nM = figure("map", "명단 가구는 " + (areasMine.length || stats.byArea.length) + "개 읍면에 있고 " + topA.area + "이 가장 많음", pts, "읍면 위치: 행정안전부 주민등록 인구통계 읍면동 목록(2026-09) 중심 대략값 · 가구 수: 가상", ["공공데이터", "가상"]);
-      tbl++;
-      var rows = stats.byArea.filter(function (a) { return a.households || a.requests || a.links; });
-      var sum = rows.reduce(function (s, a) { s[0] += a.households; s[1] += a.contacted; s[2] += a.requests; s[3] += a.links; return s; }, [0, 0, 0, 0]);
-      B.push({ t: "tbl", no: tbl, title: "읍면별 처리 현황", unit: "(단위: 가구, %, 건)", head: ["읍면", "명단", "접촉", "접촉률", "주민 신호", "연계"],
-        rows: rows.map(function (a) { return [a.area, a.households, a.contacted, pct(a.contacted, a.households) + "%", a.requests, a.links]; }),
-        foot: ["합계", sum[0], sum[1], pct(sum[1], sum[0]) + "%", sum[2], sum[3]], src: "닿음 집계(가상) · 읍면 이름 행정안전부(2026-09)", tags: ["가상", "공공데이터"], see: nM, sheet: "읍면별", rate: { col: 3, num: 2, den: 1 } });
+    ch("결론"); verdicts.forEach(function (v) { li(2, v); });
+    var kpis = [
+      { k: "처리 완료", v: String(done), u: "가구", s: "목표선 " + goal + " · " + (diff < 0 ? "!!−" + (-diff) + "가구!!" : diff > 0 ? "+" + diff + "가구" : "±0") },
+      { k: thisW + " 처리", v: String(weekDone), u: "가구", s: "필요 " + weekGoal + "가구(하루 " + perDay + " × " + wk + "일)" },
+      { k: "처리 중 주민 신고", v: String(Q.open || 0), u: "건", s: Q.openUrgent ? "긴급 " + Q.openUrgent + "건 포함" : "긴급 없음" }];
+    var asks = [];
+    if (!up) {
+      ch("핵심 수치"); B.push({ t: "kpis" });
+      var figTitle = diff < 0 ? (contactN >= goal ? "처리 완료가 목표선보다 " + (-diff) + "가구 아래 — 접촉은 앞서 마무리 단계가 밀림" : "처리·접촉 모두 목표선 아래") : "처리 완료가 목표선보다 " + diff + "가구 위";
+      B.push({ t: "fig", kind: "pace", no: 1, title: figTitle, sub: "(단위: 가구, " + dot(r.start) + " ~ " + md(today) + " 누적)", data: pace, sheet: "처리 추세", tags: ["공개 자료", "가상"],
+        src: r.source + " · 처리·접촉 기록: 시연용 가상", note: "※ 목표선 = 명단 " + total + " × 경과 " + el + "일 ÷ 차수 " + span + "일(고르게 처리했다면 보고일까지 마쳤어야 할 가구) · 차수 일정: " + r.source + " · 처리·접촉 기록: 시연용 가상" });
+      ch("위험 요인");
+      if (esc) li(2, "3회 부재 **" + esc + "가구**가 재방문 동선을 막아 신규 방문이 밀림");
+      if (Q.open) li(2, "처리 중 주민 신고 **" + Q.open + "건" + (Q.openUrgent ? "(긴급 " + Q.openUrgent + ")" : "") + "** — 접수 다음 근무일 안 확인 필요");
+      if (!esc && !Q.open) li(2, "특이한 위험 요인 없음");
+      var due1 = nextWork(now, 1), d2 = new Date(now.getTime()), mon;
+      do { d2 = new Date(d2.getTime() + DAY); } while (d2.getDay() !== 1); mon = d2; while (isOff(mon)) mon = new Date(mon.getTime() + DAY);
+      if (esc) asks.push({ main: "3회 부재 " + esc + "가구 — 통·이장 안부 확인 협조를 해당 읍면에 요청(공문) 승인", sub: "협의 후 확정 — 승인 시 직접 방문에서 " + esc + "가구가 빠져 신규 방문 확보", due: wdLabel(due1) + " 17:00" });
+      if (diff < 0 && short > 0 && worst !== null) asks.push({ main: areaRows[worst][0] + " 방문 지원 — 다음 주 " + short + "가구분 인력 협조", sub: "승인 시 마감 안 완료 가능(미승인 시 하루 목표 재계산)", due: wdLabel(mon) + " 10:00" });
+      ch("결정 요청");
+      if (asks.length) B.push({ t: "ask", items: asks }); else li(2, "요청 없음");
+      B.push({ t: "break" });
+      ch("처리 상태");
+      li(2, "남은 " + num(remain) + "가구 중 " + num(inContact) + "가구는 이미 만났거나 연락 중 — 새로 찾아갈 집은 " + num(notC) + "가구");
+      li(3, "처리 **" + done + "** · 접촉 중 **" + inContact + "**" + (fu.retryDue || esc ? " (재방문 " + retry + " · 3회 부재 " + esc + ")" : "") + " · 미접촉 **" + notC + "** = 명단 " + total);
     }
-
-    // S11-d(11-02): 주요 사례 — 개인정보 가림(가구 번호 끝 두 자리 ●●, 이름·연락처·주소 없음, 주민 글의 번호는 지움). 최대 3건
-    var cs = cases(input, scope);
-    if (cs.length) {
-      li(1, "주요 사례(개인정보 가림)");
-      cs.forEach(function (c) { li(2, c.head); li(3, c.body); });
+    ch("읍면별 현황");
+    li(2, worst !== null ? areaRows[worst][0] + "이 목표선보다 " + (-areaRows[worst][4]) + "가구 뒤처져 가장 늦음" : "모든 읍면이 목표선 이상");
+    var sum = areaRows.reduce(function (s, x) { for (var j = 1; j < 7; j++) s[j] += x[j]; return s; }, ["합계", 0, 0, 0, 0, 0, 0]);
+    B.push({ t: "tbl", no: 1, title: "읍면별 처리 현황", unit: "(단위: 가구, 건)", head: ["읍면", "명단", "처리 완료", "목표선", "차이", "재방문", "처리 중 신고"], rows: areaRows, foot: sum, hl: worst, signCol: 4,
+      src: "읍면 목표선 = 읍면 명단 × " + el + " ÷ " + span + "(합계 " + goal + "에 맞춰 반올림) · 읍면 이름: 행정안전부 주민등록 인구통계(2026-09) · 수치: 시연용 가상", tags: ["가상", "공공데이터"], sheet: "읍면별" });
+    ch("주민 신고·서비스 연계");
+    li(2, "주민 신고 " + num(Q.total) + "건 중 " + (Q.byStatus.done || 0) + "건 연계 완료, " + (Q.open || 0) + "건은 처리 중" + (Q.openUrgent ? "(긴급 " + Q.openUrgent + ")" : ""));
+    if (Q.total) li(3, stats.funnel.map(function (f) { return f.label.replace("요청 ", "") + " **" + f.n + "**"; }).join(" → "));
+    li(2, "서비스 연계 " + num(Lk.total) + "건(" + Lk.households + "가구)" + (fu.gaps ? " — 그중 " + fu.gaps + "곳은 신청·결과 확인이 멈춤" : ""));
+    if (Lk.byService.length) li(3, Lk.byService.slice(0, 3).map(function (s) { return s.name + " **" + s.n + "**"; }).join(" · "));
+    if (!up) {
+      ch("다음 주 계획");
+      li(2, "다음 주 **" + weekGoal + "가구** = 재방문 **" + retryPart + "** + 신규 방문 **" + newVisit + "**" + (esc ? " (3회 부재 " + esc + "가구는 결정 요청 1 승인 시 통·이장 안부 확인으로)" : ""));
+      if (Q.open) li(2, "처리 중 주민 신고 " + Q.open + "건은 다음 근무일 안 확인" + (Q.openUrgent ? ", 긴급 " + Q.openUrgent + "건 우선" : ""));
+      if (fu.gaps) li(2, "연계가 멈춘 " + fu.gaps + "곳은 해당 기관에 신청·결정 결과 확인");
     }
+    var srcRound = { tag: "공개 자료", text: "발굴 차수 일정: " + r.source };
+    ch("붙임 — 자료 출처");
+    li(2, "차수 일정 " + r.source + " · 읍면 이름 행정안전부 주민등록 인구통계(2026-09) · 가구·신고·연계 숫자는 닿음 시연용 가상 자료(자동 집계, AI 미사용)");
+    B.push({ t: "note", text: "※ 가구·신고·연계 숫자는 시연용 가상 자료(실제 개인정보 없음). 공식 실적은 행복이음 숫자와 대조." });
 
-    ch("문제점·분석", cd.upcoming ? "새 차수 시작 전 — 지난 차수 마무리 단계" : "처리 " + cd.donePct + "%로 기간 경과 " + cd.elapsedPct + "%보다 " + (ahead ? "앞서 있음" : "뒤처짐") + (fu ? " · 다시 찾을 집 " + fu.retryDue + "가구, 연계 누락 " + fu.gaps + "곳" : ""), warnTone ? "warn" : "");
-    li(1, "처리 진도");
-    li(2, cd.upcoming ? cd.message : "기간 경과 " + cd.elapsedPct + "% 대비 처리 " + cd.donePct + "% — " + (ahead ? "일정 안에 있음" : "뒤처져 있어 하루 처리량을 " + cd.perWorkday + "가구로 높여야 함"));
-    var tr = trend(input, stats, cd);
-    li(3, "차수 시작부터 누적 접촉 추세는 [그림 " + (fig + 1) + "] 참조(점선 = 마감까지 고르게 처리할 때)");
-    var trAbove = trendAbove(tr);
-    figure("trend", trAbove ? "누적 접촉이 목표선보다 위에 있음" : "누적 접촉이 목표선보다 아래에 있음", tr, cd.round.source + " · 접촉 기록: 가상", ["공개 자료", "가상"], { sheet: "접촉 추세" });
-    if (stats.nonEligibleBy.length) {
-      li(1, "비해당 사유");
-      li(2, "비해당 " + num(H.nonEligible) + "가구 — " + stats.nonEligibleBy[0].label + "가 가장 많음");
-      if (stats.nonEligibleBy.length > 1) stats.nonEligibleBy.forEach(function (x) { li(3, x.label + " " + x.n + "가구"); });
-    }
-    if (fu) {
-      li(1, "현장 후속 업무");
-      li(2, "오늘까지 다시 찾아가거나 연락할 집 " + fu.retryDue + "가구" + (fu.escalate ? "(방문 3회 부재로 간접 확인 전환 " + fu.escalate + "가구)" : ""));
-      li(2, "연계 누락(상담 뒤 연계 없음·신청/결과 확인 안 함) " + fu.gaps + "곳");
-      if (fu.notApplied && fu.notApplied.length) li(3, "안내 뒤 신청 안 한 서비스: " + fu.notApplied.map(function (x) { return x.name + " " + x.n; }).join(", "));
-    }
-
-    ch("대책·조치", acts[0][0] + " — " + acts[0][1] + (acts.length > 1 ? " 외 " + (acts.length - 1) + "건" : ""));
-    acts.forEach(function (a) { li(1, a[0]); li(2, a[1]); });
-
-    ch("향후 계획", cd.upcoming ? cd.round.label + " " + dot(cd.round.start) + " 시작 준비" : "하루 " + cd.perWorkday + "가구씩 처리하면 " + dot(cd.round.end) + " 마감 안에 끝남(남은 평일 " + cd.workdaysLeft + "일)");
-    li(1, "다음 " + unit + " 목표");
-    if (!cd.upcoming) li(2, "하루 " + cd.perWorkday + "가구, 주 " + cd.perWeek + "가구 처리");
-    if (H.notContacted) li(2, "미접촉 " + num(H.notContacted) + "가구 방문 동선 편성");
-    li(1, "차수 마감");
-    li(2, cd.round.label + " " + dot(cd.round.start) + " ~ " + dot(cd.round.end) + (cd.upcoming ? "" : ", 남은 평일 " + cd.workdaysLeft + "일"));
-    li(3, "※ 공식 실적은 행복이음 숫자와 대조해 확정");
-
-    var summary = [
-      "명단 " + num(H.total) + "가구 중 " + num(H.contacted) + "가구 접촉(" + pct(H.contacted, H.total) + "%), 만남·상담 " + num(H.met) + "가구",
-      "주민 신호 " + num(Q.total) + "건 중 미확인 " + Q.byStatus["new"] + "건, 서비스 연계 " + num(Lk.total) + "건",
-      fu ? "다시 찾을 집 " + fu.retryDue + "가구 · 연계 누락 " + fu.gaps + "곳" : null
-    ].filter(Boolean);
-    var title = (scope ? scope + " " : "") + "복지 사각지대 발굴 " + name + " 추진 현황";
+    var title = (scope ? scope + " " : "") + "복지 사각지대 현장 업무 " + name + " 현황";
     return {
-      v: 1, kind: kind, title: title, period: period, made: ymd(now), madeTime: pad(now.getHours()) + ":" + pad(now.getMinutes()),
-      office: office, scope: scope, scopeTxt: scopeTxt, verdict: verdict, onTrack: !!ahead, upcoming: !!cd.upcoming,
-      kpis: kpis, gauge: cd.upcoming ? [] : [{ label: "기간 경과", pct: cd.elapsedPct, text: cd.elapsedPct + "%" }, { label: "처리 완료", pct: cd.donePct, text: cd.donePct + "% (" + num(H.closed) + "가구)", tone: ahead ? "" : "warn" }, { label: "접촉", pct: pct(H.contacted, H.total), text: pct(H.contacted, H.total) + "% (" + num(H.contacted) + "가구)" }], summary: summary, asks: acts.slice(0, 2).map(function (a) { return a[0] + " — " + a[1]; }),
-      body: B, sources: [SRC.virtual, srcRound, SRC.region, SRC.calc],
-      pasteText: null // 아래 text(model) 로 만든다
+      v: 2, kind: kind, title: title, subtitle: r.label.replace(/^(\d{4})년 제(\d+)차.*$/, "$1년 제$2차 발굴 명단") + " · " + dot(period.from) + " ~ " + md(period.to), period: period, made: today, madeTime: pad(now.getHours()) + ":" + pad(now.getMinutes()),
+      office: office, scope: scope, scopeTxt: scopeTxt, verdict: verdicts.map(plain).join(" "), verdicts: verdicts, onTrack: diff >= 0, upcoming: up,
+      kpis: up ? [] : kpis, gauge: [], summary: verdicts.map(plain), asks: asks.map(function (a) { return a.main; }),
+      plan: { goal: goal, diff: diff, perDay: perDay, weekGoal: weekGoal, weekDone: weekDone, retry: retryPart, fresh: newVisit, short: short, wk: wk },
+      body: B, sources: [SRC.virtual, srcRound, SRC.region, SRC.calc], pasteText: null
     };
   }
 
@@ -228,55 +240,47 @@
   function trendSvg(t) { return C.trendSvg(t); }
   function tagHtml(t) { return '<span class="rp-tag' + (t === "가상" ? " v" : t === "공공데이터" ? " p" : "") + '">' + esc(t) + "</span>"; }
 
-  /** 모델 → 보고서 HTML(화면·인쇄·공유 보기 공통) */
+  /** 글 속 **굵게** · !!빨강!! → HTML (먼저 이스케이프) */
+  function rich(s) { return esc(s).replace(/!!(.+?)!!/g, '<b class="rpc-red">$1</b>').replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"); }
+  function cellNum(n, i, signCol) { return i === signCol && typeof n === "number" ? (n > 0 ? "+" + n : minus(n)) : num(n); }
+  /** 모델 → 보고서 HTML(화면·인쇄·공유 보기 공통) — C안 공문 정제형: 칠한 칸 없이 선·글자만 */
   function html(m) {
     var out = [];
-    out.push('<article class="rp-doc" lang="ko" aria-label="' + esc(m.title) + '">');
-    // ── 1쪽: 제목 상자·작성 부서/일자·요약 ──
-    out.push('<section class="rp-p1"><header class="rp-head"><h2 class="rp-title">' + esc(m.title) + '</h2><p class="rp-period">' + esc(dot(m.period.from) + " ~ " + dot(m.period.to)) + "</p></header>");
-    out.push('<p class="rp-meta"><span>' + esc(dot(m.made)) + "</span><span>" + esc(m.office) + "</span></p>");
-    out.push('<p class="rp-vnote">※ 가구·주민 신호·연계 숫자는 시연용 <b>가상</b> 자료입니다(실제 개인정보 없음).</p>');
-    out.push('<div class="rp-verdict' + (m.upcoming || m.onTrack ? "" : " warn") + '"><span class="rp-vk">한 줄 결론</span><p>' + esc(m.verdict) + "</p></div>");
-    out.push('<div class="rp-kpis">' + m.kpis.map(function (k) { return '<div class="rp-kpi' + (k.tone ? " " + k.tone : "") + '"><span class="rp-kk">' + esc(k.k) + '</span><b class="rp-kv num">' + esc(k.v) + (k.u ? "<small>" + esc(k.u) + "</small>" : "") + '</b><span class="rp-ks">' + esc(k.s) + "</span></div>"; }).join("") + "</div>");
-    out.push('<div class="rp-sum">' + li(1, "핵심 현황") + m.summary.map(function (s) { return li(2, s); }).join("") + li(1, "조치 사항") + m.asks.map(function (s) { return li(2, s); }).join("") + "</div>");
-    out.push('<p class="rp-cont">상세 내용은 다음 쪽부터</p></section>');
-    // ── 본문 Ⅰ~Ⅴ ──
-    out.push('<section class="rp-body">');
-    var c = 0, open = false;
+    out.push('<article class="rp-doc rpc" lang="ko" aria-label="' + esc(m.title) + '">');
+    out.push('<header class="rp-head rpc-head"><h2 class="rp-title rpc-title">' + esc(m.title) + '</h2><p class="rpc-sub">' + esc(m.subtitle || "") + '</p></header><p class="rpc-meta">보고일 ' + esc(dot(m.made)) + " · " + esc(m.office) + "</p>");
     m.body.forEach(function (n) {
-      if (n.t === "ch") { if (open) out.push("</div>"); out.push('<div class="rp-chap"><h3 class="rp-ch"><span class="num">' + ROMAN[c++] + ".</span> " + esc(n.text) + "</h3>" + (n.say ? '<p class="rp-say" style="margin:2px 0 8px;padding:8px 12px;border-left:4px solid ' + (n.tone === "warn" ? "#D9A441;background:#F8EFDB" : "#17594F;background:#E3EEEB") + ';font-weight:700;font-size:.95em;line-height:1.5"><small style="display:block;color:#17594F;font-weight:700">이 파트의 한 줄 결론</small>' + esc(n.say) + "</p>" : "")); open = true; }
-      else if (n.t === "li") out.push(li(n.lv, n.text));
-      else if (n.t === "fig") {
-        var g = n.kind === "donut" ? donut(n.data) : n.kind === "bars" ? bars(n.data) : n.kind === "map" ? map(n.data) : trendSvg(n.data);
-        out.push('<figure class="rp-fig rp-' + n.kind + 'f">' + g + '<figcaption><b>[그림 ' + n.no + "]</b> " + esc(n.title) + '<span class="rp-src">※ 출처: ' + esc(n.src) + " " + (n.tags || []).map(tagHtml).join(" ") + "</span></figcaption></figure>");
-      } else if (n.t === "tbl") {
-        out.push('<div class="rp-tblw"><p class="rp-tcap"><b>&lt;표 ' + n.no + "&gt;</b> " + esc(n.title) + '<span class="rp-unit">' + esc(n.unit) + '</span></p><div class="rp-tscroll"><table class="rp-tbl"><thead><tr>' +
-          n.head.map(function (x) { return '<th scope="col">' + esc(x) + "</th>"; }).join("") + "</tr></thead><tbody>" +
-          n.rows.map(function (r) { return "<tr>" + r.map(function (x, i) { return i ? '<td class="num">' + esc(x) + "</td>" : '<th scope="row">' + esc(x) + "</th>"; }).join("") + "</tr>"; }).join("") +
-          '</tbody><tfoot><tr>' + n.foot.map(function (x, i) { return i ? '<td class="num">' + esc(x) + "</td>" : '<th scope="row">' + esc(x) + "</th>"; }).join("") + "</tr></tfoot></table></div>" +
-          '<p class="rp-src">※ 출처: ' + esc(n.src) + " " + (n.tags || []).map(tagHtml).join(" ") + "</p></div>");
-      }
+      if (n.t === "ch") out.push('<h3 class="rpc-sec"><span aria-hidden="true">□</span> ' + esc(n.text) + "</h3>");
+      else if (n.t === "li") out.push('<p class="rpc-li l' + n.lv + '"><span class="rp-sym" aria-hidden="true">' + SYM[n.lv - 1] + "</span><span>" + rich(n.text) + "</span></p>");
+      else if (n.t === "kpis") out.push('<div class="rpc-kpis">' + m.kpis.map(function (k) { return '<div class="rpc-kpi"><span class="rpc-kk">' + esc(k.k) + '</span><b class="rpc-kv num">' + esc(k.v) + "<small>" + esc(k.u) + '</small></b><span class="rpc-ks">' + rich(k.s) + "</span></div>"; }).join("") + "</div>");
+      else if (n.t === "fig") out.push('<figure class="rpc-fig"><figcaption><b>[그림 ' + n.no + "] " + esc(n.title) + '</b><span class="rpc-unit">' + esc(n.sub) + "</span></figcaption>" + paceSvg(n.data) + '<p class="rpc-note">' + esc(n.note) + "</p></figure>");
+      else if (n.t === "ask") out.push('<table class="rpc-tbl rpc-ask"><thead><tr><th scope="col">요청 사항</th><th scope="col" class="r">기한</th></tr></thead><tbody>' + n.items.map(function (x) { return '<tr><td><span class="rpc-am">' + esc(x.main) + '</span><span class="rpc-as">' + esc(x.sub) + '</span></td><td class="r rpc-due">' + esc(x.due) + "</td></tr>"; }).join("") + "</tbody></table>");
+      else if (n.t === "tbl") {
+        var worstRow = n.hl;
+        out.push('<div class="rp-tblw rpc-tblw"><div class="rp-tscroll"><table class="rpc-tbl"><thead><tr>' + n.head.map(function (x, i) { return '<th scope="col"' + (i ? ' class="r"' : "") + ">" + esc(x) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+          n.rows.map(function (r, ri) { return "<tr" + (ri === worstRow ? ' class="hl"' : "") + ">" + r.map(function (x, i) { return i ? '<td class="r num">' + esc(cellNum(x, i, n.signCol)) + "</td>" : '<th scope="row">' + esc(x) + "</th>"; }).join("") + "</tr>"; }).join("") +
+          '</tbody><tfoot><tr>' + n.foot.map(function (x, i) { return i ? '<td class="r num">' + esc(cellNum(x, i, n.signCol)) + "</td>" : '<th scope="row">' + esc(x) + "</th>"; }).join("") + "</tr></tfoot></table></div>" +
+          '<p class="rpc-note">※ ' + esc(n.src) + "</p></div>");
+      } else if (n.t === "note") out.push('<p class="rpc-note">' + esc(n.text) + "</p>");
+      else if (n.t === "break") out.push('<div class="rpc-pb" aria-hidden="true"></div>');
     });
-    if (open) out.push("</div>");
-    out.push('<p class="rp-end">끝.</p>');
-    out.push('<aside class="rp-srcs" aria-label="데이터 출처"><h4>데이터 출처</h4><ul>' + m.sources.map(function (s) { return "<li>" + tagHtml(s.tag) + " " + esc(s.text) + "</li>"; }).join("") + "</ul>" +
-      '<p class="rp-made">닿음 출력 ' + esc(dot(m.made) + " " + m.madeTime) + "</p></aside>");
-    out.push("</section></article>");
+    out.push('<p class="rp-made">닿음 출력 ' + esc(dot(m.made) + " " + m.madeTime) + "</p></article>");
     return out.join("");
   }
   function li(lv, text) { return '<p class="rp-li l' + lv + '"><span class="rp-sym" aria-hidden="true">' + SYM[lv - 1] + "</span><span>" + esc(text) + "</span></p>"; }
 
   /** 한글(hwp) 붙여넣기용 개조식 글 — 단계마다 2칸(한글 1자) 들여쓰기 */
   function text(m) {
-    var L = [m.title, dot(m.period.from) + " ~ " + dot(m.period.to), dot(m.made) + " " + m.office, "", "※ 가구·주민 신호·연계 숫자는 시연용 가상 자료", "", "[한 줄 결론] " + m.verdict, ""];
-    var c = 0;
+    var L = [m.title, m.subtitle || "", "보고일 " + dot(m.made) + " · " + m.office, ""];
     m.body.forEach(function (n) {
-      if (n.t === "ch") { L.push(""); L.push(ROMAN[c++] + ". " + n.text); if (n.say) L.push("  ▶ 한 줄 결론: " + n.say); }
-      else if (n.t === "li") L.push(new Array(n.lv).join("  ") + SYM[n.lv - 1] + " " + n.text);
-      else if (n.t === "fig") L.push("  [그림 " + n.no + "] " + n.title + " (※ 출처: " + n.src + ")");
-      else if (n.t === "tbl") { L.push("  <표 " + n.no + "> " + n.title + " " + n.unit); L.push("  " + n.head.join("\t")); n.rows.concat([n.foot]).forEach(function (r) { L.push("  " + r.join("\t")); }); }
+      if (n.t === "ch") { L.push(""); L.push("□ " + n.text); }
+      else if (n.t === "li") L.push(new Array(n.lv).join("  ") + SYM[n.lv - 1] + " " + plain(n.text));
+      else if (n.t === "kpis") m.kpis.forEach(function (k) { L.push("  " + k.k + " " + k.v + k.u + " (" + plain(k.s) + ")"); });
+      else if (n.t === "fig") L.push("  [그림 " + n.no + "] " + n.title + " " + n.sub, "  " + n.note);
+      else if (n.t === "ask") n.items.forEach(function (x, i) { L.push("  " + (i + 1) + ". " + x.main + " — " + x.sub + " [기한 " + x.due + "]"); });
+      else if (n.t === "tbl") { L.push("  <표 " + n.no + "> " + n.title + " " + n.unit); L.push("  " + n.head.join("\t")); n.rows.concat([n.foot]).forEach(function (r) { L.push("  " + r.map(function (x, i) { return cellNum(x, i, n.signCol); }).join("\t")); }); L.push("  ※ " + n.src); }
+      else if (n.t === "note") L.push(n.text);
     });
-    L.push("", "끝.", "", "데이터 출처");
+    L.push("", "데이터 출처");
     m.sources.forEach(function (s) { L.push("  [" + s.tag + "] " + s.text); });
     return L.join("\n");
   }
@@ -310,9 +314,9 @@
   function bodyLines(m, withRefs) {
     var L = [], c = 0;
     m.body.forEach(function (n) {
-      if (n.t === "ch") L.push({ lv: 0, text: ROMAN[c++] + ". " + n.text });
-      else if (n.t === "li") L.push({ lv: n.lv, text: SYM[n.lv - 1] + " " + n.text });
-      else if (withRefs && n.t === "fig") L.push({ lv: 4, text: "※ [그림 " + n.no + "] " + n.title + (n.sheet && n.kind !== "map" ? " → «" + n.sheet + "» 시트" : "") });
+      if (n.t === "ch") L.push({ lv: 0, text: "□ " + n.text });
+      else if (n.t === "li") L.push({ lv: n.lv, text: SYM[n.lv - 1] + " " + plain(n.text) });
+      else if (withRefs && n.t === "fig") L.push({ lv: 4, text: "※ [그림 " + n.no + "] " + n.title + (n.sheet ? " → «" + n.sheet + "» 시트" : "") });
       else if (withRefs && n.t === "tbl") L.push({ lv: 4, text: "※ <표 " + n.no + "> " + n.title + " → «" + n.sheet + "» 시트" });
     });
     return L;
@@ -338,12 +342,12 @@
             share ? { key: "r", h: "비율", type: "pct", fx: "IF({n:sum}=0,0,{n}/{n:sum})", calc: function (g, cx) { var t = cx.sum("n"); return t ? g("n") / t : 0; } }
                   : { key: "r", h: "첫 단계 대비", type: "pct", fx: "IF({n:first}=0,0,{n}/{n:first})" }],
           rows: n.data.map(function (x) { var f0 = n.data[0] ? n.data[0].n : 0; return [x.label, x.n, share ? null : (f0 ? x.n / f0 : 0)]; }), total: share ? "합계" : false });
-      } else if (n.t === "fig" && n.kind === "trend") {
+      } else if (n.t === "fig" && n.kind === "pace") {
         var d = n.data, base = new Date(d.start + "T00:00:00");
-        sheets.push({ name: n.sheet || "추세", title: "[그림 " + n.no + "] " + n.title, unit: "단위: 가구", src: "※ 출처: " + n.src, tags: n.tags, note: "하루 증감 = 오늘 누적 − 어제 누적(수식) · 목표선 = 명단 × 경과일 ÷ 차수 일수(수식)",
-          columns: [{ key: "d", h: "날짜", type: "date" }, { key: "c", h: "누적 접촉", type: "int" }, { key: "x", h: "하루 증감", type: "int", fx: "{c}-{c:prev}", calc: function (g) { return g("c") - g.prev("c"); } },
+        sheets.push({ name: n.sheet || "처리 추세", title: "[그림 " + n.no + "] " + n.title, unit: "단위: 가구", src: "※ 출처: " + n.src, tags: n.tags, note: "하루 증감 = 오늘 누적 − 어제 누적(수식) · 목표선 = 명단 × 경과일 ÷ 차수 일수(수식)",
+          columns: [{ key: "d", h: "날짜", type: "date" }, { key: "c", h: "누적 처리 완료", type: "int" }, { key: "x", h: "하루 증감", type: "int", fx: "{c}-{c:prev}", calc: function (g) { return g("c") - g.prev("c"); } }, { key: "k", h: "누적 접촉", type: "int" },
             { key: "i", h: "경과일", type: "int" }, { key: "g", h: "목표선", type: "dec", fx: d.total + "*{i}/" + d.span, calc: function (g) { return d.total * g("i") / d.span; } }],
-          rows: d.points.map(function (v, i) { var x = new Date(base.getTime() + i * DAY); return [dot(ymd(x)), v, null, i, null]; }), total: false });
+          rows: d.done.map(function (v, i) { var x = new Date(base.getTime() + i * DAY); return [dot(ymd(x)), v, null, d.contact[i] || 0, i, null]; }), total: false });
       }
     });
     var kp = m.kpis.map(function (k) {
@@ -374,49 +378,32 @@
       sheets: sheets, sources: sources(m), footer: "닿음 · 시연용 가상 자료"
     };
   }
-  /** 모델 → DaeumHwpx.build(doc) 의 doc. 표 합계 칸은 한글 표 계산식(=SUM), 접촉률은 =C/B*100 */
-  function hwpxDoc(m) {
-    var B = [{ t: "box", label: "한 줄 결론", text: m.verdict, tone: m.upcoming || m.onTrack ? "" : "warn" }];
-    B.push({ t: "kpi", items: m.kpis });
-    if (m.gauge && m.gauge.length) B.push({ t: "bars", title: "한눈에 보는 진도 — 기간이 지나간 만큼 처리가 따라가고 있는가", max: 100, wl: 7000, wv: 9000,
-      items: m.gauge.map(function (g) { return { label: g.label, done: g.pct, text: g.text, tone: g.label === "기간 경과" ? "grey" : g.tone }; }), src: "※ 출처: 닿음 자동 집계(가상 자료) · 차수 일정은 공개 자료" });
-    B.push({ t: "li", lv: 1, text: "핵심 현황" }); m.summary.forEach(function (s) { B.push({ t: "li", lv: 2, text: s }); });
-    B.push({ t: "li", lv: 1, text: "조치 사항" }); m.asks.forEach(function (s) { B.push({ t: "li", lv: 2, text: s }); });
-    B.push({ t: "break" });
-    var c = 0, srcOf = function (n) { return "※ 출처: " + n.src + " [" + (n.tags || []).join("·") + "]"; };
+  /** 모델 → DaeumHwpx.build(doc) 의 doc — C안 공문 정제형. [그림 1]은 PNG(opts.chartPng: Uint8Array)로 넣는다(없으면 숫자 한 줄) */
+  function hwpxDoc(m, opts) {
+    opts = opts || {};
+    var B = [{ t: "t2", title: m.title, sub: m.subtitle, made: "보고일 " + dot(m.made) + " · " + m.office }];
     m.body.forEach(function (n) {
-      if (n.t === "ch") B.push({ t: "hd", text: ROMAN[c++] + ". " + n.text, say: n.say, tone: n.tone });
-      else if (n.t === "li") B.push({ t: "li", lv: n.lv, text: n.text });
-      else if (n.t === "tbl") {
-        var R = n.rate, head = n.head.map(function (h, i) { return R && i === R.col ? h + "(%)" : h; });
-        var rows = n.rows.map(function (r) { return r.map(function (v, i) { if (i === 0) return v; if (R && i === R.col) { var b = numOf(r[R.den]); return b ? Math.round(numOf(r[R.num]) / b * 1000) / 10 : 0; } return numOf(v); }); });
-        var sum = []; for (var i = 1; i < head.length; i++) if (!R || i !== R.col) sum.push(i);
-        var fx = {}, val = {};
-        if (R) { var A = String.fromCharCode(65 + R.num), Bc = String.fromCharCode(65 + R.den); fx[R.col] = "=" + A + "{r}/" + Bc + "{r}*100"; val[R.col] = numOf(n.foot[R.den]) ? Math.round(numOf(n.foot[R.num]) / numOf(n.foot[R.den]) * 1000) / 10 : 0; }
-        B.push({ t: "tbl", title: "<표 " + n.no + "> " + n.title, unit: n.unit, head: head, rows: rows, foot: { label: "합계", sum: sum, fx: fx, val: val }, src: srcOf(n) });
-      } else if (n.t === "fig") {
-        var ttl = "[그림 " + n.no + "] " + n.title;
-        if (n.kind === "donut") B.push({ t: "stack", title: ttl, items: n.data, unit: n.unitName || "건", src: srcOf(n) });
-        else if (n.kind === "bars") {
-          var tot = n.data.reduce(function (x, y) { return x + y.n; }, 0), share = n.agg !== "funnel";
-          B.push({ t: "bars", title: ttl, items: n.data.map(function (x) { return { label: x.label, done: x.n, text: num(x.n) + (n.unitName || "건") + (share && tot ? " (" + pct(x.n, tot) + "%)" : "") }; }), src: srcOf(n) + (share ? "" : " — 단계는 앞 단계에 포함") });
-        } else if (n.kind === "trend") {
-          var d = n.data, last = d.points[d.points.length - 1] || 0, goal = Math.round(d.total * (d.points.length - 1) / d.span);
-          B.push({ t: "bars", title: ttl, max: Math.max(last, goal, 1), items: [{ label: "누적 접촉", done: last, text: last + "가구", tone: last >= goal ? "" : "warn" }, { label: "같은 날 목표선", done: goal, text: goal + "가구", tone: "grey" }], src: srcOf(n) + " — 목표선 = 마감까지 고르게 처리할 때" });
-        } else {
-          var top = n.data.filter(function (x) { return x.n > 0; }).sort(function (x, y) { return y.n - x.n; }).slice(0, 8);
-          B.push({ t: "bars", title: "[그림 " + n.no + "] 읍면별 명단 가구와 접촉(짙은 색 = 접촉한 가구)", items: top.map(function (x) { return { label: x.name, done: x.c, total: x.n, text: x.c + " / " + x.n + "가구" }; }), src: "※ 출처: " + n.src + " [" + (n.tags || []).join("·") + "] — 지도는 화면·PDF 보고서에 있음" });
-        }
+      if (n.t === "ch") B.push({ t: "sec", text: n.text });
+      else if (n.t === "li") B.push({ t: "ci", lv: n.lv, text: n.text });
+      else if (n.t === "kpis") B.push({ t: "kpi2", items: m.kpis });
+      else if (n.t === "fig") {
+        B.push({ t: "cap2", title: "[그림 " + n.no + "] " + n.title, sub: n.sub });
+        if (opts.chartPng) B.push({ t: "img", data: opts.chartPng, width: 0.8, alt: "누적 처리 완료 " + n.data.done[n.data.done.length - 1] + "가구, 목표선 " + n.data.goal + "가구" });
+        else B.push({ t: "ci", lv: 2, text: "누적 처리 완료 **" + n.data.done[n.data.done.length - 1] + "가구** · 목표선 " + n.data.goal + "가구 · 접촉 " + n.data.contact[n.data.contact.length - 1] + "가구" });
+        B.push({ t: "p", kind: "small", text: n.note });
       }
+      else if (n.t === "ask") B.push({ t: "tbl2", grid: "ask", nospace: true, head: ["요청 사항", "기한"], al: ["L", "R"], widths: [TWW - 9200, 9200], rows: n.items.map(function (x) { return [x.main + "\n" + x.sub, "!!" + x.due + "!!"]; }) });
+      else if (n.t === "tbl") {
+        var nh = n.head.length, rest = Math.floor((TWW - 7000 - 8000) / (nh - 2)), ws = [7000]; for (var wi = 1; wi < nh - 1; wi++) ws.push(rest); ws.push(TWW - 7000 - rest * (nh - 2));
+        var f = function (r) { return r.map(function (x, i) { return cellNum(x, i, n.signCol).replace("−", "-"); }); }; // 표 안 음수는 ASCII 빼기(한글 계산식이 읽을 수 있게)
+        B.push({ t: "tbl2", head: n.head, widths: ws, rows: n.rows.map(f), fx: true, hl: n.hl == null ? [] : [n.hl], hlCols: [0, n.signCol], sum: f(n.foot), src: "※ " + n.src });
+      }
+      else if (n.t === "note") B.push({ t: "p", kind: "small", text: n.text });
+      else if (n.t === "break") B.push({ t: "break" });
     });
-    // S11-d(11-02): 시·군청 내부 보고서 끝맺음 — «붙임 1. … 1부.  끝.» 뒤 쪽을 넘겨 붙임 문서. [편람] 행정업무운영 편람 «붙임 표시»
-    B.push({ t: "p", kind: "att", text: "붙임  1. 활용 데이터 출처 1부." });
-    B.push({ t: "p", kind: "att", text: "      2. 같은 집계 엑셀 파일(" + fname(m, "xlsx") + ") 1부.  끝." });
-    B.push({ t: "break" });
-    B.push({ t: "ch", text: "붙임 1  활용 데이터 출처" });
-    B.push({ t: "tbl", title: "", head: ["구분", "제공기관", "데이터 이름", "기준일"], rows: sources(m).map(function (s) { return [s.kind, s.org, s.name, s.date]; }), widths: [6200, 8400, 26190, 7400], src: "※ 가상 = 시연용으로 만든 자료(실제 주민·행정자료 0건) · 공식 실적은 행복이음 숫자와 대조해 확정" });
-    return { title: m.title, subtitle: "(" + dot(m.period.from) + " ~ " + dot(m.period.to) + ")", made: "보고일 " + dot(m.made), office: m.office, note: "※ 가구·주민 신호·연계 숫자는 시연용 가상 자료입니다(성명·주민번호·연락처·주소 없음, 가구 번호 일부 가림).", blocks: B };
+    return { title: m.title, made: dot(m.made), office: m.office, plain: true, blocks: B };
   }
+  var TWW = 48190; // 본문 폭(hwpx.js 의 TW 와 같음)
 
   // 파일 이름 = 날짜_종류(예 20261102_주간보고서.hwpx) — 11-02 지시
   function fname(m, ext) { return String(m.made).replace(/-/g, "") + "_" + (m.kind === "monthly" ? "월간" : "주간") + "보고서" + (m.scope ? "_" + m.scope : "") + "." + ext; }
@@ -462,7 +449,20 @@
     }));
   }
   function saveXlsx(m) { return need("xlsx.js", "DaeumXlsx").then(function (X) { return X.download(xlsxSpec(m), fname(m, "xlsx")); }); }
-  function saveHwpx(m) { return need("xlsx.js", "DaeumXlsx").then(function () { return need("hwpx.js", "DaeumHwpx"); }).then(function (W) { return W.download(hwpxDoc(m), fname(m, "hwpx")); }); }
+  /** 그림 1(SVG 문자열) → PNG 바이트(브라우저 캔버스 3배 확대). 못 만들면 null — 한글 파일은 숫자 한 줄로 대신한다 */
+  function chartPng(m) {
+    var f = m.body.filter(function (n) { return n.t === "fig" && n.kind === "pace"; })[0];
+    if (!f || typeof Image === "undefined") return Promise.resolve(null);
+    return new Promise(function (ok) {
+      try {
+        var svg = paceSvg(f.data), img = new Image(), url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        img.onload = function () { try { var cv = document.createElement("canvas"); cv.width = 2010; cv.height = 645; var cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, 2010, 645); cx.drawImage(img, 0, 0, 2010, 645);
+          cv.toBlob(function (b) { if (!b) return ok(null); b.arrayBuffer().then(function (ab) { ok(new Uint8Array(ab)); }, function () { ok(null); }); }, "image/png"); } catch (e) { ok(null); } };
+        img.onerror = function () { ok(null); }; img.src = url;
+      } catch (e) { ok(null); }
+    });
+  }
+  function saveHwpx(m) { return need("xlsx.js", "DaeumXlsx").then(function () { return need("hwpx.js", "DaeumHwpx"); }).then(function (W) { return chartPng(m).then(function (png) { var d = hwpxDoc(m, { chartPng: png }); d.plain = true; return W.download(d, fname(m, "hwpx")); }); }); }
   function tb(act, label, ico, primary) { return '<button type="button" class="d-btn ' + (primary ? "d-btn-p" : "d-btn-s") + ' rp-btn" data-rp="' + act + '" data-h="light"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICO[ico] + "</svg>" + label + "</button>"; }
   /** box 안에 도구 막대 + 문서. opts.readonly 면 «한글 문안 복사» 없이 공유 보기용 */
   function mount(box, m, opts) {
@@ -492,7 +492,7 @@
     return build(kind === "monthly" ? "monthly" : "weekly", S, last.input, cd, {});
   }
   api.modelOf = modelOf;
-  api.mount = mount; api.printDoc = printDoc; api.linkOf = linkOf; api.saveXlsx = saveXlsx; api.saveHwpx = saveHwpx;
+  api.chartPng = chartPng; api.mount = mount; api.printDoc = printDoc; api.linkOf = linkOf; api.saveXlsx = saveXlsx; api.saveHwpx = saveHwpx;
 
   // 공무원 창구 현황 탭: «주간/월간 보고서» 단추를 먼저 받아 정부 보고서 문서로 그린다(mount.js 의 옛 간이 미리보기 대신).
   document.addEventListener("click", function (e) {

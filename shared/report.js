@@ -62,12 +62,14 @@
     (d.attempts || []).slice().sort(function (a, b) { return a.at < b.at ? -1 : 1; }).forEach(function (t) { if (!to || inRange(t.at, null, to)) lastBy[t.householdId] = t; });
     var contactedIds = {}; attempts.forEach(function (t) { contactedIds[t.householdId] = 1; });
     var hhIds = {}; hh.forEach(function (h) { hhIds[h.id] = h; });
-    var met = 0, nonE = 0, closed = 0, neBy = {};
+    var met = 0, nonE = 0, closed = 0, neBy = {}, closedDays = [], closedArea = {}; // S11-d4: 처리 완료한 날(누적 처리 추세·이번 주 처리) · 읍면별 처리 완료
     Object.keys(lastBy).forEach(function (id) {
       var t = lastBy[id]; if (!hhIds[id]) return;
-      if (t.result === "met") { met++; closed++; }
-      if (t.result === "not_eligible") { nonE++; closed++; neBy[t.reason || "other"] = (neBy[t.reason || "other"] || 0) + 1; }
-      if (t.result === "moved") closed++;
+      var done = false;
+      if (t.result === "met") { met++; closed++; done = true; }
+      if (t.result === "not_eligible") { nonE++; closed++; done = true; neBy[t.reason || "other"] = (neBy[t.reason || "other"] || 0) + 1; }
+      if (t.result === "moved") { closed++; done = true; }
+      if (done) { closedDays.push(ymd(t.at)); closedArea[hhIds[id].area] = (closedArea[hhIds[id].area] || 0) + 1; }
     });
     var contacted = hh.filter(function (h) { return contactedIds[h.id]; }).length;
     var R = reqs.filter(function (r) { return !from && !to || inRange(r.createdAt, from, to); });
@@ -81,15 +83,15 @@
     var svcN = {}, svcName = {}, linkHH = {};
     L.forEach(function (l) { linkHH[l.householdId] = 1; (l.serviceIds || []).forEach(function (id, i) { svcN[id] = (svcN[id] || 0) + 1; if (l.serviceNames && l.serviceNames[i]) svcName[id] = l.serviceNames[i]; }); });
     var areas = {};
-    function A(n) { return areas[n] || (areas[n] = { area: n, households: 0, contacted: 0, requests: 0, links: 0 }); }
-    hh.forEach(function (h) { var a = A(h.area); a.households++; if (contactedIds[h.id]) a.contacted++; });
-    R.forEach(function (r) { if (r.status !== "cancelled") A(r.region || "미상").requests++; });
+    function A(n) { return areas[n] || (areas[n] = { area: n, households: 0, contacted: 0, requests: 0, links: 0, closed: 0, retry: 0, open: 0 }); }
+    hh.forEach(function (h) { var a = A(h.area); a.households++; if (contactedIds[h.id]) a.contacted++; a.closed = closedArea[h.area] || 0; });
+    R.forEach(function (r) { if (r.status !== "cancelled") A(r.region || "미상").requests++; if (r.status === "new" || r.status === "seen" || r.status === "visiting") A(r.region || "미상").open++; });
     L.forEach(function (l) { A(l.area || "미상").links++; });
     // 현장 후속 업무(S9h): 재시도 예정·간접 확인 전환·연계 누락 — features.js 가 함께 실렸을 때만
     var follow = null;
     if (F.contacts && F.contacts.suggestNext && F.linkGap) {
       var now = d.now ? new Date(d.now) : new Date(), today = ymd(now), retry = 0, esc = 0;
-      Object.keys(lastBy).forEach(function (id) { if (!inArea[id]) return; var s2 = F.contacts.suggestNext(d.attempts, id, now); if (!s2.closed && s2.next) { if (s2.next.date <= today) retry++; if (s2.escalate) esc++; } });
+      Object.keys(lastBy).forEach(function (id) { if (!inArea[id]) return; var s2 = F.contacts.suggestNext(d.attempts, id, now); if (!s2.closed && s2.next) { if (s2.next.date <= today) { retry++; if (hhIds[id]) A(hhIds[id].area).retry++; } if (s2.escalate) esc++; } });
       var g = F.linkGap.build({ households: hh, requests: reqs, attempts: (d.attempts || []).filter(function (t) { return inArea[t.householdId]; }), links: links, outcomes: d.outcomes, now: now });
       follow = { retryDue: retry, escalate: esc, gaps: g.total, notApplied: g.notApplied.slice(0, 3) };
     }
@@ -99,9 +101,11 @@
     var res = {
       period: { from: from ? ymd(from) : null, to: to ? ymd(to) : null }, scope: area,
       followUp: follow,
+      closedDays: closedDays.sort(),
       households: { total: hh.length, contacted: contacted, notContacted: hh.length - contacted, met: met, nonEligible: nonE, closed: closed, pending: hh.length - closed },
       nonEligibleBy: NE.map(function (x) { return { key: x[0], label: x[1], n: neBy[x[0]] || 0 }; }).filter(function (x) { return x.n; }),
       requests: { total: R.length, byStatus: byStatus, urgent: R.filter(function (r) { return r.urgent; }).length,
+        open: R.filter(function (r) { return r.status === "new" || r.status === "seen" || r.status === "visiting"; }).length, openUrgent: R.filter(function (r) { return r.urgent && (r.status === "new" || r.status === "seen" || r.status === "visiting"); }).length,
         proxy: R.filter(function (r) { return r.proxy && r.proxy.isProxy; }).length,
         avgDays: doneDays.length ? +(doneDays.reduce(function (a, b) { return a + b; }, 0) / doneDays.length).toFixed(1) : null },
       links: { total: L.length, households: Object.keys(linkHH).length,
@@ -134,7 +138,7 @@
     var weeksLeft = Math.max(0, +(daysLeft / 7).toFixed(1));
     var res = {
       round: round, daysLeft: daysLeft, workdaysLeft: wdLeft, weeksLeft: weeksLeft, done: done, total: total, remaining: remaining,
-      perWorkday: wdLeft ? Math.ceil(remaining / wdLeft) : remaining, perWeek: weeksLeft >= 1 ? Math.ceil(remaining / weeksLeft) : remaining,
+      perWorkday: wdLeft ? Math.ceil(remaining / wdLeft) : remaining, perWeek: wdLeft ? Math.min(remaining, Math.ceil(remaining / wdLeft) * 5) : remaining, // S11-d4: 주 목표 = 하루 목표 × 5(두 숫자가 어긋나지 않게)
       elapsedPct: Math.round(elapsed * 100), donePct: Math.round(donePct * 100), onTrack: donePct + 1e-9 >= elapsed
     };
     var toStart = Math.round((sod(start) - sod(now)) / DAY);

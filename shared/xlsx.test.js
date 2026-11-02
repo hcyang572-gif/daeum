@@ -149,26 +149,25 @@ var input = { households: hh, areas: HH.areas, attempts: attempts, tips: [], now
   requests: [{ id: "REQ-1", region: "함창읍", status: "new", urgent: true, createdAt: "2026-10-29T09:00:00" }, { id: "REQ-2", region: "공검면", status: "done", createdAt: "2026-10-21T09:00:00", history: [{ status: "done", at: "2026-10-24T09:00:00" }] }] };
 var S = F.report.aggregate(input), cd = F.report.countdown(F.report.currentRound(now), { now: now, done: S.households.closed, total: S.households.total });
 var M = D.build("weekly", S, input, cd, {}), SP = D.xlsxSpec(M), HD = D.hwpxDoc(M);
-t("엑셀 시트: 본문·읍면별·명단 처리·요청 단계·연계 서비스·접촉 추세", function () {
-  assert.deepStrictEqual(SP.sheets.map(function (s) { return s.name; }).sort(), ["보고서 본문", "명단 처리", "요청 단계", "연계 서비스", "읍면별", "접촉 추세"].sort());
+t("엑셀 시트: 본문·읍면별·처리 추세(S11-d4 C안 — 도넛·막대·지도 그림은 없앰)", function () {
+  assert.deepStrictEqual(SP.sheets.map(function (s) { return s.name; }).sort(), ["보고서 본문", "읍면별", "처리 추세"].sort());
 });
-t("읍면별: 숫자는 숫자로, 접촉률은 수식 열, 합계 = 명단 가구 수", function () {
+t("읍면별: 숫자는 숫자로, 처리 완료·목표선·차이·재방문, 합계 = 명단 가구 수", function () {
   var s = SP.sheets.filter(function (x) { return x.name === "읍면별"; })[0];
-  s.rows.forEach(function (r) { assert.strictEqual(typeof r[1], "number"); assert.strictEqual(r[3], null); });
-  assert.ok(/IF\(\{k1\}=0,0,\{k2\}\/\{k1\}\)/.test(s.columns[3].fx));
+  s.rows.forEach(function (r) { for (var i = 1; i < r.length; i++) assert.strictEqual(typeof r[i], "number"); assert.strictEqual(r[4], r[2] - r[3]); });
   assert.strictEqual(s.rows.reduce(function (a, r) { return a + r[1]; }, 0), S.households.total);
 });
-t("요약 숫자 «발굴 명단»은 읍면별 합계 참조, 접촉률은 수식", function () { assert.deepStrictEqual(SP.kpis[0].ref, { sheet: "읍면별", col: "k1" }); assert.ok(/\[읍면별:k2\]\/\[읍면별:k1\]/.test(SP.kpis[1].fx)); assert.strictEqual(SP.kpis[1].type, "pct"); });
+t("요약 숫자: 처리 완료 = 집계 처리 완료 가구 수(정수)", function () { assert.strictEqual(SP.kpis[0].v, S.households.closed); assert.strictEqual(SP.kpis[0].type, "int"); assert.strictEqual(SP.kpis.length, 3); });
 t("데이터 출처: 가상·공공데이터·공개 자료 + 기관·기준일", function () {
   var k = SP.sources.map(function (s) { return s.kind; }); ["가상", "공공데이터", "공개 자료"].forEach(function (x) { assert.ok(k.indexOf(x) >= 0, x); });
   var pub = SP.sources.filter(function (s) { return s.kind === "공공데이터"; })[0]; assert.strictEqual(pub.org, "행정안전부"); assert.strictEqual(pub.date, "2026-09");
 });
-t("보고서 엑셀이 실제로 만들어지고 XML 짝 맞음(8시트)", function () { var f = unzip(X.build(SP)); f.forEach(function (x) { if (/\.xml$/.test(x.name)) wellFormed(x.text); }); assert.strictEqual(f.filter(function (x) { return /worksheets\/sheet\d+\.xml/.test(x.name); }).length, 8); });
-t("한글: 표 1 합계 칸 계산식 =SUM·접촉률 =C/B*100 (S11-d3: 그림은 표 칸 막대·구성비 띠 그래픽이라 «그림 데이터 합계 계산식»은 없어짐)", function () {
-  var sec = get(unzip(W.build(HD)), "Contents/section0.xml"), tb = HD.blocks.filter(function (b) { return b.t === "tbl" && /<표 1>/.test(b.title); })[0];
-  var n = tb.rows.length; assert.ok(sec.indexOf("=SUM(B2:B" + (n + 1) + ");" + S.households.total) >= 0); assert.ok(sec.indexOf("=C" + (n + 2) + "/B" + (n + 2) + "*100;") >= 0);
-  var nf = (sec.match(/type="FORMULA"/g) || []).length; assert.ok(nf >= 2, "표 1 계산식 " + nf + "개");
-  assert.ok(/Ⅰ\. 개요/.test(sec) && /Ⅴ\. 향후 계획/.test(sec) && /1부\.  끝\.<\/hp:t>/.test(sec));
+t("보고서 엑셀이 실제로 만들어지고 XML 짝 맞음(5시트)", function () { var f = unzip(X.build(SP)); f.forEach(function (x) { if (/\.xml$/.test(x.name)) wellFormed(x.text); }); assert.strictEqual(f.filter(function (x) { return /worksheets\/sheet\d+\.xml/.test(x.name); }).length, 5); });
+t("한글: C안 — 제목·소제목·카드·그림 PNG 자리·결정 요청 표·읍면별 표 합계 칸 계산식 =SUM", function () {
+  var sec = get(unzip(W.build(HD)), "Contents/section0.xml"), tb = HD.blocks.filter(function (b) { return b.t === "tbl2" && b.sum; })[0];
+  var n = tb.rows.length; assert.ok(sec.indexOf("=SUM(B2:B" + (n + 1) + ");" + S.households.total) >= 0);
+  assert.ok(HD.blocks[0].t === "t2" && HD.plain === true); assert.ok(!/Ⅰ\. 개요/.test(sec)); assert.ok(/□ 결론/.test(sec) && /□ 결정 요청/.test(sec));
+  assert.ok(HD.blocks.some(function (b) { return b.t === "kpi2"; }) && HD.blocks.some(function (b) { return b.t === "tbl2" && b.grid === "ask"; }));
 });
 t("엑셀·한글 내보내기에 가구 번호·요청 번호 없음(개인 식별값 0)", function () {
   var js = JSON.stringify(SP) + JSON.stringify(HD); assert.ok(js.indexOf(hh[0].id) < 0); assert.ok(js.indexOf("REQ-") < 0);
@@ -185,44 +184,41 @@ t("공무원 창구 옛 보고서 미리보기(makeReport) 제거", function () 
 console.log("테오 검수 다듬기(10-30)");
 var RF = unzip(X.build(SP));
 function rsheet(name) { var wbx = get(RF, "xl/workbook.xml"), hit = null; wbx.replace(/<sheet name="([^"]+)" sheetId="(\d+)"/g, function (_, n, i) { if (n === name) hit = i; }); return get(RF, "xl/worksheets/sheet" + hit + ".xml"); }
-t("[그림] 추세 제목 판정 = 그래프 숫자(마지막 누적 접촉 vs 같은 날 목표선)", function () {
-  var fg = M.body.filter(function (n) { return n.kind === "trend"; })[0], d = fg.data, last = d.points[d.points.length - 1], goal = d.total * (d.points.length - 1) / d.span;
-  assert.strictEqual(/위에 있음/.test(fg.title), last >= goal, fg.title + " " + last + " vs " + goal);
+t("[그림 1] 제목 판정 = 그래프 숫자(누적 처리 완료 vs 같은 날 목표선) · % 표기 없음", function () {
+  var fg = M.body.filter(function (n) { return n.kind === "pace"; })[0], d = fg.data, last = d.done[d.done.length - 1];
+  assert.strictEqual(/아래/.test(fg.title), last < d.goal, fg.title + " " + last + " vs " + d.goal); assert.ok(fg.title.indexOf("%") < 0);
   assert.strictEqual(D.trendAbove({ total: 60, span: 10, points: [0, 24] }), true); assert.strictEqual(D.trendAbove({ total: 60, span: 10, points: [0, 1, 2, 3, 4] }), false);
   var hsec = get(unzip(W.build(HD)), "Contents/section0.xml"); assert.ok(hsec.indexOf(fg.title) >= 0);
+  assert.ok(M.verdicts.join("").indexOf("%") < 0 && JSON.stringify(M.kpis).indexOf("%") < 0);
 });
 t("출처 글: 함수 이름(aggregate) 대신 «닿음 자동 집계(AI 미사용)»", function () {
   var js = JSON.stringify(SP) + JSON.stringify(HD) + JSON.stringify(M.sources); assert.ok(js.indexOf("aggregate") < 0); assert.ok(js.indexOf("닿음 자동 집계(AI 미사용)") >= 0);
   assert.ok(S && F.report.weekly(S, { now: now, countdown: cd }).note.indexOf("aggregate") < 0);
 });
-t("요약 «만남·상담»은 명단 처리 시트 그 줄, «서비스 연계»는 시트 합계 참조(값도 함께)", function () {
-  assert.deepStrictEqual(SP.kpis[2].ref, { sheet: "명단 처리", col: "n", row: "만남·상담" }); assert.ok(SP.kpis[3].ref && /연계 서비스|읍면별/.test(SP.kpis[3].ref.sheet));
-  var sm = rsheet("요약");
-  var mm = sm.match(/<f>'명단 처리'!\$B\$\d+<\/f><v>(\d+)<\/v>/); assert.ok(mm && +mm[1] === S.households.met, "만남·상담 참조");
-  var ml = sm.match(/<f>'연계 서비스'!\$B\$\d+<\/f><v>(\d+)<\/v>/); assert.ok(ml && +ml[1] === S.links.total, "연계 참조");
-  var dn = rsheet("명단 처리"), rr = (sm.match(/'명단 처리'!\$B\$(\d+)/) || [])[1]; assert.ok(new RegExp('<c r="A' + rr + '"[^>]*><is><t[^>]*>만남·상담</t>').test(dn), "가리키는 줄이 만남·상담");
+t("주 목표 = 하루 목표 × 다음 주 평일 수(산식 충돌 없음) · 재방문 + 신규 방문 = 주 목표", function () {
+  var pl = M.plan; assert.strictEqual(pl.weekGoal, pl.perDay * pl.wk); assert.strictEqual(pl.retry + pl.fresh, pl.weekGoal);
+  assert.ok(D.text(M).indexOf("오늘") < 0, "주간 보고에 «오늘»");
 });
 t("날짜 = 엑셀 날짜 일련번호 + «yyyy. m. d.» 서식(글자 아님)", function () {
   assert.strictEqual(X.serial("2026. 10. 19."), 46314); assert.strictEqual(X.serial("2026-10-19"), 46314); assert.strictEqual(X.serial("10월"), null);
   var st = get(RF, "xl/styles.xml"); assert.ok(st.indexOf('numFmtId="167" formatCode="yyyy\\.\\ m\\.\\ d\\."') >= 0, "서식 글자 이스케이프(\\.)");
-  var tr = rsheet("접촉 추세"); assert.ok(/<c r="A5" s="27"><v>46314<\/v><\/c>/.test(tr), "A5 날짜 칸"); assert.ok(!/<c r="A5"[^>]*t="inlineStr"/.test(tr));
+  var tr = rsheet("처리 추세"); assert.ok(/<c r="A5" s="\d+"><v>46314<\/v><\/c>/.test(tr), "A5 날짜 칸"); assert.ok(!/<c r="A5"[^>]*t="inlineStr"/.test(tr));
 });
-t("한글: 본문 끝 «붙임 1. … 2. … 1부.  끝.» → 쪽 넘김 → «붙임 1 활용 데이터 출처» 표(S11-d 내부 보고서 양식)", function () {
-  var L = HD.blocks.length; assert.strictEqual(HD.blocks[L - 1].t, "tbl"); assert.strictEqual(HD.blocks[L - 2].text, "붙임 1  활용 데이터 출처"); assert.strictEqual(HD.blocks[L - 3].t, "break");
-  assert.ok(/1부\.  끝\.$/.test(HD.blocks[L - 4].text) && HD.blocks[L - 4].kind === "att" && /^붙임  1\./.test(HD.blocks[L - 5].text));
-  var sec = get(unzip(W.build(HD)), "Contents/section0.xml"); assert.ok(sec.indexOf("끝.") < sec.lastIndexOf("데이터 이름") && sec.indexOf("Ⅴ. 향후 계획") < sec.indexOf("붙임  1."));
-  assert.ok(/^보고일 \d{4}\. \d{1,2}\. \d{1,2}\.$/.test(HD.made) && /^\d{8}_주간보고서\.xlsx\) 1부/.test(HD.blocks[L - 4].text.trim().replace(/^2\. 같은 집계 엑셀 파일\(/, "")));
+t("한글: 쪽 나눔은 «처리 상태» 소제목에 붙음 · 끝맺음은 «붙임 — 자료 출처» + 가상 안내 1회", function () {
+  var ch = HD.blocks.map(function (b) { return b.t === "sec" ? b.text : null; }).filter(Boolean);
+  assert.deepStrictEqual(ch.slice(0, 4), ["결론", "핵심 수치", "위험 요인", "결정 요청"]); assert.strictEqual(ch[ch.length - 1], "붙임 — 자료 출처");
+  var sec = get(unzip(W.build(HD)), "Contents/section0.xml"); assert.ok(/pageBreak="1"[^>]*>(?:(?!<\/hp:p>).)*처리 상태/.test(sec));
+  assert.strictEqual((sec.match(/시연용 가상 자료\(실제 개인정보 없음\)/g) || []).length, 1);
+  assert.ok(/^보고일 \d{4}\. \d{1,2}\. \d{1,2}\. · 상주시청$/.test(HD.blocks[0].made)); assert.ok(/^\d{8}_주간보고서\.xlsx$/.test(D.fname(M, "xlsx")));
 });
 t("기관 표기 통일(11-02): 보고서·엑셀 내보내기 모두 «상주시청»", function () {
   var fs = require("fs"); assert.strictEqual(M.office, "상주시청");
   assert.ok(/var OFFICE = "상주시청\(시연\)"/.test(fs.readFileSync(path.join(__dirname, "..", "officer", "xlsx_out.js"), "utf8")));
   var txt = F.report.weekly(S, { now: now, countdown: cd }).text; assert.ok(txt.indexOf("상주시청") >= 0 && txt.indexOf("희망복지지원단") < 0);
 });
-t("출처 시트 [그림] 지도 «쓰인 곳» = 지도(화면·PDF)", function () {
-  var mp = M.body.filter(function (n) { return n.kind === "map"; })[0], row = SP.sources.filter(function (s) { return s.use.indexOf("[그림 " + mp.no + "]") === 0; })[0];
-  assert.ok(row, "지도 출처 줄"); assert.strictEqual(row.use, "[그림 " + mp.no + "] 지도(화면·PDF)");
+t("출처 시트 [그림 1] 처리 추세 «쓰인 곳»", function () {
+  var row = SP.sources.filter(function (s) { return s.use.indexOf("[그림 1]") === 0; })[0]; assert.ok(row, "그림 1 출처 줄"); assert.ok(/처리 추세/.test(row.use));
   SP.sources.forEach(function (s) { assert.ok(!/\]\s*$/.test(s.use), "빈 쓰인 곳: " + s.use); });
 });
-
 console.log("결과: 통과 " + pass + " · 실패 " + fail);
 if (fail) process.exit(1);

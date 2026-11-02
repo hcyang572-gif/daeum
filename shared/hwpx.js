@@ -9,6 +9,8 @@
    DaeumHwpx.download(doc, "이름.hwpx") → Promise · 브라우저 내려받기
    doc = { title, subtitle, made: "2026. 10. 30.", office, note,
      blocks: [ {t:"box", label:"한 줄 결론", text} | {t:"ch", text:"Ⅰ. 개요"} | {t:"li", lv:1..4, text}   // text 에 기호를 넣지 않는다(□○-· 자동)
+             | {t:"t2", title, sub, made} | {t:"sec", text} | {t:"ci", lv:2|3, text, fn:["!!빨강!!","**굵게**"]} | {t:"kpi2", items:[{k,v,u,s}]} | {t:"cap2", title, sub} | {t:"tbl2", head, al:["L","R"..], rows:[[…]], hl:[행번호], sum:[…], widths, grid:"ask"}   // S11-d4 C안(공문 정제형) 부품 — 칠한 칸 없음
+             | {t:"img", data:Uint8Array, ext:"png"(기본·jpg·svg 시험), width:0~1(본문 폭 비율, 기본 1), title:"[그림 1] …", src:"※ 출처: …"}   // 그림 파일은 BinData/ 에 넣는다(S11-d4)
              | {t:"p", text, kind:"note"|"src"|"end"|"att"(붙임 줄 — 본문 글자)} | {t:"break"}
              | {t:"tbl", title:"<표 1> …", unit:"(단위: …)", head:[…], rows:[[…]], align:"center"(선택), foot:{label:"합계", sum:[1,2], fx:{3:"=C{r}/B{r}*100"}}, src:"※ 출처: …", widths:[…]} ] }
    foot.sum = 합계(=SUM) 낼 열 번호, foot.fx = 그 밖의 식({r}=합계 줄 번호, 예 접촉률 =C7/B7*100). */
@@ -36,13 +38,19 @@
   var CPS = [[0, 13, 0, "#000000"], [1, 20, 0, "#000000"], [1, 15, 0, "#000000"], [0, 13, 1, "#000000"], [2, 10, 0, "#000000"], [2, 10, 1, "#000000"], [0, 11, 0, "#333333"], [2, 11, 1, "#000000"],
     // 8 장 띠 흰 글 · 9 제목 흰 글 · 10 부제 · 11 숫자 카드 큰 글 · 12 경고색 큰 글 · 13 카드 라벨 · 14 카드 보조 · 15 한 줄 결론 · 16 결론 꼬리표 · 17 빈 칸(작게) · 18 머리 칸 흰 글 · 19~23 범례 ■(PAL 순) · 24 막대 라벨 · 25 막대 값 · 26 흰 꼬리표 · 27 범례 글 · 28 결론 상자 글
     [2, 14, 1, "#FFFFFF"], [1, 20, 0, "#FFFFFF"], [2, 10, 0, "#DDEBE8"], [2, 20, 1, "#17594F"], [2, 20, 1, "#8A5A0C"], [2, 9, 1, "#17594F"], [2, 9, 0, "#56635F"], [2, 11, 1, "#14211F"], [2, 9, 1, "#17594F"], [2, 6, 0, "#000000"], [2, 10, 1, "#FFFFFF"],
-    [2, 10, 1, PAL[0].hex], [2, 10, 1, PAL[1].hex], [2, 10, 1, PAL[2].hex], [2, 10, 1, PAL[3].hex], [2, 10, 1, PAL[4].hex], [2, 10, 0, "#14211F"], [2, 10, 1, "#17594F"], [2, 10, 1, "#FFFFFF"], [2, 9, 0, "#333333"], [2, 12, 1, "#14211F"]];
+    [2, 10, 1, PAL[0].hex], [2, 10, 1, PAL[1].hex], [2, 10, 1, PAL[2].hex], [2, 10, 1, PAL[3].hex], [2, 10, 1, PAL[4].hex], [2, 10, 0, "#14211F"], [2, 10, 1, "#17594F"], [2, 10, 1, "#FFFFFF"], [2, 9, 0, "#333333"], [2, 12, 1, "#14211F"],
+    // S11-d4 C안(공문 정제형) — 크기 4단 22·15·13·10. 29 제목 · 30 소제목 · 31 본문 굵게 · 32 본문 굵은 빨강 · 33 숫자 카드 큰 글 · 34 카드 라벨 · 35 작은 굵은 빨강 · 36 표 머리 · 37 표 칸 · 38 표 칸 빨강 · 39 표 합계 · 40 부제 · 41 카드 단위 · 42 그림 제목 · 43 본문 작은 회색 · 44 작은 굵은 초록
+    [2, 22, 1, "#14211F"], [2, 15, 1, "#14211F"], [0, 13, 1, "#000000"], [0, 13, 1, "#B42318"], [2, 22, 1, "#2F5D50"], [2, 10, 0, "#333333"], [2, 10, 1, "#B42318"], [2, 10, 0, "#595959"], [2, 10, 0, "#000000"], [2, 10, 1, "#B42318"], [2, 10, 1, "#000000"], [2, 10, 0, "#595959"], [2, 13, 0, "#333333"], [2, 13, 1, "#14211F"], [0, 10, 0, "#595959"], [2, 10, 1, "#2F5D50"]];
+  var C4 = { title: 29, sec: 30, bold: 31, red: 32, kBig: 33, kLab: 34, kRed: 35, th: 36, td: 37, tdRed: 38, tdSum: 39, sub: 40, kUnit: 41, cap: 42, small: 43, green: 44 };
   // 문단 모양: [정렬, 왼쪽, 내어쓰기(음수 — 한글은 첫 줄을 왼쪽 여백에 두고 둘째 줄부터 그만큼 안으로), 위, 아래, 줄간격%, 다음과 함께]
   var PP = { body: 0, center: 1, right: 2, l1: 3, l2: 4, l3: 5, l4: 6, cellL: 7, cellR: 8, cellC: 9, ch: 10, note: 11, cap: 12, tight: 13, legend: 14 };
   var PPS = [["JUSTIFY", 0, 0, 0, 0, 160, 0], ["CENTER", 0, 0, 0, 0, 160, 0], ["RIGHT", 0, 0, 0, 0, 160, 0],
     ["JUSTIFY", 0, -1800, 1000, 0, 160, 0], ["JUSTIFY", 1300, -1800, 300, 0, 160, 0], ["JUSTIFY", 2600, -1000, 200, 0, 160, 0], ["JUSTIFY", 3900, -1000, 100, 0, 160, 0],
     ["LEFT", 0, 0, 0, 0, 130, 0], ["RIGHT", 0, 0, 0, 0, 130, 0], ["CENTER", 0, 0, 0, 0, 130, 0], ["LEFT", 0, 0, 1800, 600, 160, 1], ["LEFT", 0, 0, 200, 0, 130, 0], ["LEFT", 0, 0, 800, 150, 130, 1],
-    ["CENTER", 0, 0, 0, 0, 100, 0], ["LEFT", 0, 0, 200, 0, 140, 0]];
+    ["CENTER", 0, 0, 0, 0, 100, 0], ["LEFT", 0, 0, 200, 0, 140, 0],
+    // S11-d4: 15 ○ 줄 · 16 - 줄 · 17 □ 소제목 · 18 제목 · 19 그림 제목 · 20 부제
+    ["JUSTIFY", 2000, -2000, 100, 0, 140, 0], ["JUSTIFY", 3400, -1400, 0, 0, 140, 0], ["LEFT", 0, 0, 1000, 200, 130, 1], ["CENTER", 0, 0, 800, 100, 130, 0], ["LEFT", 0, 0, 800, 100, 130, 1], ["CENTER", 0, 0, 0, 300, 130, 0]];
+  var P4 = { o: 15, d: 16, sec: 17, title: 18, cap: 19, sub: 20 };
   // 테두리/배경: 1 없음(쪽) · 2 없음(글자) · 3 표 칸 · 4 머리 칸(회색) · 5 합계 칸(옅은 회색, 위 굵은 선) · 6 제목 상자 · 7 결론 상자
   function bf(id, line, w, fill, top) {
     var s = function (n, t, ww) { return "<hh:" + n + ' type="' + t + '" width="' + ww + '" color="#000000"/>'; };
@@ -63,7 +71,11 @@
     var tile = { l: WH, r: WH, t: null, b: null }, none = { l: null, r: null, t: null, b: null }, grid = { l: GR, r: GR, t: GR, b: GR };
     return [bfx(8, tile, "#17594F"), bfx(9, none, "#E3EEEB"), bfx(10, grid, "#FFFFFF"), bfx(11, grid, "#F3F7F5"), bfx(12, { l: GR, r: GR, t: GR, b: GR }, "#17594F"),
       bfx(13, { l: GR, r: GR, t: ["0.4 mm", "#17594F"], b: GR }, "#DCEAE6"), bfx(14, tile, "#D9A441"), bfx(15, none, "#4C8F85"), bfx(16, none, "#9CC4BD"), bfx(17, none, "#B9C2BF"),
-      bfx(18, none, "#EEF2F0"), bfx(19, none, "#F8EFDB"), bfx(20, tile, "#EEF4F2"), bfx(21, { l: ["1.0 mm", "#17594F"], r: null, t: null, b: null }, "#E3EEEB"), bfx(22, { l: ["1.0 mm", "#D9A441"], r: null, t: null, b: null }, "#F8EFDB")];
+      bfx(18, none, "#EEF2F0"), bfx(19, none, "#F8EFDB"), bfx(20, tile, "#EEF4F2"), bfx(21, { l: ["1.0 mm", "#17594F"], r: null, t: null, b: null }, "#E3EEEB"), bfx(22, { l: ["1.0 mm", "#D9A441"], r: null, t: null, b: null }, "#F8EFDB"),
+      // S11-d4 C안 — 배경 칠 없음: 23 위선(굵게) · 24 카드 칸(위·아래 굵은 선) · 25 카드 가운데 칸(+옅은 세로선) · 26 표 머리(아래 굵은 선) · 27 표 줄(아래 옅은 선) · 28 표 합계 줄(없음) · 29 결정 표 머리(위·아래 굵은 선)
+      bfx(23, { l: null, r: null, t: ["0.4 mm", "#14211F"], b: null }), bfx(24, { l: null, r: null, t: ["0.4 mm", "#14211F"], b: ["0.4 mm", "#14211F"] }),
+      bfx(25, { l: ["0.12 mm", "#B8C4BF"], r: ["0.12 mm", "#B8C4BF"], t: ["0.4 mm", "#14211F"], b: ["0.4 mm", "#14211F"] }), bfx(26, { l: null, r: null, t: null, b: ["0.4 mm", "#14211F"] }),
+      bfx(27, { l: null, r: null, t: null, b: ["0.12 mm", "#B8C4BF"] }), bfx(28, { l: null, r: null, t: null, b: null }), bfx(29, { l: null, r: null, t: ["0.4 mm", "#14211F"], b: ["0.4 mm", "#14211F"] })];
   }
   function header() {
     var langs = ["HANGUL", "LATIN", "HANJA", "JAPANESE", "OTHER", "SYMBOL", "USER"];
@@ -97,13 +109,14 @@
   function run(cp, inner) { return '<hp:run charPrIDRef="' + cp + '">' + inner + "</hp:run>"; }
   function t(s) { return "<hp:t>" + esc(s) + "</hp:t>"; }
   function para(pp, runs, brk) { return '<hp:p id="0" paraPrIDRef="' + pp + '" styleIDRef="0" pageBreak="' + (brk ? 1 : 0) + '" columnBreak="0" merged="0">' + runs + "</hp:p>"; }
-  function secPr() {
+  function secPr(plain) {
+    var mt = plain ? 3400 : PAGE.t, mb = plain ? 3000 : PAGE.b;
     var nf = function (place, len) { return '<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/><hp:noteLine length="' + len + '" type="SOLID" width="0.12 mm" color="#000000"/><hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/><hp:numbering type="CONTINUOUS" newNum="1"/><hp:placement place="' + place + '" beneathText="0"/>'; };
     var pbf = function (ty) { return '<hp:pageBorderFill type="' + ty + '" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>'; };
     return '<hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="0" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">' +
       '<hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/><hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>' +
       '<hp:visibility hideFirstHeader="0" hideFirstFooter="0" hideFirstMasterPage="0" border="SHOW_ALL" fill="SHOW_ALL" hideFirstPageNum="0" hideFirstEmptyLine="0" showLineNumber="0"/><hp:lineNumberShape restartType="0" countBy="0" distance="0" startNumber="0"/>' +
-      '<hp:pagePr landscape="WIDELY" width="' + PAGE.w + '" height="' + PAGE.h + '" gutterType="LEFT_ONLY"><hp:margin header="' + PAGE.head + '" footer="' + PAGE.foot + '" gutter="0" left="' + PAGE.l + '" right="' + PAGE.r + '" top="' + PAGE.t + '" bottom="' + PAGE.b + '"/></hp:pagePr>' +
+      '<hp:pagePr landscape="WIDELY" width="' + PAGE.w + '" height="' + PAGE.h + '" gutterType="LEFT_ONLY"><hp:margin header="' + PAGE.head + '" footer="' + PAGE.foot + '" gutter="0" left="' + PAGE.l + '" right="' + PAGE.r + '" top="' + mt + '" bottom="' + mb + '"/></hp:pagePr>' +
       "<hp:footNotePr>" + nf("EACH_COLUMN", -1) + "</hp:footNotePr><hp:endNotePr>" + nf("END_OF_DOCUMENT", 14692344) + "</hp:endNotePr>" + pbf("BOTH") + pbf("EVEN") + pbf("ODD") + "</hp:secPr>";
   }
   function tcell(c, r, w, h, bfId, inner, headRow, span, mg) {
@@ -213,24 +226,96 @@
     out.push(spacer());
     return out.join("");
   }
+  // ═══ S11-d4 그림 파일(PNG·JPG) 삽입 — BinData/imageN.* + <hp:pic>. 크기는 PNG IHDR 에서 읽어 가로 비율만 지정하면 높이가 따라온다 ═══
+  var imgs = [];
+  function pngSize(d) { return d && d.length > 24 && d[1] === 0x50 ? { w: ((d[16] << 24) | (d[17] << 16) | (d[18] << 8) | d[19]) >>> 0, h: ((d[20] << 24) | (d[21] << 16) | (d[22] << 8) | d[23]) >>> 0 } : null; }
+  function imgFig(b) {
+    var ext = (b.ext || "png").toLowerCase(), no = imgs.length + 1, id = "image" + no, sz = pngSize(b.data) || b.size || { w: 4, h: 3 };
+    var W = Math.round(TW * (b.width || 1)), H = Math.round(W * sz.h / sz.w), out = [], zz = function (n) { return '<hc:' + n + ' e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>'; };
+    imgs.push({ id: id, name: "BinData/" + id + "." + ext, data: b.data, mime: ext === "svg" ? "image/svg+xml" : ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/" + ext });
+    var pic = '<hp:pic id="' + nid() + '" zOrder="0" numberingType="PICTURE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="0" instid="' + nid() + '" reverse="0">' +
+      '<hp:offset x="0" y="0"/><hp:orgSz width="' + W + '" height="' + H + '"/><hp:curSz width="' + W + '" height="' + H + '"/><hp:flip horizontal="0" vertical="0"/><hp:rotationInfo angle="0" centerX="' + (W >> 1) + '" centerY="' + (H >> 1) + '" rotateimage="1"/>' +
+      '<hp:renderingInfo>' + zz("transMatrix") + zz("scaMatrix") + zz("rotMatrix") + '</hp:renderingInfo>' +
+      '<hp:imgRect><hc:pt0 x="0" y="0"/><hc:pt1 x="' + W + '" y="0"/><hc:pt2 x="' + W + '" y="' + H + '"/><hc:pt3 x="0" y="' + H + '"/></hp:imgRect><hp:imgClip left="0" right="' + W + '" top="0" bottom="' + H + '"/><hp:inMargin left="0" right="0" top="0" bottom="0"/><hp:imgDim dimwidth="' + W + '" dimheight="' + H + '"/>' +
+      '<hc:img binaryItemIDRef="' + id + '" bright="0" contrast="0" effect="REAL_PIC" alpha="0"/><hp:effects/>' +
+      '<hp:sz width="' + W + '" widthRelTo="ABSOLUTE" height="' + H + '" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:shapeComment>' + esc(b.alt || "") + '</hp:shapeComment></hp:pic>';
+    if (b.title) out.push(para(PP.cap, run(CP.label, t(b.title))));
+    out.push(para(PP.center, run(CP.body, pic + "<hp:t/>")));
+    if (b.src) out.push(para(PP.note, run(CP.note, t(b.src))));
+    out.push(spacer());
+    return out.join("");
+  }
+  // ═══ S11-d4 C안(공문 정제형) 부품 — 칠한 칸 없이 선·글자만. 글 속 !!빨강!! **굵게** 표시를 글자 모양으로 바꾼다 ═══
+  function rich(text, base, bold, red) {
+    var out = "", re = /(!!.+?!!|\*\*.+?\*\*)/g, parts = String(text == null ? "" : text).split(re);
+    parts.forEach(function (p) { if (!p) return; if (/^!!.+!!$/.test(p)) out += run(red, t(p.slice(2, -2))); else if (/^\*\*.+\*\*$/.test(p)) out += run(bold, t(p.slice(2, -2))); else out += run(base, t(p)); });
+    return out || run(base, "<hp:t/>");
+  }
+  function rule() { return inTable(table([[{ w: TW, bf: 23, mg: [0, 0, 0, 0], inner: emptyP() }]], { cols: 1, rowH: 100 })); }
+  function titleBlock(b) {
+    return para(P4.title, run(C4.title, t(b.title))) + (b.sub ? para(P4.sub, run(C4.sub, t(b.sub))) : "") + rule() + (b.made ? para(PP.right, run(C4.small, t(b.made))) : "") ;
+  }
+  function kpi2(b) {
+    var it = b.items, n = it.length, w = Math.floor(TW / n);
+    var cells = it.map(function (k, i) {
+      var inner = para(PP.center, run(C4.kLab, t(k.k))) + para(PP.center, run(C4.kBig, t(k.v)) + (k.u ? run(C4.kUnit, t(" " + k.u)) : "")) + para(PP.center, rich(k.s || "", C4.kLab, C4.kLab, C4.kRed));
+      return { w: i === n - 1 ? TW - w * (n - 1) : w, bf: i && i < n - 1 ? 25 : 24, mg: [300, 300, 200, 200], inner: inner };
+    });
+    return inTable(table([cells], { cols: n, rowH: 3200 })) + spacer();
+  }
+  /** 일반 표(칠 없음): 머리 아래 굵은 선·줄마다 옅은 선. al 은 열마다 "L"/"R"/"C". 칸 글에 «
+» 이 있으면 둘째 줄은 작은 회색 */
+  function tbl2(b) {
+    var nc = b.head.length, ws = b.widths, ask = b.grid === "ask", al = b.al || b.head.map(function (_, i) { return i ? "R" : "L"; });
+    var pp = function (a) { return a === "R" ? PP.cellR : a === "C" ? PP.cellC : PP.cellL; };
+    var rows = [b.head.map(function (h, i) { return { w: ws[i], bf: ask ? 29 : 26, inner: para(pp(al[i]), run(C4.th, t(h))) }; })];
+    var hl = {}; (b.hl || []).forEach(function (r) { hl[r] = 1; });
+    function cell(v, i, ri, sum) {
+      var parts = String(v == null ? "" : v).split("\n"), main = parts[0], red = hl[ri] && (i === 0 || b.hlCols && b.hlCols.indexOf(i) >= 0);
+      var cp = ask && i === 0 ? 0 : sum ? C4.tdSum : red ? C4.tdRed : C4.td;
+      var inner = para(pp(al[i]), ask && i === 0 ? rich(main, 0, C4.bold, C4.red) : rich(main, cp, C4.tdSum, C4.tdRed));
+      if (parts[1]) inner += para(pp(al[i]), run(C4.small, t(parts[1])));
+      return { w: ws[i], bf: sum ? 28 : 27, mg: ask ? [300, 300, 220, 220] : [510, 510, 141, 141], inner: inner };
+    }
+    (b.rows || []).forEach(function (r, ri) { rows.push(r.map(function (v, i) { return cell(v, i, ri); })); });
+    if (b.sum) rows.push(b.sum.map(function (v, i) {
+      var c = cell(v, i, -1, true);
+      if (b.fx && i > 0 && v !== "" && !isNaN(Number(String(v).replace(/,/g, "")))) c.inner = para(pp(al[i]), formulaRun(C4.tdSum, "=SUM(" + colName(i) + "2:" + colName(i) + (rows.length) + ")", v)); // 합계 칸 = 한글 표 계산식
+      return c;
+    }));
+    var out = inTable(table(rows, { cols: nc, headRows: 1, rowH: ask ? 1600 : 1500 }));
+    if (b.src) out += para(PP.note, run(C4.small, t(b.src)));
+    return out + (b.nospace ? "" : spacer());
+  }
   function section(doc) {
     var P = [];
     // 첫 문단: 구역 설정 + 쪽 번호(중앙 하단 «- n -»)
-    P.push(para(PP.center, run(CP.body, secPr() + '<hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl><hp:ctrl><hp:pageNum pos="BOTTOM_CENTER" formatType="DIGIT" sideChar="-"/></hp:ctrl>') + run(CP.body, "<hp:t/>")));
+    P.push(para(PP.center, run(CP.body, secPr(doc.plain) + '<hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl><hp:ctrl><hp:pageNum pos="BOTTOM_CENTER" formatType="DIGIT" sideChar="-"/></hp:ctrl>') + run(CP.body, "<hp:t/>")));
     // 제목 상자
-    P.push(inTable(table([[{ w: TW, bf: 8, inner: cellP(PP.center, CP.titleW, doc.title || "") + (doc.subtitle ? cellP(PP.center, CP.subL, doc.subtitle) : "") }]], { cols: 1, rowH: 4200 })));
-    P.push(para(PP.right, run(CP.note, t([doc.made, doc.office].filter(Boolean).join("  ")))));
-    if (doc.note) P.push(para(PP.note, run(CP.note, t(doc.note))));
+    if (!doc.plain) { // doc.plain = S11-d4 C안: 제목은 {t:"t2"} 블록이 그린다
+      P.push(inTable(table([[{ w: TW, bf: 8, inner: cellP(PP.center, CP.titleW, doc.title || "") + (doc.subtitle ? cellP(PP.center, CP.subL, doc.subtitle) : "") }]], { cols: 1, rowH: 4200 })));
+      P.push(para(PP.right, run(CP.note, t([doc.made, doc.office].filter(Boolean).join("  ")))));
+      if (doc.note) P.push(para(PP.note, run(CP.note, t(doc.note))));
+    }
+    var pend = false; // C안: 쪽 나눔은 «다음 소제목 문단»에 붙인다(빈 문단이 새 쪽으로 밀려 빈 쪽이 생기는 것을 막음)
     (doc.blocks || []).forEach(function (b) {
       if (b.t === "hd") P.push(chapterBand(b));
       else if (b.t === "kpi") P.push(kpiRow(b));
       else if (b.t === "bars") P.push(barsFig(b));
       else if (b.t === "stack") P.push(stackFig(b));
+      else if (b.t === "img") P.push(imgFig(b));
+      else if (b.t === "t2") P.push(titleBlock(b));
+      else if (b.t === "sec") { P.push(para(P4.sec, run(C4.sec, t("□ " + b.text)), pend)); pend = false; }
+      else if (b.t === "ci") P.push(para(b.lv === 3 ? P4.d : P4.o, (b.lv === 3 ? run(0, t("- ")) : run(0, t("○ "))) + rich(b.text, 0, C4.bold, C4.red)));
+      else if (b.t === "kpi2") P.push(kpi2(b));
+      else if (b.t === "cap2") P.push(para(P4.cap, run(C4.cap, t(b.title))) + (b.sub ? para(PP.note, run(C4.small, t(b.sub))) : ""));
+      else if (b.t === "tbl2") P.push(tbl2(b));
       else if (b.t === "gap") P.push(spacer());
       else if (b.t === "ch") P.push(para(PP.ch, run(CP.ch, t(b.text))));
       else if (b.t === "li") { var lv = Math.max(1, Math.min(4, b.lv || 1)); P.push(para(PP["l" + lv], run(lv === 1 ? CP.l1 : CP.body, t(SYM[lv - 1] + " " + b.text)))); }
+      else if (b.t === "p" && b.kind === "small") P.push(para(PP.note, run(C4.small, t(b.text))));
       else if (b.t === "p") P.push(b.kind === "att" ? para(PP.body, run(CP.body, t(b.text))) : para(b.kind === "end" ? PP.right : PP.note, run(b.kind === "end" ? CP.body : CP.note, t(b.text))));
-      else if (b.t === "break") P.push(para(PP.body, run(CP.body, "<hp:t/>"), true));
+      else if (b.t === "break") { if (doc.plain) pend = true; else P.push(para(PP.body, run(CP.body, "<hp:t/>"), true)); }
       else if (b.t === "box") { var warnB = b.tone === "warn"; P.push(inTable(table([[{ w: Math.round(TW * 0.2), bf: warnB ? 14 : 8, inner: cellP(PP.cellC, CP.tagW, b.label || "") }, { w: TW - Math.round(TW * 0.2), bf: warnB ? 22 : 21, mg: [800, 500, 141, 141], inner: cellP(PP.cellL, CP.sayL, b.text || "") }]], { cols: 2, rowH: 2900 })) + spacer()); }
       else if (b.t === "tbl") P.push(dataTable(b));
     });
@@ -242,21 +327,23 @@
   }
 
   function build(doc) {
-    doc = doc || {}; uid = 1000000;
+    doc = doc || {}; uid = 1000000; imgs = [];
+    var sec = section(doc); // 그림 목록(imgs)이 여기서 채워진다
     var now = new Date().toISOString().replace(/\.\d+Z$/, "Z");
     var files = [
       { name: "mimetype", data: "application/hwp+zip" },
       { name: "version.xml", data: XH + '<hv:HCFVersion xmlns:hv="http://www.hancom.co.kr/hwpml/2011/version" tagetApplication="WORDPROCESSOR" major="5" minor="1" micro="1" buildNumber="0" os="1" xmlVersion="1.5" application="Hancom Office Hangul" appVersion="13, 0, 0, 3901 WIN32LEWindows_10"/>' },
       { name: "Contents/header.xml", data: header() },
-      { name: "Contents/section0.xml", data: section(doc) },
+      { name: "Contents/section0.xml", data: sec },
       { name: "Preview/PrvText.txt", data: preview(doc) },
       { name: "settings.xml", data: XH + '<ha:HWPApplicationSetting xmlns:ha="http://www.hancom.co.kr/hwpml/2011/app" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0"><ha:CaretPosition listIDRef="0" paraIDRef="0" pos="0"/></ha:HWPApplicationSetting>' },
       { name: "META-INF/container.rdf", data: XH + '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about=""><ns0:hasPart xmlns:ns0="http://www.hancom.co.kr/hwpml/2016/meta/pkg#" rdf:resource="Contents/header.xml"/></rdf:Description><rdf:Description rdf:about="Contents/header.xml"><rdf:type rdf:resource="http://www.hancom.co.kr/hwpml/2016/meta/pkg#HeaderFile"/></rdf:Description><rdf:Description rdf:about=""><ns0:hasPart xmlns:ns0="http://www.hancom.co.kr/hwpml/2016/meta/pkg#" rdf:resource="Contents/section0.xml"/></rdf:Description><rdf:Description rdf:about="Contents/section0.xml"><rdf:type rdf:resource="http://www.hancom.co.kr/hwpml/2016/meta/pkg#SectionFile"/></rdf:Description><rdf:Description rdf:about=""><rdf:type rdf:resource="http://www.hancom.co.kr/hwpml/2016/meta/pkg#Document"/></rdf:Description></rdf:RDF>' },
       { name: "Contents/content.hpf", data: XH + "<opf:package " + NS + ' version="" unique-identifier="" id=""><opf:metadata><opf:title>' + esc(doc.title || "") + '</opf:title><opf:language>ko</opf:language><opf:meta name="creator" content="text">닿음</opf:meta><opf:meta name="CreatedDate" content="text">' + now + '</opf:meta><opf:meta name="ModifiedDate" content="text">' + now + "</opf:meta></opf:metadata>" +
-        '<opf:manifest><opf:item id="header" href="Contents/header.xml" media-type="application/xml"/><opf:item id="section0" href="Contents/section0.xml" media-type="application/xml"/><opf:item id="settings" href="settings.xml" media-type="application/xml"/></opf:manifest><opf:spine><opf:itemref idref="header" linear="yes"/><opf:itemref idref="section0" linear="yes"/></opf:spine></opf:package>' },
+        '<opf:manifest><opf:item id="header" href="Contents/header.xml" media-type="application/xml"/><opf:item id="section0" href="Contents/section0.xml" media-type="application/xml"/><opf:item id="settings" href="settings.xml" media-type="application/xml"/>' + imgs.map(function (m) { return '<opf:item id="' + m.id + '" href="' + m.name + '" media-type="' + m.mime + '" isEmbeded="1"/>'; }).join("") + '</opf:manifest><opf:spine><opf:itemref idref="header" linear="yes"/><opf:itemref idref="section0" linear="yes"/></opf:spine></opf:package>' },
       { name: "META-INF/container.xml", data: XH + '<ocf:container xmlns:ocf="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:hpf="http://www.hancom.co.kr/schema/2011/hpf"><ocf:rootfiles><ocf:rootfile full-path="Contents/content.hpf" media-type="application/hwpml-package+xml"/><ocf:rootfile full-path="Preview/PrvText.txt" media-type="text/plain"/><ocf:rootfile full-path="META-INF/container.rdf" media-type="application/rdf+xml"/></ocf:rootfiles></ocf:container>' },
       { name: "META-INF/manifest.xml", data: XH + '<odf:manifest xmlns:odf="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"/>' }
     ];
+    imgs.forEach(function (m) { files.push({ name: m.name, data: m.data }); });
     return Z.zip(files);
   }
   function download(doc, fileName) {

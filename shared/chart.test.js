@@ -30,13 +30,9 @@ t("report_doc.js 는 그림을 직접 그리지 않고 chart.js 를 부른다", 
   assert.ok(/require\("\.\/chart\.js"\)/.test(src) && /root\.DaeumChart/.test(src));
   assert.ok(src.indexOf("rp-arc") < 0 && src.indexOf("rp-mb") < 0 && src.indexOf("rp-tl") < 0);
 });
-t("보고서 그림 5개가 chart.js 출력과 글자 하나까지 같다", function () {
+t("S11-d4 C안: 보고서 그림은 [그림 1] 처리 추세 하나 — 화면 HTML 에 같은 SVG(rpc-pace)가 들어감", function () {
   var figs = M.body.filter(function (n) { return n.t === "fig"; });
-  assert.ok(figs.length >= 3, "그림 " + figs.length);
-  figs.forEach(function (n) {
-    var g = n.kind === "donut" ? C.donut(n.data) : n.kind === "bars" ? C.bars(n.data) : n.kind === "map" ? C.map(n.data) : C.trendSvg(n.data);
-    assert.ok(H.indexOf(g) >= 0, n.kind + " 그림이 다름");
-  });
+  assert.strictEqual(figs.length, 1); assert.strictEqual(figs[0].kind, "pace"); assert.ok(H.indexOf('class="rpc-pace"') >= 0);
 });
 t("보고서 공유 보기·공무원 화면이 chart.js 를 report_doc.js 보다 먼저 싣는다", function () {
   var rv = rd("shared/report_view.html"), of = rd("officer/index.html");

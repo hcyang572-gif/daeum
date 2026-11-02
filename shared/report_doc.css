@@ -166,3 +166,26 @@ i.c1 { background: var(--c1); } i.c2 { background: var(--c2); } i.c3 { backgroun
   .rp-tscroll { overflow: visible; }
   .rp-tbl th, .rp-tbl td { white-space: normal; }
 }
+
+/* ═══ S11-d4 C안 공문 정제형(2026-11-02 호창님 선택) — 칠한 칸 없이 선·글자만. 제목 고딕·본문 명조, 크기 4단(22·15·13·10), 초록 1 + 빨강 경고 ═══ */
+.rpc { --rc-ink: #14211F; --rc-sub: #595959; --rc-grn: #2F5D50; --rc-red: #B42318; --rc-line: #B8C4BF; font-family: "Noto Serif KR", "Batang", serif; font-size: 13px; line-height: 1.7; color: #000; }
+.rpc-head { text-align: center; padding: 14px 0 8px; border-bottom: 2px solid var(--rc-ink); }
+.rpc-title { font: 700 22px/1.3 "Pretendard", "Malgun Gothic", sans-serif; color: var(--rc-ink); margin: 0 0 4px; }
+.rpc-sub, .rpc-meta, .rpc-note, .rpc-unit { font: 400 10px/1.5 "Pretendard", "Malgun Gothic", sans-serif; color: var(--rc-sub); margin: 2px 0; }
+.rpc-meta { text-align: right; margin: 6px 0 0; }
+.rpc-sec { font: 700 15px/1.4 "Pretendard", "Malgun Gothic", sans-serif; color: var(--rc-ink); margin: 18px 0 4px; }
+.rpc-li { margin: 2px 0; padding-left: 1.6em; text-indent: -1.6em; }
+.rpc-li.l3 { padding-left: 2.8em; }
+.rpc-li .rp-sym { display: inline-block; width: 1.6em; text-indent: 0; }
+.rpc b { font-weight: 700; } .rpc-red { color: var(--rc-red); }
+.rpc-kpis { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid var(--rc-ink); border-bottom: 2px solid var(--rc-ink); margin: 6px 0 14px; font-family: "Pretendard", "Malgun Gothic", sans-serif; text-align: center; }
+.rpc-kpi { padding: 10px 6px; display: flex; flex-direction: column; gap: 2px; } .rpc-kpi + .rpc-kpi { border-left: 1px solid var(--rc-line); }
+.rpc-kk, .rpc-ks { font-size: 10px; color: #333; } .rpc-kv { font-size: 22px; color: var(--rc-grn); line-height: 1.2; } .rpc-kv small { font-size: 13px; color: #333; font-weight: 400; margin-left: 4px; }
+.rpc-fig { margin: 10px 0; } .rpc-fig figcaption { font: 700 13px/1.5 "Pretendard", "Malgun Gothic", sans-serif; color: var(--rc-ink); } .rpc-unit { display: block; font-weight: 400; }
+.rpc-fig svg { width: 100%; height: auto; display: block; margin: 4px 0; }
+.rpc-tbl { width: 100%; border-collapse: collapse; font: 400 10px/1.5 "Pretendard", "Malgun Gothic", sans-serif; }
+.rpc-tbl th { font-weight: 400; color: var(--rc-sub); text-align: left; padding: 5px 6px; border-bottom: 2px solid var(--rc-ink); } .rpc-tbl td, .rpc-tbl tbody th { padding: 5px 6px; border-bottom: 1px solid var(--rc-line); color: #000; font-size: 11px; font-weight: 400; }
+.rpc-tbl .r { text-align: right; } .rpc-tbl tr.hl th, .rpc-tbl tr.hl td:nth-child(5) { color: var(--rc-red); font-weight: 700; } .rpc-tbl tfoot th, .rpc-tbl tfoot td { border-bottom: 0; font-weight: 700; color: #000; }
+.rpc-ask thead th { border-top: 2px solid var(--rc-ink); } .rpc-ask td { padding: 8px 6px; vertical-align: top; } .rpc-am { display: block; font: 400 13px/1.5 "Noto Serif KR", "Batang", serif; } .rpc-as { display: block; font-size: 10px; color: var(--rc-sub); } .rpc-due { color: var(--rc-red); font-weight: 700; white-space: nowrap; }
+.rpc-pb { height: 0; }
+@media print { .rpc-pb { break-after: page; } .rpc-kpis, .rpc-fig, .rpc-ask { break-inside: avoid; } .rpc-sec { break-after: avoid; } }
