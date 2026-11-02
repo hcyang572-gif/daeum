@@ -15,7 +15,7 @@
   ]
  },
  "weather": {
-  "active": "heat",
+  "active": "cold",
   "region": "상주시",
   "scenarios": {
    "heat": { "code": 12, "level": 1, "name": "폭염경보", "from": "11:00" },

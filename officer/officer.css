@@ -875,3 +875,16 @@ body[data-tab="today"] .virtual { display: none; }
 
 /* S10p-4 R-2: 시각표 화면은 머리 꼬리표(«가구·좌표는 가상(실제 주민 0명)»)가 가상 안내를 겸한다 — 같은 말 두 줄을 한 줄로 */
 body[data-tab="route"] .virtual { display: none; }
+
+/* S11-d 채점 #10: 가구 명단 «경로에 담기» — 체크 상자 자체가 누름 칸(44px 이상) 전체를 덮게. 보이는 상자는 그대로 24px(::before) */
+#listTable .pick { position: relative; }
+#listTable .pick > input[type=checkbox] { position: absolute; inset: 0; width: 100%; height: 100%; min-width: var(--tap); min-height: var(--tap); margin: 0; opacity: 0; z-index: 1; }
+#listTable .pick::before { content: ""; width: 24px; height: 24px; box-sizing: border-box; border: 2px solid #7C8A86; border-radius: 6px; background: #fff; }
+#listTable .pick:has(> input:checked)::before { border-color: var(--acc); background: var(--acc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat; }
+#listTable .pick:has(> input:focus-visible)::before { outline: 3px solid var(--acc); outline-offset: 2px; }
+
+/* S11-d: 불러온 «발굴대상자 조회» 엑셀 꼬리표(오늘·방문 카드) */
+.tag.imp { display: inline-block; margin: 2px 4px 0 0; font-size: .75rem; font-weight: var(--fw-b); padding: 2px 8px; border-radius: var(--r-pill); background: #EAF2EF; color: #17594F; white-space: nowrap; vertical-align: 1px; }
+.tag.imp.warn { background: var(--warn-soft); color: var(--warn); }
+.tag.imp.info { background: #EEF1F7; color: #33476E; }
+.imp-tags { display: flex; flex-wrap: wrap; gap: 0; margin-top: 2px; }

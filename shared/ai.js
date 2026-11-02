@@ -263,9 +263,10 @@
     return fetch(c.aiEndpoint, { method: "POST", headers: headers, signal: ctl ? ctl.signal : undefined, body: JSON.stringify(body) })
       .then(function (res) {
         clearTimeout(to);
-        if (!res.ok) throw new Error("AI 서버 응답 " + res.status);
+        if (!res.ok) { aiStatus(false, res.status); throw new Error("AI 서버 응답 " + res.status); }
+        aiStatus(true, res.status);
         return res.json();
-      }, function (e) { clearTimeout(to); throw e; });
+      }, function (e) { clearTimeout(to); aiStatus(false, 0); throw e; });
   }
   // 비용 상한(10-29): 함수는 services 를 앞에서 60건까지만 받는다. 화면은 규칙 관련도 순 상위 AI_MAX_SERVICES 건만 보낸다.
   var AI_MAX_SERVICES = 50;
@@ -303,8 +304,17 @@
     if (window.console) console.info("[닿음 AI] " + tag + " 보낸 서비스 " + sent + "건 · 입력 토큰 " + (u ? u.input_tokens : "?") + " · 출력 토큰 " + (u ? u.output_tokens : "?"));
   }
   /** 응답 picks 를 목록(byId)에 있는 것만 남긴다 */
-  function keepKnown(ans, byId, max, text) {
-    return ((ans && ans.picks) || []).filter(function (p) { return p && typeof p.id === "string" && byId[p.id] && gateOk(byId[p.id], text); }).slice(0, max || 8);
+  // S11-d: 마지막 호출 결과를 화면 머리띠가 따라가게 알린다(설정값이 아니라 실제 응답 기준 — 429·실패면 «시연 모드»)
+  var lastStatus = null;
+  function aiStatus(ok, code) {
+    lastStatus = { ok: ok, code: code, at: Date.now() };
+    try { document.dispatchEvent(new CustomEvent("daeum:ai-status", { detail: lastStatus })); } catch (e) { /* node 시험 */ }
+  }
+  /** AI 답 중 «목록 안 + 문턱 통과»만 남긴다. 버린 개수는 dropped 에 적는다(S11-d «목록 밖 답» 실측 표시) */
+  function keepKnown(ans, byId, max, text, dropped) {
+    var all = ((ans && ans.picks) || []), keep = all.filter(function (p) { return p && typeof p.id === "string" && byId[p.id] && gateOk(byId[p.id], text); });
+    if (dropped) { dropped.out = all.filter(function (p) { return !(p && typeof p.id === "string" && byId[p.id]); }).length; dropped.gate = all.length - keep.length - dropped.out; }
+    return keep.slice(0, max || 8);
   }
 
   /** 서버가 외부 AI로 보내기 전에 가린 개인정보 건수(S10l-①) → 화면 한 줄 */
@@ -447,7 +457,8 @@
       services: compact
     }).then(function (ans) {
       logUsage("공무원", ans, compact.length);
-      var picks = keepKnown(ans, byId, 8, text);
+      var dropped = {};
+      var picks = keepKnown(ans, byId, 8, text, dropped);
       if (!picks.length) throw new Error("AI 답에 목록 안의 서비스가 없음");
       var reasons = {};
       picks.forEach(function (p) { reasons[p.id] = String(p.reason || "").slice(0, 200); });
@@ -455,7 +466,7 @@
       // 규칙이 «긴급»으로 본 서비스는 AI가 빠뜨려도 앞에 남긴다
       if (r.urgent) r.serviceIds.filter(function (id) { return (r.why[id] || []).indexOf("긴급") >= 0 && ids.indexOf(id) < 0; })
         .reverse().forEach(function (id) { ids.unshift(id); });
-      return Object.assign({}, r, { summary: String(ans.summary || "").slice(0, 400) || r.summary, serviceIds: ids, reasons: reasons, source: "ai", redacted: ans.redacted || null });
+      return Object.assign({}, r, { summary: String(ans.summary || "").slice(0, 400) || r.summary, serviceIds: ids, reasons: reasons, source: "ai", redacted: ans.redacted || null, dropped: dropped });
     }).catch(function (e) {
       if (window.console) console.warn("[닿음 AI] 공무원 요약 규칙 모드로 전환:", e && e.message);
       r.fallback = String((e && e.message) || e); return r;
@@ -467,6 +478,7 @@
     summarize: summarize, ruleSummarize: ruleSummarize, needFromIndicator: NEED_FROM_INDICATOR,
     gateOk: gateOk, needsFromRule: needsFromRule, GATES: GATES, needKeywords: NEED_KEYWORDS,
     chips: CHIPS, reasonLabel: REASON,
-    mode: function () { return cfg().aiEndpoint ? "ai" : "rules"; }
+    mode: function () { return cfg().aiEndpoint ? "ai" : "rules"; },
+    lastStatus: function () { return lastStatus; }
   };
 })();

@@ -11,11 +11,11 @@
   function tag(kind, text) { return el("span", "d-tag " + kind, text); }
 
   // 감소율(%) — 순수 계산, 시험용으로 밖에 연다
-  function gainPct(g) { return g && g.naive > 0 ? Math.round((g.naive - g.plan) / g.naive * 100) : null; }
+  function gainPct(g) { return g && g.naive > 0 ? Math.round((g.naive - g.plan) / g.naive * 1000) / 10 : null; } // S11-d: 소수 한 자리(48.3) — «48%»·«48.3%» 두 숫자 공존 제거
 
   // S10p-3 F-1: 첫 화면 숫자는 «시연 기본값» 스냅숏으로 고정한다(담기·앞에 두기·특보 선택이 브라우저에 남아도 발표·원고 숫자와 같게).
   // 값은 빈 프로필 실측(_design/S10p-2_이동거리_재측정.md). 지금 담은 집 기준 값이 다르면 작게 함께 적는다.
-  var SNAP = { n: 9, naive: 127.31, plan: 65.77, pct: 48 }; // 2026-10-30 빈 프로필 실측 (127.31-65.77)/127.31 = 48.3%
+  var SNAP = { n: 9, naive: 127.31, plan: 65.77, pct: 48.3 }; // 2026-10-30 빈 프로필 실측 (127.31-65.77)/127.31 = 48.3%
   function renderGain(O) {
     var box = $("fGain"); if (!box || !SNAP.pct) return;
     var g = null; try { g = O.gain ? O.gain() : null; } catch (e) { g = null; }

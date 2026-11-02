@@ -21,7 +21,7 @@
     if (/[?&]demo=reset(?![a-z])/.test(root.location.search)) {
       var LS = root.localStorage, ks = [];
       for (var i = 0; i < LS.length; i++) ks.push(LS.key(i));
-      ks.forEach(function (k) { if (/^daeum\.(officer\.|requests|demo\.|citizen\.)/.test(k) && k !== "daeum.officer.road") LS.removeItem(k); });
+      ks.forEach(function (k) { if (/^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import)/.test(k) && k !== "daeum.officer.road") LS.removeItem(k); });
       if (root.history && root.history.replaceState) root.history.replaceState(null, "", root.location.pathname + (root.location.hash || "#today"));
     }
   } catch (e) { /* 저장소를 못 쓰면 그대로 */ }

@@ -165,9 +165,26 @@
     var mine = order.filter(function (s) { return has[s.id]; }).length, rest = order.length - mine;
     return rest && mine ? "(담은 가구 " + mine + " + 신호·재방문 " + rest + ")" : "";
   }
+  // S11-d 시연 숫자 한 벌: 오늘 첫 화면의 가구 수·km·진행 고리는 «담은 가구»(경로 화면·PC 지도와 같은 순서·같은 근사 km)로만 센다.
+  // 주민 신호·재방문 집은 km에 섞지 않고 따로 한 줄로 적는다(«경로에 담기»로 묻고 붙인다 — O-03).
+  function todayMine(t) {
+    var R = t.route, P = O.plan ? O.plan() : null, RP = window.DaeumRoutePlan, D = O.data && O.data();
+    if (!R || !P || !RP || !D || !D.meta) return null;
+    var has = {}, byId = {}; O.picked().forEach(function (id) { has[id] = 1; }); R.order.forEach(function (s) { byId[s.id] = s; });
+    var order = P.ids.map(function (id) { var r = O.row(id); return byId[id] || (r ? { id: id, label: r.h.label, area: r.h.area, kind: "pick" } : null); }).filter(Boolean);
+    var pts = order.map(function (s) { var r = O.row(s.id); return { id: s.id, x: r.h.x, y: r.h.y }; });
+    var sch = pts.length ? RP.schedule(pts, RP.approxLegs(pts, D.meta.office, P.ret), { start: "09:30", ret: P.ret }) : null;
+    return { order: order, extra: R.order.filter(function (s) { return !has[s.id]; }), km: sch ? sch.km : 0, minutes: sch ? sch.travelMin + sch.consultMin : 0 };
+  }
+  // S11-d: 불러온 «발굴대상자 조회» 엑셀의 쓸모 있는 열(우선방문·발굴우선순위·처리여부·급여 수급·정보원 AI초기상담) → 꼬리표
+  function impTags(id) {
+    var S = window.DaeumS11c; if (!S || !S.tags) return [];
+    return S.tags(id).map(function (x) { return h("span", { class: "tag imp" + (x.k ? " " + x.k : ""), text: x.t }); });
+  }
   function renderToday(t) {
-    var c = t.counts;
-    if (window.DaeumUI) DaeumUI.countUp($("todayCount"), c.stops, "가구"); else $("todayCount").innerHTML = c.stops + "<small>가구</small>";
+    var c = t.counts, M = todayMine(t);
+    var nStops = M ? M.order.length : c.stops;
+    if (window.DaeumUI) DaeumUI.countUp($("todayCount"), nStops, "가구"); else $("todayCount").innerHTML = nStops + "<small>가구</small>";
     $("kpiReq").textContent = c.newRequests; $("kpiDue").textContent = c.dueSoon; $("kpiRevisit").textContent = c.revisits;
     var nr = $("navRevisit"); if (nr) nr.textContent = c.revisits || "";
     var sg = $("sigLine"); if (sg) sg.classList.toggle("on", c.newRequests > 0);
@@ -177,7 +194,8 @@
     fillList("todayDue", S.due.items, "기한이 다가오는 요청이 없습니다.");
     fillList("todayRevisit", S.revisit.items, "오늘 다시 찾아갈 집이 없습니다.");
     // 동선
-    var box = clear($("todayRoute")), R = t.route;
+    var box = clear($("todayRoute")), R = M ? { order: M.order, km: M.km, minutes: M.minutes } : t.route;
+    if (M && M.extra.length) box.appendChild(h("p", { class: "small", text: "주민 신호·재방문 " + M.extra.length + "곳은 아직 경로 밖입니다 — «순서 다시 짜기»를 누르면 함께 담을지 묻습니다." }));
     if (!R.order.length) box.appendChild(h("p", { class: "d-slot", text: "가구 명단에서 방문할 집을 담으면 동선을 묶어 드립니다." }));
     else {
       var sum = "방문 " + R.order.length + "곳" + split(R.order) + " · 이동 " + R.km.toFixed(1) + "km(추정) · 예상 " + (R.minutes / 60).toFixed(1) + "시간";
@@ -197,8 +215,8 @@
       R.order.slice(0, 8).forEach(function (s, i) {
         var rr = O.row(s.id), old = !!(OH && rr && OH.isOld(rr.h)); if (old) ohN++;
         ol.appendChild(h("li", { class: s.kind === "request" ? "req" : null }, [h("span", { class: "vn num", text: String(i + 1), "aria-hidden": "true" }), h("span", { class: "grow" }, [h("span", { class: "sr", text: (i + 1) + "번 " }), h("b", { text: s.label }),
-          old ? h("span", { class: "tag old", text: "오래된 집", title: "30년 넘은 집(가상 표시 — 읍면 비율로 시연용)" }) : null,
-          h("span", { class: "small", text: " " + s.area + (s.kind === "request" ? " · 주민 신호" : "") + (s.alert === "noresp" ? " · 무반응 신호(가상)" : "") + (DS && DS.rows[i] ? " · " + DS.rows[i].arrive + " 도착" : "") })]),
+          old ? h("span", { class: "tag old", text: "오래된 집", title: "30년 넘은 집(가상 표시 — 읍면 비율로 시연용)" }) : null].concat(impTags(s.id), [
+          h("span", { class: "small", text: " " + s.area + (s.kind === "request" ? " · 주민 신호" : "") + (s.alert === "noresp" ? " · 무반응 신호(가상)" : "") + (DS && DS.rows[i] ? " · " + DS.rows[i].arrive + " 도착" : "") })])),
           O.row(s.id) ? h("div", { class: "acts" }, [btn("방문 전 카드", function () { openCard(s.id); })]) : null]));
         lastA = s.area;
       });
@@ -475,7 +493,7 @@
     var cf = dr.caseForm.filter(function (c) { return c.finding; });
     if (cf.length) slot.appendChild(h("details", null, [h("summary", { text: "사례관리 욕구 영역 " + cf.length + "곳" }),
       h("ul", { class: "small" }, cf.map(function (c) { return h("li", { text: c.domain + ": " + c.finding }); }))]));
-    slot.appendChild(h("p", { class: "note", text: dr.note + " 정식 기록은 행복이음(모바일 행복이음 포함)에 하며, 이 초안은 행복이음 상담 요약 기능이 정식 도입되기 전(2028 계획)까지 입력을 돕는 가교입니다. 시도 이력·연계 결과까지 합친 묶음은 «연계·보고서 → 행복이음에 옮길 초안»에 있습니다." }));
+    slot.appendChild(h("p", { class: "note", text: dr.note + " 정식 기록은 행복이음(모바일 행복이음 포함)에 하며, 이 초안은 행복이음 입력을 돕는 가교입니다. 시도 이력·연계 결과까지 합친 묶음은 «연계·보고서 → 행복이음에 옮길 초안»에 있습니다." }));
     slot.appendChild(h("p", { id: "mountStatus2", class: "small", role: "status" }));
   }
 

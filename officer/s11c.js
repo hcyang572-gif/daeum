@@ -38,7 +38,7 @@
     if (on && !e) {
       e = doc.createElement("div"); e.id = "s11Empty"; e.className = "s11-state s11-emp card";
       e.innerHTML = ICON.empty + '<h2>오늘 담은 집이 없습니다</h2><p>행복이음에서 내려받은 명단(엑셀·CSV)을 불러오면 방문 순서와 지도가 바로 만들어집니다.</p>' +
-        '<label class="s11-btn" for="s11File">명단 불러오기</label><a class="s11-lnk" href="../data/demo_list.csv" download="닿음_시연용_가상명단.csv">시연용 가상 명단 받기</a>';
+        '<label class="s11-btn" for="s11File">명단 불러오기</label><a class="s11-lnk" href="../data/demo_list.xlsx" download="닿음_시연용_가상명단(발굴대상자 조회 서식).xlsx">시연용 가상 명단 받기</a>';
       box.insertBefore(e, box.querySelector(".vg"));
     }
     if (e) e.hidden = !on;
@@ -85,15 +85,53 @@
   }
 
   // ── ③ 명단 불러오기 ──
-  // 열 이름 자동 맞춤: 행복이음·발굴관리시스템 내려받기 파일에서 흔한 이름들. 성명·연락처·주소 상세 열은 «읽지 않는다»
+  // S11-d(11-02): 한국사회보장정보원 «복지사각지대 발굴대상자 조회» 엑셀(1행 제목 병합 «중앙발굴대상자 조회결과 현황» · 2행 머리글 43열)을
+  // 그대로 읽는다. 머리줄은 위 10줄 중 맞는 열이 가장 많은 줄(제목·병합 줄은 자동으로 건너뜀). 옛 CSV(관리번호·읍면동…)도 계속 받는다.
+  // 읽는 열: 아래 COLS·BEN 만. 성명·주민등록번호·전화·휴대폰·연락처·우편번호·(행안부)주소·담당자는 «읽지 않는다»(화면에 안 나옴).
+  // (행복이음)주소는 «지도 위치 찾기»에만 이 기기 안에서 쓰고 화면에 적지 않는다. 서버 전송 0.
   var COLS = [
     ["id", "가구번호", /^(관리\s*번호|가구\s*(번호|id|코드)|대상\s*번호|발굴\s*번호|일련\s*번호|id|household)$/i],
-    ["area", "읍면동", /^(읍면동|행정동|읍\s*면\s*동|관할\s*읍면동|동\s*명|읍면|area|region)$/i],
-    ["sig", "위기정보", /(위기\s*(정보|신호|유형|사유)|발굴\s*사유|위기사유|signal)/i],
+    ["area", "읍면동", /^(읍면동|행정동|소재\s*행정동|읍\s*면\s*동|관할\s*읍면동|동\s*명|읍면|area|region)$/i],
+    ["sig", "위기정보", /(위기\s*(정보|신호|유형|사유)|발굴\s*사유|발굴\s*변수|위기사유|signal)/i],
     ["age", "연령", /^(연령|나이|만\s*나이|age)$/i],
-    ["mem", "가구원수", /(가구\s*원\s*수|세대\s*원\s*수|가구원|members)/i]
+    ["mem", "가구원수", /(가구\s*원\s*수|세대\s*원\s*수|가구원|members)/i],
+    ["addr", "위치(이 기기 안에서만)", /^(\(행복이음\)\s*주소|주소)$/],
+    ["prio", "발굴우선순위", /^발굴\s*우선\s*순위$/],
+    ["cnt", "발굴횟수", /^발굴\s*횟수$/],
+    ["proc", "처리여부", /^처리\s*여부$/],
+    ["lonely", "우선방문(고독사)", /^우선\s*방문\s*대상자?_?\s*고독사$/],
+    ["child", "우선방문(e아동)", /^우선\s*방문\s*대상자?_?\s*e\s*아동$/i],
+    ["aiReq", "정보원 AI초기상담 상태", /^AI\s*초기\s*상담\s*요청\s*상태$/i],
+    ["aiRes", "정보원 AI초기상담 결과", /^AI\s*초기\s*상담\s*(상담)?\s*결과$/i]
   ];
-  var SKIP = /(성명|이름|대상자명|연락처|전화|휴대|주민\s*등록|생년월일|주소|name|phone)/i;
+  // 급여·자격 열(값 Y/예/O/1 이면 «받음»): 이름 그대로 꼬리표에 쓴다
+  var BEN = ["기초생계급여", "기초의료급여", "기초주거급여", "기초교육급여", "긴급복지", "차상위장애인", "차상위본인부담경감대상자", "차상위자활", "차상위계층확인", "한부모가족", "타법의료", "장애인연금", "기초연금"];
+  var SKIP = /(성명|이름|대상자명|연락처|전화|휴대|주민\s*등록|생년월일|주소|우편|담당자|name|phone)/i;
+  var READ_OK = /^(관리\s*번호|\(행복이음\)\s*주소|주소)$/;
+  function yes(v) { return /^(y|yes|예|o|○|1|대상|해당)$/i.test(String(v == null ? "" : v).trim()); }
+  /** 가상 가구 위치 찾기: 주소 «… <읍면동> 가상리 <번호>» → 가구(data/tools/make_demo_list.py 와 같은 규칙). 실제 주소는 찾지 않는다(주소→좌표 변환은 도입 때) */
+  function addrKey(a) { var m = String(a || "").match(/(\S+(?:읍|면|동))\s+가상리\s+(\d+)/); return m ? m[1] + "|" + (+m[2]) : ""; }
+  function addrIndex() {
+    var o = O(), D = o && o.data ? o.data() : null, ix = {};
+    ((D && D.households) || []).forEach(function (h) { var n = +String(h.id).split("-")[1]; if (n) ix[h.area + "|" + n] = h.id; });
+    return ix;
+  }
+  // 불러온 명단의 쓸모 있는 열 → 가구별 꼬리표(오늘·방문 카드). 이 기기 저장소에만.
+  var LS_META = "daeum.s11.importMeta", META = null;
+  function metaAll() { if (META) return META; try { META = JSON.parse(lsGet(LS_META) || "{}") || {}; } catch (e) { META = {}; } return META; }
+  function tags(id) {
+    var m = metaAll()[id]; if (!m) return [];
+    var t = [];
+    if (m.lonely) t.push({ t: "고독사 우선방문", k: "warn" });
+    if (m.child) t.push({ t: "e아동 우선방문", k: "warn" });
+    if (m.prio) t.push({ t: "발굴 " + m.prio + "순위", k: "" });
+    if (m.cnt > 1) t.push({ t: "발굴 " + m.cnt + "회째", k: "" });
+    if (m.proc) t.push({ t: m.proc, k: /미처리/.test(m.proc) ? "warn" : "" });
+    if (m.ben && m.ben.length) t.push({ t: "수급 " + m.ben.map(function (b) { return b.replace(/급여$/, ""); }).join("·"), k: "" });
+    else if (m.hasBen) t.push({ t: "급여 수급 없음", k: "" });
+    if (m.aiRes || (m.aiReq && !/미요청/.test(m.aiReq))) t.push({ t: "정보원 AI초기상담: " + (m.aiRes || m.aiReq), k: "info" });
+    return t;
+  }
   function parseCSV(text) {
     text = text.replace(/^﻿/, "");
     var delim = (text.split(/\r?\n/)[0].match(/\t/g) || []).length > (text.split(/\r?\n/)[0].match(/,/g) || []).length ? "\t" : ",";
@@ -143,7 +181,7 @@
     var best = { i: -1, n: 0, m: null };
     rows.slice(0, 10).forEach(function (r, i) {
       var m = {}, n = 0;
-      r.forEach(function (h, j) { h = String(h).trim(); if (!h || SKIP.test(h) && !/관리\s*번호/.test(h)) return; COLS.forEach(function (c) { if (m[c[0]] == null && c[2].test(h)) { m[c[0]] = j; n++; } }); });
+      r.forEach(function (h, j) { h = String(h).trim(); if (!h || SKIP.test(h) && !READ_OK.test(h)) return; COLS.forEach(function (c) { if (m[c[0]] == null && c[2].test(h)) { m[c[0]] = j; n++; } }); });
       if (n > best.n) best = { i: i, n: n, m: m };
     });
     return best;
@@ -151,20 +189,38 @@
   function importRows(rows, fname) {
     var o = O(), msg = $("s11ImpMsg"); if (!o) return;
     var hd = mapCols(rows);
-    if (hd.i < 0 || (hd.m.id == null && hd.m.area == null)) { msg.innerHTML = '<span class="bad">가구번호·읍면동 열을 찾지 못했습니다.</span> 첫 줄에 «관리번호», «읍면동» 같은 열 이름이 있는지 확인해 주세요.'; return; }
-    var head = rows[hd.i], body = rows.slice(hd.i + 1), ids = [], miss = 0, seen = {};
+    if (hd.i < 0 || (hd.m.id == null && hd.m.addr == null)) { msg.innerHTML = '<span class="bad">가구를 가리키는 열을 찾지 못했습니다.</span> «복지사각지대 발굴대상자 조회» 엑셀(머리글에 «소재행정동»·«(행복이음)주소») 또는 «관리번호» 열이 있는 CSV인지 확인해 주세요.'; return; }
+    var head = rows[hd.i], body = rows.slice(hd.i + 1).filter(function (r) { return r.some(function (x) { return String(x).trim(); }); });
+    var benCol = []; head.forEach(function (h, j) { if (BEN.indexOf(String(h).trim()) >= 0) benCol.push(j); });
+    var cell = function (r, k) { return hd.m[k] != null ? String(r[hd.m[k]] == null ? "" : r[hd.m[k]]).trim() : ""; };
+    // 발굴우선순위가 있으면 그 순서로(같으면 파일 순서)
+    if (hd.m.prio != null) body = body.map(function (r, i) { return { r: r, i: i, p: parseFloat(cell(r, "prio")) }; })
+      .sort(function (a, b) { var x = isFinite(a.p) ? a.p : 1e9, y = isFinite(b.p) ? b.p : 1e9; return x - y || a.i - b.i; }).map(function (x) { return x.r; });
+    var ix = hd.m.addr != null ? addrIndex() : null, ids = [], miss = 0, seen = {}, meta = {}, cnt = { lonely: 0, child: 0, todo: 0, ben: 0, ai: 0 };
     body.forEach(function (r) {
-      var id = hd.m.id != null ? String(r[hd.m.id] || "").trim().toUpperCase() : "";
-      if (id && o.row(id)) { if (!seen[id]) { seen[id] = 1; ids.push(id); } } else miss++;
+      var id = cell(r, "id").toUpperCase();
+      if (!(id && o.row(id)) && ix) id = ix[addrKey(cell(r, "addr"))] || "";
+      if (!id || !o.row(id)) { miss++; return; }
+      if (seen[id]) return; seen[id] = 1; ids.push(id);
+      var ben = benCol.filter(function (j) { return yes(r[j]); }).map(function (j) { return String(head[j]).trim(); });
+      var mm = { prio: cell(r, "prio"), cnt: +cell(r, "cnt") || 0, proc: cell(r, "proc"), lonely: yes(cell(r, "lonely")), child: yes(cell(r, "child")),
+        ben: ben, hasBen: benCol.length > 0, aiReq: cell(r, "aiReq"), aiRes: cell(r, "aiRes"), vars: cell(r, "sig") };
+      meta[id] = mm;
+      if (mm.lonely) cnt.lonely++; if (mm.child) cnt.child++; if (/미처리/.test(mm.proc)) cnt.todo++; if (ben.length) cnt.ben++; if (mm.aiRes || (mm.aiReq && !/미요청/.test(mm.aiReq))) cnt.ai++;
     });
     var used = COLS.filter(function (c) { return hd.m[c[0]] != null; }).map(function (c) { return "«" + esc(String(head[hd.m[c[0]]]).trim()) + "»→" + c[1]; });
-    var skipped = head.filter(function (h) { return SKIP.test(String(h)) && !/관리\s*번호/.test(String(h)); }).map(function (h) { return "«" + esc(String(h).trim()) + "»"; });
-    if (!ids.length) { msg.innerHTML = '<span class="bad">명단의 가구를 찾지 못했습니다(' + body.length + '줄).</span> 시연에서는 «시연용 가상 명단»의 관리번호(가상 가구)만 지도에 놓입니다.'; return; }
+    if (benCol.length) used.push("급여·자격 " + benCol.length + "열→수급 꼬리표");
+    var skipped = head.filter(function (h) { h = String(h).trim(); return h && SKIP.test(h) && !READ_OK.test(h); }).map(function (h) { return "«" + esc(String(h).trim()) + "»"; });
+    if (!body.length) { msg.innerHTML = '<span class="bad">가구 줄이 없는 빈 서식입니다.</span> 머리글은 읽었습니다(' + head.filter(function (h) { return String(h).trim(); }).length + '열 · 쓰는 열 ' + used.length + '개). 조회 결과가 담긴 파일을 불러와 주세요.'; return; }
+    if (!ids.length) { msg.innerHTML = '<span class="bad">명단의 가구를 지도에서 찾지 못했습니다(' + body.length + '줄).</span> 시연에서는 «시연용 가상 명단»의 가상 주소(«가상리»)만 지도에 놓입니다. 실제 주소는 도입 때 주소→좌표 변환을 붙입니다.'; return; }
     var cut = ids.slice(0, 30);
+    META = {}; cut.forEach(function (id) { META[id] = meta[id]; }); lsSet(LS_META, JSON.stringify(META));
     o.setPicked(cut); o.refresh();
     lsSet("daeum.s11.import", JSON.stringify({ name: fname, n: cut.length, at: Date.now() }));
     msg.dataset.set = "1";
-    msg.innerHTML = '<b>' + esc(fname) + '</b> · ' + cut.length + '곳을 오늘 방문에 담았습니다' + (miss ? ' · 못 찾은 줄 ' + miss : "") + (ids.length > 30 ? ' · 30곳까지만' : "") +
+    var sum = [cnt.lonely ? "고독사 우선방문 " + cnt.lonely : "", cnt.child ? "e아동 우선방문 " + cnt.child : "", cnt.todo ? "미처리 " + cnt.todo : "", cnt.ben ? "급여 수급 " + cnt.ben : "", cnt.ai ? "정보원 AI초기상담 기록 " + cnt.ai + "(받은 정보로 표시만)" : ""].filter(Boolean).join(" · ");
+    msg.innerHTML = '<b>' + esc(fname) + '</b> · ' + cut.length + '곳을 오늘 방문에 담았습니다' + (hd.m.prio != null ? '(발굴우선순위 순)' : '') + (miss ? ' · 못 찾은 줄 ' + miss : "") + (ids.length > 30 ? ' · 30곳까지만' : "") +
+      (sum ? '<br>' + sum : '') +
       '<br>열 맞춤: ' + used.join(" · ") + (skipped.length ? ' · 읽지 않음: ' + skipped.join(" ") : "") + ' · 서버 전송 0 <a class="s11-lnk" href="#route">방문 순서 보기 ›</a>';
     emptyToday(false); tm.key = ""; todayMap();
   }
@@ -266,10 +322,12 @@
   }
   function boot() {
     bindImport(); bindNav(); startLive();
+    // 지난번 불러온 명단 꼬리표가 있으면 한 번 다시 그린다(officer.js 첫 그리기가 이 파일보다 먼저라 꼬리표가 빠짐)
+    if (lsGet(LS_META) && lsGet(LS_META) !== "{}" && O() && O().refresh) setTimeout(function () { try { O().refresh(); } catch (e) { /* 무시 */ } }, 0);
     doc.addEventListener("daeum:officer-show", function () { setTimeout(onShow, 0); });
     root.addEventListener("resize", function () { if (tab() === "today") todayMap(); });
     if (Q === "error") setTimeout(function () { var m = doc.querySelector("main"); if (m) errorState(m, "시연: 방문 명단·지역 자료 파일을 받지 못한 경우의 화면입니다."); }, 1200);
   }
   if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", boot); else boot();
-  root.DaeumS11c = { errorState: errorState, parseCSV: parseCSV, mapCols: mapCols, appUrl: appUrl, webUrl: webUrl, seg: seg };
+  root.DaeumS11c = { errorState: errorState, parseCSV: parseCSV, mapCols: mapCols, importRows: importRows, addrKey: addrKey, tags: tags, appUrl: appUrl, webUrl: webUrl, seg: seg };
 })(window);

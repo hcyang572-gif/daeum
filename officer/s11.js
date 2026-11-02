@@ -25,9 +25,9 @@
       what: "복지사업별로 시군구의 수급자 수와 수급가구 수를 센 통계입니다.", ex: "상주시 기초생계급여 수급가구 3,868 · 수급권자 4,537(2025-12)",
       base: "2025-12 기준 · 2026-10-29 받음", count: "상주시 10개 사업",
       uses: [["report", "보고 › 상주 비교 기준", "이번 차수 연계 실적 옆에 표시"], ["region", "보고 › 더 보기 › 다른 시군", "경북 시군 규모 비교"]] },
-    list: { mk: "virt", org: "한국사회보장정보원", name: "복지사각지대 발굴관리시스템 명단", no: "가상 시연(같은 형식)", n: "300",
+    list: { mk: "virt", org: "한국사회보장정보원", name: "복지사각지대 발굴대상자 조회(중앙발굴대상자 조회결과)", no: "가상 시연(같은 엑셀 서식 43열)", n: "146",
       what: "단전·체납 등 위기 신호가 겹친 가구를 골라 읍면에 보내는 명단입니다. 실제 명단은 비공개 행정망 자료라 같은 형식의 가상 가구를 씁니다.",
-      ex: "가상 가구 · 읍면 · 위기 신호(가상)", base: "합성 2026-10-29(시드 고정)", count: "가상 가구 · 오늘 9곳",
+      ex: "가상 가구 · 읍면 · 위기 신호(가상)", base: "합성 2026-10-29(시드 고정)", count: "가상 가구 300곳 중 위기 정보가 있는 발굴 명단 146곳 · 오늘 9곳",
       uses: [["today", "오늘 › 방문할 집", "새 명단과 이어서 볼 집 합산"], ["route", "방문 › 방문 순서", "가까운 집끼리 묶어 순서·시각 산출"]] },
     pop: { mk: "file", org: "행정안전부", name: "행정동 연령별 인구 · 세대원수별 세대", no: "파일 15097972 · 15097974", n: "",
       what: "읍면동별 나이별 인구와 1인 세대 수 통계입니다.", ex: "읍면동별 1인 세대 비율 · 75세 이상 비율(2026-09-30)",
@@ -218,11 +218,16 @@
     // AI 처리 4칸
     var red = 0; if (res.redacted) Object.keys(res.redacted).forEach(function (k) { red += +res.redacted[k] || 0; });
     var o = O(), total = o && o.services ? o.services().length : 0;
-    var P = { red: res.source === "ai" ? red : 0, cand: Math.min(50, total || 50), pick: (res.serviceIds || []).length, out: 0 };
+    // S11-d: 규칙 모드면 «AI 선택»이라 쓰지 않는다 · «목록 밖 답»은 keepKnown 이 실제로 버린 개수(규칙 모드는 AI 답이 없어 «—»)
+    var isAI = res.source === "ai", dr = res.dropped || {};
+    var P = { red: isAI ? red : 0, cand: Math.min(50, total || 50), pick: (res.serviceIds || []).length, out: isAI ? (+dr.out || 0) : "—" };
     qa("#s11Pipe b").forEach(function (b) { b.textContent = P[b.dataset.k]; });
+    var pl = qa("#s11Pipe li.ai span")[0]; if (pl) pl.innerHTML = isAI ? "AI 선택<br>+ 근거" : "규칙 선택<br>+ 근거";
+    var ph = $("s11PipeH"); if (ph) ph.textContent = isAI ? "AI 처리 과정" : "처리 과정 · 시연 모드(규칙)";
+    var s0 = qa('#s11State span[data-st="ai"]')[0]; if (s0) s0.textContent = isAI ? "AI 초안" : "규칙 초안";
     var line = $("s11AiLine");
-    if (line) line.textContent = res.source === "ai" ? "이름·연락처를 가린 뒤 외부 AI(Claude)로 보냈습니다 · 후보는 정보원 복지서비스 목록 안 · 목록 밖 답은 버림"
-      : "AI 연결 전 시연 모드: 규칙 기반 초안(외부 전송 0건)" + (res.fallback ? " · AI 응답 실패로 규칙 추천으로 먼저 보여 드립니다" : "") + " · 후보는 정보원 복지서비스 목록 안";
+    if (line) line.textContent = isAI ? "이름·연락처를 가린 뒤 외부 AI(Claude)로 보냈습니다 · 후보는 정보원 복지서비스 목록 안 · 목록 밖 답 " + (+dr.out || 0) + "건 버림" + (dr.gate ? " · 대상 조건 안 맞는 답 " + dr.gate + "건 버림" : "")
+      : "시연 모드 · 규칙 초안(외부 전송 0건)" + (res.fallback ? " · AI 응답이 없어 규칙 추천으로 보여 드립니다" : "") + " · 후보는 정보원 복지서비스 목록 안";
     if ($("s11RecMeta")) $("s11RecMeta").textContent = [new Date().toTimeString().slice(0, 5), det.area, det.label].filter(Boolean).join(" · ");
     setSt("ai");
     qa("#s11Draft .ed").forEach(function (e) { e.addEventListener("input", function () { if (REC.st === "ai") setSt("edit"); }); });

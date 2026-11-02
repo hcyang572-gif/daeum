@@ -1,6 +1,6 @@
 /* S10p-2 첫 화면 «하루 방문 시각표» 카드 감소율 계산 — node officer/s10p2.test.js */
 var F = require("./front.js"), assert = require("assert");
-assert.strictEqual(F.gainPct({ naive: 127.3071, plan: 65.7728 }), 48); // 10-30 재측정(기본 9곳, 48.3% → 48)
+assert.strictEqual(F.gainPct({ naive: 127.3071, plan: 65.7728 }), 48.3); // 10-30 재측정(기본 9곳) — S11-d 소수 한 자리로 한 숫자
 assert.strictEqual(F.gainPct(null), null);
 assert.strictEqual(F.gainPct({ naive: 0, plan: 0 }), null);
 var fs = require("fs"), html = fs.readFileSync(__dirname + "/index.html", "utf8");

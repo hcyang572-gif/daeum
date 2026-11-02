@@ -462,6 +462,9 @@
       var t = el("div", "tm"); t.appendChild(el("b", "num", row.arrive)); t.appendChild(document.createTextNode(" ~ " + row.leave + " "));
       t.appendChild(el("b", null, s.h.label)); t.appendChild(el("span", "small", " " + s.h.area));
       main.appendChild(t);
+      // S11-d: 불러온 발굴대상자 조회 엑셀의 꼬리표(우선방문·발굴우선순위·처리여부·급여 수급·정보원 AI초기상담 — 받은 정보 표시만)
+      var itg = window.DaeumS11c && DaeumS11c.tags ? DaeumS11c.tags(s.h.id) : [];
+      if (itg.length) { var tw = el("div", "imp-tags"); itg.forEach(function (x) { tw.appendChild(el("span", "tag imp" + (x.k ? " " + x.k : ""), x.t)); }); main.appendChild(tw); }
       main.appendChild(el("span", "small", "앞 지점에서 " + row.km.toFixed(1) + "km · " + row.travelMin + "분" + (row.approx ? "(근사)" : "")));
       li.appendChild(main);
       var acts = el("div", "acts");
@@ -836,9 +839,14 @@
     openRecord: function (id) { location.hash = "#record"; setTimeout(function () { if (rowById(id)) { fillRecHouses(); var sel = $("recHouse"); if (![].some.call(sel.options, function (o) { return o.value === id; })) { var r = rowById(id), o = el("option", null, r.h.label + " · " + r.h.area); o.value = id; sel.appendChild(o); } sel.value = id; showHouseInfo(); } }, 0); }
   };
   function init() {
-    var mode = AI.mode() === "ai" ? "ai" : "rule";
-    $("aiMode").textContent = mode === "ai" ? "AI 연결됨" : "AI 연결 전 시연 모드";
-    $("aiMode").className = "mode " + mode;
+    // S11-d: 설정값만 보고 «AI 연결됨»이라 쓰지 않는다 — 실제 호출 결과로 바꾼다(429·실패면 «시연 모드 · 규칙 초안»)
+    var setMode = function (m) {
+      $("aiMode").textContent = m === "ai" ? "AI 연결됨" : m === "wait" ? "AI 연결 확인 전" : AI.mode() === "ai" ? "시연 모드 · 규칙 초안(AI 응답 없음)" : "시연 모드 · 규칙 초안";
+      $("aiMode").className = "mode " + (m === "ai" ? "ai" : "rule");
+    };
+    var ls0 = AI.lastStatus && AI.lastStatus();
+    setMode(AI.mode() !== "ai" ? "rule" : ls0 ? (ls0.ok ? "ai" : "rule") : "wait");
+    document.addEventListener("daeum:ai-status", function (e) { setMode(e.detail && e.detail.ok ? "ai" : "rule"); });
     checkRegions();
     // 경로 설정 띠: 폰에선 접어 두고(지도가 첫 화면 안에 오게) 600px 이상에선 펼친다(S10n 디자인 #14)
     var ps = $("routePlanSet"); if (ps && window.matchMedia && matchMedia("(min-width: 600px)").matches) ps.open = true;

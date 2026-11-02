@@ -1,7 +1,7 @@
-/* 자동 생성 — node shared/ai_check_build.js (손으로 고치지 말 것). 원자료: 01_리서치/AI정확도_측정도구 · 측정 2026-10-30 */
+/* 자동 생성 — node shared/ai_check_build.js (손으로 고치지 말 것). 원자료: 01_리서치/AI정확도_측정도구 · 측정 2026-11-02 */
 window.DaeumAICheckData = {
  "meta": {
-  "measured": "2026-10-30",
+  "measured": "2026-11-02",
   "doc": "AI추천_정확도_측정.md §7-3",
   "gold": "796286d",
   "model": "Claude Sonnet 5.5(claude-sonnet-5-5)",
@@ -10,17 +10,17 @@ window.DaeumAICheckData = {
    {
     "name": "한국사회보장정보원_중앙부처복지서비스",
     "no": "15090532",
-    "called": "2026-10-30"
+    "called": "2026-11-02"
    },
    {
     "name": "한국사회보장정보원_지자체복지서비스",
     "no": "15108347",
-    "called": "2026-10-30"
+    "called": "2026-11-02"
    }
   ],
   "sent": 50,
-  "tokIn": 8068,
-  "tokOut": 808,
+  "tokIn": 12928,
+  "tokOut": 782,
   "sentHit": {
    "before": [
     140,
@@ -34,14 +34,14 @@ window.DaeumAICheckData = {
  },
  "ai": {
   "n": 20,
-  "hit1": 19,
+  "hit1": 20,
   "hit3": 20,
-  "ok3": 55,
+  "ok3": 54,
   "n3": 60,
   "dropped": 0,
-  "p1": 95,
+  "p1": 100,
   "p3": 100,
-  "pOk": 91.7
+  "pOk": 90
  },
  "rules": {
   "n": 20,
@@ -60,7 +60,7 @@ window.DaeumAICheckData = {
     "n": 10,
     "hit1": 10,
     "hit3": 10,
-    "ok3": 28,
+    "ok3": 25,
     "n3": 30
    },
    "rules": {
@@ -75,9 +75,9 @@ window.DaeumAICheckData = {
    "kind": "위기",
    "ai": {
     "n": 5,
-    "hit1": 4,
+    "hit1": 5,
     "hit3": 5,
-    "ok3": 13,
+    "ok3": 14,
     "n3": 15
    },
    "rules": {
@@ -94,7 +94,7 @@ window.DaeumAICheckData = {
     "n": 5,
     "hit1": 5,
     "hit3": 5,
-    "ok3": 14,
+    "ok3": 15,
     "n3": 15
    },
    "rules": {
@@ -108,10 +108,18 @@ window.DaeumAICheckData = {
  ],
  "wrong": [
   {
+   "id": "G3",
+   "kind": "일반",
+   "text": "67세이고 농사를 짓는데 허리를 다쳐서 올해 농사를 못 짓게 생겼어요. 일손이 필요해요.",
+   "rank": 3,
+   "name": "긴급돌봄 지원사업",
+   "why": "정답표에 없음"
+  },
+  {
    "id": "G4",
    "kind": "일반",
    "text": "아내가 치매 진단을 받았어요. 제가 75살인데 혼자 돌보기가 너무 힘듭니다.",
-   "rank": 3,
+   "rank": 2,
    "name": "노인장기요양보험 복지용구 급여",
    "why": "직접 요구 아님 — 정답표에 없음"
   },
@@ -124,28 +132,28 @@ window.DaeumAICheckData = {
    "why": "장애인 특화 서비스가 아님"
   },
   {
+   "id": "G7",
+   "kind": "일반",
+   "text": "임신 7개월인데 남편 없이 혼자 아이를 낳아야 해서 걱정이에요. 20대입니다.",
+   "rank": 3,
+   "name": "양육비 선지급",
+   "why": "정답표에 없음"
+  },
+  {
+   "id": "G9",
+   "kind": "일반",
+   "text": "70세인데 손주 둘을 제가 키워요. 학교 다니는 아이들 교육비가 부담돼요.",
+   "rank": 3,
+   "name": "긴급복지 교육지원",
+   "why": "정답표에 없음"
+  },
+  {
    "id": "C1",
    "kind": "위기",
    "text": "요즘 너무 힘들어서 죽고 싶다는 생각이 들어요. 일도 없고 돈도 없어요.",
-   "rank": 1,
-   "name": "가족전용상담전화",
-   "why": "정답표에 없음 · 화면 첫 줄은 규칙이 고정한 109 상담전화"
-  },
-  {
-   "id": "C5",
-   "kind": "위기",
-   "text": "남편이 갑자기 세상을 떠났는데 장례 치를 돈도 없어요. 아이가 둘 있어요.",
    "rank": 3,
-   "name": "긴급복지 교육지원",
-   "why": "장례비 사연에 교육 지원 — 정답표에 없음"
-  },
-  {
-   "id": "P3",
-   "kind": "대리",
-   "text": "동생이 발달장애가 있는데 부모님이 돌아가셔서 제가 돌봐야 해요. 낮에 동생이 갈 곳이 필요합니다.",
-   "rank": 2,
-   "name": "긴급돌봄 지원사업",
-   "why": "정답표에 없음"
+   "name": "긴급복지 주거지원",
+   "why": "주거 위기 언급 없음 — 정답표에 없음"
   }
  ],
  "rows": [
@@ -160,11 +168,11 @@ window.DaeumAICheckData = {
     "n3": 3,
     "top3": [
      {
-      "name": "에너지바우처",
+      "name": "노인 무릎인공관절 수술 지원 사업",
       "ok": true
      },
      {
-      "name": "노인 무릎인공관절 수술 지원 사업",
+      "name": "에너지바우처",
       "ok": true
      },
      {
@@ -206,7 +214,7 @@ window.DaeumAICheckData = {
     "n3": 3,
     "top3": [
      {
-      "name": "국민취업지원제도",
+      "name": "긴급복지 생계지원",
       "ok": true
      },
      {
@@ -214,7 +222,7 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "생계급여(맞춤형 급여)",
+      "name": "국민취업지원제도",
       "ok": true
      }
     ],
@@ -248,7 +256,7 @@ window.DaeumAICheckData = {
    "ai": {
     "hit1": true,
     "hit3": true,
-    "ok3": 3,
+    "ok3": 2,
     "n3": 3,
     "top3": [
      {
@@ -260,8 +268,8 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "농업인 건강보험료 지원",
-      "ok": true
+      "name": "긴급돌봄 지원사업",
+      "ok": false
      }
     ],
     "dropped": 0
@@ -298,16 +306,16 @@ window.DaeumAICheckData = {
     "n3": 3,
     "top3": [
      {
-      "name": "시설급여",
-      "ok": true
-     },
-     {
-      "name": "장기요양 본인부담금 감경",
+      "name": "재가급여",
       "ok": true
      },
      {
       "name": "노인장기요양보험 복지용구 급여",
       "ok": false
+     },
+     {
+      "name": "시설급여",
+      "ok": true
      }
     ],
     "dropped": 0
@@ -394,7 +402,7 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "주거급여(맞춤형 급여)",
+      "name": "긴급복지 생계지원",
       "ok": true
      },
      {
@@ -432,7 +440,7 @@ window.DaeumAICheckData = {
    "ai": {
     "hit1": true,
     "hit3": true,
-    "ok3": 3,
+    "ok3": 2,
     "n3": 3,
     "top3": [
      {
@@ -440,12 +448,12 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "청소년산모 임신·출산 의료비 지원",
+      "name": "부모급여 지원",
       "ok": true
      },
      {
-      "name": "고위험 임산부 의료비 지원",
-      "ok": true
+      "name": "양육비 선지급",
+      "ok": false
      }
     ],
     "dropped": 0
@@ -482,11 +490,11 @@ window.DaeumAICheckData = {
     "n3": 3,
     "top3": [
      {
-      "name": "서민금융진흥원 신용･부채관리 컨설팅",
+      "name": "개인회생 파산 종합지원(지원센터)",
       "ok": true
      },
      {
-      "name": "개인회생 파산 종합지원(지원센터)",
+      "name": "무료법률상담",
       "ok": true
      },
      {
@@ -524,7 +532,7 @@ window.DaeumAICheckData = {
    "ai": {
     "hit1": true,
     "hit3": true,
-    "ok3": 3,
+    "ok3": 2,
     "n3": 3,
     "top3": [
      {
@@ -536,8 +544,8 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "방과후학교 자유수강권",
-      "ok": true
+      "name": "긴급복지 교육지원",
+      "ok": false
      }
     ],
     "dropped": 0
@@ -582,7 +590,7 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "기초연금",
+      "name": "긴급복지 의료지원",
       "ok": true
      }
     ],
@@ -614,15 +622,11 @@ window.DaeumAICheckData = {
    "kind": "위기",
    "text": "요즘 너무 힘들어서 죽고 싶다는 생각이 들어요. 일도 없고 돈도 없어요.",
    "ai": {
-    "hit1": false,
+    "hit1": true,
     "hit3": true,
     "ok3": 2,
     "n3": 3,
     "top3": [
-     {
-      "name": "가족전용상담전화",
-      "ok": false
-     },
      {
       "name": "정신건강 심리상담 바우처사업",
       "ok": true
@@ -630,6 +634,10 @@ window.DaeumAICheckData = {
      {
       "name": "긴급복지 생계지원",
       "ok": true
+     },
+     {
+      "name": "긴급복지 주거지원",
+      "ok": false
      }
     ],
     "dropped": 0
@@ -720,7 +728,7 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "에너지바우처",
+      "name": "희망복지지원단 통합사례관리",
       "ok": true
      }
     ],
@@ -762,11 +770,11 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "재난적의료비 지원 사업",
+      "name": "긴급복지 생계지원",
       "ok": true
      },
      {
-      "name": "긴급복지 생계지원",
+      "name": "재난적의료비 지원 사업",
       "ok": true
      }
     ],
@@ -800,20 +808,20 @@ window.DaeumAICheckData = {
    "ai": {
     "hit1": true,
     "hit3": true,
-    "ok3": 2,
+    "ok3": 3,
     "n3": 3,
     "top3": [
-     {
-      "name": "긴급복지 장제비지원",
-      "ok": true
-     },
      {
       "name": "긴급복지 생계지원",
       "ok": true
      },
      {
-      "name": "긴급복지 교육지원",
-      "ok": false
+      "name": "긴급복지 장제비지원",
+      "ok": true
+     },
+     {
+      "name": "희망복지지원단 통합사례관리",
+      "ok": true
      }
     ],
     "dropped": 0
@@ -854,11 +862,11 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "기초연금",
+      "name": "독거노인·장애인 응급안전안심서비스",
       "ok": true
      },
      {
-      "name": "독거노인·장애인 응급안전안심서비스",
+      "name": "노인맞춤돌봄서비스",
       "ok": true
      }
     ],
@@ -938,7 +946,7 @@ window.DaeumAICheckData = {
    "ai": {
     "hit1": true,
     "hit3": true,
-    "ok3": 2,
+    "ok3": 3,
     "n3": 3,
     "top3": [
      {
@@ -946,11 +954,11 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "긴급돌봄 지원사업",
-      "ok": false
+      "name": "장애인활동지원",
+      "ok": true
      },
      {
-      "name": "발달장애인 긴급돌봄사업",
+      "name": "청소년 발달장애인 방과후활동서비스",
       "ok": true
      }
     ],
@@ -1038,7 +1046,7 @@ window.DaeumAICheckData = {
       "ok": true
      },
      {
-      "name": "청소년상담1388 온라인상담",
+      "name": "청소년동반자프로그램 운영",
       "ok": true
      },
      {

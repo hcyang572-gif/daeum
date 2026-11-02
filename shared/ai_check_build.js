@@ -1,7 +1,7 @@
 /* AI 추천 검증 화면 자료 만들기 — S10l ②(⚙️ 파로, 2026-10-30). AI 호출 0회.
    실행: node shared/ai_check_build.js   (03_시제품 폴더에서) → shared/ai_check_data.js 를 다시 쓴다.
    원자료(측정 정본): ../01_리서치/AI추천_정확도_측정.md §7-3
-     AI 결과      01_리서치/AI정확도_측정도구/results.json   (보정 후 20건, 10-30 00:1x)
+     AI 결과      01_리서치/AI정확도_측정도구/results_1102.json (S11-d 재측정 20건, 11-02 — 10-30 결과는 results.json 에 보존)
      규칙만 결과  01_리서치/AI정확도_측정도구/S6d_after.json (보정 후 20건, AI 0회)
      가상 사연    01_리서치/AI정확도_측정도구/cases.json     (정답표 커밋 796286d)
    화면에 쓰는 숫자는 모두 여기서 원자료로 다시 센다(손으로 적은 숫자 0개 — 보정 전 16건 비교만 측정 문서 §7-3 표 값).
@@ -13,11 +13,9 @@ var TOOL = path.join(ROOT, "../01_리서치/AI정확도_측정도구");
 
 // 틀린 추천의 «왜» — 측정 문서 §3·§7-3 표의 문구(없으면 «정답표에 없음»)
 var WHY = {
-  "G4|3": "직접 요구 아님 — 정답표에 없음",
+  "G4|2": "직접 요구 아님 — 정답표에 없음",
   "G5|3": "장애인 특화 서비스가 아님",
-  "C1|1": "정답표에 없음 · 화면 첫 줄은 규칙이 고정한 109 상담전화",
-  "C5|3": "장례비 사연에 교육 지원 — 정답표에 없음",
-  "P3|2": "정답표에 없음"
+  "C1|3": "주거 위기 언급 없음 — 정답표에 없음"
 };
 
 function pct(a, b) { return Math.round(a / b * 1000) / 10; }
@@ -29,7 +27,7 @@ function tally(list) {
 
 function build() {
   var cases = JSON.parse(fs.readFileSync(path.join(TOOL, "cases.json"), "utf8"));
-  var ai = JSON.parse(fs.readFileSync(path.join(TOOL, "results.json"), "utf8"));
+  var ai = JSON.parse(fs.readFileSync(path.join(TOOL, "results_1102.json"), "utf8"));
   var rules = JSON.parse(fs.readFileSync(path.join(TOOL, "S6d_after.json"), "utf8"));
   var rows = cases.map(function (c) {
     var a = ai[c.id], r = rules[c.id];
@@ -60,7 +58,7 @@ function build() {
     return { name: s.name.replace(/\(OpenAPI\)$/, ""), no: s.page.replace(/^.*\/data\/(\d+)\/.*$/, "$1"), called: s.called };
   });
   return {
-    meta: { measured: "2026-10-30", doc: "AI추천_정확도_측정.md §7-3", gold: "796286d", model: "Claude Sonnet 5.5(claude-sonnet-5-5)",
+    meta: { measured: "2026-11-02", doc: "AI추천_정확도_측정.md §7-3", gold: "796286d", model: "Claude Sonnet 5.5(claude-sonnet-5-5)",
       catalog: svc.services.length, catalogSrc: catalogSrc, sent: 50, tokIn: tokIn, tokOut: tokOut,
       sentHit: { before: [140, 235], after: [151, 235] } },     // §7 «후보 50건 안 정답 포함률» 표
     ai: A, rules: R, kinds: kinds, wrong: wrong, rows: rows,
@@ -71,7 +69,7 @@ function build() {
 
 function write() {
   var d = build();
-  var out = "/* 자동 생성 — node shared/ai_check_build.js (손으로 고치지 말 것). 원자료: 01_리서치/AI정확도_측정도구 · 측정 2026-10-30 */\n" +
+  var out = "/* 자동 생성 — node shared/ai_check_build.js (손으로 고치지 말 것). 원자료: 01_리서치/AI정확도_측정도구 · 측정 2026-11-02 */\n" +
     "window.DaeumAICheckData = " + JSON.stringify(d, null, 1) + ";\n";
   fs.writeFileSync(path.join(__dirname, "ai_check_data.js"), out, "utf8");
   return d;

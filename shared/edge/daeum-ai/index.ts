@@ -13,9 +13,12 @@ const MAX_SITUATION = 1200;
 // 비용 상한: 화면이 규칙으로 먼저 추린 후보만 받는다(400건 통째로 보내면 1회 약 9만 토큰 ≈ 270원, 60건이면 약 40원 — 추정)
 const MAX_SERVICES = 60;
 // 하루 호출 상한(S5b-2 케르 재검수 ③): Origin 은 위조할 수 있으므로 IP별·전체 하루 상한을 DB(rate_limit.sql)로 건다.
-// 넘으면 429 → 화면은 자동으로 규칙 모드. 1회 ≈ 34원(추정) → 전체 200회/일 ≈ 6,800원/일 상한. 최후 방어선은 콘솔 월 한도 $20.
-const DAILY_PER_IP = 20;
-const DAILY_TOTAL = 200;
+// 넘으면 429 → 화면은 자동으로 규칙 모드. 최후 방어선은 콘솔 월 한도 $20(그대로).
+// S11-d(11-02): IP당 20회는 발표장 한 IP에서 리허설·심사 시연을 하면 바닥난다(11-02 측정 중 429 실측) → IP당 100회·전체 300회.
+//   1회 비용(추정) = 입력 12,932·출력 774토큰(11-02 실측 평균 17건) × $2/$10 per MTok × 1,324.3원/$ ≈ 44.5원
+//   → 하루 최대 300회 ≈ 13,400원(추정). 단가·환율 출처: 01_리서치/법근거_AI요금_출처.md · MN-D02.
+const DAILY_PER_IP = 100;
+const DAILY_TOTAL = 300;
 const ALLOW_ORIGINS = ["https://hcyang572-gif.github.io", "http://localhost:8000", "http://127.0.0.1:8000"];
 
 const SYSTEM = `너는 복지 상담 창구의 안내자다. 사람이 자기(또는 가족의) 상황을 말하면, 함께 받은 «서비스 목록»에서 받을 수 있을 만한 것을 고른다.
@@ -50,7 +53,7 @@ async function ipHash(req: Request): Promise<string> {
 }
 
 /** 상한 확인 + 1 증가(원자적, DB 함수 daeum_ai_hit). 확인 자체가 실패하면 AI를 부르지 않는다(비용 쪽으로 안전하게). */
-async function rateOk(req: Request): Promise<{ ok: boolean; why?: string }> {
+async function rateOk(req: Request): Promise<{ ok: boolean; why?: string; ip?: number; total?: number }> {
   const url = Deno.env.get("SUPABASE_URL"), sk = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !sk) return { ok: false, why: "limiter-env" };
   try {
@@ -61,7 +64,7 @@ async function rateOk(req: Request): Promise<{ ok: boolean; why?: string }> {
     });
     if (!r.ok) return { ok: false, why: "limiter-" + r.status };
     const j = await r.json();
-    return { ok: !!j.ok, why: j.why };
+    return { ok: !!j.ok, why: j.why, ip: j.ip, total: j.total };
   } catch {
     return { ok: false, why: "limiter-error" };
   }
@@ -89,7 +92,9 @@ Deno.serve(async (req) => {
     .filter((s) => s && typeof s.id === "string" && typeof s.name === "string");
   if (!situation || !services.length) return json({ error: "상황 문장과 서비스 목록이 필요합니다" }, 400, origin);
   const rl = await rateOk(req);
-  if (!rl.ok) return json({ error: "오늘 AI 안내 사용량을 넘었습니다(" + (rl.why || "") + ")" }, 429, origin);
+  // 사용량(quota)은 발표 전 점검(tools/ai_preflight.js)이 남은 횟수를 보도록 함께 돌려준다 — IP 원문·해시는 내보내지 않는다
+  const quota = { ip: rl.ip ?? null, ipLimit: DAILY_PER_IP, total: rl.total ?? null, totalLimit: DAILY_TOTAL };
+  if (!rl.ok) return json({ error: "오늘 AI 안내 사용량을 넘었습니다(" + (rl.why || "") + ")", quota }, 429, origin);
 
   const ids = new Set(services.map((s) => s.id));
   const catalog = services.map((s) => `${s.id} | ${s.name} | 대상: ${(s.target ?? "").slice(0, 160)} | 내용: ${(s.support ?? "").slice(0, 120)}`).join("\n");
@@ -118,5 +123,5 @@ Deno.serve(async (req) => {
   // 지어낸 서비스 차단: 목록에 있는 ID만 남긴다
   const picks = (out.picks ?? []).filter((p) => p && ids.has(p.id)).slice(0, 8)
     .map((p) => ({ id: p.id, reason: String(p.reason ?? "").slice(0, 200) }));
-  return json({ summary: String(out.summary ?? "").slice(0, 400), picks, model: MODEL, usage: data.usage ?? null, redacted }, 200, origin);
+  return json({ summary: String(out.summary ?? "").slice(0, 400), picks, model: MODEL, usage: data.usage ?? null, redacted, quota }, 200, origin);
 });

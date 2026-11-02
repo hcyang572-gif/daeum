@@ -38,7 +38,7 @@ t("특보 판정: 코드 12 폭염·3 한파만, «off»·다른 코드는 없�
   assert.strictEqual(A.weather(D2, "off"), null);
   assert.strictEqual(A.weather(D2, "rain"), null);
   assert.strictEqual(A.weather({}), null);
-  assert.strictEqual(A.weather(d).code, 12);
+  assert.strictEqual(A.weather(d).code, 3); // S11-d: 시연 기본 특보는 한파주의보(11~12월 시연 · 본선 12-03)
 });
 t("특보 대상 = 홀로 사는 75세 이상(명단 특성 기준과 같음)", function () {
   assert(A.vulnerable(H("a", 75, true))); assert(!A.vulnerable(H("b", 74, true))); assert(!A.vulnerable(H("c", 90, false)));

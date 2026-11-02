@@ -15,35 +15,35 @@ function t(name, fn) { try { fn(); pass++; console.log("  통과 " + name); } ca
 t("자료 파일 = 원자료에서 새로 만든 값(다시 만들기 빠뜨림 없음)", function () {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(D)), JSON.parse(JSON.stringify(B.build())));
 });
-t("AI 20건: 첫 추천 19/20(95.0%)·상위3 포함 20/20·상위3 적합 55/60(91.7%)·목록 밖 0", function () {
-  assert.deepStrictEqual([D.ai.n, D.ai.hit1, D.ai.hit3, D.ai.ok3, D.ai.n3, D.ai.dropped], [20, 19, 20, 55, 60, 0]);
-  assert.strictEqual(V.fmtPct(D.ai.hit1, D.ai.n), "95.0%"); assert.strictEqual(V.fmtPct(D.ai.ok3, D.ai.n3), "91.7%");
+t("AI 20건(11-02 재측정): 첫 추천 20/20(100.0%)·상위3 포함 20/20·상위3 적합 54/60(90.0%)·목록 밖 0", function () {
+  assert.deepStrictEqual([D.ai.n, D.ai.hit1, D.ai.hit3, D.ai.ok3, D.ai.n3, D.ai.dropped], [20, 20, 20, 54, 60, 0]);
+  assert.strictEqual(V.fmtPct(D.ai.hit1, D.ai.n), "100.0%"); assert.strictEqual(V.fmtPct(D.ai.ok3, D.ai.n3), "90.0%");
 });
 t("규칙만 20건(보정 후): 첫 추천 14/20·상위3 적합 34/60 — 측정 문서 §7 값", function () {
   assert.deepStrictEqual([D.rules.hit1, D.rules.n, D.rules.ok3, D.rules.n3], [14, 20, 34, 60]);
 });
-t("구분별 AI: 일반 10/10·위기 4/5·대리 5/5, 상위3 28/30·13/15·14/15", function () {
+t("구분별 AI(11-02): 일반 10/10·위기 5/5·대리 5/5, 상위3 25/30·14/15·15/15", function () {
   var m = {}; D.kinds.forEach(function (k) { m[k.kind] = [k.ai.hit1, k.ai.n, k.ai.ok3, k.ai.n3]; });
-  assert.deepStrictEqual(m, { "일반": [10, 10, 28, 30], "위기": [4, 5, 13, 15], "대리": [5, 5, 14, 15] });
+  assert.deepStrictEqual(m, { "일반": [10, 10, 25, 30], "위기": [5, 5, 14, 15], "대리": [5, 5, 15, 15] });
 });
-t("틀린 추천 5개 = 상위3 중 정답표 밖 개수(60-55), C1 1순위 포함", function () {
+t("틀린 추천 6개 = 상위3 중 정답표 밖 개수(60-54), C1 3순위 주거지원 포함", function () {
   assert.strictEqual(D.wrong.length, D.ai.n3 - D.ai.ok3);
-  assert.ok(D.wrong.some(function (w) { return w.id === "C1" && w.rank === 1 && /가족전용상담전화/.test(w.name); }));
+  assert.ok(D.wrong.some(function (w) { return w.id === "C1" && w.rank === 3 && /주거지원/.test(w.name); }));
   D.wrong.forEach(function (w) { assert.ok(w.why && w.why.length > 3, w.id + " 이유 없음"); });
 });
-t("평균 토큰 입력 8,068·출력 808(측정 문서 §7-3)", function () {
-  assert.deepStrictEqual([D.meta.tokIn, D.meta.tokOut], [8068, 808]);
+t("평균 토큰 입력 12,928·출력 782(측정 문서 §7-3 11-02)", function () {
+  assert.deepStrictEqual([D.meta.tokIn, D.meta.tokOut], [12928, 782]);
 });
-t("측정 문서에 같은 숫자가 적혀 있음(19/20·55/60·14/20·34/60)", function () {
+t("측정 문서에 같은 숫자가 적혀 있음(20/20·54/60·14/20·34/60)", function () {
   var md = fs.readFileSync(path.join(ROOT, "../01_리서치/AI추천_정확도_측정.md"), "utf8");
-  ["19/20 (95.0%)", "55/60 (91.7%)", "14/20", "34/60", "15/16 (93.8%)", "14/16 (87.5%)", "151/235 (64.3%)"].forEach(function (s) { assert.ok(md.indexOf(s) >= 0, s + " 없음"); });
+  ["20/20 (100.0%)", "54/60 (90.0%)", "14/20", "34/60", "15/16 (93.8%)", "14/16 (87.5%)", "151/235 (64.3%)"].forEach(function (s) { assert.ok(md.indexOf(s) >= 0, s + " 없음"); });
 });
 t("비교 막대 3묶음, 각 값이 0~100%", function () {
   var g = V.compareModel(D); assert.strictEqual(g.length, 3);
   g.forEach(function (x) { [x.rules, x.ai].forEach(function (v) { var p = V.pct(v[0], v[1]); assert.ok(p >= 0 && p <= 100); }); });
 });
 t("출처 꼬리표: 측정 문서·측정일 / 공공데이터 서비스 목록 번호", function () {
-  assert.ok(/출처: .*AI추천_정확도_측정\.md.*측정일 2026-10-30/.test(V.srcMeasure(D)));
+  assert.ok(/출처: .*AI추천_정확도_측정\.md.*측정일 2026-11-02/.test(V.srcMeasure(D)));
   assert.ok(/공공데이터 · 서비스 목록: .*15090532.*15108347/.test(V.srcCatalog(D)));
 });
 t("사연 펼침에 «가상» 꼬리표, 틀린 추천 «정답표 밖» 표시 칸", function () {
