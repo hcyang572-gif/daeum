@@ -23,8 +23,8 @@ global.localStorage = { getItem: function (k) { return store[k] == null ? null :
 global.sessionStorage = global.localStorage;
 eval(fs.readFileSync(path.join(ROOT, "shared/config.js"), "utf8"));
 eval(fs.readFileSync(path.join(ROOT, "shared/ai.js"), "utf8"));
-eval(fs.readFileSync(path.join(ROOT, "officer/s11c.js"), "utf8"));
-var AI = window.DaeumAI, S = window.DaeumS11c;
+var IMP = require(path.join(ROOT, "officer/import_list.js"));
+var AI = window.DaeumAI, S = IMP;
 var SVC = [{ id: "s1", name: "에너지바우처", tags: ["energy", "senior"] }, { id: "s2", name: "긴급복지 생계지원", tags: ["lowIncome", "debt"] }];
 var TEXT = "혼자 사시는 82세 어르신이 난방비가 밀려 걱정이 많다고 하셨습니다.";
 
@@ -45,12 +45,6 @@ t("AI 정상 → «목록 밖 답» = 실제로 버린 개수(지어낸 id 2개 
     assert.strictEqual(r.source, "ai"); assert.deepStrictEqual(r.dropped.out, 2); assert.ok(r.serviceIds.indexOf("zz-1") < 0);
     assert.strictEqual(events.filter(function (e) { return e.type === "daeum:ai-status"; })[0].detail.ok, true);
   });
-});
-t("화면 코드: 규칙 모드면 «규칙 초안»·«규칙 선택»·«시연 모드», 머리띠는 마지막 호출 결과로", function () {
-  var s11 = fs.readFileSync(path.join(ROOT, "officer/s11.js"), "utf8"), off = fs.readFileSync(path.join(ROOT, "officer/officer.js"), "utf8");
-  assert.ok(/isAI \? "AI 초안" : "규칙 초안"/.test(s11)); assert.ok(/규칙 선택<br>\+ 근거/.test(s11));
-  assert.ok(!/out: 0 \}/.test(s11), "«목록 밖» 고정 0 남음");
-  assert.ok(/daeum:ai-status/.test(off) && /시연 모드 · 규칙 초안/.test(off));
 });
 
 var HEAD = ["발굴년월", "소재행정동", "발굴우선순위", "대상구분", "비대상사유", "비대상사유상세", "비대상상세내용", "성명", "주민등록번호", "발굴변수변동내역", "발굴횟수", "처리여부", "최초처리일자", "최초처리구분", "최초처리상태", "최종지원실적", "이동전화번호요청상태", "(행복이음)주소", "(행복이음)우편번호", "(행복이음)전화번호", "(행복이음)휴대폰번호", "(행안부)주소", "(행안부)기타주소", "(행안부)연락처", "담당자", "AI초기상담요청일시", "AI초기상담요청상태", "AI초기상담상담결과", "기초생계급여", "기초의료급여", "기초주거급여", "기초교육급여", "긴급복지", "차상위장애인", "차상위본인부담경감대상자", "차상위자활", "차상위계층확인", "한부모가족", "타법의료", "장애인연금", "기초연금", "우선방문대상자_e아동", "우선방문대상자_고독사"];

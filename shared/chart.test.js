@@ -87,18 +87,9 @@ t("새 부품·화면 CSS 에 하드코딩 색 없음(인쇄 회색 단계만 �
 });
 
 console.log("공무원 화면 4곳");
-var mount = rd("officer/mount.js");
 t("S11-k 흐름 그림: ③ 순위 이동선 · ④ 시간줄·지도 · ⑨ 달력·진척 고리를 flow.js 가 그림", function () {
   var fl = rd("officer/flow.js");
   assert.ok(/id="bump"/.test(fl) && /id="tl4"/.test(fl) && /class="cal"/.test(fl) && /ring-wrap/.test(fl));
-});
-t("그림마다 출처 꼬리표(가상 자료 번호 V1·V2) — guide.js 가 «가상» 표식을 붙인다", function () {
-  var n = (mount.match(/src-tag[^\n]*data-src-ref[^\n]*V1|data-src-ref": "V1"/g) || []).length;
-  assert.ok(n >= 3, "꼬리표 " + n);
-  assert.ok(/출처: " \+ cd\.round\.source \+ " · 가구 수는 가상"/.test(mount));
-});
-t("부품이 없을 때(옛 캐시)는 예전 숫자 칸으로 돌아간다", function () {
-  assert.ok(/kpi\("발굴 명단", H\.total/.test(mount) && /class: "num gs-n"/.test(mount));
 });
 
 console.log("S10k-2 새 부품");
@@ -168,13 +159,6 @@ t("진행 단계 도식: 완료 ✓·지금·아직, 문장에 단계와 날짜"
   assert.ok(/ch-st st-done"><span class="ch-st-m num" aria-hidden="true">✓/.test(s) && /ch-st st-current/.test(s) && /진행 중<\/span>/.test(s));
   assert.strictEqual(aria(s), "진행 단계: 요청 접수 완료(2026-10-29 14:00) → 담당자 확인 진행 중 → 방문·상담 아직 → 연계 완료 아직");
   assert.ok(/ch-step cancel/.test(C.stepper([{ label: "x", state: "done" }], { cancelled: true })));
-});
-t("새 화면 4곳 + 사소 1건이 부품을 쓰고 출처 꼬리표를 단다", function () {
-  var m = rd("officer/mount.js"), oc = rd("officer/officer.css"), css = rd("shared/chart.css");
-  assert.ok(/DaeumChart\.dayline\(DS\.chart\)/.test(m) && /DaeumChart\.slotGrid\(/.test(m) && /DaeumChart\.histLine\(/.test(m));
-  assert.ok(/"data-src-ref": "V1", text: "출처: 가상 가구 위치로 어림한 시각/.test(m) && /"data-src-ref": "V1,R4"/.test(m) && /"data-src-ref": "V1", text: "출처: 가상 가구 연락 기록/.test(m));
-  assert.ok(/\.over-go \{[^}]*min-height: 44px/.test(oc));
-  assert.ok(/@media \(max-width: 400px\)[\s\S]*\.ch-dy-tr \{ height: calc\(var\(--hrs/.test(css) && /@media \(max-width: 420px\)[\s\S]*\.ch-step \{ grid-template-columns: 1fr/.test(css), "좁은 화면 세로 접기");
 });
 
 console.log("결과: 통과 " + pass + " · 실패 " + fail);

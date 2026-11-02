@@ -128,7 +128,7 @@ t("자기 동 집계에 재시도 예정·연계 누락이 들어감", function 
 
 console.log("문구 금지어(재제안 금지·겹침 주장)");
 t("«줄인 시간» 띠·수치, «위기 점수», «우리가 개발한 행복이음 기능» 류 문구 없음", function () {
-  ["officer/mount.js", "officer/features.js", "shared/report.js"].forEach(function (f) { // S11-i: 주민 화면 제거
+  ["officer/flow.js", "officer/features.js", "shared/report.js"].forEach(function (f) { // S11-i: 주민 화면 제거
     var s = fs.readFileSync(path.join(base, f), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
     assert.ok(!/줄인 시간/.test(s), f + " — 줄인 시간"); assert.ok(!/위기 점수/.test(s), f + " — 위기 점수");
   });

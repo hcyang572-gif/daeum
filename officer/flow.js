@@ -496,7 +496,7 @@
       (notes.length ? '<div class="warnbox">' + notes.map(function (t) { return '<span class="wt">' + ic("i-warn", "s") + esc(t) + "</span>"; }).join("") + "</div>" : "") +
       (prs.length ? '<div class="sec-h"><b>지난번 약속</b>' + prTag(prs[0]) + "</div>" + prs.slice(0, 2).map(function (p) { return '<div class="promise"><span class="ck"></span><span>' + esc(p.text) + "</span>" + ic(p.kind === "call" ? "i-phone" : "i-doc") + "</div>"; }).join('<div style="height:6px"></div>') : "") +
       (qs.length ? '<div class="sec-h"><b>현장에서 꼭 물을 것</b><small>' + esc(tcount) + '</small></div><div class="qlist">' + qs.slice(0, moreQ ? qs.length : 4).map(function (q) { return '<div class="q"><span class="ck"></span><span>' + esc(q.q) + '</span><span class="tp">' + q.t + "</span></div>"; }).join("") + "</div>" +
-        (qs.length > 4 ? '<div style="text-align:center;margin-top:6px"><button class="b b-ghost" data-act="moreq">' + (moreQ ? "접기" : (qs.length - 4) + "가지 더 보기") + "</button></div>" : "") : "") + phMenu() + "</div>" +
+        (qs.length > 4 ? '<div style="text-align:center;margin-top:6px"><button class="b b-ghost" data-act="moreq" style="min-height:44px">' + (moreQ ? "접기" : (qs.length - 4) + "가지 더 보기") + "</button></div>" : "") : "") + phMenu() + "</div>" +
       '<div class="ph-foot"><a class="b b-sub b-lg" aria-label="동선 지도" href="#s6:' + c.hid + '" style="width:54px;padding:0">' + ic("i-map", "l") + '</a><a class="b b-main b-lg" href="#s6:' + c.hid + '">오늘 동선·길안내</a></div></div>';
   }
   function phEmpty() { return '<div class="ph"><div class="ph-h"><h2 class="h1">방문 계획이 없습니다</h2><p class="meta">사무실 PC에서 ④ «방문 계획 확정»을 누르면 같은 계정의 폰에 바로 나타납니다.</p></div><div class="ph-scroll">' + phMenu() + '</div><div class="ph-foot" style="grid-template-columns:minmax(0,1fr)"><a class="b b-main b-lg" href="#s4">방문 계획 보기</a></div></div>'; }
@@ -518,9 +518,17 @@
     var via = L.slice(0, -1).map(function (p, i) { return pt(p, "방문 " + (sg.from + i + 1)); }).join(":");
     return "https://map.naver.com/p/directions/" + pt(start, sn) + "/" + pt(L[L.length - 1], "방문 " + (sg.from + L.length)) + "/" + (via || "-") + "/car";
   }
+  var NAVBACK = "daeum.nav.back";
+  function navBack() { // 길안내에서 돌아왔을 때 한 번만(30분 안) — 떠난 화면(⑥)으로
+    var v = null; try { v = JSON.parse(sessionStorage.getItem(NAVBACK) || "null"); sessionStorage.removeItem(NAVBACK); } catch (e) { return false; }
+    if (!v || !/^#s6(:|$)/.test(v.h || "") || Date.now() - (v.at || 0) > 30 * 60000 || v.h === location.hash) return false;
+    location.replace(v.h); return true;
+  }
   function launch(ids, k) {
     var stops = ids.map(function (id) { return RP.toLatLng(BY[id]); }); if (!stops.length) return;
     var off = RP.toLatLng(OFFICE), sg = seg(stops, k), web = webUrl(sg, stops, off), ua = navigator.userAgent || "";
+    // 실기기(11-03): 안드로이드 크롬은 앱이 없을 때 대체 웹 주소로 «현재 기록을 바꿔» 넘어가 뒤로 가기가 ⑤로 떨어진다 → 돌아오면 ⑥으로 되돌린다
+    try { sessionStorage.setItem(NAVBACK, JSON.stringify({ h: location.hash, at: Date.now() })); } catch (e) { /* 저장 불가 */ }
     if (/Android/i.test(ua)) location.href = "intent://" + appUrl(sg).slice(7) + "#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;S.browser_fallback_url=" + encodeURIComponent(web) + ";end";
     else if (/iPhone|iPad|iPod/i.test(ua)) { var t0 = Date.now(), hid = false, vh = function () { if (document.hidden) hid = true; }; document.addEventListener("visibilitychange", vh); location.href = appUrl(sg); setTimeout(function () { document.removeEventListener("visibilitychange", vh); if (!hid && Date.now() - t0 < 2500) location.href = web; }, 1500); }
     else window.open(web, "_blank", "noopener");
@@ -800,6 +808,7 @@
   });
   // 시험·디버그용 — 화면 없이 모델만
   window.DaeumFlow = { rank: rank, days: days, statusOf: statusOf, plan: plan, render: render };
-  render();
+  window.addEventListener("pageshow", function (e) { if (e.persisted) navBack(); }); // 뒤로 가기 캐시로 돌아온 경우
+  if (!navBack()) render();
   SY.init();
 })();

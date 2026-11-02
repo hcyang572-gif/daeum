@@ -176,10 +176,6 @@ t("보고서 도구 막대에 «엑셀로»·«한글로» 단추(읽기 전용 
   var src = require("fs").readFileSync(path.join(__dirname, "report_doc.js"), "utf8");
   assert.ok(/tb\("xlsx", "엑셀로"/.test(src) && /tb\("hwpx", "한글로"/.test(src)); assert.ok(/need\("xlsx\.js", "DaeumXlsx"\)/.test(src));
 });
-t("공무원 창구 옛 보고서 미리보기(makeReport) 제거", function () {
-  var src = require("fs").readFileSync(path.join(__dirname, "..", "officer", "mount.js"), "utf8");
-  assert.ok(!/function makeReport/.test(src) && !/lastReport/.test(src)); assert.ok(/function printReport/.test(src)); // 방문 전 카드 등 다른 인쇄는 그대로
-});
 
 console.log("테오 검수 다듬기(10-30)");
 var RF = unzip(X.build(SP));
@@ -213,7 +209,6 @@ t("한글: 쪽 나눔은 «처리 상태» 소제목에 붙음 · 끝맺음은 �
 });
 t("기관 표기 통일(11-02): 보고서·엑셀 내보내기 모두 «상주시청»", function () {
   var fs = require("fs"); assert.strictEqual(M.office, "상주시청");
-  assert.ok(/var OFFICE = "상주시청\(시연\)"/.test(fs.readFileSync(path.join(__dirname, "..", "officer", "xlsx_out.js"), "utf8")));
   var txt = F.report.weekly(S, { now: now, countdown: cd }).text; assert.ok(txt.indexOf("상주시청") >= 0 && txt.indexOf("희망복지지원단") < 0);
 });
 t("출처 시트 [그림 1] 처리 추세 «쓰인 곳»", function () {

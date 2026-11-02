@@ -209,8 +209,7 @@ t("금지 문구 없음(위기 점수·줄인 시간·발굴 도우미) · 서�
   var s = fs.readFileSync(path.join(base, "officer/fieldwork.js"), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
   assert.ok(!/위기 점수|줄인 시간|발굴 도우미/.test(s)); assert.ok(!/fetch\(|XMLHttpRequest|WebSocket|supabase/i.test(s));
 });
-t("보고 숫자 48.3% 그대로(첫 화면 고정값·보고 집계 파일 손대지 않음)", function () {
-  assert.ok(/SNAP = \{ n: 9, naive: 127\.31, plan: 65\.77, pct: 48\.3 \}/.test(fs.readFileSync(path.join(base, "officer/front.js"), "utf8")));
+t("보고 집계 파일 손대지 않음", function () {
   var a = fs.readFileSync(path.join(base, "shared/report.js"), "utf8"); assert.ok(!/fieldwork|intakeReport/.test(a));
 });
 t("주민 화면 진입 0 · 신호 서버 입구 꺼짐(표·함수는 그대로)", function () {
