@@ -7,7 +7,7 @@
   "use strict";
   // ── ④ MN-D02 §9 그대로 ──
   var DEFAULTS = { households: 48817, officers: 10, visitDays: 8, visitsPerDay: 12, aiPerVisit: 1, dailyCap: 200, kmPerL: 10, saveRate: 0.20 };
-  var K = { won_per_call: 32, naive_km_per_day12: 30.78, grouped_km_per_day12: 17.55, demo_save_rate: 0.430, co2_kg_per_L: 2.174, maintenance_year_won: [2000000, 5000000] };
+  var K = { won_per_call: 32, naive_km_per_day12: 30.78, grouped_km_per_day12: 17.55, demo_save_rate: 0.483, co2_kg_per_L: 2.174, maintenance_year_won: [2000000, 5000000] };
   function num(v, d) { v = +v; return isFinite(v) && v >= 0 ? v : d; }
   function calc(inp) {
     var i = {}; Object.keys(DEFAULTS).forEach(function (k) { i[k] = num(inp && inp[k], DEFAULTS[k]); });
@@ -74,7 +74,7 @@
         inp.addEventListener("input", drawCost);
         form.appendChild(h("label", null, [h("span", null, [f.label, f.tag ? " " : null, f.tag ? tag(f.tag) : null]), inp]));
       });
-      var sel = h("select", { id: "cost-saveRate" }, [h("option", { value: "0.2", text: "20% — 시범 목표(보수값)" }), h("option", { value: "0.43", text: "43% — 시연 실측(가상 가구)" })]);
+      var sel = h("select", { id: "cost-saveRate" }, [h("option", { value: "0.2", text: "20% — 시범 목표(보수값)" }), h("option", { value: "0.483", text: "48.3% — 시연 실측(가상 가구 9곳)" })]);
       sel.addEventListener("change", drawCost);
       form.appendChild(h("label", null, [h("span", null, ["이동 거리 단축률"]), sel]));
       var rs = h("button", { type: "button", class: "ghost", "data-h": "light", text: "상주 기본값으로" });

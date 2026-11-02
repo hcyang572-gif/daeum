@@ -27,7 +27,7 @@
       uses: [["report", "보고 › 상주 비교 기준", "이번 차수 연계 실적 옆에 표시"], ["region", "보고 › 더 보기 › 다른 시군", "경북 시군 규모 비교"]] },
     list: { mk: "virt", org: "한국사회보장정보원", name: "복지사각지대 발굴대상자 조회(중앙발굴대상자 조회결과)", no: "가상 시연(같은 엑셀 서식 43열)", n: "146",
       what: "단전·체납 등 위기 신호가 겹친 가구를 골라 읍면에 보내는 명단입니다. 실제 명단은 비공개 행정망 자료라 같은 형식의 가상 가구를 씁니다.",
-      ex: "가상 가구 · 읍면 · 위기 신호(가상)", base: "합성 2026-10-29(시드 고정)", count: "가상 가구 300곳 중 위기 정보가 있는 발굴 명단 146곳 · 오늘 9곳",
+      ex: "가상 가구 · 읍면 · 위기 신호(가상)", base: "합성 2026-10-29(시드 고정)", count: "가상 가구 300곳 중 위기 정보가 있는 발굴 명단 146곳(함창·사벌국·공검·이안 4개 읍면) · 오늘 9곳",
       uses: [["today", "오늘 › 방문할 집", "새 명단과 이어서 볼 집 합산"], ["route", "방문 › 방문 순서", "가까운 집끼리 묶어 순서·시각 산출"]] },
     pop: { mk: "file", org: "행정안전부", name: "행정동 연령별 인구 · 세대원수별 세대", no: "파일 15097972 · 15097974", n: "",
       what: "읍면동별 나이별 인구와 1인 세대 수 통계입니다.", ex: "읍면동별 1인 세대 비율 · 75세 이상 비율(2026-09-30)",
@@ -152,9 +152,11 @@
   }
 
   // ── 오늘 ──
+  // S11-d2b: 첫 화면 «주민 신호»도 두 입구·보고와 같은 수 = 처리 중 신고(새로 옴·확인함·방문 중, 끝남·취소 뺌)
+  function liveReqN() { var R = root.DaeumRequests; if (!R || !R.list) return "—"; return String(R.list().filter(function (r) { return r && (r.status === "new" || r.status === "seen" || r.status === "visiting"); }).length); }
   function fillToday() {
     function txt(id) { var e = $(id); var t = e ? e.textContent.trim() : ""; return /^\d/.test(t) ? t : "—"; }
-    setAll("s11-rev", txt("kpiRevisit")); setAll("s11-gap", txt("kpiGap")); setAll("s11-req", txt("kpiReq"));
+    setAll("s11-rev", txt("kpiRevisit")); setAll("s11-gap", txt("kpiGap")); setAll("s11-req", liveReqN());
     var o = O(), F = root.DaeumFeatures, ids = o && o.picked ? o.picked() : [], did = 0;
     try {
       var today = new Date(), ymd = today.getFullYear() + "-" + ("0" + (today.getMonth() + 1)).slice(-2) + "-" + ("0" + today.getDate()).slice(-2), seen = {};

@@ -408,6 +408,7 @@ textarea, select, input[type="text"] { border-radius: var(--rb); }
 .cz-tl li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 48px; position: relative; font-size: 15px; }
 .cz-tl li + li::before { content: ""; position: absolute; left: 13px; top: -14px; height: 28px; width: 2px; background: var(--line); }
 .cz-tl .n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13.5px; font-weight: 700; background: var(--well, #ECF0EE); color: var(--muted); position: relative; z-index: 1; }
+.cz-tl li.done { text-align: left; padding-top: 0; } /* S11-d2b: 화면 .done(완료 화면) 규칙이 1·2행에 겹치던 것 끊기 */
 .cz-tl .done .n { background: var(--pine); color: #fff; }
 .cz-tl .when { font-size: 13.5px; color: var(--muted); white-space: nowrap; }
 .cz-tl b { font-weight: 600; } .cz-tl .wait b { color: var(--muted); font-weight: 500; }

@@ -72,13 +72,15 @@
     say("파일을 내려받았습니다 — " + name); haptic("success");
   }
   // 읍면동 담당자 화면·보고 = «자기 동» 기준(현장 현실성 10-29). 시군구 전체는 아래 수요 보드(읍면 × 서비스)가 보여 준다.
-  function homeArea() { return F.report && F.report.homeArea ? F.report.homeArea(households()) : null; }
+  function homeArea() { return F.report && F.report.homeArea ? F.report.homeArea(listHouseholds()) : null; }
 
   // ── 공통 입력 묶음 ─────────────────────────────────────
   function households() { return O.rows().map(function (r) { return r.h; }); }
+  // S11-d2b: 보고·담당 읍면은 «정보원 명단 가구»만 센다 — 명단과 이어지지 않은 주민 신호 줄(요청 id 가 가구 id)은 신고로만 센다(146가구·4개 읍면 통일)
+  function listHouseholds() { return households().filter(function (h) { return !h.request; }); }
   function base(now) {
     var D = O.data();
-    return { households: households(), areas: D.areas, office: D.meta.office, requests: REQ.list(),
+    return { households: listHouseholds(), areas: D.areas, office: D.meta.office, requests: REQ.list(),
       attempts: st("attempts", []), tips: st("tips", []), picked: O.picked(), links: O.links(),
       outcomes: st("outcomes", {}), consults: st("consults", []), now: now || new Date(),
       alertIds: window.DaeumAlerts && DaeumAlerts.get() ? DaeumAlerts.todayIds(DaeumAlerts.get(), function (id) { return !!O.row(id); }) : [] };
@@ -515,7 +517,7 @@
     lastStats = S;
     var dash = clear(q(root, '[data-slot="dashboard"]'));
     // 위 숫자는 담당 읍면 가구만 센다 — 시군구 전체는 아래 수요 보드(읍면 × 서비스)에 있다(S10d)
-    var mine = []; households().forEach(function (x) { if (x.area && mine.indexOf(x.area) < 0) mine.push(x.area); });
+    var mine = []; listHouseholds().forEach(function (x) { if (x.area && mine.indexOf(x.area) < 0) mine.push(x.area); });
     var scope = home ? home + " 담당 가구" : mine.length ? "담당 " + mine.length + "개 읍면(" + mine.join("·") + ") 가구" : "담당 가구";
     // S10p-4 R-3: 한 줄로(읍면 이름·수요 보드 안내는 title 로)
     var scopeS = home ? home + " 담당" : mine.length ? "담당 " + mine.length + "개 읍면" : "담당 가구";

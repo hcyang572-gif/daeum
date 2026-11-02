@@ -96,7 +96,7 @@
     var box = $("s11Today"); if (!box || !ready()) return;
     var g = $("s2Gates"); if (!g) { g = doc.createElement("section"); g.id = "s2Gates"; g.className = "s2 s2-gates-wrap"; g.setAttribute("aria-label", "오늘 들어온 두 입구"); box.insertBefore(g, box.querySelector(".vg")); }
     var o = O(), p = o.plan(), rk = ranked(), reqs = liveReqs(), inRoute = {}; p.ids.forEach(function (id) { inRoute[id] = 1; });
-    var listN = p.ids.filter(function (id) { var r = o.row(id); return r && !r.h.request && !reqInRoute(id); }).length;
+    var listN = p.ids.filter(function (id) { return o.row(id) && !reqOn(id); }).length;
     var mustN = rk.filter(function (x) { return x.band === "must"; }).length;
     var al = AL(), w = al && al.get && al.get() ? al.weather(al.get(), o.weatherChoice()) : null;
     var heatN = w ? rk.filter(function (x) { return x.parts.some(function (q) { return q.k === "AB" && /에 /.test(q.label); }); }).length : 0;
@@ -107,7 +107,7 @@
       return '<div class="' + (on ? "in" : "new") + '"><span><b>' + esc(r.region || "읍면 미상") + '</b> · ' + esc(KIND[kindOf(r)] || "신호") + (r.urgent ? ' <i class="s2-urg">긴급</i>' : "") + '<small>«' + esc(clip(r.situation || "", 22)) + '»</small></span>' +
         (on ? '<em>' + esc(when) + ' · 경로에 있음</em>' : hid ? '<button type="button" class="s2-ins" data-ins="' + esc(r.id) + '">끼워 넣기</button>' : '<em>' + esc(when) + ' · 확인 전</em>') + '</div>';
     }).join("") || '<div><span>새 신고 없음<small>주민 화면에서 보내면 여기로 바로 옵니다</small></span></div>';
-    var pills = p.ids.map(function (id, i) { var r = o.row(id), fromReq = r && (r.h.request || reqInRoute(id)); return '<span class="' + (fromReq ? "r" : "") + '" title="' + esc(label(id)) + '">' + (i + 1) + '</span>'; }).join("");
+    var pills = p.ids.map(function (id, i) { var fromReq = reqOn(id); return '<span class="' + (fromReq ? "r" : "") + '" title="' + esc(label(id)) + '">' + (i + 1) + '</span>'; }).join("");
     g.innerHTML =
       '<div class="s2-h"><div><h3>오늘 찾아갈 집 <em>' + p.ids.length + '곳</em></h3><p>두 입구에서 들어온 집을 한 경로로 묶었습니다</p></div></div>' +
       '<div class="s2-gates">' +
@@ -124,15 +124,24 @@
       '<div class="s2-route"><div class="t"><b>오늘 방문 경로</b><small>' + durTxt(s.travelMin + s.consultMin) + ' · 마침 ' + esc(s.end) + ' · 거리 기준 자동 순서</small></div><div class="pills" aria-label="방문 순서(주황 = 실시간 신고)">' + pills + '</div><a class="s2-btn s" href="#route">지도·시각표</a></div>' +
       '<div class="s2-legend"><span><i class="l"></i>정보원 명단</span><span><i class="r"></i>실시간 신고</span><span>장소·가구·신고는 모두 가상 데이터</span></div>' +
       '<p class="s2-msg" id="s2Msg" role="status" aria-live="polite"></p>';
-    renderWhy(rk);
+    renderWhy(rk, p.ids, s);
   }
+  // S11-d2b: «신고로 들어온 집» 판정 하나 — 명단 밖 신호 줄이거나, 처리 중 신고(새로 옴·확인함·방문 중)가 이어진 명단 가구.
+  //   알약 주황·정보원 명단 곳 수·보고 한 줄이 모두 이것을 쓴다(명단 N + 신고 집 M = 오늘 경로).
+  function reqOn(id) { var r = O().row(id); if (r && r.h.request) return true; return liveReqs().some(function (q) { return q.householdId === id; }); }
   function reqInRoute(id) { return REQ.list().some(function (r) { return active(r) && r.householdId === id && ins[r.id]; }); }
-  function renderWhy(rk) {
+  function renderWhy(rk, ids, s) {
+    // S11-d2b: 번호 = 오늘 방문 경로 순서(시각표·알약과 같음). 정보원 순위·현장 사정은 이유로만 적는다
+    var pos = {}, at = {}; (ids || []).forEach(function (id, i) { pos[id] = i; }); ((s && s.rows) || []).forEach(function (x) { at[x.id] = x.arrive; });
+    var P9 = function (x) { return pos[x.id] == null ? 1e9 : pos[x.id]; };
+    rk = rk.slice().sort(function (a, b) { return P9(a) - P9(b); });
+    function stop(x) { return pos[x.id] == null ? "경로 밖" : "방문 " + (pos[x.id] + 1) + "번째" + (at[x.id] ? "(" + at[x.id] + " 도착)" : ""); }
+    function line(x) { return x.band === "must" ? stop(x) + " · " + x.line : x.line.replace(/오늘 \d+번째/, function () { return stop(x); }); }
     var box = $("s11Today"); if (!box) return;
     var w = $("s2Why"); if (!w) { w = doc.createElement("section"); w.id = "s2Why"; w.className = "s2 s2-card"; w.setAttribute("aria-labelledby", "s2WhyH"); var g = $("s2Gates"); g.parentNode.insertBefore(w, g.nextSibling); }
-    w.innerHTML = '<div class="s2-ch"><h3 id="s2WhyH">왜 이 집을 먼저 보나</h3><p>정보원 발굴순위 위에 현장 사정(특보·혼자 사는 고령·상담 공백·주민 신호·미처리 기간)을 얹었습니다. 점수는 띄우지 않고 이유만 적습니다. 방문 길 순서는 거리로 따로 짭니다.</p></div>' +
+    w.innerHTML = '<div class="s2-ch"><h3 id="s2WhyH">왜 이 집을 먼저 보나</h3><p>번호는 오늘 방문 경로 순서(시각표·위 알약과 같음)입니다. 정보원 발굴순위와 현장 사정(특보·혼자 사는 고령·상담 공백·주민 신호·미처리 기간)은 이유로 적고, 점수는 띄우지 않습니다.</p></div>' +
       '<ol class="s2-why">' + rk.map(function (x) {
-        return '<li class="' + x.band + '"><span class="n" aria-hidden="true">' + (x.band === "must" ? "꼭" : x.todayRank) + '</span><div><b>' + esc(label(x.id)) + '</b><p>' + esc(x.line) + '</p>' +
+        return '<li class="' + x.band + '"><span class="n" aria-hidden="true">' + (pos[x.id] == null ? "–" : pos[x.id] + 1) + '</span><div><b>' + esc(label(x.id)) + '</b><p>' + esc(line(x)) + '</p>' +
           '<details><summary>자세히</summary><ul>' + x.detail.map(function (d) { return "<li>" + esc(d) + "</li>"; }).join("") + '</ul></details></div></li>';
       }).join("") + '</ol>' +
       '<p class="s2-src">가중치·문턱은 시연용 잠정값(도입 때 현장과 다시 정함) · 근거: 01_리서치/S11-d2_우선순위_규칙.md · 닿음은 명단을 새로 고르지 않습니다(발굴은 정보원·행복이음)</p>';
@@ -172,7 +181,7 @@
     var k = kindOf(r), mins = pl ? Math.max(0, Math.round(pl.after.endMin - pl.before.endMin)) : 0;
     var why = !pl ? "명단 가구와 이어지지 않은 신호입니다 — 명단 밖 가구로 메모해 두면 다음 명단과 맞춰 봅니다" : pl.already ? "이미 오늘 경로에 있는 집입니다" :
       (pl.near ? "지금 경로 " + (pl.near.i + 1) + "번 집에서 " + (pl.near.km < 1 ? Math.round(pl.near.km * 1000) + "m" : pl.near.km.toFixed(1) + "km") : "") + " · 끼워 넣으면 오늘 일정 +" + mins + "분" + (pl.urgent ? " · 긴급이라 바로 다음 방문으로" : "");
-    card.innerHTML = '<div class="hd"><span class="s2-livetag"><i></i>실시간 신고</span><span class="s2-chip">' + esc(KIND[k] || "신호") + '</span>' + (r.urgent ? '<span class="s2-chip urg">긴급</span>' : "") + '<span class="ago">' + (Date.now() - new Date(r.createdAt || Date.now()).getTime() < 600000 ? "방금 · " : "") + esc(hm(r.createdAt || new Date())) + '</span><button type="button" class="x" aria-label="닫기">×</button></div>' +
+    card.innerHTML = '<div class="hd"><span class="s2-livetag"><i></i>실시간 신고</span><span class="s2-chip">' + esc(KIND[k] || "신호") + '</span><i class="s2-tag">가상</i>' + (r.urgent ? '<span class="s2-chip urg">긴급</span>' : "") + '<span class="ago">' + (Date.now() - new Date(r.createdAt || Date.now()).getTime() < 600000 ? "방금 · " : "") + esc(hm(r.createdAt || new Date())) + '</span><button type="button" class="x" aria-label="닫기">×</button></div>' +
       '<h3 id="s2ArrH">' + (r.situation ? "«" + esc(clip(r.situation, 40)) + "»" : "다른 기기에서 온 " + esc(KIND[k] || "신호") + " · 번호 " + esc(r.code || "")) + '</h3>' +
       '<div class="meta"><span>' + esc(r.region || "읍면 미상") + '</span>' + (r.subject && (r.subject.tags || []).indexOf("senior") >= 0 ? "<span>어르신(신고 내용)</span>" : "") + '<span>' + esc(PREF[r.contactPref] || "연락 방법 미상") + '</span></div>' +
       '<p class="why">' + esc(why) + '</p>' +
@@ -248,7 +257,7 @@
         var act = m.status === "not_in_list" || (m.urgent && m.status !== "referred") ? '<button type="button" class="s2-btn s sm" data-out="ref" data-id="' + esc(m.id) + '">행복이음에 등록했어요</button>' :
           m.status === "near" ? '<button type="button" class="s2-btn s sm" data-out="same" data-id="' + esc(m.id) + '">같은 집</button><button type="button" class="s2-btn s sm" data-out="diff" data-id="' + esc(m.id) + '">다른 집</button>' :
           m.status === "registered" && !m.addr ? '<button type="button" class="s2-btn s sm" data-out="in" data-id="' + esc(m.id) + '">명단에 있음</button><button type="button" class="s2-btn s sm" data-out="notin" data-id="' + esc(m.id) + '">명단에 없음</button>' : "";
-        return '<li><div><b>' + esc(m.area) + ' 일대</b> · ' + esc(P.FROM[m.from] || "현장") + ' · ' + esc((m.signs || []).join("·")) + (m.place ? '<small>' + esc(m.place) + '</small>' : "") +
+        return '<li><div><b>' + esc(m.area) + ' 일대</b> <i class="s2-tag">가상</i> · ' + esc(P.FROM[m.from] || "현장") + ' · ' + esc((m.signs || []).join("·")) + (m.place ? '<small>' + esc(m.place) + '</small>' : "") +
           (m.status === "registered" && !m.addr ? '<small>대조하려면 주소가 필요합니다 — 수동으로 고를 수 있어요</small>' : "") + '</div><span class="tg">' + tg + '</span><span class="ac">' + act +
           '<button type="button" class="s2-lnk" data-out="close" data-id="' + esc(m.id) + '">종결</button></span></li>';
       }).join("") : '<li><div>아직 메모가 없습니다<small>옆집·통장·주민 신고로 들은 집을 30초 안에 남겨 두세요</small></div></li>') + '</ul>' +
@@ -312,7 +321,7 @@
     c.innerHTML = '<div class="s2-ch"><h3 id="s2RecH">지난 확정 기록 <em>' + list.length + '건</em></h3><p>공무원이 확정한 행복이음 입력 순서 초안입니다. 정식 기록은 행복이음에 입력합니다.</p></div>' +
       '<ul class="s2-recs">' + (list.length ? list.slice(0, 8).map(function (x) {
         var lb = String(x.label || "가구").replace(/(\d)\d\d$/, "$1●●"), first = String(x.text || "").split("\n");
-        return '<li><b>' + esc(String(x.at || "").slice(5, 10).replace("-", "월 ") + "일") + ' · ' + esc(x.area || "") + ' · ' + esc(lb) + (x.seed ? ' <i class="s2-tag">가상</i>' : "") + '</b><small>' + esc(clip((first[2] || "").replace(/^상담 요약:\s*/, ""), 46)) + '</small>' +
+        return '<li><b>' + esc(String(x.at || "").slice(5, 10).replace("-", "월 ") + "일") + ' · ' + esc(x.area || "") + ' · ' + esc(lb) + ' <i class="s2-tag">가상</i>' + '</b><small>' + esc(clip((first[2] || "").replace(/^상담 요약:\s*/, ""), 46)) + '</small>' +
           '<details><summary>전체 보기</summary><pre>' + esc(x.text) + '</pre></details></li>';
       }).join("") : '<li>아직 확정한 기록이 없습니다<small>위에서 AI 초안을 만들고 «공무원 확정»을 누르면 여기에 남습니다</small></li>') + '</ul>';
   }
@@ -326,8 +335,9 @@
   function renderReport() {
     var host = $("s11RNum"); if (!host) return;
     var p = $("s2RepOut"); if (!p) { p = doc.createElement("p"); p.id = "s2RepOut"; p.className = "s2 s2-rep"; host.parentNode.insertBefore(p, host.nextSibling); }
-    var reqs = REQ.list().filter(function (r) { return r.status !== "cancelled"; }), inRoute = reqs.filter(function (r) { return ins[r.id] || (r.householdId && O() && O().picked().indexOf(r.householdId) >= 0); }).length;
-    p.innerHTML = '<span><b>두 입구</b> 정보원 명단 ' + (O() ? O().picked().filter(function (id) { var r = O().row(id); return r && !r.h.request; }).length : 0) + '곳 + 실시간 신고 ' + reqs.length + '건(오늘 경로에 든 신고 ' + inRoute + '건)</span>' +
+    // S11-d2b: 오늘 화면 두 입구와 같은 셈 — 신고 = 처리 중(새로 옴·확인함·방문 중), 명단 = 경로의 집 중 신고 집 뺀 곳
+    var o = O(), ids = o && ready() ? o.plan().ids : [], reqs = liveReqs(), inRoute = reqs.filter(function (r) { return ins[r.id] || (r.householdId && ids.indexOf(r.householdId) >= 0) || ids.indexOf(r.id) >= 0; }).length;
+    p.innerHTML = '<span><b>두 입구</b> 정보원 명단 ' + ids.filter(function (id) { return o.row(id) && !reqOn(id); }).length + '곳 + 실시간 신고 ' + reqs.length + '건(오늘 경로에 든 신고 ' + inRoute + '건)</span>' +
       '<span><b>명단 밖</b> ' + esc(P.reportLine(memos()).text) + '</span>';
   }
   function demoBar() {
