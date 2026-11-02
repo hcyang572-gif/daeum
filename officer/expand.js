@@ -103,7 +103,7 @@
     out.appendChild(h("p", { class: "small", text: "전국 시군구 " + K.sigungu + "곳이 모두 상한까지 쓰면 AI 운영비 연 " + eok(r.nationCapYear) + "(추정, 유지보수 제외)" }));
     out.appendChild(h("details", { class: "cost-how" }, [h("summary", { text: "산식 펼치기" }), h("ul", { class: "small" }, [
       "방문 건수/월 = 담당자 " + r.input.officers + " × 방문일 " + r.input.visitDays + " × 하루 " + r.input.visitsPerDay + " = " + r.visits + "건",
-      "AI 월 = min(방문 건수, 하루 상한 " + r.input.dailyCap + "회(전체)×30) × 1회 약 45원(44.6원, 11-02 측정) = " + won(r.aiMonth),
+      "AI 월 = min(방문 건수, 하루 상한 " + r.input.dailyCap + "회(시군당 한도)×30) × 1회 약 45원(44.6원, 11-02 측정) = " + won(r.aiMonth),
       "운영비(최대) = 상한 " + won(r.aiCap) + "/월 × 12 × 전국 시군구 " + K.sigungu + "곳 ≈ " + eok(r.nationCapYear) + "/년(유지보수 제외)",
       "연 도입 = AI 월 × 12 + 유지보수 200~500만원(가정)",
       "명단 순 km/월 = 방문 건수 × 2.565km · 감소 km = × 단축률 " + Math.round(r.input.saveRate * 100) + "%",
