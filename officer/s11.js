@@ -178,7 +178,9 @@
   var REC = { st: "", text: "", res: null };
   function needWords(text, needs) {
     var K = root.DaeumAI && root.DaeumAI.needKeywords; if (!K) return [];
-    var out = []; K.forEach(function (k) { if (needs.indexOf(k[1]) < 0) return; var m = String(text).match(new RegExp(k[0].source, "g")); (m || []).forEach(function (w) { if (out.indexOf(w) < 0) out.push(w); }); });
+    // S11-d 채점 6: 낱말 단위로 — 맞은 곳을 어절 끝까지 늘려 «끼니를 거»처럼 잘리지 않게(«끼니를 거를»)
+    var B = "[^\\s.,!?·()\"']*";
+    var out = []; K.forEach(function (k) { if (needs.indexOf(k[1]) < 0) return; var m = String(text).match(new RegExp(B + "(?:" + k[0].source + ")" + B, "g")); (m || []).forEach(function (w) { if (out.indexOf(w) < 0) out.push(w); }); });
     return out;
   }
   function markText(text, words) {
@@ -192,6 +194,7 @@
     if (st === "ai") qa("#s11State span")[1].classList.remove("done");
     var c = $("s11Confirm"), cp = $("s11Copy"); if (!c) return;
     c.disabled = !st || st === "ok"; c.textContent = st === "ok" ? "확정됨" : "공무원 확정";
+    var pr = $("s11Print"); if (pr) pr.disabled = st !== "ok";
     cp.disabled = st !== "ok"; cp.querySelector("span").textContent = st === "ok" ? "행복이음 입력 순서로 복사" : "확정 후 복사 가능";
     var lk = cp.querySelector("svg"); if (lk) lk.style.display = st === "ok" ? "none" : "";
   }
@@ -250,6 +253,23 @@
       if (root.navigator.clipboard && root.navigator.clipboard.writeText) root.navigator.clipboard.writeText(t).then(ok, function () { sp.textContent = "복사가 막혔습니다 — 자세히 칸의 초안을 쓰세요"; });
       else ok();
     });
+    // S11-d(11-02 «파일 출력 충실히»): 확정본 인쇄·PDF — 초안 카드만 A4 한 장으로. 가구 번호 끝 두 자리·주민번호·전화는 가린다
+    var pr = $("s11Print");
+    if (pr) pr.addEventListener("click", function () {
+      if (REC.st !== "ok") return;
+      var pii = function (x) { return String(x || "").replace(/\d{6}\s*-?\s*[1-4]\d{6}/g, "******-*******").replace(/0\d{1,2}[-\s.]?\d{3,4}[-\s.]?\d{4}/g, "0**-****-****").replace(/([A-Z]-\d)\d\d(?!\d)/g, "$1●●"); };
+      var lb = String(REC.label || "가구").replace(/(\d)\d\d$/, "$1●●"), now = new Date(), p2 = function (n) { return (n < 10 ? "0" : "") + n; };
+      var made = now.getFullYear() + ". " + (now.getMonth() + 1) + ". " + now.getDate() + ". " + p2(now.getHours()) + ":" + p2(now.getMinutes());
+      var L = draftText().split("\n").slice(1).map(function (l) { var i = l.indexOf(": "); return "<tr><th>" + esc(l.slice(0, i)) + "</th><td>" + esc(pii(l.slice(i + 2))) + "</td></tr>"; }).join("");
+      var old = $("s11PrintHost"); if (old) old.remove();
+      var host = doc.createElement("div"); host.id = "s11PrintHost";
+      host.innerHTML = '<h1>상담 기록 확정본</h1><p class="m">' + esc(made) + " · " + esc(REC.area || "") + " · " + esc(lb) + ' · 행복이음 입력 순서</p><table>' + L + "</table>" +
+        '<p class="n">○ 공무원 확정 완료 · 정식 기록은 행복이음에 입력합니다.<br>○ 개인정보 가림: 성명·주민등록번호·연락처·주소 없음, 가구 번호 일부 가림 · ' + (REC.res && REC.res.source === "ai" ? "AI 초안(외부 AI로 보낼 때 이름·연락처 가림) → 공무원 수정·확정" : "규칙 초안(외부 전송 0건) → 공무원 수정·확정") + "</p><p class=\"f\">닿음 · 상주시 희망복지지원단(시연, 가상 자료)</p>";
+      doc.body.appendChild(host); doc.documentElement.classList.add("s11-printing");
+      var done = false; function clean() { if (done) return; done = true; doc.documentElement.classList.remove("s11-printing"); host.remove(); root.removeEventListener("afterprint", clean); }
+      root.addEventListener("afterprint", clean);
+      setTimeout(function () { root.print(); setTimeout(clean, 1500); }, 60);
+    });
     // 근거 낱말: 초안 쪽 근거에 손대면 상담 내용의 같은 낱말이 함께 빛남
     var draft = $("s11Draft");
     function lit(on, ws) { qa("#s11Talk mark, #s11Draft mark").forEach(function (m) { m.classList.toggle("lit", on && ws.indexOf(m.dataset.w) >= 0); }); }
@@ -279,19 +299,43 @@
       }).join("");
     grow(box);
   }
+  // S11-d 채점 8: 보고 첫 카드 숫자 = 현황 대시보드와 같은 집계(F.report.last). 집계가 아직이면 잠시 뒤 다시
+  function fillReportNums(tries) {
+    var F = root.DaeumFeatures, L = F && F.report && F.report.last, box = $("s11RNum"); if (!box) return;
+    if (!L) { if ((tries || 0) < 20) setTimeout(function () { fillReportNums((tries || 0) + 1); }, 300); return; }
+    var H = L.stats.households, set = function (k, v) { var e = box.querySelector('[data-k="' + k + '"]'); if (e) e.textContent = v; };
+    set("total", H.total.toLocaleString("ko-KR")); set("contacted", H.contacted.toLocaleString("ko-KR")); set("linked", L.stats.links.households.toLocaleString("ko-KR"));
+    set("cpct", "가구 · " + (H.total ? Math.round(H.contacted / H.total * 100) : 0) + "%");
+  }
+  function ensureStats() { // 집계 전이면 현황 단추 한 번으로 집계(mount.js)
+    var F = root.DaeumFeatures; if (F && F.report && F.report.last) return true;
+    var w = $("reportRoot") && $("reportRoot").querySelector('[data-report="weekly"]:not([disabled])'); if (w) w.click();
+    return !!(F && F.report && F.report.last);
+  }
   function bindReport() {
     var b = $("s11Dl"); if (!b) return;
     b.addEventListener("click", function () {
       var r = $("reportRoot"); if (r) r.scrollIntoView({ block: "start", behavior: RM ? "auto" : "smooth" });
       var w = r && r.querySelector('[data-report="weekly"]:not([disabled])'); if (w) w.click();
     });
+    var hw = $("s11Hwpx"), st = $("s11DlSt");
+    if (hw) hw.addEventListener("click", function () {
+      var D = root.DaeumFeatures && root.DaeumFeatures.reportDoc; ensureStats();
+      var m = D && D.modelOf ? D.modelOf("weekly") : null;
+      if (!m) { st.textContent = "집계를 준비하는 중입니다. 잠시 뒤 다시 눌러 주세요."; return; }
+      hw.disabled = true; st.textContent = "한글 파일을 만드는 중…";
+      D.saveHwpx(m).then(function (n) { st.textContent = "내려받았습니다 — " + n + " (보고일·부서·개요·현황 표·주요 사례(가림)·조치·향후 계획·붙임)"; },
+        function () { st.textContent = "파일을 만들지 못했습니다. 잠시 뒤 다시 눌러 주세요."; }).then(function () { hw.disabled = false; });
+    });
+    fillReportNums(0);
+    root.addEventListener("hashchange", function () { if (/report/.test(location.hash)) fillReportNums(0); });
   }
 
   // ── 첫 실행 둘러보기 4컷 ──
   var TOUR = [["1/4", "닿음 시작", "위기가구 명단 이후의 현장 업무를 오늘 → 방문 → 기록 → 보고 순서로 정리합니다. 데이터는 한국사회보장정보원 복지서비스 정보 외 6종입니다.", "home"],
     ["2/4", "오늘 · 방문", "방문할 집과 다시 찾을 집을 한 화면에 모읍니다. 방문 순서는 가까운 집끼리 묶어 이동 거리를 줄입니다.", "route"],
     ["3/4", "기록 · AI 초안", "상담 내용을 AI가 행복이음 입력 순서로 정리합니다. 근거 낱말을 확인하고 확정하면 복사할 수 있습니다.", "record"],
-    ["4/4", "보고", "방문 기록이 쌓이면 서비스 연계 현황과 한글·엑셀 보고서가 채워집니다.", "report"]];
+    ["4/4", "보고", "이번 차수 숫자와 주간 보고서를 한글(hwpx) 파일 단추 하나로 받습니다. 엑셀·PDF도 됩니다.", "report"]];
   var tourEl, tourI = 0, LS_TOUR = "daeum.s11.tour";
   function buildTour() {
     tourEl = doc.createElement("div"); tourEl.className = "s11-tour"; tourEl.setAttribute("role", "dialog"); tourEl.setAttribute("aria-modal", "true"); tourEl.setAttribute("aria-labelledby", "s11TourH");

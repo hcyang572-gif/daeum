@@ -24,13 +24,16 @@
   var link = doc.createElement("link");
   link.rel = "stylesheet"; link.href = new URL("switcher.css", SHARED).href;
   doc.head.appendChild(link);
+  // 11-02 제보 «로딩 때 하트·방패 문양이 잠깐 떴다 사라짐»: switcher.css 는 JS 로 붙여 렌더를 막지 않으므로, 띠가 먼저 그려지면
+  // 크기 없는 아이콘(하트=주민·방패=공무원)이 기본 300×150 검은 채움으로 보였다 → 아이콘에 크기·선 속성을 직접 주고, CSS 가 올 때까지 띠를 숨긴다
+  var cssReady = false; link.onload = link.onerror = function () { cssReady = true; var b = doc.querySelector(".sw-bar"); if (b) b.style.visibility = ""; };
   if (!embed) html.classList.add("sw-on"); else html.classList.add("sw-embed");
 
   var ICON = {
-    citizen: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>',
-    officer: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/></svg>',
-    pair: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="7.5" height="14" rx="2"/><rect x="13.5" y="5" width="7.5" height="14" rx="2"/></svg>',
-    x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+    citizen: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>',
+    officer: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/></svg>',
+    pair: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="7.5" height="14" rx="2"/><rect x="13.5" y="5" width="7.5" height="14" rx="2"/></svg>',
+    x: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
   };
 
   /* 주민 접수 직후라면 그 접수번호 — 공무원 화면으로 넘길 때 붙인다 */
@@ -56,6 +59,7 @@
       else location.href = URLS.pair;
     });
     var skip = doc.querySelector("body > .skip");
+    if (!cssReady) b.style.visibility = "hidden";
     doc.body.insertBefore(b, skip ? skip.nextSibling : doc.body.firstChild);
   }
 

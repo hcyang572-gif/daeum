@@ -15,9 +15,11 @@
 <meta name="theme-color" content="#F3F5F4">
 <link rel="icon" href="../shared/icons/daeum.svg" type="image/svg+xml">
 <link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="s11_page.css">
 <style>
   main { max-width: 64rem; margin: 0 auto; padding: var(--sp-5) var(--sp-4) var(--sp-10); display: grid; gap: var(--sp-4); }
   .top { display: flex; align-items: center; gap: var(--sp-3); }
+  .top > div { display: grid; gap: 6px; }
   .top h1 { margin: 0; font-size: var(--fs-h2); font-weight: var(--fw-b); letter-spacing: -.04em; }
   .top .cnum { margin: 0; }
   .pane { padding: var(--sp-5); display: grid; gap: var(--sp-4); }
@@ -30,9 +32,10 @@
 <main>
   <div class="top">
     <a class="d-round" href="../index.html" aria-label="닿음 첫 화면으로"><svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></a>
-    <div><p class="cnum">닿음 · 복지 사각지대 현장 업무 도우미</p><h1>활용 데이터</h1></div>
+    <div><span class="s11-tagline"><i aria-hidden="true"></i>한국사회보장정보원 공공데이터 활용</span><h1>활용 데이터</h1></div>
   </div>
   <div class="dg-links">
+    <a class="d-btn d-btn-p" href="../officer/index.html#data">데이터 → 하는 일 → 얻는 것(공무원 화면)</a>
     <a class="d-btn d-btn-s" href="../officer/index.html">공무원 창구</a>
     <a class="d-btn d-btn-s" href="../citizen/index.html">주민 창구</a>
     <button type="button" class="d-btn d-btn-s" data-guide="help">사용 방법</button>

@@ -114,6 +114,41 @@
        { k: "처리 중", v: open.length, u: "건", s: "연계 완료·취소 제외", type: "int" }],
       [reqSheet(list)], doc.getElementById("moreToday"), ["V1"]);
   };
+  // S11-d(11-02 호창님 «파일 출력 충실히»): 정보원 «복지사각지대 발굴대상자 조회» 서식 43열 그대로 + 닿음 방문 열 4개.
+  // 받은 명단 엑셀과 열이 같아 나란히 대조·붙여 넣기가 된다. ⛔ 성명·주민번호·전화·주소·담당자 열은 «(가림)» — 파일에 개인정보를 쓰지 않는다.
+  var KIS_HEAD = ["발굴년월", "소재행정동", "발굴우선순위", "대상구분", "비대상사유", "비대상사유상세", "비대상상세내용", "성명", "주민등록번호", "발굴변수변동내역", "발굴횟수", "처리여부", "최초처리일자", "최초처리구분", "최초처리상태", "최종지원실적", "이동전화번호요청상태",
+    "(행복이음)주소", "(행복이음)우편번호", "(행복이음)전화번호", "(행복이음)휴대폰번호", "(행안부)주소", "(행안부)기타주소", "(행안부)연락처", "담당자", "AI초기상담요청일시", "AI초기상담요청상태", "AI초기상담상담결과",
+    "기초생계급여", "기초의료급여", "기초주거급여", "기초교육급여", "긴급복지", "차상위장애인", "차상위본인부담경감대상자", "차상위자활", "차상위계층확인", "한부모가족", "타법의료", "장애인연금", "기초연금", "우선방문대상자_e아동", "우선방문대상자_고독사"];
+  var MASK = /^(성명|주민등록번호|\(행복이음\)(주소|우편번호|전화번호|휴대폰번호)|\(행안부\)(주소|기타주소|연락처)|담당자)$/;
+  // 메모(자유 글)에 섞여 들어간 주민번호·전화번호는 내려받는 파일에서 가린다
+  function pii(x) { return String(x || "").replace(/\d{6}\s*-?\s*[1-4]\d{6}/g, "******-*******").replace(/0\d{1,2}[-\s.]?\d{3,4}[-\s.]?\d{4}/g, "0**-****-****"); }
+  function importMeta(id) { try { var m = JSON.parse(localStorage.getItem("daeum.s11.importMeta") || "{}"); return m[id] || null; } catch (e) { return null; } }
+  function kisSheet(stops, title) {
+    var att = st("attempts", []), links = (O().links && O().links()) || [], ym = ymd().slice(0, 7);
+    var rows = stops.map(function (x) {
+      var r = O().row(x.id), h = r ? r.h : {}, m = importMeta(x.id) || {};
+      var mine = att.filter(function (t) { return t.householdId === x.id; }).sort(function (a, b) { return a.at < b.at ? -1 : 1; });
+      var first = mine[0], last = mine[mine.length - 1], ne = mine.filter(function (t) { return t.result === "not_eligible"; })[0];
+      var svc = []; links.forEach(function (l) { if (l.householdId === x.id) svc = svc.concat(l.serviceNames || []); });
+      var v = {
+        "발굴년월": ym, "소재행정동": h.area || x.area || "", "발굴우선순위": m.prio || "", "대상구분": ne ? "비대상" : first ? "대상" : "",
+        "비대상사유": ne ? "비해당" : "", "비대상사유상세": ne && ne.reason ? ((F.contacts.NON_ELIGIBLE_REASONS || []).filter(function (q) { return q.key === ne.reason; }).map(function (q) { return q.label; })[0] || "") : "", "비대상상세내용": "",
+        "발굴변수변동내역": m.vars || (r && r.factors ? r.factors.map(function (f) { return f.name; }).join(", ") : ""), "발굴횟수": m.cnt || "", "처리여부": first ? "처리" : (m.proc || "미처리"),
+        "최초처리일자": first ? ymd(new Date(first.at)) : "", "최초처리구분": first ? ch(first.channel) : "", "최초처리상태": last ? (F.contacts.RESULTS[last.result] || last.result) : "",
+        "최종지원실적": svc.join(", "), "AI초기상담요청상태": m.aiReq || "", "AI초기상담상담결과": m.aiRes || "",
+        "우선방문대상자_e아동": m.child ? "Y" : "", "우선방문대상자_고독사": m.lonely ? "Y" : ""
+      };
+      (m.ben || []).forEach(function (bn) { v[bn] = "Y"; });
+      return KIS_HEAD.map(function (k) { return MASK.test(k) ? "(가림)" : (v[k] == null ? "" : v[k]); })
+        .concat([x.no, x.time || "", last ? (F.contacts.RESULTS[last.result] || last.result) + (last.note ? " — " + pii(last.note).slice(0, 60) : "") : "방문 전", x.ifAbsent || ""]);
+    });
+    var cols = KIS_HEAD.map(function (k, i) { return txt(k, "k" + i, MASK.test(k) ? 9 : /사유상세|변동내역|최종지원실적|상세내용/.test(k) ? 26 : Math.max(8, Math.min(16, k.length + 3))); })
+      .concat([int("닿음 방문순서", "no", 8), txt("닿음 도착 예정", "t", 12), txt("닿음 방문 결과", "res", 24), txt("닿음 부재 시", "ab", 20)]);
+    return { name: "정보원 서식", title: title, unit: "정보원 «복지사각지대 발굴대상자 조회» 43열 + 닿음 방문 4열", tags: ["가상"], landscape: true,
+      note: "열 순서는 정보원 조회 엑셀과 같습니다. 성명·주민등록번호·전화·주소·담당자 열은 개인정보라 «(가림)»으로 둡니다. 처리 열은 닿음 방문 기록(이 기기)으로 채운 초안이며, 정식 처리는 행복이음에서 합니다.",
+      src: "※ 서식: 한국사회보장정보원 «복지사각지대 발굴대상자 조회» 엑셀 머리글(2026) · 값: 가상 가구(시연)·닿음 방문 기록",
+      columns: cols, rows: nonEmpty(rows, cols.length), total: false };
+  }
   // ① 하루 방문 시각표
   B.route = function () {
     var sh = M().sheetData();
@@ -121,10 +156,11 @@
     var sb = (sh.standby || []).map(function (x) { return [x.label, x.area || "", x.why || ""]; });
     return head(sh.title || "하루 방문 시각표", sh.summary || "담은 가구가 없습니다.",
       [{ k: "방문", v: sh.stops.length, u: "곳", s: "시각표 순서", type: "int" }, { k: "부재 때 들를 집", v: sb.length, u: "곳", s: "시간이 남으면", type: "int" }],
-      [{ name: "시각표", title: "<표 1> 하루 방문 시각표", unit: "도착~출발 시각", tags: ["가상"], landscape: true, note: "상담·조사 결과의 정식 기록은 행복이음에 합니다. 가구·시각은 시연용 가상 값입니다.", src: "※ 출처: 가상 가구(시연) · 이동 시간은 네이버 길찾기 또는 직선 × 1.3 근사",
+      [kisSheet(sh.stops, "<표 1> 오늘 방문 명단(정보원 서식 열 그대로)"),
+       { name: "시각표", title: "<표 2> 하루 방문 시각표", unit: "도착~출발 시각", tags: ["가상"], landscape: true, note: "상담·조사 결과의 정식 기록은 행복이음에 합니다. 가구·시각은 시연용 가상 값입니다.", src: "※ 출처: 가상 가구(시연) · 이동 시간은 네이버 길찾기 또는 직선 × 1.3 근사",
          columns: [int("순", "no", 5), txt("시각", "t", 12), txt("가구", "l", 11), txt("읍면동", "a", 10), txt("구성", "m", 18), txt("왜 이 집인지", "w", 30), txt("지난 시도", "lt", 18), txt("안내할 것(가능성)", "b", 22), txt("주의", "c", 20), txt("부재면", "ia", 18)],
          rows: nonEmpty(rows, 10), total: false },
-       { name: "부재 때 들를 집", title: "<표 2> 부재로 시간이 남으면 들를 집", tags: ["가상"], src: "※ 출처: 가상 가구(시연)",
+       { name: "부재 때 들를 집", title: "<표 3> 부재로 시간이 남으면 들를 집", tags: ["가상"], src: "※ 출처: 가상 가구(시연)",
          columns: [txt("가구", "l", 14), txt("읍면동", "a", 12), txt("이유", "w", 50)], rows: nonEmpty(sb, 3), total: false }],
       sec("route"), ["V1", "N1"]);
   };
@@ -137,7 +173,7 @@
       return [h ? h.label : id, h ? h.area : "", s.closed ? "끝남" : s.escalate ? "간접 확인" : "다음 시도", s.tries, s.closed ? "" : s.next ? s.next.date : "", s.closed ? "" : s.next ? s.next.slot + " " + ch(s.next.channel) : "", s.closed ? s.closedWhy || "" : s.next ? s.next.why : ""];
     });
     var plan = []; M().plan().forEach(function (d) { d.items.forEach(function (x) { plan.push([d.date, x.slot || "", ch(x.channel), x.label, x.kind === "followup" ? "사후관리" : x.escalate ? "간접 확인" : x.overdue ? "밀림" : "재시도", x.why || ""]); }); });
-    var log = att.slice().sort(function (a, b) { return a.at < b.at ? 1 : -1; }).map(function (t) { var h = hh(t.householdId); return [mdhm(t.at), h ? h.label : t.householdId, h ? h.area : "", ch(t.channel), F.contacts.RESULTS[t.result] || t.result, t.note || ""]; });
+    var log = att.slice().sort(function (a, b) { return a.at < b.at ? 1 : -1; }).map(function (t) { var h = hh(t.householdId); return [mdhm(t.at), h ? h.label : t.householdId, h ? h.area : "", ch(t.channel), F.contacts.RESULTS[t.result] || t.result, pii(t.note)]; });
     var esc = next.filter(function (r) { return r[2] === "간접 확인"; }).length;
     return head("다시 찾을 집 · 재시도 일정 — " + ymd(), next.length ? "시도 기록이 있는 집 " + next.length + "곳 중 간접 확인으로 넘어갈 집 " + esc + "곳 · 닷새 동안 재시도·사후관리 " + plan.length + "건이 잡혀 있습니다." : "아직 시도 기록이 없습니다.",
       [{ k: "시도 기록이 있는 집", v: next.length, u: "곳", type: "int" }, { k: "시도 횟수 합계", v: att.length, u: "회", s: "‘다음 시도’ 시트 합계(수식)", type: "int", ref: { sheet: "다음 시도", col: "n" } },
@@ -281,14 +317,14 @@
 
   // ═══════════ 단추 ═══════════
   var ICO = '<svg class="d-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>';
-  var NAME = { today: "오늘", requests: "주민요청", route: "하루방문시각표", contacts: "다시찾을집", board: "연계누락", report: "현황", intake: "명단정리", list: "가구명단", record: "상담기록", cost: "도입비용", region: "다른시군" };
+  var NAME = { today: "오늘", requests: "주민요청", route: "오늘방문명단", contacts: "다시찾을집", board: "연계누락", report: "현황", intake: "명단정리", list: "가구명단", record: "방문기록_연계", cost: "도입비용", region: "다른시군" };
   function say(btn, msg) { var s = btn.parentNode.querySelector(".xl-st"); if (s) { s.textContent = ""; setTimeout(function () { s.textContent = msg; }, 30); } }
   function run(key, btn) {
     var spec;
     try { spec = B[key](); } catch (e) { if (window.console) console.error("[닿음 엑셀]", e); say(btn, "엑셀을 만들지 못했습니다 — 화면을 한 번 연 뒤 다시 눌러 주세요."); return; }
     if (!spec) { say(btn, key === "intake" ? "먼저 명단을 넣고 «정리하기»를 눌러 주세요." : "아직 내보낼 자료가 없습니다."); return; }
     btn.disabled = true;
-    needXlsx().then(function (X) { return X.download(spec, "닿음_" + NAME[key] + "_" + ymd().replace(/-/g, "") + ".xlsx"); })
+    needXlsx().then(function (X) { return X.download(spec, ymd().replace(/-/g, "") + "_" + NAME[key] + ".xlsx"); })
       .then(function () { say(btn, "엑셀 파일을 내려받았습니다(시트 " + (spec.sheets.length + 2) + "개)."); if (window.DaeumUI) DaeumUI.haptic("success"); })
       .catch(function () { say(btn, "엑셀 파일을 만들지 못했습니다. 잠시 뒤 다시 눌러 주세요."); })
       .then(function () { btn.disabled = false; });

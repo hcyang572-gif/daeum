@@ -385,3 +385,35 @@ body.s11-loading main > .tab { display: none !important; }
 /* S11-d 잔여 — 접힌 «자세히»(todayOld·reportMore·s11RecMore·출처 펼침) 안에 남은 옛 13px(.8125rem) 글자를 B 토큰 --t2(13.5px)로.
    12px(--t1 과 같은 값)은 그대로 둔다. 크기만 바꾸고 칸·색은 건드리지 않는다. */
 body.of main details :is(.d-tag, .fno, .vn, .ch .exp, .lr-val, thead th), body.of main details .panel.real .small, body.of main details .a-map .cap > small { font-size: var(--t2); }
+
+/* S11-d 채점 8 — 보고 첫 카드: 시연 수치 3칸 · 시범 목표 · «우리 시군 도입하면» · 한글 보고서 단추 */
+.s11-rnum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 2px; }
+.s11-rnum > div { background: var(--surface); box-shadow: var(--d1); border-radius: var(--r1); padding: 12px 12px 10px; min-width: 0; }
+.s11-rnum em { display: block; font-style: normal; font-size: var(--t6); font-weight: 700; letter-spacing: -.03em; color: var(--pine); line-height: 1.1; }
+.s11-rnum span { display: block; margin-top: 4px; font-size: var(--t2); font-weight: 600; color: var(--ink); }
+.s11-rnum small { display: block; font-size: var(--t1); font-weight: 500; color: var(--muted); }
+.s11-goal { background: var(--pine-soft); border-radius: var(--r1); padding: 12px 14px; font-size: var(--t2); }
+.s11-goal b { font-size: var(--t3); }
+.s11-goal ol { margin: 6px 0 0; padding-left: 1.3em; display: grid; gap: 2px; }
+.s11-adopt { margin: 0; font-size: var(--t2); color: var(--muted); line-height: 1.6; }
+.s11-adopt b { color: var(--ink); margin-right: 4px; }
+.s11-adopt .s11-lnk { min-height: 44px; display: inline-flex; align-items: center; }
+.s11-dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.s11-btn.ghost { background: var(--surface); color: var(--pine); box-shadow: inset 0 0 0 1.5px var(--pine); }
+.s11-btn.ghost:hover { background: var(--pine-soft); color: var(--pine2); }
+@media (max-width: 420px) { .s11-dl { grid-template-columns: 1fr; } .s11-rnum em { font-size: var(--t5); } }
+
+/* S11-d — 기록 확정본 인쇄·PDF: 인쇄 때만 #s11PrintHost 하나를 A4 한 장으로(화면에는 안 보임) */
+#s11PrintHost { display: none; }
+@media print {
+  @page { size: A4 portrait; margin: 18mm 16mm; }
+  html.s11-printing body > *:not(#s11PrintHost) { display: none !important; }
+  html.s11-printing #s11PrintHost { display: block; color: #000; font: 11pt/1.6 "Malgun Gothic", var(--f); }
+  #s11PrintHost h1 { font-size: 18pt; margin: 0 0 4pt; letter-spacing: -.02em; border-bottom: 2px solid #000; padding-bottom: 6pt; }
+  #s11PrintHost .m { margin: 0 0 10pt; text-align: right; font-size: 10pt; }
+  #s11PrintHost table { width: 100%; border-collapse: collapse; }
+  #s11PrintHost th, #s11PrintHost td { border: 1px solid #555; padding: 6pt 8pt; vertical-align: top; text-align: left; }
+  #s11PrintHost th { width: 22%; background: #eee; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  #s11PrintHost .n { margin-top: 10pt; font-size: 10pt; }
+  #s11PrintHost .f { margin-top: 16pt; font-size: 9pt; color: #444; text-align: center; }
+}

@@ -168,7 +168,7 @@ t("한글: 표 1 합계 칸 계산식 =SUM·접촉률 =C/B*100, 그림 데이터
   var sec = get(unzip(W.build(HD)), "Contents/section0.xml"), tb = HD.blocks.filter(function (b) { return b.t === "tbl" && /<표 1>/.test(b.title); })[0];
   var n = tb.rows.length; assert.ok(sec.indexOf("=SUM(B2:B" + (n + 1) + ");" + S.households.total) >= 0); assert.ok(sec.indexOf("=C" + (n + 2) + "/B" + (n + 2) + "*100;") >= 0);
   assert.ok((sec.match(/type="FORMULA"/g) || []).length >= 6);
-  assert.ok(/Ⅰ\. 개요/.test(sec) && /Ⅴ\. 향후 계획/.test(sec) && /<hp:t>끝\.<\/hp:t>/.test(sec));
+  assert.ok(/Ⅰ\. 개요/.test(sec) && /Ⅴ\. 향후 계획/.test(sec) && /1부\.  끝\.<\/hp:t>/.test(sec));
 });
 t("엑셀·한글 내보내기에 가구 번호·요청 번호 없음(개인 식별값 0)", function () {
   var js = JSON.stringify(SP) + JSON.stringify(HD); assert.ok(js.indexOf(hh[0].id) < 0); assert.ok(js.indexOf("REQ-") < 0);
@@ -207,9 +207,11 @@ t("날짜 = 엑셀 날짜 일련번호 + «yyyy. m. d.» 서식(글자 아님)",
   var st = get(RF, "xl/styles.xml"); assert.ok(st.indexOf('numFmtId="167" formatCode="yyyy\\.\\ m\\.\\ d\\."') >= 0, "서식 글자 이스케이프(\\.)");
   var tr = rsheet("접촉 추세"); assert.ok(/<c r="A5" s="27"><v>46314<\/v><\/c>/.test(tr), "A5 날짜 칸"); assert.ok(!/<c r="A5"[^>]*t="inlineStr"/.test(tr));
 });
-t("한글: «끝.»은 데이터 출처 표 뒤(문서 맨 끝)", function () {
-  var L = HD.blocks.length; assert.strictEqual(HD.blocks[L - 1].kind, "end"); assert.strictEqual(HD.blocks[L - 2].t, "tbl"); assert.strictEqual(HD.blocks[L - 3].text, "데이터 출처");
-  var sec = get(unzip(W.build(HD)), "Contents/section0.xml"); assert.ok(sec.lastIndexOf("끝.") > sec.lastIndexOf("데이터 이름"));
+t("한글: 본문 끝 «붙임 1. … 2. … 1부.  끝.» → 쪽 넘김 → «붙임 1 활용 데이터 출처» 표(S11-d 내부 보고서 양식)", function () {
+  var L = HD.blocks.length; assert.strictEqual(HD.blocks[L - 1].t, "tbl"); assert.strictEqual(HD.blocks[L - 2].text, "붙임 1  활용 데이터 출처"); assert.strictEqual(HD.blocks[L - 3].t, "break");
+  assert.ok(/1부\.  끝\.$/.test(HD.blocks[L - 4].text) && HD.blocks[L - 4].kind === "att" && /^붙임  1\./.test(HD.blocks[L - 5].text));
+  var sec = get(unzip(W.build(HD)), "Contents/section0.xml"); assert.ok(sec.indexOf("끝.") < sec.lastIndexOf("데이터 이름") && sec.indexOf("Ⅴ. 향후 계획") < sec.indexOf("붙임  1."));
+  assert.ok(/^보고일 \d{4}\. \d{1,2}\. \d{1,2}\.$/.test(HD.made) && /^\d{8}_주간보고서\.xlsx\) 1부/.test(HD.blocks[L - 4].text.trim().replace(/^2\. 같은 집계 엑셀 파일\(/, "")));
 });
 t("작성 부서 이름 통일: 보고서·엑셀 내보내기 모두 «상주시 희망복지지원단»", function () {
   var fs = require("fs"); assert.strictEqual(M.office, "상주시 희망복지지원단");

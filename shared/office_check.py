@@ -49,7 +49,7 @@ def check_xlsx(path, outdir):
                          "따라 바뀜": t1 == t0 + 10 and k1[0][0] == t1 and rate1 != rate0}
             ws.Cells(5, 2).Value = b5; xl.CalculateFull()
         if outdir:
-            pdf = os.path.join(outdir, os.path.splitext(os.path.basename(path))[0] + "_xlsx.pdf")
+            pdf = os.path.join(os.path.abspath(outdir), os.path.splitext(os.path.basename(path))[0] + "_xlsx.pdf")
             wb.ExportAsFixedFormat(0, pdf)
             n, foot, sizes = pdf_pages(pdf); r["pdf"] = {"pages": n, "sizes": sorted(set(sizes)), "lastLines": foot[:3]}
         wb.Close(False)
@@ -61,17 +61,18 @@ def check_xlsx(path, outdir):
 def check_hwpx(path, outdir):
     h = w.gencache.EnsureDispatch("HWPFrame.HwpObject")
     h.RegisterModule("FilePathCheckDLL", "FilePathCheckerModuleExample")
+    h.SetMessageBoxMode(0x00020021)  # 대화상자 자동 응답(확인/예) — 창 없는 자동화에서 멈추지 않게
     r = {}
     try:
         r["open"] = bool(h.Open(os.path.abspath(path), "HWPX", "forceopen:true"))
         txt = h.GetTextFile("TEXT", "") or ""
         r["chars"] = len(txt); r["head"] = txt.strip().splitlines()[:3]
-        r["has"] = {k: (k in txt) for k in ["Ⅰ. 개요", "Ⅴ. 향후 계획", "끝.", "데이터 출처", "합계", "□ ", "○ "]}
+        r["has"] = {k: (k in txt) for k in ["보고일", "Ⅰ. 개요", "주요 사례", "Ⅴ. 향후 계획", "1부.  끝.", "붙임 1  활용 데이터 출처", "합계", "□ ", "○ "]}
         r["pageCount"] = h.PageCount
         if outdir:
-            pdf = os.path.join(outdir, os.path.splitext(os.path.basename(path))[0] + "_hwpx.pdf")
-            a = h.HAction; ps = h.HParameterSet.HFileOpenSave  # SaveAs(..,"PDF") 는 숨은 대화상자에서 멈춘다(10-30 실측) → FileSaveAsPdf
-            a.GetDefault("FileSaveAsPdf", ps.HSet); ps.filename = pdf; ps.Format = "PDF"; ps.Attributes = 0; a.Execute("FileSaveAsPdf", ps.HSet)
+            # 11-02 실측: 상대 경로면 저장이 숨은 대화상자에서 멈춘다 → 절대 경로 + 대화상자 자동 응답 + SaveAs(PDF)
+            pdf = os.path.join(os.path.abspath(outdir), os.path.splitext(os.path.basename(path))[0] + "_hwpx.pdf")
+            h.SaveAs(pdf, "PDF", "")
             n, foot, sizes = pdf_pages(pdf); r["pdf"] = {"pages": n, "sizes": sorted(set(sizes)), "footers": [x[0] if x else "" for x in foot]}
         h.Clear(1)
     finally:

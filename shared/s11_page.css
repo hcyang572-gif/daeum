@@ -1,0 +1,35 @@
+/* S11-d 채점 7(⚙️ 파로, 2026-11-02): 공무원 화면 밖 쪽(첫 화면·활용 데이터·AI 추천 검증·보고서 보기)도 시안 B «소나무빛»으로.
+   tokens.css 뒤에 읽어 옛 보라·실크·오라를 끈다. 토큰 값은 officer/s11.css :root 와 같다(정본: _design/S11_전면개편_설계/index.html). 라이트 고정. */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap");
+:root, :root[data-theme="dark"] {
+  color-scheme: light;
+  --bg: #F3F5F4; --surface: #FFFFFF; --muted: #56635F; --faint: #8A9693; --line: #E1E7E5;
+  --pine: #17594F; --pine2: #0F463F; --pine-soft: #E3EEEB; --mustard: #D9A441; --mustard-soft: #F8EFDB; --mustard-ink: #6E4E12;
+  --m-api: #1A7FA0; --m-file: #6B5BA8; --m-virt: #D2911A;
+  --d1: 0 0 0 1px var(--line), 0 1px 2px rgba(20,33,31,.04);
+  --d2: 0 0 0 1px rgba(20,33,31,.04), 0 12px 32px rgba(20,33,31,.12);
+  --fs-xs: 13.5px; --fs-s: 15px; --fs-b: 17px; --fs-l: 17px; --fs-h3: 22px; --fs-h2: 22px; --fs-h1: 30px;
+  --pg: #F3F5F4; --pa: #F3F5F4; --pb: #F3F5F4; --s1a: #FFFFFF; --s1b: #FFFFFF; --solid: #FFFFFF;
+  --ink: #14211F; --ink2: #56635F; --ink3: #8A9693; --hair: #E1E7E5; --ink-12: rgba(20,33,31,.12); --edge: #8A9693;
+  --acc: #17594F; --acc-hi: #1F6B60; --acc-lo: #0F463F; --acc-ink: #17594F; --acc-soft: #E3EEEB; --on-acc: #FFFFFF; --acc-top: #1F6B60;
+  --pos: #1F8A5B; --pos-soft: #E2F2EA; --neg: #B23A2E; --neg-soft: #FBE9E6; --warn: #6E4E12; --warn-soft: #F8EFDB;
+  --hl: inset 0 0 0 0 transparent; --hlb: inset 0 0 0 0 transparent;
+  --e1: var(--d1); --e-sm: var(--d1); --e2: var(--d2);
+  --bead: #E3EEEB; --bead-sh: none; --well: #ECF0EE; --well-sh: inset 0 0 0 1px #E1E7E5; --bg-sunk: #ECF0EE;
+  --aurora: none; --aura-o: 0; --silk-bg: #E3EEEB; --nz: none; --nz-paper: none; --nz-card: none;
+  --enamel: linear-gradient(180deg, #17594F, #17594F); --enamel-sh: none; --enamel-dn: inset 0 1px 3px rgba(0,0,0,.25);
+  --r: 16px; --r-lg: 24px; --rb: 12px; --r-sm: 12px;
+  --f: "IBM Plex Sans KR", "Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --num: var(--f);
+}
+html, body { background: var(--bg) !important; background-image: none !important; }
+body { font-family: var(--f); font-variant-numeric: tabular-nums; color: var(--ink); }
+.d-aura { display: none !important; }
+.d-card { background: var(--surface); background-image: none; box-shadow: var(--d1); }
+.d-silk, [data-silk] { background: var(--surface) !important; background-image: none !important; color: var(--ink) !important; }
+.d-silk::after { display: none; }
+[data-silk] canvas { display: none !important; }
+.d-btn-p { background: var(--pine); color: #fff; box-shadow: none; }
+.d-btn-p:hover { background: var(--pine2); }
+.s11-tagline { display: inline-flex; gap: 8px; align-items: center; justify-self: start; align-self: flex-start; font-size: 12px; font-weight: 600; color: var(--muted); background: var(--surface); box-shadow: var(--d1); border-radius: 999px; padding: 6px 12px; }
+.s11-tagline i { width: 10px; height: 10px; border-radius: 50%; background: var(--m-api); flex: none; }

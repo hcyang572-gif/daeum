@@ -3,6 +3,9 @@
 // 쓰는 법: node shared/edge/daeum-ai/preflight.js   (03_시제품 에서)
 // 하는 일: 가상 문장 1건(개인정보 없음)을 실제 함수로 보내 ① 응답 코드 ② 걸린 시간 ③ 오늘 남은 횟수(IP·전체)를 찍는다. AI 1회 사용(≈44.5원, 추정).
 // 판정: 200 이고 남은 횟수가 IP 30회·전체 50회 이상이면 «시연 가능». 429면 화면은 자동으로 규칙 모드(«시연 모드» 표시)로 돈다.
+// AI 기간(11-02): 기본 2026-11-26 00:00 자동 종료. 아래 명령은 03_시제품 어디서든(supabase 로그인 상태).
+//   즉시 끄기 : npx supabase secrets set DAEUM_AI_OFF=1 --project-ref gicjzrxgktpovnphtjhi
+//   본선 연장 : npx supabase secrets set DAEUM_AI_UNTIL=2027-01-31T00:00:00+09:00 --project-ref gicjzrxgktpovnphtjhi
 "use strict";
 const fs = require("fs"), path = require("path");
 global.window = globalThis;
@@ -22,6 +25,10 @@ fetch(C.aiEndpoint, { method: "POST", headers: { "Content-Type": "application/js
     const leftIp = q.ipLimit != null && q.ip != null ? q.ipLimit - q.ip : "?", leftAll = q.totalLimit != null && q.total != null ? q.totalLimit - q.total : "?";
     console.log("응답", r.status, "·", ((Date.now() - t0) / 1000).toFixed(1) + "초", "· 고른 서비스", (j.picks || []).length, "건");
     console.log("오늘 남은 횟수 — 이 IP", leftIp, "/", q.ipLimit, "· 전체", leftAll, "/", q.totalLimit);
+    const p = j.aiPeriod;
+    if (p) console.log("AI 기간 —", p.open ? "켜짐" : (p.why === "off" ? "꺼짐(DAEUM_AI_OFF)" : "종료"), "· 종료일", p.until, "· 남은", p.daysLeft, "일");
+    console.log("  끄기: npx supabase secrets set DAEUM_AI_OFF=1 --project-ref gicjzrxgktpovnphtjhi");
+    console.log("  연장: npx supabase secrets set DAEUM_AI_UNTIL=2027-01-31T00:00:00+09:00 --project-ref gicjzrxgktpovnphtjhi");
     const ok = r.status === 200 && +leftIp >= 30 && +leftAll >= 50;
     console.log(ok ? "판정: 시연 가능(AI 연결)" : "판정: 주의 — " + (j.error || "남은 횟수 부족") + " → 화면은 규칙 모드(«시연 모드»)로 돈다");
     process.exitCode = ok ? 0 : 1;

@@ -422,10 +422,7 @@
     if (urgent) needs.unshift("긴급");
     needs = unique(needs);
     issues = unique(issues.concat(heard));
-    var svc = (ctx.services || []).filter(function (s) { return gateOk(s, text); }).map(function (s) {
-      var hit = (s.tags || []).filter(function (t) { return needs.indexOf(t) >= 0; });
-      return { s: s, n: hit.length, hit: hit };
-    }).filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 5);
+    var svc = rankSvc(ctx.services || [], needs, text).slice(0, 5);
     var first = text.replace(/\s+/g, " ").trim();
     var summary = (ctx.label || "가구") + " 상담. " +
       (heard.length ? "상담에서 " + heard.join(", ") + "이(가) 확인됨. " : "") +
@@ -434,7 +431,34 @@
       (first ? "기록 " + first.length + "자." : "기록 없음.");
     return { summary: summary, issues: issues, needs: needs, urgent: urgent,
       serviceIds: svc.map(function (x) { return x.s.id; }),
-      why: svc.reduce(function (m, x) { m[x.s.id] = x.hit; return m; }, {}), reasons: {}, source: "rule" };
+      why: svc.reduce(function (m, x) { m[x.s.id] = x.why; return m; }, {}), reasons: {}, source: "rule" };
+  }
+  /* S11-d 채점 6: 연계 후보 순위. 예전엔 «맞은 욕구 개수»만 세어, 대상 규칙(rule.any)이 넓은 서비스(통합문화이용권 등)가
+     월세·끼니 사연에서 1순위로 올랐고 후보 셋의 근거가 모두 같았다.
+     ① 서비스의 «주 욕구»(내장 목록 꼬리표·서비스 이름 낱말 = ptags)를 맞힌 것이 대상 규칙에서 나온 «곁 욕구»보다 3배 무겁다
+     ② 상담에서 나온 욕구마다 그 욕구를 «주 욕구»로 가진 서비스 하나를 먼저 뽑고(욕구별 대표), 나머지는 점수 순
+     ③ 근거(why)는 그 후보가 주 욕구로 맞힌 것만 — 후보마다 근거 낱말이 달라진다 */
+  function primaryTags(s) {
+    if (Array.isArray(s.ptags)) return s.ptags;
+    if (!s.rule) return s.tags || [];
+    var fromRule = needsFromRule(s.rule); return (s.tags || []).filter(function (t) { return fromRule.indexOf(t) < 0; });
+  }
+  function rankSvc(services, needs, text) {
+    var L = services.filter(function (s) { return gateOk(s, text); }).map(function (s) {
+      var hit = (s.tags || []).filter(function (t) { return needs.indexOf(t) >= 0; }), pt = primaryTags(s);
+      var ph = hit.filter(function (t) { return pt.indexOf(t) >= 0; });
+      return { s: s, n: hit.length, hit: hit, ph: ph, why: ph.length ? ph : hit, score: ph.length * 3 + (hit.length - ph.length), focus: pt.length ? ph.length / pt.length : 0, core: !s.rule && !Array.isArray(s.ptags) ? 1 : 0 };
+    }).filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.score - a.score || b.ph.length - a.ph.length; });
+    var out = [];
+    // 욕구별 대표: 그 욕구를 주 욕구로 가진 것 중 «그 일만 하는» 서비스(주 욕구가 좁을수록) 먼저 — 주거면 주거급여, 돌봄이면 노인맞춤돌봄.
+    // «긴급»은 좁은 것보다 점수 순(긴급복지지원) — 정신건강 상담이 끼니 위기의 대표가 되지 않게
+    needs.forEach(function (nd) {
+      var C = L.filter(function (x) { return out.indexOf(x) < 0 && x.ph.indexOf(nd) >= 0; });
+      if (nd !== "긴급") C.sort(function (a, b) { return b.focus - a.focus || b.core - a.core || b.score - a.score; }); // 같으면 내장 핵심 목록(주거급여·노인맞춤돌봄·생계급여) 먼저
+      if (C[0]) out.push(C[0]);
+    });
+    L.forEach(function (x) { if (out.indexOf(x) < 0) out.push(x); });
+    return out;
   }
 
   /** 공무원 요약 — 함수 형식 그대로 보낸다. 쟁점·욕구·긴급은 규칙 값을 두고, 요약·연계 후보만 AI 답으로 바꾼다 */
@@ -444,9 +468,7 @@
     if (!cfg().aiEndpoint || !String(text || "").trim()) return Promise.resolve(r);
     var byId = {};
     (ctx.services || []).forEach(function (s) { byId[s.id] = s; });
-    var ranked = (ctx.services || []).filter(function (s) { return gateOk(s, text); }).map(function (s) {
-      return { id: s.id, n: (s.tags || []).filter(function (t) { return r.needs.indexOf(t) >= 0; }).length };
-    }).filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }).map(function (x) { return x.id; });
+    var ranked = rankSvc(ctx.services || [], r.needs, text).map(function (x) { return x.s.id; });
     var compact = topFirst(ctx.services || [], ranked, AI_MAX_SERVICES).map(function (s) {
       return compactSvc(s, s.target || ("욕구 범주: " + (s.tags || []).join(", ")), s.support || (s.org ? "소관: " + s.org : ""));
     });

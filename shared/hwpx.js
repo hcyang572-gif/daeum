@@ -9,7 +9,7 @@
    DaeumHwpx.download(doc, "이름.hwpx") → Promise · 브라우저 내려받기
    doc = { title, subtitle, made: "2026. 10. 30.", office, note,
      blocks: [ {t:"box", label:"한 줄 결론", text} | {t:"ch", text:"Ⅰ. 개요"} | {t:"li", lv:1..4, text}   // text 에 기호를 넣지 않는다(□○-· 자동)
-             | {t:"p", text, kind:"note"|"src"|"end"} | {t:"break"}
+             | {t:"p", text, kind:"note"|"src"|"end"|"att"(붙임 줄 — 본문 글자)} | {t:"break"}
              | {t:"tbl", title:"<표 1> …", unit:"(단위: …)", head:[…], rows:[[…]], align:"center"(선택), foot:{label:"합계", sum:[1,2], fx:{3:"=C{r}/B{r}*100"}}, src:"※ 출처: …", widths:[…]} ] }
    foot.sum = 합계(=SUM) 낼 열 번호, foot.fx = 그 밖의 식({r}=합계 줄 번호, 예 접촉률 =C7/B7*100). */
 (function (root, factory) {
@@ -144,7 +144,7 @@
     (doc.blocks || []).forEach(function (b) {
       if (b.t === "ch") P.push(para(PP.ch, run(CP.ch, t(b.text))));
       else if (b.t === "li") { var lv = Math.max(1, Math.min(4, b.lv || 1)); P.push(para(PP["l" + lv], run(lv === 1 ? CP.l1 : CP.body, t(SYM[lv - 1] + " " + b.text)))); }
-      else if (b.t === "p") P.push(para(b.kind === "end" ? PP.right : PP.note, run(b.kind === "end" ? CP.body : CP.note, t(b.text))));
+      else if (b.t === "p") P.push(b.kind === "att" ? para(PP.body, run(CP.body, t(b.text))) : para(b.kind === "end" ? PP.right : PP.note, run(b.kind === "end" ? CP.body : CP.note, t(b.text))));
       else if (b.t === "break") P.push(para(PP.body, run(CP.body, "<hp:t/>"), true));
       else if (b.t === "box") P.push(inTable(table([[{ w: Math.round(TW * 0.2), bf: 7, inner: cellP(PP.cellC, CP.label, b.label || "") }, { w: TW - Math.round(TW * 0.2), bf: 3, inner: cellP(PP.cellL, CP.body, b.text || "") }]], { cols: 2, rowH: 2600 })));
       else if (b.t === "tbl") P.push(dataTable(b));

@@ -62,6 +62,38 @@
   }
 
   /** 보고서 모델(직렬화 가능, 개인 식별값 없음). rep = F.report.weekly/monthly 결과(같은 숫자 원천) */
+  // ── 주요 사례(가림) ──
+  var IND = { power_cut: "단전", water_cut: "단수", gas_cut: "가스 중단", health_ins_arrears: "건보료 체납", telecom_arrears: "통신비 체납", mgmt_fee_arrears: "관리비 체납",
+    rent_arrears: "임차료 체납", medical_overspend: "의료비 과다", job_loss: "실직", loan_overdue: "채무 연체", benefit_stopped: "급여 중지" };
+  var REL = { neighbor: "이웃 알림", self: "본인 요청" };
+  function pii(x) { return String(x || "").replace(/\d{6}\s*-?\s*[1-4]\d{6}/g, "******-*******").replace(/0\d{1,2}[-\s.]?\d{3,4}[-\s.]?\d{4}/g, "0**-****-****").replace(/([A-Z]-\d)\d\d(?!\d)/g, "$1●●"); }
+  function maskId(label) { return String(label || "가구").replace(/(\d)\d\d$/, "$1●●"); }
+  function kindOf(h) {
+    if (!h) return "";
+    var age = h.members && h.members[0] ? h.members[0].age : null, n = h.members ? h.members.length : 0, t = [];
+    if (h.single && age >= 75) t.push("75세 이상 1인 가구"); else if (h.single) t.push("1인 가구"); else if (n) t.push(n + "인 가구");
+    if (h.disability) t.push("장애");
+    var ind = Object.keys(h.indicators || {}).filter(function (k) { return h.indicators[k] && IND[k]; }).map(function (k) { return IND[k]; });
+    if (ind.length) t.push("위기정보 " + ind.slice(0, 3).join("·"));
+    return t.join(", ");
+  }
+  function cases(input, scope) {
+    var H = {}; (input.households || []).forEach(function (h) { H[h.id] = h; });
+    var out = [];
+    (input.links || []).slice().sort(function (a, b) { return a.at < b.at ? 1 : -1; }).forEach(function (l) {
+      if (out.length >= 2 || (scope && l.area !== scope)) return;
+      var h = H[l.householdId], names = (l.serviceNames || []).slice(0, 3);
+      out.push({ head: maskId(l.label) + " · " + (l.area || "") + (kindOf(h) ? " · " + kindOf(h) : ""), body: "방문 상담 뒤 " + (names.join("·") || "서비스") + " 연계(" + dot(ymd(l.at)) + ") — 신청·결정 결과는 행복이음에서 확인" });
+    });
+    (input.requests || []).filter(function (r) { return r.status !== "cancelled" && r.situation && (!scope || r.region === scope); })
+      .sort(function (a, b) { return (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0) || (a.createdAt < b.createdAt ? 1 : -1); }).slice(0, 3 - out.length).forEach(function (r) {
+        var who = r.proxy && r.proxy.isProxy ? (r.proxy.relation ? r.proxy.relation + " 대신 알림" : "대신 알림") : (REL[r.signal] || "본인 요청");
+        var sit = pii(r.situation).replace(/\s+/g, " "); if (sit.length > 46) sit = sit.slice(0, 45) + "…";
+        out.push({ head: "주민 신호 · " + (r.region || "") + " · " + who + (r.urgent ? " · 급함" : ""), body: "«" + sit + "» → " + (r.status === "new" ? "접수 당일 확인 대상" : r.status === "done" ? "연계 완료" : "담당자 확인·방문 예정") });
+      });
+    return out;
+  }
+
   function build(kind, stats, input, cd, o) {
     o = o || {};
     var rep = (F.report && F.report[kind]) ? F.report[kind](stats, { countdown: cd, office: o.office, now: input.now }) : null;
@@ -124,6 +156,13 @@
       B.push({ t: "tbl", no: tbl, title: "읍면별 처리 현황", unit: "(단위: 가구, %, 건)", head: ["읍면", "명단", "접촉", "접촉률", "주민 신호", "연계"],
         rows: rows.map(function (a) { return [a.area, a.households, a.contacted, pct(a.contacted, a.households) + "%", a.requests, a.links]; }),
         foot: ["합계", sum[0], sum[1], pct(sum[1], sum[0]) + "%", sum[2], sum[3]], src: "닿음 집계(가상) · 읍면 이름 행정안전부(2026-09)", tags: ["가상", "공공데이터"], see: nM, sheet: "읍면별", rate: { col: 3, num: 2, den: 1 } });
+    }
+
+    // S11-d(11-02): 주요 사례 — 개인정보 가림(가구 번호 끝 두 자리 ●●, 이름·연락처·주소 없음, 주민 글의 번호는 지움). 최대 3건
+    var cs = cases(input, scope);
+    if (cs.length) {
+      li(1, "주요 사례(개인정보 가림)");
+      cs.forEach(function (c) { li(2, c.head); li(3, c.body); });
     }
 
     ch("문제점·분석");
@@ -361,13 +400,18 @@
         } else B.push({ t: "p", kind: "src", text: "※ [그림 " + n.no + "] " + n.title + " — 읍면별 숫자는 <표 1> 참조, 지도는 화면·PDF 보고서에 있음" });
       }
     });
-    B.push({ t: "ch", text: "데이터 출처" });
-    B.push({ t: "tbl", title: "", head: ["구분", "제공기관", "데이터 이름", "기준일"], rows: sources(m).map(function (s) { return [s.kind, s.org, s.name, s.date]; }), widths: [6200, 8400, 26190, 7400], src: "※ 가상 = 시연용으로 만든 자료(실제 주민·행정자료 0건)" });
-    B.push({ t: "p", kind: "end", text: "끝." }); // [법] 시행규칙 제4조 준용 — 출처 표까지가 본문
-    return { title: m.title, subtitle: dot(m.period.from) + " ~ " + dot(m.period.to), made: dot(m.made), office: m.office, note: "※ 가구·주민 신호·연계 숫자는 시연용 가상 자료입니다(실제 개인정보 없음).", blocks: B };
+    // S11-d(11-02): 시·군청 내부 보고서 끝맺음 — «붙임 1. … 1부.  끝.» 뒤 쪽을 넘겨 붙임 문서. [편람] 행정업무운영 편람 «붙임 표시»
+    B.push({ t: "p", kind: "att", text: "붙임  1. 활용 데이터 출처 1부." });
+    B.push({ t: "p", kind: "att", text: "      2. 같은 집계 엑셀 파일(" + fname(m, "xlsx") + ") 1부.  끝." });
+    B.push({ t: "break" });
+    B.push({ t: "ch", text: "붙임 1  활용 데이터 출처" });
+    B.push({ t: "tbl", title: "", head: ["구분", "제공기관", "데이터 이름", "기준일"], rows: sources(m).map(function (s) { return [s.kind, s.org, s.name, s.date]; }), widths: [6200, 8400, 26190, 7400], src: "※ 가상 = 시연용으로 만든 자료(실제 주민·행정자료 0건) · 공식 실적은 행복이음 숫자와 대조해 확정" });
+    return { title: m.title, subtitle: "(" + dot(m.period.from) + " ~ " + dot(m.period.to) + ")", made: "보고일 " + dot(m.made), office: m.office, note: "※ 가구·주민 신호·연계 숫자는 시연용 가상 자료입니다(성명·주민번호·연락처·주소 없음, 가구 번호 일부 가림).", blocks: B };
   }
 
-  var api = { build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM, xlsxSpec: xlsxSpec, hwpxDoc: hwpxDoc, sources: sources, trendAbove: trendAbove };
+  // 파일 이름 = 날짜_종류(예 20261102_주간보고서.hwpx) — 11-02 지시
+  function fname(m, ext) { return String(m.made).replace(/-/g, "") + "_" + (m.kind === "monthly" ? "월간" : "주간") + "보고서" + (m.scope ? "_" + m.scope : "") + "." + ext; }
+  var api = { build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM, xlsxSpec: xlsxSpec, hwpxDoc: hwpxDoc, fname: fname, cases: cases, pii: pii, sources: sources, trendAbove: trendAbove };
   F.reportDoc = api;
 
   // ═══════════ 브라우저 연결 ═══════════
@@ -408,7 +452,6 @@
       var sc = document.createElement("script"); sc.src = BASE + file; sc.onload = function () { root[name] ? ok(root[name]) : no(new Error(file)); }; sc.onerror = function () { delete loading[file]; no(new Error(file)); }; document.head.appendChild(sc);
     }));
   }
-  function fname(m, ext) { return String(m.title).replace(/[\\\/:*?"<>|]+/g, " ").replace(/\s+/g, "_") + "_" + String(m.made).replace(/-/g, "") + "." + ext; }
   function saveXlsx(m) { return need("xlsx.js", "DaeumXlsx").then(function (X) { return X.download(xlsxSpec(m), fname(m, "xlsx")); }); }
   function saveHwpx(m) { return need("xlsx.js", "DaeumXlsx").then(function () { return need("hwpx.js", "DaeumHwpx"); }).then(function (W) { return W.download(hwpxDoc(m), fname(m, "hwpx")); }); }
   function tb(act, label, ico, primary) { return '<button type="button" class="d-btn ' + (primary ? "d-btn-p" : "d-btn-s") + ' rp-btn" data-rp="' + act + '" data-h="light"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICO[ico] + "</svg>" + label + "</button>"; }
@@ -432,6 +475,14 @@
     });
     return box;
   }
+  /** 화면 집계(F.report.last)로 보고서 모델 — 보고 화면 «한글 보고서 받기» 단추(s11.js)와 위 «주간/월간» 단추가 같이 쓴다. 집계 전이면 null */
+  function modelOf(kind) {
+    var last = F.report && F.report.last; if (!last || !F.report.countdown) return null;
+    var S = last.stats, H = S.households;
+    var cd = F.report.countdown(F.report.currentRound(last.input.now), { now: last.input.now, done: H.closed, total: H.total });
+    return build(kind === "monthly" ? "monthly" : "weekly", S, last.input, cd, {});
+  }
+  api.modelOf = modelOf;
   api.mount = mount; api.printDoc = printDoc; api.linkOf = linkOf; api.saveXlsx = saveXlsx; api.saveHwpx = saveHwpx;
 
   // 공무원 창구 현황 탭: «주간/월간 보고서» 단추를 먼저 받아 정부 보고서 문서로 그린다(mount.js 의 옛 간이 미리보기 대신).
@@ -440,9 +491,7 @@
     var last = F.report && F.report.last;
     if (!b || !last || !F.report.countdown) return; // 집계 전이면 mount.js 가 집계한 뒤 이 단추를 다시 누른다
     e.stopPropagation(); e.preventDefault();
-    var kind = b.getAttribute("data-report") === "monthly" ? "monthly" : "weekly", S = last.stats, H = S.households;
-    var cd = F.report.countdown(F.report.currentRound(last.input.now), { now: last.input.now, done: H.closed, total: H.total });
-    var m = build(kind, S, last.input, cd, {});
+    var m = modelOf(b.getAttribute("data-report") === "monthly" ? "monthly" : "weekly");
     var tab = document.getElementById("tab-report"), box = document.getElementById("rpDoc");
     if (!box) { box = document.createElement("div"); box.id = "rpDoc"; box.className = "rp-host"; var top = tab && tab.querySelector(".stats-top"); if (top) top.after(box); else (tab || document.body).appendChild(box); }
     mount(box, m);

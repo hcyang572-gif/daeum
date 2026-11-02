@@ -770,8 +770,9 @@
           var tags = (s.tags || []).slice();
           function tagFrom(text) { Object.keys(TAG_WORDS).forEach(function (t) { if (tags.indexOf(t) < 0 && TAG_WORDS[t].test(text)) tags.push(t); }); }
           tagFrom(s.name || "");
+          var ptags = tags.slice(); // 주 욕구 = 목록 꼬리표 + 이름 낱말(대상 규칙에서 나온 곁 욕구는 뺀다 — S11-d 채점 6)
           (AI.needsFromRule ? AI.needsFromRule(s.rule) : []).forEach(function (t) { if (tags.indexOf(t) < 0) tags.push(t); });
-          SERVICES.push({ id: s.id, name: s.name || s.id, org: s.provider || s.org || "", tags: tags, rule: s.rule }); added++;
+          SERVICES.push({ id: s.id, name: s.name || s.id, org: s.provider || s.org || "", tags: tags, ptags: ptags, rule: s.rule }); added++;
         });
         if (added) servicesSource = "내장 12종 + 주민 창구 목록 " + added + "종(" + used + ")";
       }).catch(function () { /* 아직 없음 */ });

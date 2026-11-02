@@ -1,12 +1,16 @@
 // 닿음 AI — Supabase Edge Function (Deno). 배포처는 닿음 전용 프로젝트 daeum(ref gicjzrxgktpovnphtjhi) 한 곳뿐(10-29 A안).
-// 배포: 임시 폴더에 supabase/functions/daeum-ai/{index.ts,redact.ts} 로 복사한 뒤 그 폴더에서
+// 배포: 임시 폴더에 supabase/functions/daeum-ai/{index.ts,redact.ts,gate.ts} 로 복사한 뒤 그 폴더에서
 //       npx supabase functions deploy daeum-ai --project-ref gicjzrxgktpovnphtjhi --no-verify-jwt --use-api
 //       supabase secrets set ANTHROPIC_API_KEY=...   (키는 서버 비밀에만. 화면 코드·저장소에 두지 않는다)
 // 요청: POST { situation, proxy:{isProxy, relation}, profile, services:[{id,name,target,support}] }
 // 응답: { summary, picks:[{ id, reason }], redacted:{phone:1,name:2…} }  — id 는 반드시 services 안의 것. 화면도 한 번 더 거른다.
+// AI 사용 기간(11-02): 2026-11-26 00:00 이후 또는 DAEUM_AI_OFF=1 이면 Anthropic·DB를 부르지 않고 503 → 화면은 규칙 모드.
+//   즉시 끄기 : npx supabase secrets set DAEUM_AI_OFF=1 --project-ref gicjzrxgktpovnphtjhi
+//   본선 연장 : npx supabase secrets set DAEUM_AI_UNTIL=2027-01-31T00:00:00+09:00 --project-ref gicjzrxgktpovnphtjhi
 // 개인정보 가림(S10l-①): situation·profile 은 외부 AI로 보내기 전에 redact.ts 로 전화·주민번호·이메일·계좌·주소·이름을 표식으로 바꾼다.
 
 import { redactText, redactValue } from "./redact.ts";
+import { aiGate } from "./gate.ts";
 
 const MODEL = "claude-sonnet-5-5";
 const MAX_SITUATION = 1200;
@@ -78,6 +82,10 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "POST만 받습니다" }, 405, origin);
   // 허용 목록 밖에서 온 호출은 AI 비용이 나가기 전에 막는다
   if (!origin || !ALLOW_ORIGINS.includes(origin)) return json({ error: "허용되지 않은 출처입니다" }, 403, origin);
+  // AI 사용 기간·끄기 스위치 — 키·본문·상한(DB) 확인보다 먼저: 닫혀 있으면 비용·DB 호출 0
+  const gate = aiGate(Date.now(), { off: Deno.env.get("DAEUM_AI_OFF"), until: Deno.env.get("DAEUM_AI_UNTIL") });
+  const aiPeriod = { open: gate.open, why: gate.why ?? null, until: gate.until, daysLeft: gate.daysLeft };
+  if (!gate.open) return json({ error: gate.why === "off" ? "AI 안내를 꺼 두었습니다" : "AI 안내 기간이 끝났습니다", aiPeriod }, 503, origin);
 
   const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) return json({ error: "서버에 AI 키가 설정되지 않았습니다" }, 503, origin);
@@ -94,7 +102,7 @@ Deno.serve(async (req) => {
   const rl = await rateOk(req);
   // 사용량(quota)은 발표 전 점검(tools/ai_preflight.js)이 남은 횟수를 보도록 함께 돌려준다 — IP 원문·해시는 내보내지 않는다
   const quota = { ip: rl.ip ?? null, ipLimit: DAILY_PER_IP, total: rl.total ?? null, totalLimit: DAILY_TOTAL };
-  if (!rl.ok) return json({ error: "오늘 AI 안내 사용량을 넘었습니다(" + (rl.why || "") + ")", quota }, 429, origin);
+  if (!rl.ok) return json({ error: "오늘 AI 안내 사용량을 넘었습니다(" + (rl.why || "") + ")", quota, aiPeriod }, 429, origin);
 
   const ids = new Set(services.map((s) => s.id));
   const catalog = services.map((s) => `${s.id} | ${s.name} | 대상: ${(s.target ?? "").slice(0, 160)} | 내용: ${(s.support ?? "").slice(0, 120)}`).join("\n");
@@ -123,5 +131,5 @@ Deno.serve(async (req) => {
   // 지어낸 서비스 차단: 목록에 있는 ID만 남긴다
   const picks = (out.picks ?? []).filter((p) => p && ids.has(p.id)).slice(0, 8)
     .map((p) => ({ id: p.id, reason: String(p.reason ?? "").slice(0, 200) }));
-  return json({ summary: String(out.summary ?? "").slice(0, 400), picks, model: MODEL, usage: data.usage ?? null, redacted, quota }, 200, origin);
+  return json({ summary: String(out.summary ?? "").slice(0, 400), picks, model: MODEL, usage: data.usage ?? null, redacted, quota, aiPeriod }, 200, origin);
 });
