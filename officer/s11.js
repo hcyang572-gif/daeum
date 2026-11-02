@@ -328,7 +328,7 @@
       var m = D && D.modelOf ? D.modelOf("weekly") : null;
       if (!m) { st.textContent = "집계를 준비하는 중입니다. 잠시 뒤 다시 눌러 주세요."; return; }
       hw.disabled = true; st.textContent = "한글 파일을 만드는 중…";
-      D.saveHwpx(m).then(function (n) { st.textContent = "내려받았습니다 — " + n + " (보고일·부서·개요·현황 표·주요 사례(가림)·조치·향후 계획·붙임)"; },
+      D.saveHwpx(m).then(function (n) { st.textContent = "내려받았습니다 — " + n + " (2쪽 — 결론·핵심 수치·그림·위험·결정 요청 / 처리 상태·읍면별 표·주민 신고·다음 주 계획·붙임)"; },
         function () { st.textContent = "파일을 만들지 못했습니다. 잠시 뒤 다시 눌러 주세요."; }).then(function () { hw.disabled = false; });
     });
     fillReportNums(0);

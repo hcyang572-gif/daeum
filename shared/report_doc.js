@@ -97,26 +97,30 @@
   /** S11-d4 C안 [그림 1] — 누적 처리 완료(굵은 초록) vs 목표선(회색 점선), 누적 접촉은 옅은 회색 보조선. 가구 수로만 말함(% 없음). d = {start,end,span,total,done:[일별 누적],contact:[일별 누적],goal}.
       색은 직접 지정(PNG 로 구울 때도 같은 그림) — 초록 #2F5D50 · 경고 빨강 #B42318 */
   function paceSvg(d) {
-    var W = 670, H = 215, L = 34, R = 56, T = 12, B = 34, pw = W - L - R, ph = H - T - B, mx = Math.max(150, d.total), span = Math.max(1, d.span);
-    var X = function (i) { return (L + pw * i / span).toFixed(1); }, Y = function (v) { return (T + ph * (1 - v / mx)).toFixed(1); };
+    // 가로축은 «자료가 있는 구간»(시작~보고일 + 여유)만 — 마감까지 다 그리면 자료가 왼쪽 구석에 몰려 라벨이 겹친다(테오 11-02 지적 4)
+    var last = d.done.length - 1, span = Math.max(1, d.span), xmax = Math.min(span, Math.max(last + 4, Math.round(last * 1.5)));
+    var dn = d.done[last] || 0, ct = d.contact[d.contact.length - 1] || 0, goal = d.goal, gap = dn - goal, gEnd = d.total * xmax / span;
+    var top = Math.max(dn, ct, goal, gEnd), step = top > 100 ? 50 : top > 50 ? 20 : 10, mx = Math.ceil(top * 1.1 / step) * step;
+    var W = 670, H = 215, L = 34, R = 20, T = 14, B = 34, pw = W - L - R, ph = H - T - B;
+    var X = function (i) { return (L + pw * i / xmax).toFixed(1); }, Y = function (v) { return (T + ph * (1 - v / mx)).toFixed(1); };
     var line = function (a) { return a.map(function (v, i) { return X(i) + "," + Y(v); }).join(" "); };
-    var last = d.done.length - 1, dn = d.done[last] || 0, ct = d.contact[d.contact.length - 1] || 0, goal = d.goal, gap = dn - goal;
-    var grid = [0, 50, 100, 150].filter(function (v) { return v <= mx; }).map(function (v) { return '<line x1="' + L + '" x2="' + (W - R + 10) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="' + (v ? "#D9D9D9" : "#B3B3B3") + '" stroke-width=".8"/><text x="' + (L - 6) + '" y="' + (+Y(v) + 3) + '" text-anchor="end" font-size="9" fill="#595959">' + v + "</text>"; }).join("");
+    var grid = "", v;
+    for (v = 0; v <= mx; v += step) grid += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="' + (v ? "#D9D9D9" : "#B3B3B3") + '" stroke-width=".8"/><text x="' + (L - 6) + '" y="' + (+Y(v) + 3) + '" text-anchor="end" font-size="9" fill="#595959">' + v + "</text>";
     var md = function (iso) { var q = String(iso).split("-"); return +q[1] + ". " + +q[2] + "."; };
     var tk = function (i, l1, l2) { return '<text x="' + X(i) + '" y="' + (H - 20) + '" text-anchor="middle" font-size="9" fill="#595959">' + esc(l1) + "</text>" + (l2 ? '<text x="' + X(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="9" fill="#595959">' + esc(l2) + "</text>" : ""); };
-    var ticks = tk(0, md(d.start), "시작") + tk(last, md(d.today || d.start), "보고일") + tk(span, md(d.end), "마감");
+    var ticks = tk(0, md(d.start), "시작") + tk(last, md(d.today || d.start), "보고일");
     var lab = function (x, y, txt, col, w, an) { return '<text x="' + x + '" y="' + y + '" font-size="10" font-weight="' + (w || 400) + '" fill="' + col + '"' + (an ? ' text-anchor="' + an + '"' : "") + ">" + esc(txt) + "</text>"; };
     var gapTxt = (gap < 0 ? "−" + (-gap) : "+" + gap) + "가구";
-    var yd = +Y(dn), yg = +Y(goal);
+    var yd = +Y(dn), yg = +Y(goal), xl = +X(last);
     return '<svg class="rpc-pace" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="누적 처리 완료 ' + dn + "가구, 목표선 " + goal + "가구, 누적 접촉 " + ct + "가구, 명단 " + d.total + '가구" font-family="Malgun Gothic, Pretendard, sans-serif">' +
       '<rect width="' + W + '" height="' + H + '" fill="#fff"/>' + grid + ticks +
-      '<line x1="' + X(0) + '" y1="' + Y(0) + '" x2="' + X(span) + '" y2="' + Y(d.total) + '" stroke="#B3B3B3" stroke-width="1.3" stroke-dasharray="5 4"/>' +
+      '<line x1="' + X(0) + '" y1="' + Y(0) + '" x2="' + X(xmax) + '" y2="' + Y(gEnd) + '" stroke="#B3B3B3" stroke-width="1.3" stroke-dasharray="5 4"/>' +
       '<polyline points="' + line(d.contact) + '" fill="none" stroke="#A6A6A6" stroke-width="1.2"/>' +
       '<polyline points="' + line(d.done) + '" fill="none" stroke="#2F5D50" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<circle cx="' + X(last) + '" cy="' + yd + '" r="3.4" fill="#2F5D50"/><circle cx="' + X(last) + '" cy="' + yg + '" r="3" fill="#fff" stroke="#595959"/>' +
-      (gap < 0 ? '<line x1="' + X(last) + '" x2="' + X(last) + '" y1="' + (yd - 4) + '" y2="' + (yg + 4) + '" stroke="#B42318" stroke-width="1.5"/>' : "") +
-      lab(+X(last) + 8, (yd + yg) / 2 + 3, gapTxt, gap < 0 ? "#B42318" : "#2F5D50", 700) + lab(+X(last) + 8, yd + 14, "처리 완료 " + dn, "#2F5D50", 700) + lab(+X(last) + 8, yg - 8, "목표선 " + goal, "#595959") +
-      lab(+X(last) - 6, +Y(ct) - 6, "접촉 " + ct, "#8C8C8C", 400, "end") + lab(+X(span) + 6, +Y(d.total) + 3, "명단 " + d.total, "#595959") + "</svg>";
+      '<circle cx="' + xl + '" cy="' + yd + '" r="3.4" fill="#2F5D50"/><circle cx="' + xl + '" cy="' + yg + '" r="3" fill="#fff" stroke="#595959"/>' +
+      (gap < 0 ? '<line x1="' + xl + '" x2="' + xl + '" y1="' + (yd - 4) + '" y2="' + (yg + 4) + '" stroke="#B42318" stroke-width="1.5"/>' : "") +
+      lab(xl + 9, (yd + yg) / 2 + 3, gapTxt, gap < 0 ? "#B42318" : "#2F5D50", 700) + lab(xl + 9, yd + 15, "처리 완료 " + dn, "#2F5D50", 700) + lab(xl - 8, yg - 10, "목표선 " + goal, "#595959", 400, "end") +
+      lab(xl - 8, +Y(ct) - 7, "접촉 " + ct, "#8C8C8C", 400, "end") + lab(W - R, +Y(gEnd) - 7, "점선: 마감 " + md(d.end) + "에 명단 " + d.total + "가구", "#595959", 400, "end") + "</svg>";
   }
 
   // ═══ S11-d4 C안(공문 정제형) 모델 — 내용: 02_원고/S11-d4_보고서_내용안.md §1 산식 · 글 속 **굵게** !!빨강!! 표시는 화면·한글이 글자 모양으로 바꾼다 ═══
@@ -178,34 +182,33 @@
     ch("결론"); verdicts.forEach(function (v) { li(2, v); });
     var kpis = [
       { k: "처리 완료", v: String(done), u: "가구", s: "목표선 " + goal + " · " + (diff < 0 ? "!!−" + (-diff) + "가구!!" : diff > 0 ? "+" + diff + "가구" : "±0") },
-      { k: thisW + " 처리", v: String(weekDone), u: "가구", s: "필요 " + weekGoal + "가구(하루 " + perDay + " × " + wk + "일)" },
+      { k: "다음 주 필요", v: String(weekGoal), u: "가구", s: thisW + " 처리 " + weekDone + " · " + (short ? "!!부족 " + short + "가구!!" : "충분") },
       { k: "처리 중 주민 신고", v: String(Q.open || 0), u: "건", s: Q.openUrgent ? "긴급 " + Q.openUrgent + "건 포함" : "긴급 없음" }];
     var asks = [];
     if (!up) {
       ch("핵심 수치"); B.push({ t: "kpis" });
-      var figTitle = diff < 0 ? (contactN >= goal ? "처리 완료가 목표선보다 " + (-diff) + "가구 아래 — 접촉은 앞서 마무리 단계가 밀림" : "처리·접촉 모두 목표선 아래") : "처리 완료가 목표선보다 " + diff + "가구 위";
-      B.push({ t: "fig", kind: "pace", no: 1, title: figTitle, sub: "(단위: 가구, " + dot(r.start) + " ~ " + md(today) + " 누적)", data: pace, sheet: "처리 추세", tags: ["공개 자료", "가상"],
-        src: r.source + " · 처리·접촉 기록: 시연용 가상", note: "※ 목표선 = 명단 " + total + " × 경과 " + el + "일 ÷ 차수 " + span + "일(고르게 처리했다면 보고일까지 마쳤어야 할 가구) · 차수 일정: " + r.source + " · 처리·접촉 기록: 시연용 가상" });
+      var figTitle = diff < 0 ? "처리 완료가 목표선보다 " + (-diff) + "가구 아래" : "처리 완료가 목표선보다 " + diff + "가구 위";
+      B.push({ t: "fig", kind: "pace", no: 1, title: figTitle, sub: (diff < 0 ? (contactN >= goal ? "접촉은 앞서 마무리 단계가 밀림 · " : "처리·접촉 모두 목표선 아래 · ") : "") + "(단위: 가구, " + dot(r.start) + " ~ " + md(today) + " 누적)", data: pace, sheet: "처리 추세", tags: ["공개 자료", "가상"],
+        src: r.source + " · 처리·접촉 기록: 시연용 가상", note: "※ 목표선 = 명단 " + total + " × 경과 " + el + "일 ÷ 차수 " + span + "일(고르게 처리했다면 보고일까지 마쳤어야 할 가구)" });
       ch("위험 요인");
       if (esc) li(2, "3회 부재 **" + esc + "가구**가 재방문 동선을 막아 신규 방문이 밀림");
       if (Q.open) li(2, "처리 중 주민 신고 **" + Q.open + "건" + (Q.openUrgent ? "(긴급 " + Q.openUrgent + ")" : "") + "** — 접수 다음 근무일 안 확인 필요");
       if (!esc && !Q.open) li(2, "특이한 위험 요인 없음");
-      var due1 = nextWork(now, 1), d2 = new Date(now.getTime()), mon;
-      do { d2 = new Date(d2.getTime() + DAY); } while (d2.getDay() !== 1); mon = d2; while (isOff(mon)) mon = new Date(mon.getTime() + DAY);
+      var due1 = nextWork(now, 1); // 결정 요청 기한은 모두 «다음 주 동선 편성 전»(다음 근무일) — 11-02 테오 지적 1
       if (esc) asks.push({ main: "3회 부재 " + esc + "가구 — 통·이장 안부 확인 협조를 해당 읍면에 요청(공문) 승인", sub: "협의 후 확정 — 승인 시 직접 방문에서 " + esc + "가구가 빠져 신규 방문 확보", due: wdLabel(due1) + " 17:00" });
-      if (diff < 0 && short > 0 && worst !== null) asks.push({ main: areaRows[worst][0] + " 방문 지원 — 다음 주 " + short + "가구분 인력 협조", sub: "승인 시 마감 안 완료 가능(미승인 시 하루 목표 재계산)", due: wdLabel(mon) + " 10:00" });
+      if (diff < 0 && short > 0 && worst !== null) asks.push({ main: areaRows[worst][0] + " 방문 지원 — 다음 주 " + short + "가구분 인력 협조", sub: "승인 시 마감 안 완료 가능(미승인 시 하루 목표 재계산)", due: wdLabel(due1) + " 12:00" });
       ch("결정 요청");
       if (asks.length) B.push({ t: "ask", items: asks }); else li(2, "요청 없음");
       B.push({ t: "break" });
       ch("처리 상태");
       li(2, "남은 " + num(remain) + "가구 중 " + num(inContact) + "가구는 이미 만났거나 연락 중 — 새로 찾아갈 집은 " + num(notC) + "가구");
-      li(3, "처리 **" + done + "** · 접촉 중 **" + inContact + "**" + (fu.retryDue || esc ? " (재방문 " + retry + " · 3회 부재 " + esc + ")" : "") + " · 미접촉 **" + notC + "** = 명단 " + total);
+      li(3, "처리 **" + done + "** · 접촉 중 **" + inContact + "**" + (retry ? "(그중 재방문 " + retry + (esc ? ", 3회 부재 " + esc + " 포함" : "") + ")" : "") + " · 미접촉 **" + notC + "** = 명단 " + total);
     }
     ch("읍면별 현황");
     li(2, worst !== null ? areaRows[worst][0] + "이 목표선보다 " + (-areaRows[worst][4]) + "가구 뒤처져 가장 늦음" : "모든 읍면이 목표선 이상");
     var sum = areaRows.reduce(function (s, x) { for (var j = 1; j < 7; j++) s[j] += x[j]; return s; }, ["합계", 0, 0, 0, 0, 0, 0]);
     B.push({ t: "tbl", no: 1, title: "읍면별 처리 현황", unit: "(단위: 가구, 건)", head: ["읍면", "명단", "처리 완료", "목표선", "차이", "재방문", "처리 중 신고"], rows: areaRows, foot: sum, hl: worst, signCol: 4,
-      src: "읍면 목표선 = 읍면 명단 × " + el + " ÷ " + span + "(합계 " + goal + "에 맞춰 반올림) · 읍면 이름: 행정안전부 주민등록 인구통계(2026-09) · 수치: 시연용 가상", tags: ["가상", "공공데이터"], sheet: "읍면별" });
+      src: "읍면 목표선 = 읍면 명단 × " + el + " ÷ " + span + "(합계 " + goal + "에 맞춰 반올림) · 읍면 이름: 행정안전부 주민등록 인구통계(2026-09) · 수치: 시연용 가상", tags: ["가상", "공공데이터"], sheet: "읍면별", note: "읍면 목표선 = 읍면 명단 × " + el + " ÷ " + span + "(합계 " + goal + "에 맞춰 반올림)" });
     ch("주민 신고·서비스 연계");
     li(2, "주민 신고 " + num(Q.total) + "건 중 " + (Q.byStatus.done || 0) + "건 연계 완료, " + (Q.open || 0) + "건은 처리 중" + (Q.openUrgent ? "(긴급 " + Q.openUrgent + ")" : ""));
     if (Q.total) li(3, stats.funnel.map(function (f) { return f.label.replace("요청 ", "") + " **" + f.n + "**"; }).join(" → "));
@@ -219,8 +222,8 @@
     }
     var srcRound = { tag: "공개 자료", text: "발굴 차수 일정: " + r.source };
     ch("붙임 — 자료 출처");
-    li(2, "차수 일정 " + r.source + " · 읍면 이름 행정안전부 주민등록 인구통계(2026-09) · 가구·신고·연계 숫자는 닿음 시연용 가상 자료(자동 집계, AI 미사용)");
-    B.push({ t: "note", text: "※ 가구·신고·연계 숫자는 시연용 가상 자료(실제 개인정보 없음). 공식 실적은 행복이음 숫자와 대조." });
+    li(2, "차수 일정 " + r.source + " · 읍면 이름 행정안전부 주민등록 인구통계(2026-09)");
+    B.push({ t: "note", text: "※ 가구·신고·연계 숫자는 시연용 가상 자료(실제 개인정보 없음)이며 자동 집계(AI 미사용)입니다. 공식 실적은 행복이음 숫자와 대조." });
 
     var title = (scope ? scope + " " : "") + "복지 사각지대 현장 업무 " + name + " 현황";
     return {
@@ -259,7 +262,7 @@
         out.push('<div class="rp-tblw rpc-tblw"><div class="rp-tscroll"><table class="rpc-tbl"><thead><tr>' + n.head.map(function (x, i) { return '<th scope="col"' + (i ? ' class="r"' : "") + ">" + esc(x) + "</th>"; }).join("") + "</tr></thead><tbody>" +
           n.rows.map(function (r, ri) { return "<tr" + (ri === worstRow ? ' class="hl"' : "") + ">" + r.map(function (x, i) { return i ? '<td class="r num">' + esc(cellNum(x, i, n.signCol)) + "</td>" : '<th scope="row">' + esc(x) + "</th>"; }).join("") + "</tr>"; }).join("") +
           '</tbody><tfoot><tr>' + n.foot.map(function (x, i) { return i ? '<td class="r num">' + esc(cellNum(x, i, n.signCol)) + "</td>" : '<th scope="row">' + esc(x) + "</th>"; }).join("") + "</tr></tfoot></table></div>" +
-          '<p class="rpc-note">※ ' + esc(n.src) + "</p></div>");
+          '<p class="rpc-note">※ ' + esc(n.note || n.src) + "</p></div>");
       } else if (n.t === "note") out.push('<p class="rpc-note">' + esc(n.text) + "</p>");
       else if (n.t === "break") out.push('<div class="rpc-pb" aria-hidden="true"></div>');
     });
@@ -277,7 +280,7 @@
       else if (n.t === "kpis") m.kpis.forEach(function (k) { L.push("  " + k.k + " " + k.v + k.u + " (" + plain(k.s) + ")"); });
       else if (n.t === "fig") L.push("  [그림 " + n.no + "] " + n.title + " " + n.sub, "  " + n.note);
       else if (n.t === "ask") n.items.forEach(function (x, i) { L.push("  " + (i + 1) + ". " + x.main + " — " + x.sub + " [기한 " + x.due + "]"); });
-      else if (n.t === "tbl") { L.push("  <표 " + n.no + "> " + n.title + " " + n.unit); L.push("  " + n.head.join("\t")); n.rows.concat([n.foot]).forEach(function (r) { L.push("  " + r.map(function (x, i) { return cellNum(x, i, n.signCol); }).join("\t")); }); L.push("  ※ " + n.src); }
+      else if (n.t === "tbl") { L.push("  <표 " + n.no + "> " + n.title + " " + n.unit); L.push("  " + n.head.join("\t")); n.rows.concat([n.foot]).forEach(function (r) { L.push("  " + r.map(function (x, i) { return cellNum(x, i, n.signCol); }).join("\t")); }); L.push("  ※ " + (n.note || n.src)); }
       else if (n.t === "note") L.push(n.text);
     });
     L.push("", "데이터 출처");
@@ -396,7 +399,7 @@
       else if (n.t === "tbl") {
         var nh = n.head.length, rest = Math.floor((TWW - 7000 - 8000) / (nh - 2)), ws = [7000]; for (var wi = 1; wi < nh - 1; wi++) ws.push(rest); ws.push(TWW - 7000 - rest * (nh - 2));
         var f = function (r) { return r.map(function (x, i) { return cellNum(x, i, n.signCol).replace("−", "-"); }); }; // 표 안 음수는 ASCII 빼기(한글 계산식이 읽을 수 있게)
-        B.push({ t: "tbl2", head: n.head, widths: ws, rows: n.rows.map(f), fx: true, hl: n.hl == null ? [] : [n.hl], hlCols: [0, n.signCol], sum: f(n.foot), src: "※ " + n.src });
+        B.push({ t: "tbl2", head: n.head, widths: ws, rows: n.rows.map(f), fx: true, hl: n.hl == null ? [] : [n.hl], hlCols: [0, n.signCol], sum: f(n.foot), src: "※ " + (n.note || n.src) });
       }
       else if (n.t === "note") B.push({ t: "p", kind: "small", text: n.text });
       else if (n.t === "break") B.push({ t: "break" });
@@ -407,7 +410,7 @@
 
   // 파일 이름 = 날짜_종류(예 20261102_주간보고서.hwpx) — 11-02 지시
   function fname(m, ext) { return String(m.made).replace(/-/g, "") + "_" + (m.kind === "monthly" ? "월간" : "주간") + "보고서" + (m.scope ? "_" + m.scope : "") + "." + ext; }
-  var api = { build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM, xlsxSpec: xlsxSpec, hwpxDoc: hwpxDoc, fname: fname, cases: cases, pii: pii, sources: sources, trendAbove: trendAbove };
+  var api = { paceSvg: paceSvg, build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM, xlsxSpec: xlsxSpec, hwpxDoc: hwpxDoc, fname: fname, cases: cases, pii: pii, sources: sources, trendAbove: trendAbove };
   F.reportDoc = api;
 
   // ═══════════ 브라우저 연결 ═══════════
