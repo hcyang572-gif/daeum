@@ -3,7 +3,7 @@
    원자료(측정 정본): ../01_리서치/AI추천_정확도_측정.md §7-3
      AI 결과      01_리서치/AI정확도_측정도구/results_1102.json (S11-d 재측정 20건, 11-02 — 10-30 결과는 results.json 에 보존)
      규칙만 결과  01_리서치/AI정확도_측정도구/S6d_after.json (보정 후 20건, AI 0회)
-     가상 사연    01_리서치/AI정확도_측정도구/cases.json     (정답표 커밋 796286d)
+     가상 사연    01_리서치/AI정확도_측정도구/cases.json     (정답표 커밋 8cdd2e3)
    화면에 쓰는 숫자는 모두 여기서 원자료로 다시 센다(손으로 적은 숫자 0개 — 보정 전 16건 비교만 측정 문서 §7-3 표 값).
    ⛔ «다시 재기» 단추는 두지 않는다(AI 비용·하루 상한) — 결과 표시만. */
 "use strict";
@@ -58,7 +58,7 @@ function build() {
     return { name: s.name.replace(/\(OpenAPI\)$/, ""), no: s.page.replace(/^.*\/data\/(\d+)\/.*$/, "$1"), called: s.called };
   });
   return {
-    meta: { measured: "2026-11-02", doc: "AI추천_정확도_측정.md §7-3", gold: "796286d", model: "Claude Sonnet 5.5(claude-sonnet-5-5)",
+    meta: { measured: "2026-11-02", doc: "AI추천_정확도_측정.md §7-3", gold: "8cdd2e3", model: "Claude Sonnet 5.5(claude-sonnet-5-5)",
       catalog: svc.services.length, catalogSrc: catalogSrc, sent: 50, tokIn: tokIn, tokOut: tokOut,
       sentHit: { before: [140, 235], after: [151, 235] } },     // §7 «후보 50건 안 정답 포함률» 표
     ai: A, rules: R, kinds: kinds, wrong: wrong, rows: rows,

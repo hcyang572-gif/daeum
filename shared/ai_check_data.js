@@ -3,7 +3,7 @@ window.DaeumAICheckData = {
  "meta": {
   "measured": "2026-11-02",
   "doc": "AI추천_정확도_측정.md §7-3",
-  "gold": "796286d",
+  "gold": "8cdd2e3",
   "model": "Claude Sonnet 5.5(claude-sonnet-5-5)",
   "catalog": 369,
   "catalogSrc": [
