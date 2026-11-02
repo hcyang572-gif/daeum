@@ -197,6 +197,7 @@
       var due1 = nextWork(now, 1); // 결정 요청 기한은 모두 «다음 주 동선 편성 전»(다음 근무일) — 11-02 테오 지적 1
       if (esc) asks.push({ main: "3회 부재 " + esc + "가구 — 통·이장 안부 확인 협조를 해당 읍면에 요청(공문) 승인", sub: "협의 후 확정 — 승인 시 직접 방문에서 " + esc + "가구가 빠져 신규 방문 확보", due: wdLabel(due1) + " 17:00" });
       if (diff < 0 && short > 0 && worst !== null) asks.push({ main: areaRows[worst][0] + " 방문 지원 — 다음 주 " + short + "가구분 인력 협조", sub: "승인 시 마감 안 완료 가능(미승인 시 하루 목표 재계산)", due: wdLabel(due1) + " 12:00" });
+      asks.sort(function (a, b) { return a.due.slice(-5) < b.due.slice(-5) ? -1 : a.due.slice(-5) > b.due.slice(-5) ? 1 : 0; }); // 같은 날 기한은 이른 시각이 위로(11-02 테오 남은 하)
       ch("결정 요청");
       if (asks.length) B.push({ t: "ask", items: asks }); else li(2, "요청 없음");
       B.push({ t: "break" });
