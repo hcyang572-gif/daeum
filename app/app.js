@@ -1020,10 +1020,11 @@
   }
   var SRC_CLS = { data: "var(--src-data)", rule: "var(--src-rule)", ai: "var(--src-ai)", empty: "var(--src-empty)" };
   var MET_SRC = { m: "data", r: "rule", a: "ai", e: "empty" };
-  /** 방문한 날 고르기 — 주별로 묶어 지난 기록까지 쌓아 보인다(S12-e 43) */
+  /** 방문한 날 고르기 — 위에는 «이번 차수 방문일»만 둔다(11-03 호창님 «날짜들이 막 생겨나 엉망»).
+      지난 날짜는 아래 «주별 문서 이력» 표에서 누른다. 지난 날을 보고 있으면 그날 칩 하나만 더 보인다 */
   function dayPick(M) {
     var g = [], last = null;
-    M.rd.forEach(function (d) { var mon = d.date ? monOf(d.date) : "—"; if (!last || last.mon !== mon) { last = { mon: mon, ds: [] }; g.push(last); } last.ds.push(d); });
+    M.rd.filter(function (d) { return !d.past || d.n === M.dd.n; }).forEach(function (d) { var mon = d.date ? monOf(d.date) : "—"; if (!last || last.mon !== mon) { last = { mon: mon, ds: [] }; g.push(last); } last.ds.push(d); });
     return '<div class="dpick dpick-wk" role="group" aria-label="방문한 날(주별)">' + g.map(function (w) {
       return '<span class="dwk-l">' + esc(w.mon === "—" ? "날짜 없음" : wkLbl(w.mon)) + "</span>" + w.ds.map(function (d) { return '<button type="button" data-day="' + d.n + '" aria-pressed="' + (d.n === M.dd.n) + '"' + (d.past ? ' class="past"' : "") + ">" + (d.date ? mdDot(d.date) : d.n + "일차") + "</button>"; }).join("");
     }).join("") + "</div>";
@@ -1059,7 +1060,7 @@
     var dayLbl = (M.dd.date ? md(M.dd.date) : M.dd.n + "일차") + " 방문 " + M.cases.filter(function (x) { return x.st !== "planned"; }).length + "곳";
     return top("docs", "<strong>" + esc(dayLbl) + "</strong>가상 데이터") + '<main class="wrap">' +
       '<div class="dhead"><h1>' + (M.past ? "그날 받은 문서 <span>" + Object.keys(M.cnt).reduce(function (a, k) { return a + (DOC_OPT[k] || k === "d6" ? 0 : M.cnt[k]); }, 0) + "</span>건" : "만들 문서 <span>" + M.pending + "</span>건") + '</h1><p>막대 색 = 칸을 채운 곳 · <b style="color:#5D6B80">남색</b> 한국사회보장정보원 명단·API · 회색 규칙 숫자 · 노랑 자동 문장(확인) · 빨강 빈칸(입력 필요)</p></div>' +
-      (M.rd.length > 1 ? dayPick(M) : "") +
+      (M.rd.filter(function (d) { return !d.past; }).length > 1 || M.past ? dayPick(M) : "") +
       '<div class="dgrid"><div class="dep blk"><div class="hd"><span>대기</span><span>문서</span><span>채워진 칸</span><span></span></div>' + list + "</div>" +
       '<section class="prev blk" id="docPrev" tabindex="-1" aria-label="' + esc(D0.nm) + ' 미리보기">' + pv + "</section></div>" + docHist(M) +
       '<p class="foot"><span class="demo-tag">가상 데이터</span><span>개인정보 4칸(성명·주민등록번호·연락처·주소) 미기재 · 가구 번호·읍면만 · 상담일지 입력·전자서명은 행복이음에서</span></p></main>';
