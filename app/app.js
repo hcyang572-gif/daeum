@@ -197,7 +197,7 @@
     var hid0 = first || c.d.ids[0];
     var rail = '<div class="rail" id="rail"><div class="track"><i></i></div>' + STN.map(function (s, i) { return '<a class="st' + (i === 6 ? " last" : "") + '" href="' + stationHref(i, hid0) + '"><span class="c">' + (i + 1) + '</span><span class="l">' + s[0] + '</span><span class="p">' + s[1].replace(/·/g, "·|").replace(/ (\d{6,})$/, " |$1").split("|").map(function (x) { return '<span class="pp">' + x + "</span>"; }).join("<wbr>") + "</span></a>"; }).join("") + "</div>";
     var html = top("today", "<strong>" + md(now) + "</strong>" + esc(area) + " 맞춤형복지 담당 · 가상") + '<main class="wrap">' +
-      '<div class="hero"><div><h1>나가기 전부터<br><span>보고서까지,</span> 한 번에</h1><p>한국사회보장정보원 명단을 받은 날부터 방문·기록·보고까지 같은 내용을 두 번 쓰지 않습니다.</p></div>' +
+      '<div class="hero"><div><h1>오늘 할 일</h1><p>한국사회보장정보원 명단을 받은 날부터 방문·기록·보고까지 같은 내용을 두 번 쓰지 않습니다.</p></div>' +
       '<a class="cta" href="' + (first ? "#home:" + first : "#docs") + '"><b>' + (first ? (c.isToday ? "오늘 일 시작" : whenLbl + " 방문 준비") : "문서 만들기") + "</b><small>방문 " + c.planned.length + "곳 · 문서 " + pend + "건 대기</small></a></div>" +
       '<section class="scene well" id="scene" aria-label="데이터 → 기능 → 목표"><canvas id="cv" aria-hidden="true"></canvas>' +
       '<div class="col"><h2><em>데이터</em>한국사회보장정보원</h2><div class="chips">' +
@@ -774,7 +774,7 @@
   // ── 41 동선 배경 = 네이버 지도(officer/route_map.js 를 처음 동선 화면에서만 불러옴) + 최적화 전·후 비교 ──
   //   비교 «전» = 명단(한국사회보장정보원 순위) 순서, «후» = 지금 화면 순서(최근접 이웃 → 2-opt). 둘 다 시청 출발·복귀.
   //   값: 도로 경로 서버(daeum-route, 네이버 Directions 15)가 두 순서 모두 주면 그 값, 아니면 직선거리×1.3·시속 40km 근사(«약»).
-  var rmP = null;
+  var rmP = null, RT_DEMO_FIXED = (function () { try { return !/[?&]demo=off\b/.test(location.search) && (window.DAEUM_CONFIG || {}).demoSeed !== false; } catch (e) { return true; } })();
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
@@ -790,8 +790,9 @@
   }
   function rtCmp(before, after) {
     var RM = window.DaeumRouteMap, rb = RM && RM.cacheGet(RP.cacheKey(rtStops(before), true)), ra = RM && RM.cacheGet(RP.cacheKey(rtStops(after), true));
-    var road = !!(rb && ra), b = rtSum(before, road ? rb : null), a = rtSum(after, road ? ra : null);
-    return { b: b, a: a, road: road, same: before.join() === after.join(), dKm: b.km - a.km, dMin: b.min - a.min, pct: b.km > 0 ? (b.km - a.km) / b.km * 100 : 0, path: road ? ra.path : null };
+    // 45 미르(D-080): 시연 모드에선 거리·시간 숫자를 직선×1.3 근사로 고정(시연 4곳 76.4→52.5km·115→79분·31%) — 경로 서버(429·한도) 상태와 무관하게 언제 열어도 같은 값. 지도선은 도로 경로를 받으면 그 모양 그대로.
+    var fixed = RT_DEMO_FIXED, road = !fixed && !!(rb && ra), b = rtSum(before, road ? rb : null), a = rtSum(after, road ? ra : null);
+    return { b: b, a: a, road: road, same: before.join() === after.join(), dKm: b.km - a.km, dMin: b.min - a.min, pct: b.km > 0 ? (b.km - a.km) / b.km * 100 : 0, path: road ? ra.path : null, fixed: fixed };
   }
   function rtOptHtml(r) {
     var y = r.road ? "" : "약 ", f1 = function (v) { return (Math.round(v * 10) / 10).toFixed(1); }, f0 = function (v) { return Math.round(v); };
@@ -803,7 +804,7 @@
       '<div class="rt-bars"><div class="rt-r"><span>명단 순서</span><i class="rt-b0" style="width:100%"></i><b>' + y + f1(r.b.km) + "km · " + f0(r.b.min) + "분</b></div>" +
       '<div class="rt-r on"><span>최적 순서</span><i class="rt-b1" style="width:' + w.toFixed(0) + '%"></i><b>' + y + f1(r.a.km) + "km · " + f0(r.a.min) + "분</b></div></div>" +
       (r.dKm >= 0.05 ? '<p class="rt-pct">이동 거리 ' + f0(r.pct) + "% 줄임 · 상담 시간은 그대로</p>" : "") +
-      '<p class="rt-src">' + (r.road ? "거리·시간: 네이버 Directions 15 도로 경로(닿음 서버 daeum-route)" : "거리·시간: 직선거리 × 1.3(우회 계수) · 시속 40km 근사 — 도로 경로를 받으면 실제 값으로 바뀝니다") +
+      '<p class="rt-src">' + (r.road ? "거리·시간: 네이버 Directions 15 도로 경로(닿음 서버 daeum-route)" : r.fixed ? "거리·시간: 시연 고정값 — 직선거리 × 1.3(우회 계수) · 시속 40km 근사(실제 운영은 네이버 도로 경로)" : "거리·시간: 직선거리 × 1.3(우회 계수) · 시속 40km 근사 — 도로 경로를 받으면 실제 값으로 바뀝니다") +
       " · 순서: 최근접 이웃 → 2-opt · 상주시청 출발·복귀 · 가구 위치는 가상(시연용)</p></section>";
   }
   function routeView(want) {

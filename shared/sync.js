@@ -103,7 +103,15 @@
     return Promise.all([c.from("visit_plan").select("*"), c.from("visit_log").select("*").gte("at", since).order("at")]).then(function (r) {
       var e = r[0].error || r[1].error;
       if (e) { mode("local", /does not exist|42P01|schema cache|PGRST205/.test((e.code || "") + " " + (e.message || "")) ? "no-table" : "error"); throw e; }
-      var p = rowsToPlan(r[0].data); if (p) set(K.plan, p);
+      // 45 미르(호창님 11-03 «언제든 심사자가 시연해도»): 시연 모드에선 서버 행도 «오늘 고친 것»만 받는다 — 어제 누가 처리·삭제한 계획·기록은
+      //   다음 날 접속하면 보이지 않고 그날 시연 초기 상태(officer/demo_seed.js)로 돌아간다. 같은 날 PC↔폰 실시간 연동은 그대로. 끄기: config.demoDailyReset === false 또는 ?demo=off
+      var daily = C.demoDailyReset !== false && C.demoSeed !== false;
+      try { if (/[?&]demo=off\b/.test(root.location.search)) daily = false; } catch (e) { /* 주소 없음(시험 환경) */ }
+      var t0 = new Date(); t0.setHours(0, 0, 0, 0); t0 = t0.toISOString();
+      var fresh = function (v) { return !daily || !v || v >= t0; }; // 시각이 없는 행은 그대로 받는다
+      var pr = (r[0].data || []).filter(function (x) { return fresh(x.updated_at); });
+      r[1].data = (r[1].data || []).filter(function (x) { return fresh(x.created_at); });
+      var p = rowsToPlan(pr); if (p) { if (daily) p.from_seed = "S9j"; set(K.plan, p); } // from_seed: 다음 날 시연 시드가 그날 기준으로 다시 깐다
       var local = logs().filter(function (x) { return x.seed || x.__local; }), ids = {};
       (r[1].data || []).forEach(function (x) { ids[x.id] = 1; });
       var merged = local.filter(function (x) { return !ids[x.id]; }).concat((r[1].data || []).map(function (x) { return { id: x.id, household_no: x.household_no, at: x.at, result: x.result, memo: x.memo, tags: x.tags || [], promises: x.promises || [] }; }));

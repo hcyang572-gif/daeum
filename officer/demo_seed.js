@@ -54,6 +54,13 @@
   var seeded = lsGet(FLAG, null);
   if (off) { if (seeded) { clear(); try { root.localStorage.removeItem(FLAG); } catch (e) { /* 무시 */ } } return; }
   if (seeded && seeded.day === today && seeded.v === VERSION) return; // 오늘 이미 깔았음 — 담당자가 누른 결과를 지우지 않는다
+  // 45 미르(호창님 11-03 «언제든 심사자가 시연해도 문제없도록»): 날이 바뀌어 열면 시연 조작 전부(처리·삭제·직접 쓴 기록·계획)를 지우고 그날 기준 초기 상태로.
+  //   ?demo=reset 과 같은 범위 + 방문 계획·결과·보낼 줄·s12 알림. 도로 경로 캐시·로그인 세션(sb-*)은 남긴다. 끄기: config.demoDailyReset === false
+  if (seeded && seeded.day !== today && C.demoDailyReset !== false) {
+    try { var LS2 = root.localStorage, ks2 = []; for (var j = 0; j < LS2.length; j++) ks2.push(LS2.key(j));
+      ks2.forEach(function (k) { if (/^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import|visit\.(plan|log|queue)|s12\.)/.test(k) && k !== "daeum.officer.road") LS2.removeItem(k); });
+    } catch (e) { /* 저장소를 못 쓰면 그대로 */ }
+  }
 
   // ── 시간 도구: n 영업일 전 hh:mm / n 일 전 hh:mm ──
   function wd(n, hh, mm) { var d = n > 0 ? U.subWorkdays(now, n) : U.startOfDay(now); d.setHours(hh, mm || 0, 0, 0); return d.toISOString(); }
