@@ -882,7 +882,7 @@
     var abar = areas.map(function (a) { var x = ar[a]; return '<div class="ab-r"><span class="ab-n">' + esc(a) + '</span><span class="ab-b" style="width:' + (x.n / mx * 100).toFixed(0) + '%">' + ["done", "absent", "refused", "planned"].map(function (k) { return x[k] ? '<i class="' + k + '" style="flex:' + x[k] + '"></i>' : ""; }).join("") + '</span><span class="ab-v">' + x.done + "/" + x.n + "</span></div>"; }).join("");
     var field = ids.filter(function (id) { return caseOf(id).field.length; }).length;
     var prs = F.store.get("promises", []) || [], ac = F.aftercare.schedule(F.store.get("links", []), F.store.get("outcomes", {}), F.store.get("followups", {}), now);
-    var wk = weekRange(), wk1 = ymd(wk.to), nextD = ds.filter(function (d) { return d.ids.some(function (id) { return statusOf(id) === "planned"; }); })[0], att = attempts();
+    var wk = weekRange(new Date()), wk1 = ymd(wk.to), nextD = ds.filter(function (d) { return d.ids.some(function (id) { return statusOf(id) === "planned"; }); })[0], att = attempts();
     var todo = [];
     prs.forEach(function (p) { if (!p.done && p.due && p.due <= wk1) todo.push({ k: "p", id: p.id, t: p.householdId + " " + p.text, s: "약속", due: p.due, late: p.due < today }); });
     ac.forEach(function (x) { if (/today|overdue|soon/.test(x.state) && x.date <= wk1) todo.push({ k: "f", id: x.key, t: x.householdId + " " + x.stepLabel, s: "연계 뒤 확인 · " + x.services, due: x.date, late: x.state === "overdue" }); });
@@ -937,28 +937,62 @@
   ];
   var DOC_OPT = { d7: 1, d8: 1 }; // 선택 문서 — «만들 문서 N건» 합계에서 뺀다(S12-d 40)
   var docSel = "d2", docDay = null, docHid = null, docOrg = null, docPer = "wk", made1 = {};
-  function reportDays() { return days().filter(function (d) { return d.ids.some(function (id) { return statusOf(id) !== "planned"; }); }); }
+  var docBase = null; // S12-e 43: 지난 방문일(이력)을 고르면 그날이 주간·월간 실적 기간의 기준이 된다(이번 차수면 null = 오늘)
+  function curDays() { return days().filter(function (d) { return d.ids.some(function (id) { return statusOf(id) !== "planned"; }); }); }
+  /** S12-e 43 문서함 이력 — 이번 차수 계획 밖 방문 기록(지난 차수·지난 몇 주 시연 기록 + 직접 남긴 기록)을 방문한 날별로 묶는다.
+      이번 차수 명단 가구의 «순위 매긴 뒤» 기록은 이번 차수 방문일에 이미 들어가므로 뺀다 */
+  function histDays() {
+    var p = plan(), inPlan = {}, cur = {};
+    if (p) p.rows.forEach(function (r) { inPlan[r.household_no] = 1; });
+    days().forEach(function (d) { if (d.date) cur[d.date] = 1; });
+    var g = {};
+    logs().forEach(function (l) {
+      if (!BY[l.household_no] || !l.at) return;
+      if (inPlan[l.household_no] && (!p || !p.ranked_at || l.at > p.ranked_at)) return;
+      var d = ymd(l.at); if (cur[d]) return;
+      (g[d] = g[d] || []).push(l);
+    });
+    return Object.keys(g).sort().map(function (d) { var L = g[d].sort(function (a, b) { return a.at < b.at ? -1 : 1; }); return { n: "h" + d, date: d, ids: uniq(L.map(function (l) { return l.household_no; })), logs: L, past: true }; });
+  }
+  function reportDays() { return histDays().concat(curDays()).sort(function (a, b) { return (a.date || "9") < (b.date || "9") ? -1 : (a.date || "9") > (b.date || "9") ? 1 : 0; }); }
+  var RES2ST = { met: "done", absent: "absent", refuse: "refused" };
+  /** 지난 방문일의 한 가구 — 그날 마지막 기록으로 만든다(같은 가구가 뒤에 다시 만나졌어도 그날 결과 그대로) */
+  function caseOfLog(l) {
+    var memo = l.memo || "", tags = l.tags || [], st = RES2ST[l.result] || "planned";
+    var refs = st === "done" ? F.referral.suggest({ text: memo, needs: F.askGuide.detect(memo) }).filter(function (x) { return x !== "emergency"; }) : [];
+    return { id: l.household_no, st: st, memo: memo, tags: tags, refs: refs, field: tags.filter(isField), at: l.at, h: BY[l.household_no], past: true };
+  }
+  function dayCases(dd) {
+    if (!dd) return [];
+    if (!dd.past) return dd.ids.map(caseOf);
+    return dd.ids.map(function (id) { return caseOfLog(dd.logs.filter(function (l) { return l.household_no === id; }).pop()); });
+  }
+  /** 월요일(주 시작) 날짜 */
+  function monOf(d) { var n = U.startOfDay(typeof d === "string" ? new Date(d + "T00:00:00") : d); return ymd(new Date(n.getTime() - ((n.getDay() + 6) % 7) * 864e5)); }
+  function wkLbl(mon) { var t = monOf(new Date()); if (mon === t) return "이번 주"; var d = new Date(mon + "T00:00:00"); return (d.getMonth() + 1) + "." + d.getDate() + " 주"; }
   function caseOf(id) {
     var L = lastLog(id), st = statusOf(id), memo = L ? L.memo : "", tags = L && L.tags || [];
     var refs = st === "done" ? F.referral.suggest({ text: memo, needs: F.askGuide.detect(memo) }).filter(function (x) { return x !== "emergency"; }) : [];
     var field = tags.filter(isField);
     return { id: id, st: st, memo: memo, tags: tags, refs: refs, field: field, at: L ? L.at : null, h: BY[id] };
   }
-  function weekRange() { var n = U.startOfDay(new Date()), mon = new Date(n.getTime() - ((n.getDay() + 6) % 7) * 864e5); return { from: mon, to: new Date(mon.getTime() + 4 * 864e5) }; }
+  function weekRange(b) { var n = U.startOfDay(b || docBase || new Date()), mon = new Date(n.getTime() - ((n.getDay() + 6) % 7) * 864e5); return { from: mon, to: new Date(mon.getTime() + 4 * 864e5) }; }
   /** 이번 달 1일 ~ 말일(S12-d 39 월간) */
-  function monthRange() { var n = U.startOfDay(new Date()); return { from: new Date(n.getFullYear(), n.getMonth(), 1), to: new Date(n.getFullYear(), n.getMonth() + 1, 0) }; }
+  function monthRange(b) { var n = U.startOfDay(b || docBase || new Date()); return { from: new Date(n.getFullYear(), n.getMonth(), 1), to: new Date(n.getFullYear(), n.getMonth() + 1, 0) }; }
   /** 실적 보고 저장 키 — 주간 «wk:월요일:d5» · 월간 «mo:YYYY-MM:d5» */
   function perKey(per) { return per === "mo" ? "mo:" + ymd(monthRange().from).slice(0, 7) + ":d5" : "wk:" + ymd(weekRange().from) + ":d5"; }
   function docModel() {
-    var rd = reportDays(), dd = rd.length ? (rd.filter(function (d) { return d.n === docDay; })[0] || rd[rd.length - 1]) : null;
-    var cases = dd ? dd.ids.map(caseOf) : [], met = cases.filter(function (x) { return x.st === "done"; }), ab = cases.filter(function (x) { return x.st === "absent"; });
-    var done = lsGet(LS_DOCS, {}) || {}, key = dd ? roundYm() + ":" + dd.n : "";
+    var rd = reportDays(), cd = rd.filter(function (d) { return !d.past; }), dd = rd.length ? (rd.filter(function (d) { return d.n === docDay; })[0] || cd[cd.length - 1] || rd[rd.length - 1]) : null;
+    docBase = dd && dd.past && dd.date ? new Date(dd.date + "T12:00:00") : null;
+    var cases = dayCases(dd), met = cases.filter(function (x) { return x.st === "done"; }), ab = cases.filter(function (x) { return x.st === "absent"; });
+    var done = lsGet(LS_DOCS, {}) || {}, key = dd ? (dd.past ? "h:" + dd.date : roundYm() + ":" + dd.n) : "";
     var linked = met.filter(function (x) { return x.refs.length; });
     var cnt = { d2: dd ? 1 : 0, d1: met.length, d3: linked.length, d4: ab.length + linked.length, d5: 1, d6: 1, d7: handCands(cases).length, d8: bigCands(cases).length };
     var got = function (k) { return (done[key + ":" + k] || []).length; };
     var wk = weekRange(), wkKey = ymd(wk.from);
-    var pend = { d2: Math.max(0, cnt.d2 - got("d2")), d1: Math.max(0, cnt.d1 - got("d1")), d3: Math.max(0, cnt.d3 - got("d3")), d4: Math.max(0, cnt.d4 - got("d4")), d5: (done[perKey(docPer)] || []).length ? 0 : 1, d6: (done["round:" + roundYm() + ":d6"] || []).length ? 0 : 1, d7: Math.max(0, cnt.d7 - got("d7")), d8: Math.max(0, cnt.d8 - got("d8")) };
-    return { rd: rd, dd: dd, cases: cases, met: met, ab: ab, linked: linked, cnt: cnt, pend: pend, key: key, wkKey: wkKey, pending: Object.keys(pend).reduce(function (s, k) { return s + (DOC_OPT[k] ? 0 : pend[k]); }, 0) };
+    var pend = dd && dd.past ? { d2: 0, d1: 0, d3: 0, d4: 0, d5: 0, d6: 0, d7: 0, d8: 0 } : { d2: Math.max(0, cnt.d2 - got("d2")), d1: Math.max(0, cnt.d1 - got("d1")), d3: Math.max(0, cnt.d3 - got("d3")), d4: Math.max(0, cnt.d4 - got("d4")), d5: (done[perKey(docPer)] || []).length ? 0 : 1, d6: (done["round:" + roundYm() + ":d6"] || []).length ? 0 : 1, d7: Math.max(0, cnt.d7 - got("d7")), d8: Math.max(0, cnt.d8 - got("d8")) };
+    // 지난 방문일 = 그때 이미 받은 문서(이력) — 대기 0, 다시 받기·인쇄만
+    return { rd: rd, dd: dd, past: !!(dd && dd.past), cases: cases, met: met, ab: ab, linked: linked, cnt: cnt, pend: pend, key: key, wkKey: wkKey, pending: Object.keys(pend).reduce(function (s, k) { return s + (DOC_OPT[k] ? 0 : pend[k]); }, 0) };
   }
   function markDone(M, k, id) {
     var done = lsGet(LS_DOCS, {}) || {}, key = k === "d5" ? perKey(docPer) : k === "d6" ? "round:" + roundYm() + ":d6" : M.key + ":" + k;
@@ -970,7 +1004,7 @@
     var dd = M.dd, logsD = M.cases.filter(function (x) { return x.at; }).map(function (x) { return x.at; }).sort();
     var areas = uniq(dd.ids.map(function (id) { return BY[id].area; }));
     var rf = M.cases.filter(function (x) { return x.st === "refused"; }), sigN = M.cases.filter(function (x) { return x.field.length; }).length;
-    var ym = roundYm().split("-"), nextAb = ymd(U.addWorkdays(new Date(), A.retryGap));
+    var base = M.past ? new Date(dd.date + "T12:00:00") : new Date(), ym = (M.past ? dd.date.slice(0, 7) : roundYm()).split("-"), nextAb = ymd(U.addWorkdays(base, A.retryGap));
     var gist = M.met.slice(0, 3).map(function (x) { return x.id + " " + clip(x.memo.replace(/^확인:[^.]*\.\s*/, ""), 40); });
     var f = fills()[M.key] || {};
     return [
@@ -984,6 +1018,32 @@
     ];
   }
   var SRC_CLS = { data: "var(--src-data)", rule: "var(--src-rule)", ai: "var(--src-ai)", empty: "var(--src-empty)" };
+  var MET_SRC = { m: "data", r: "rule", a: "ai", e: "empty" };
+  /** 방문한 날 고르기 — 주별로 묶어 지난 기록까지 쌓아 보인다(S12-e 43) */
+  function dayPick(M) {
+    var g = [], last = null;
+    M.rd.forEach(function (d) { var mon = d.date ? monOf(d.date) : "—"; if (!last || last.mon !== mon) { last = { mon: mon, ds: [] }; g.push(last); } last.ds.push(d); });
+    return '<div class="dpick dpick-wk" role="group" aria-label="방문한 날(주별)">' + g.map(function (w) {
+      return '<span class="dwk-l">' + esc(w.mon === "—" ? "날짜 없음" : wkLbl(w.mon)) + "</span>" + w.ds.map(function (d) { return '<button type="button" data-day="' + d.n + '" aria-pressed="' + (d.n === M.dd.n) + '"' + (d.past ? ' class="past"' : "") + ">" + (d.date ? mdDot(d.date) : d.n + "일차") + "</button>"; }).join("");
+    }).join("") + "</div>";
+  }
+  /** 주별 문서 이력 — 방문한 날마다 생긴 문서 수를 주 단위로 쌓는다(규칙 집계). 지난 주 = 그때 받은 문서, 이번 차수 = 남은 건수 함께 */
+  function docHist(M) {
+    var done = lsGet(LS_DOCS, {}) || {}, W2 = {}, order = [];
+    M.rd.forEach(function (d) {
+      var mon = d.date ? monOf(d.date) : "—", cs = dayCases(d), met = cs.filter(function (x) { return x.st === "done"; }), ab = cs.filter(function (x) { return x.st === "absent"; }), lk = met.filter(function (x) { return x.refs.length; });
+      if (!W2[mon]) { W2[mon] = { mon: mon, days: [], d2: 0, d1: 0, d3: 0, d4: 0, left: 0, cur: false }; order.push(mon); }
+      var o = W2[mon], key = d.past ? "" : roundYm() + ":" + d.n;
+      o.days.push(d); o.d2 += 1; o.d1 += met.length; o.d3 += lk.length; o.d4 += ab.length + lk.length;
+      if (!d.past) { o.cur = true; var got = function (k) { return (done[key + ":" + k] || []).length; }; o.left += Math.max(0, 1 - got("d2")) + Math.max(0, met.length - got("d1")) + Math.max(0, lk.length - got("d3")) + Math.max(0, ab.length + lk.length - got("d4")); }
+    });
+    var rows = order.slice(-6).reverse().map(function (m) { var o = W2[m], n = o.d2 + o.d1 + o.d3 + o.d4 + 1;
+      return '<tr' + (o.cur ? ' class="cur"' : "") + "><th>" + esc(m === "—" ? "날짜 없음" : wkLbl(m)) + '</th><td class="dh-days">' + o.days.map(function (d) { return '<button type="button" data-day="' + d.n + '"' + (d.n === M.dd.n ? ' aria-current="true"' : "") + ">" + (d.date ? mdDot(d.date) : d.n + "일차") + "</button>"; }).join("") + '</td><td data-src="rule">' + o.d2 + '</td><td data-src="rule">' + o.d1 + '</td><td data-src="rule">' + o.d3 + '</td><td data-src="rule">' + o.d4 + '</td><td data-src="rule">1</td><td class="dh-sum"><b>' + n + "</b>" + (o.cur ? (o.left ? " · " + o.left + "건 남음" : " · 다 받음") : " · 받음") + "</td></tr>"; }).join("");
+    var tot = order.slice(-6).reduce(function (a, m) { var o = W2[m]; return a + o.d2 + o.d1 + o.d3 + o.d4 + 1; }, 0);
+    return '<section class="dhist blk pg-break" aria-label="주별 문서 이력"><h2>주별 문서 이력 <small>지난 ' + Math.min(6, order.length) + "주 · 문서 " + tot + '건</small></h2>' +
+      '<table class="doc-t dhist-t"><thead><tr><th>주</th><th>방문한 날</th><th>복명서</th><th>상담일지</th><th>연계 의뢰서</th><th>안내 문자</th><th>주간 실적</th><th>합계</th></tr></thead><tbody>' + rows + "</tbody></table>" +
+      '<p class="srcline">날짜를 누르면 그날 문서를 다시 보고 받을 수 있습니다 · 건수는 방문 기록을 규칙으로 센 것(만남 = 상담일지 1 · 연계 후보가 있는 만남 = 의뢰서 1 · 부재·연계 = 안내 문자 1)</p></section>';
+  }
   function docsView() {
     var M = docModel(), now = new Date();
     if (!M.dd) return top("docs", "<strong>문서함</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>아직 방문 기록이 없습니다</b>폰에서 «확정»을 누르면 이 화면이 바로 채워집니다.</div></main>';
@@ -992,15 +1052,15 @@
     var list = DOCS.map(function (d) {
       var q = d.k === "d5" || d.k === "d6" ? M.pend[d.k] : M.pend[d.k], tot = M.cnt[d.k];
       var made = tot > 0 && q === 0;
-      return '<button type="button" class="row' + (d.k === docSel ? " sel" : "") + (made ? " made" : "") + '" data-doc="' + d.k + '"><span class="q' + (q ? "" : " z") + '">' + q + '</span><span class="nm"><b>' + d.nm + "</b><small>" + esc(d.sub) + (tot ? " · " + tot + "건" : " · 해당 없음") + '</small></span><span class="meter" aria-hidden="true">' + d.meter.map(function (x) { return '<i class="' + x[0] + '" style="flex:' + x[1] + '"></i>'; }).join("") + '</span><span class="go">' + (made ? "받음 ✓" : d.k === docSel ? "만드는 중" : "만들기") + "</span></button>";
+      return '<button type="button" class="row' + (d.k === docSel ? " sel" : "") + (made ? " made" : "") + '" data-doc="' + d.k + '"><span class="q' + (q ? "" : " z") + '">' + q + '</span><span class="nm"><b>' + d.nm + "</b><small>" + esc(d.sub) + (tot ? " · " + tot + "건" : " · 해당 없음") + '</small></span><span class="meter" aria-hidden="true">' + d.meter.map(function (x) { var q = MET_SRC[x[0]]; return '<i class="' + x[0] + " pat-" + q + '" data-src="' + q + '" data-pat="' + q + '" style="flex:' + x[1] + '"></i>'; }).join("") + '</span><span class="go">' + (made ? "받음 ✓" : d.k === docSel ? "만드는 중" : "만들기") + "</span></button>";
     }).join("");
     var pv = docPreview(M, docSel);
     var dayLbl = (M.dd.date ? md(M.dd.date) : M.dd.n + "일차") + " 방문 " + M.cases.filter(function (x) { return x.st !== "planned"; }).length + "곳";
     return top("docs", "<strong>" + esc(dayLbl) + "</strong>가상 데이터") + '<main class="wrap">' +
-      '<div class="dhead"><h1>만들 문서 <span>' + M.pending + '</span>건</h1><p>막대 색 = 칸을 채운 곳 · <b style="color:#5D6B80">남색</b> 한국사회보장정보원 명단·API · 회색 규칙 숫자 · 노랑 자동 문장(확인) · 빨강 빈칸(입력 필요)</p></div>' +
-      (M.rd.length > 1 ? '<div class="dpick" role="group" aria-label="방문한 날">' + M.rd.map(function (d) { return '<button type="button" data-day="' + d.n + '" aria-pressed="' + (d.n === M.dd.n) + '">' + (d.date ? mdDot(d.date) : d.n + "일차") + "</button>"; }).join("") + "</div>" : "") +
+      '<div class="dhead"><h1>' + (M.past ? "그날 받은 문서 <span>" + Object.keys(M.cnt).reduce(function (a, k) { return a + (DOC_OPT[k] || k === "d6" ? 0 : M.cnt[k]); }, 0) + "</span>건" : "만들 문서 <span>" + M.pending + "</span>건") + '</h1><p>막대 색 = 칸을 채운 곳 · <b style="color:#5D6B80">남색</b> 한국사회보장정보원 명단·API · 회색 규칙 숫자 · 노랑 자동 문장(확인) · 빨강 빈칸(입력 필요)</p></div>' +
+      (M.rd.length > 1 ? dayPick(M) : "") +
       '<div class="dgrid"><div class="dep blk"><div class="hd"><span>대기</span><span>문서</span><span>채워진 칸</span><span></span></div>' + list + "</div>" +
-      '<section class="prev blk" id="docPrev" tabindex="-1" aria-label="' + esc(D0.nm) + ' 미리보기">' + pv + "</section></div>" +
+      '<section class="prev blk" id="docPrev" tabindex="-1" aria-label="' + esc(D0.nm) + ' 미리보기">' + pv + "</section></div>" + docHist(M) +
       '<p class="foot"><span class="demo-tag">가상 데이터</span><span>개인정보 4칸(성명·주민등록번호·연락처·주소) 미기재 · 가구 번호·읍면만 · 상담일지 입력·전자서명은 행복이음에서</span></p></main>';
   }
   function flowBtns(k, ready, label2, label3) {
@@ -1060,7 +1120,7 @@
     var to = (fills()[M.key] || {})["to_" + x.id] || "";
     return { nx: nx, tries: tries, to: to, fields: [
       { k: "가구", src: "data", v: "가구 " + x.id + " · " + x.h.area + " · " + ageLine(x.h) },
-      { k: "발굴 순위", src: "data", v: "한국사회보장정보원 " + (mt.prio || "—") + "순위 · " + roundYm() + " 차수" },
+      { k: "발굴 순위", src: "data", v: x.past && !mt.prio ? "한국사회보장정보원 지난 차수 명단(" + String(x.at || "").slice(0, 7) + ")" : "한국사회보장정보원 " + (mt.prio || "—") + "순위 · " + roundYm() + " 차수" },
       { k: "마지막 방문", src: "rule", v: (x.at ? mdDot(x.at) + " " + hm(x.at) + " · " : "") + (ST_LBL[x.st] || "방문 전") },
       { k: "지금 상황", src: "ai", v: clip(String(x.memo || "").replace(/^확인:[^.]*\.\s*/, ""), 90) || "기록 없음" },
       { k: "현장 확인 징후", src: "rule", v: x.field.join(" · ") || "없음" },
@@ -1107,26 +1167,67 @@
     if (!docHid || !arr.some(function (x) { return x.id === docHid; })) docHid = arr[0].id;
     return arr.length > 1 ? '<div class="hh-pick" role="group" aria-label="가구">' + arr.map(function (x) { return '<button type="button" data-hh="' + x.id + '" aria-pressed="' + (x.id === docHid) + '">' + x.id + "</button>"; }).join("") + "</div>" : "";
   }
-  var LEG = '<div class="legend"><span><i style="background:var(--src-data)"></i>한국사회보장정보원 명단·API</span><span><i style="background:var(--src-rule)"></i>규칙 숫자</span><span><i style="background:var(--src-ai)"></i>자동 문장 확인</span><span><i style="background:var(--src-empty)"></i>입력 필요</span></div>';
-  function cell(f) { var v = f.src === "ai" ? "<mark>" + esc(f.v) + "</mark>" : f.src === "rule" ? '<span class="rule">' + esc(f.v) + "</span>" : esc(f.v); if (f.input) v = '<input data-fill="' + f.input + '" class="' + (f.v ? "ok" : "") + '" value="' + esc(f.v) + '" placeholder="입력 필요" aria-label="' + esc(f.k) + '">'; return v; }
-  function paper(title, sub, fields) {
-    return '<div class="paper"><div class="ruler">' + fields.map(function (f) { return '<i style="background:' + SRC_CLS[f.src] + '"></i>'; }).join("") + "</div><h3>" + esc(title) + '</h3><div class="sub">' + esc(sub) + '</div><table class="doc-t">' + fields.map(function (f) { return "<tr><th>" + esc(f.k) + "</th><td>" + cell(f) + "</td></tr>"; }).join("") + "</table></div>";
+  // ── S12-e 43 A4 출력 틀: 머리(기관·문서명·기준일)·«읽는 법» 상자·꼬리(출력 시각·쪽번호 자리)·쪽 나눔 표시 ──
+  //   class: .print-doc(문서 한 장 묶음) · .doc-head · .doc-legend · .doc-body · .doc-foot(쪽번호는 @page 여백이 맡음) · .no-print(인쇄 때 숨김)
+  //          .pg-keep(쪽 경계에서 자르지 않음) · .pg-break(이 앞에서 새 쪽) · .only-screen / .xrow(화면에선 접고 인쇄 때만 다 보임)
+  //   흑백 구분: .pat-<값> + [data-pat] — 출처 data|rule|ai|empty · 그래프 계열 met|absent|refuse|visit([data-series]도 같은 값)
+  var SRC_LB = { data: "남색 = 한국사회보장정보원 명단·API", rule: "회색 = 규칙으로 센 숫자", ai: "노랑 = 자동 정리 문장(담당자 확인)", empty: "빨강 = 손으로 채울 칸" };
+  function swatch(src) { return '<i class="sw pat-' + src + '" data-src="' + src + '" data-pat="' + src + '" style="background:' + SRC_CLS[src] + '"></i>'; }
+  function srcSw(list) { return '<div class="legend dl-sw">' + (list || ["data", "rule", "ai", "empty"]).map(function (k) { return '<span data-src="' + k + '">' + swatch(k) + esc(SRC_LB[k]) + "</span>"; }).join("") + "</div>"; }
+  var SER = { met: ["만남·상담", "#0C8767"], absent: ["부재", "#E0581F"], refuse: ["거절", "#8A9396"], visit: ["방문한 곳", "#5D6B80"] };
+  function serSw(keys) { return '<div class="legend dl-sw dl-ser">' + keys.map(function (k) { return '<span data-series="' + k + '"><i class="sw pat-' + k + '" data-series="' + k + '" data-pat="' + k + '" style="background:' + SER[k][1] + '"></i>' + esc(SER[k][0]) + "</span>"; }).join("") + "</div>"; }
+  /** «읽는 법» 작은 상자 — rows: [[이름, 뜻]] · sw: 색 범례 html */
+  function legendBox(rows, sw, cls) {
+    return '<aside class="doc-legend pg-keep' + (cls ? " " + cls : "") + '" aria-label="읽는 법"><b class="dl-t">읽는 법</b><dl>' + rows.map(function (r) { return "<dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd>"; }).join("") + "</dl>" + (sw == null ? srcSw() : sw) + "</aside>";
   }
+  function dotDate(d) { d = typeof d === "string" && d.length === 10 ? new Date(d + "T00:00:00") : new Date(d); return d.getFullYear() + ". " + (d.getMonth() + 1) + ". " + d.getDate() + "."; }
+  /** 한 장 묶음 — 머리·읽는 법·본문·꼬리. 인쇄(window.print)는 이 묶음만 A4로 낸다(미르 @media print) */
+  function sheet(k, name, basis, legend, body) {
+    var now = new Date();
+    return '<article class="print-doc" data-doc="' + k + '" data-doc-name="' + esc(name) + '">' +
+      '<header class="doc-head"><span class="dh-org">상주시청</span><b class="dh-name">' + esc(name) + '</b><span class="dh-date">' + esc(basis) + "</span></header>" +
+      legend + '<div class="doc-body">' + body + "</div>" +
+      '<footer class="doc-foot"><span class="df-l">닿음 · 시연용 가상 데이터 · 개인정보 4칸 미기재</span><span class="df-r">출력 ' + dotDate(now) + " " + hm(now) + "</span></footer></article>";
+  }
+  function ctl(html) { return '<div class="doc-ctl no-print">' + html + '<button type="button" class="pr-btn" data-act="print">인쇄·PDF</button></div>'; }
+  var LEG = '<div class="legend"><span><i style="background:var(--src-data)"></i>한국사회보장정보원 명단·API</span><span><i style="background:var(--src-rule)"></i>규칙 숫자</span><span><i style="background:var(--src-ai)"></i>자동 문장 확인</span><span><i style="background:var(--src-empty)"></i>입력 필요</span></div>'; // 사용 방법 화면용(옛 범례 줄)
+  function cell(f) { var v = f.src === "ai" ? "<mark>" + esc(f.v) + "</mark>" : f.src === "rule" ? '<span class="rule">' + esc(f.v) + "</span>" : esc(f.v); if (f.input) v = '<input data-fill="' + f.input + '" class="' + (f.v ? "ok" : "") + '" value="' + esc(f.v) + '" placeholder="입력 필요" aria-label="' + esc(f.k) + '"><span class="pr-val">' + (f.v ? esc(f.v) : "&nbsp;") + "</span>"; return v; }
+  function paper(title, sub, fields) {
+    return '<div class="paper">' + rulerOf(fields.map(function (f) { return f.src; })) + "<h3>" + esc(title) + '</h3><div class="sub">' + esc(sub) + '</div><table class="doc-t pg-keep">' + fields.map(function (f) { return "<tr><th>" + esc(f.k) + '</th><td data-src="' + f.src + '">' + cell(f) + "</td></tr>"; }).join("") + "</table></div>";
+  }
+  /** 가로 누적 막대(흑백에서도 칸마다 이름·숫자가 글자로 붙는다) */
+  function stackFig(cap, parts) {
+    var tot = parts.reduce(function (a, p) { return a + p[1]; }, 0);
+    return '<figure class="doc-chart pg-keep" data-chart="stack"><figcaption>' + esc(cap) + " <small>합계 " + tot + '곳</small></figcaption><div class="dc-stack" role="img" aria-label="' + esc(parts.map(function (p) { return SER[p[0]][0] + " " + p[1]; }).join(", ")) + '">' +
+      parts.filter(function (p) { return p[1]; }).map(function (p) { return '<i class="dc-seg pat-' + p[0] + '" data-series="' + p[0] + '" data-pat="' + p[0] + '" style="flex:' + p[1] + ";background:" + SER[p[0]][1] + '"><span>' + esc(SER[p[0]][0]) + " " + p[1] + "</span></i>"; }).join("") + (tot ? "" : '<i class="dc-seg dc-zero">기록 없음</i>') + "</div></figure>";
+  }
+  /** 세로 막대(주차·주별) — 막대 위에 숫자, 아래에 이름 */
+  function colFig(cap, cols, key) {
+    var mx = Math.max(1, Math.max.apply(null, cols.map(function (c) { return c[1]; })));
+    return '<figure class="doc-chart pg-keep" data-chart="cols"><figcaption>' + esc(cap) + '</figcaption><div class="dc-cols" role="img" aria-label="' + esc(cols.map(function (c) { return c[0] + " " + c[1]; }).join(", ")) + '">' +
+      cols.map(function (c) { return '<div class="dc-c"><em>' + c[1] + '</em><span class="dc-bar pat-' + key + '" data-series="' + key + '" data-pat="' + key + '" style="height:' + (c[1] / mx * 100).toFixed(0) + "%;background:" + SER[key][1] + '"></span><b>' + esc(c[0]) + "</b></div>"; }).join("") + "</div></figure>";
+  }
+  function srcLine(t) { return '<p class="srcline">' + t + "</p>"; }
+  function rulerOf(list) { return '<div class="ruler">' + list.map(function (q) { return '<i class="pat-' + q + '" data-src="' + q + '" data-pat="' + q + '" style="background:' + SRC_CLS[q] + '"></i>'; }).join("") + "</div>"; }
   function docPreview(M, k) {
-    var now = new Date(), area = BY[M.dd.ids[0]].area;
+    var now = M.past && M.dd.date ? new Date(M.dd.date + "T17:30:00") : new Date(), area = BY[M.dd.ids[0]].area;
+    var vday = M.dd.date ? dotDate(M.dd.date) : M.dd.n + "일차", bas = "방문일 " + vday + (M.past ? " · 지난 기록" : "");
     if (k === "d2") {
       docHid = "";
       var fs = d2Fields(M), empties = fs.filter(function (f) { return f.src === "empty"; }).length;
-      return flowBtns("d2", !empties, "hwpx 받기") + paper("복명서", "상주시청 · " + area + " 맞춤형복지팀 · " + mdDot(now) + " 작성", fs) + LEG +
-        '<p class="srcline">가구 칸 = 한국사회보장정보원 발굴대상자 명단 · 시각·결과 = 현장 기록 · 빈칸이 0이 되면 받기가 켜집니다 · 칸 이름은 시군 서식에 맞춰 바꿀 수 있는 가정(정의서 §7)</p>';
+      var hh = '<table class="doc-t doc-hh pg-keep"><caption>가구별 결과</caption><thead><tr><th>가구</th><th>읍면</th><th>결과</th><th>요지</th></tr></thead><tbody>' + M.cases.map(function (c) { return "<tr><td>" + c.id + "</td><td>" + esc(c.h.area) + '</td><td data-src="rule"><span class="rule">' + (ST_LBL[c.st] || "방문 전") + '</span></td><td data-src="ai">' + (c.st === "done" ? "<mark>" + esc(clip(c.memo, 46)) + "</mark>" : c.st === "absent" ? "다시 방문" : c.st === "refused" ? "근무일 5일 뒤 다시 권유" : "") + "</td></tr>"; }).join("") + "</tbody></table>";
+      return ctl(flowBtns("d2", !empties, "hwpx 받기")) + sheet("d2", "복명서", bas, legendBox([["결과", "그날 확정한 방문 결과를 센 가구 수(만남·부재·거절)"], ["명단 사유 밖 징후", "현장 확인에서 «문제 있음»을 고른 가구 수"], ["기준", "방문일 하루 · 출장 시각은 첫 기록~마지막 기록"], ["출처", "가구 = 한국사회보장정보원 발굴대상자 명단 · 나머지 = 현장 기록"]], serSw(["met", "absent", "refuse"]) + srcSw()),
+        stackFig("그날 방문 결과", [["met", M.met.length], ["absent", M.ab.length], ["refuse", M.cases.filter(function (x) { return x.st === "refused"; }).length]]) + paper("복명서", "상주시청 · " + area + " 맞춤형복지팀 · " + mdDot(now) + " 작성", fs) + hh +
+        srcLine("빈칸이 0이 되면 받기가 켜집니다 · 칸 이름은 시군 서식에 맞춰 바꿀 수 있는 가정(정의서 §7)"));
     }
     if (k === "d1") {
       if (!M.met.length) return '<div class="emptyc"><b>만난 가구가 없습니다</b>상담일지 초안은 «만남»으로 확정한 가구에만 생깁니다.</div>';
       var pk = hhPick(M.met), x = M.cases.filter(function (c) { return c.id === docHid; })[0];
       var dft = d1Draft(x);
-      return pk + flowBtns("d1", true, "입력 순서 복사", "보관 hwpx 받기") + '<div class="paper"><div class="ruler"><i style="background:var(--src-data)"></i><i style="background:var(--src-rule)"></i><i style="background:var(--src-ai)"></i><i style="background:var(--src-ai)"></i></div><h3>상담일지 초안</h3><div class="sub">행복이음 입력용 · 자동 정리 · 공무원 확정 전 · 보관 hwpx는 가구 번호·읍면만</div><table class="doc-t">' +
-        dft.fields.map(function (f) { return "<tr><th>" + esc(f.label) + "</th><td>" + (/main|situation|plan|needs|action/.test(f.key) ? "<mark>" + esc(f.value) + "</mark>" : '<span class="rule">' + esc(f.value) + "</span>") + "</td></tr>"; }).join("") + "</table></div>" + LEG +
-        '<p class="srcline">' + esc(dft.note) + " · 연계 후보 = 한국사회보장정보원 복지서비스 OpenAPI(15090532·15108347)</p>";
+      return ctl(pk + flowBtns("d1", true, "입력 순서 복사", "보관 hwpx 받기")) + sheet("d1", "상담일지 초안", bas + " · 가구 " + x.id, legendBox([["칸 순서", "행복이음 상담일지 입력 순서 그대로"], ["노랑 칸", "현장 기록을 규칙으로 정리한 문장 — 담당자가 고친 뒤 입력"], ["출처", "연계 후보 = 한국사회보장정보원 복지서비스 OpenAPI(15090532·15108347)"]], srcSw(["data", "rule", "ai"])),
+        '<div class="paper">' + rulerOf(["data", "rule", "ai", "ai"]) + '<h3>상담일지 초안</h3><div class="sub">행복이음 입력용 · 자동 정리 · 공무원 확정 전 · 보관 hwpx는 가구 번호·읍면만</div><table class="doc-t pg-keep">' +
+        dft.fields.map(function (f) { var a = /main|situation|plan|needs|action/.test(f.key); return "<tr><th>" + esc(f.label) + '</th><td data-src="' + (a ? "ai" : "rule") + '">' + (a ? "<mark>" + esc(f.value) + "</mark>" : '<span class="rule">' + esc(f.value) + "</span>") + "</td></tr>"; }).join("") + "</table></div>" +
+        srcLine(esc(dft.note)));
     }
     if (k === "d3") {
       var cand = M.linked.length ? M.linked : M.met;
@@ -1136,8 +1237,9 @@
       var o = F.referral.ORGS[docOrg];
       var fs3 = [{ k: "받는 기관", src: "rule", v: o.org }, { k: "대상", src: "data", v: "가구 " + y.id + " · " + y.h.area + " · " + ageLine(y.h) + " (성명·연락처는 행복이음 확인 후 기재)" },
         { k: "의뢰 사유", src: "ai", v: clip(y.memo, 90) }, { k: "요청", src: "rule", v: o.ask.join(" · ") }, { k: "붙임", src: "rule", v: o.docs.join(", ") }];
-      return pk3 + '<div class="hh-pick" role="group" aria-label="받는 기관">' + keys.filter(function (kk) { return kk !== "emergency"; }).map(function (kk) { return '<button type="button" data-org="' + kk + '" aria-pressed="' + (kk === docOrg) + '">' + esc(F.referral.ORGS[kk].org.replace(/\(.*\)/, "")) + "</button>"; }).join("") + "</div>" +
-        flowBtns("d3", true, "hwpx 받기") + paper(o.title, o.org + " 앞", fs3) + LEG + '<p class="srcline">서비스·의뢰 칸 = 현장 기록의 연계 후보(한국사회보장정보원 복지서비스 OpenAPI 15090532·15108347) · 본인 동의 확인 후 발송</p>';
+      return ctl(pk3 + '<div class="hh-pick" role="group" aria-label="받는 기관">' + keys.filter(function (kk) { return kk !== "emergency"; }).map(function (kk) { return '<button type="button" data-org="' + kk + '" aria-pressed="' + (kk === docOrg) + '">' + esc(F.referral.ORGS[kk].org.replace(/\(.*\)/, "")) + "</button>"; }).join("") + "</div>" +
+        flowBtns("d3", true, "hwpx 받기")) + sheet("d3", "서비스 연계 의뢰서", bas + " · 가구 " + y.id, legendBox([["의뢰 사유", "현장 기록에서 옮긴 문장 — 보내기 전 담당자 확인"], ["요청·붙임", "받는 기관별로 정해 둔 항목"], ["출처", "연계 후보 = 한국사회보장정보원 복지서비스 OpenAPI(15090532·15108347) · 본인 동의 확인 후 발송"]], srcSw(["data", "rule", "ai"])),
+        paper(o.title, o.org + " 앞", fs3));
     }
     if (k === "d4") {
       var cand4 = M.ab.concat(M.linked);
@@ -1146,8 +1248,8 @@
       var vt = F.visitTime.profile(attempts(), z.id, { neighborLog: neighborLog() });
       var msg = NT.alimtalk(z.st === "absent" ? "absent" : "link", { area: z.h.area, date: z.at ? ymd(z.at) : null, time: z.at ? hm(z.at) : null, nextDate: ymd(U.addWorkdays(now, A.retryGap)), nextSlot: vt.best && /오전/.test(vt.best.label) ? "오전" : "오후" });
       var bad = NT.lint(msg.body, [z.id]);
-      return pk4 + flowBtns("d4", !bad.length, "문안 복사") + '<div class="paper"><div class="ruler"><i style="background:var(--src-rule)"></i><i style="background:var(--src-ai)"></i><i style="background:var(--src-ai)"></i></div><h3>' + esc(msg.title) + '</h3><div class="sub">알림톡 미리보기 · 발송은 담당자가 · ' + msg.chars + '자</div><pre class="doc-pre">' + esc(msg.body) + "</pre></div>" + LEG +
-        '<p class="srcline">이름·주소·서비스명 미포함 · 광고성 낱말 점검 ' + (bad.length ? "⚠ " + esc(bad.join(", ")) : "통과") + " · " + esc(NT.SOURCE_TALK) + "</p>";
+      return ctl(pk4 + flowBtns("d4", !bad.length, "문안 복사")) + sheet("d4", "안내 문자 문안", bas + " · 가구 " + z.id, legendBox([["글자 수", msg.chars + "자 — 알림톡 한 통 기준"], ["점검", "이름·주소·서비스명·광고성 낱말이 없는지 규칙으로 확인 · " + (bad.length ? "걸림 " + bad.join(", ") : "통과")], ["출처", NT.SOURCE_TALK]], srcSw(["rule", "ai"])),
+        '<div class="paper">' + rulerOf(["rule", "ai", "ai"]) + "<h3>" + esc(msg.title) + '</h3><div class="sub">알림톡 미리보기 · 발송은 담당자가 · ' + msg.chars + '자</div><pre class="doc-pre pg-keep">' + esc(msg.body) + "</pre></div>");
     }
     if (k === "d5") {
       docHid = "";
@@ -1156,27 +1258,31 @@
         .concat(mo ? [{ k: "주차별 추세", src: "rule", v: w.weeks.map(function (x) { return x[0] + " " + x[1] + "곳"; }).join(" · ") || "—" }, { k: "수급권자 현황 비교", src: "data", v: w.cmp }] : [])
         .concat([{ k: "지역 배경", src: "data", v: w.rcp }, { k: "한 줄 결론", src: "ai", v: w.concl }]);
       var perSw = '<div class="hh-pick" role="group" aria-label="보고 기간">' + [["wk", "주간"], ["mo", "월간"]].map(function (p) { return '<button type="button" data-per="' + p[0] + '" aria-pressed="' + (p[0] === docPer) + '">' + p[1] + "</button>"; }).join("") + "</div>";
-      return perSw + flowBtns("d5:" + docPer, true, "hwpx 받기") + paper(w.name + " 추진 실적 보고", "상주시청 · " + area + " 맞춤형복지팀", fs5) + LEG + '<p class="srcline">숫자는 규칙 집계(현장 기록) · 지역 배경 = 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448, 기준 2025-12)</p>';
+      var lg5 = [["방문 곳 수", "기간 안에 방문 기록이 있는 가구 수 — 한 가구를 여러 번 가도 1곳(마지막 결과로 셈)"], ["처리 완료", "이번 차수 명단 가구 중 «만남·상담»까지 끝낸 가구"], ["기준", (mo ? "그달 1일~말일" : "월~금 한 주") + " · " + mdDot(w.from) + " ~ " + mdDot(w.to)], ["출처", "현장 기록 규칙 집계 · 지역 배경 = 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448, 기준 2025-12)"]];
+      return ctl(perSw + flowBtns("d5:" + docPer, true, "hwpx 받기")) + sheet("d5", w.name + " 추진 실적 보고", "기간 " + dotDate(w.from) + " ~ " + dotDate(w.to), legendBox(lg5, serSw(["met", "absent", "refuse"].concat(mo ? ["visit"] : [])) + srcSw(["data", "rule", "ai"])),
+        stackFig((mo ? "그달" : "그 주") + " 방문 결과", [["met", w.met], ["absent", w.absent], ["refuse", w.refuse]]) + (mo && w.weeks.length ? colFig("주차별 방문 곳 수", w.weeks, "visit") : "") +
+        paper(w.name + " 추진 실적 보고", "상주시청 · " + area + " 맞춤형복지팀", fs5) + (mo && w.rcpRows.length ? '<table class="doc-t doc-rcp pg-keep"><caption>상주시 수급권자 현황(한국사회보장정보원 15062448, 2025-12)</caption><thead><tr><th>사업명</th><th>수급권자</th><th>수급가구</th></tr></thead><tbody>' + w.rcpRows.map(function (r) { return "<tr><td>" + esc(r[0]) + '</td><td data-src="data">' + esc(r[1]) + '</td><td data-src="data">' + esc(r[2]) + "</td></tr>"; }).join("") + "</tbody></table>" : ""));
     }
     if (k === "d7") {
       var c7 = handCands(M.cases);
       if (!c7.length) return '<div class="emptyc"><b>넘길 가구가 없습니다</b>방문 기록이 있는 가구에만 인계 카드가 생깁니다.</div>';
       var pk7 = hhPick(c7), x7 = M.cases.filter(function (c) { return c.id === docHid; })[0], D7 = d7Fields(M, x7, now);
-      return pk7 + flowBtns("d7", true, "hwpx 받기") + paper("한 장 인계 카드", "가구 " + x7.id + " · " + x7.h.area + " · 담당자 교체·부재 때 넘김", D7.fields) + LEG +
-        '<p class="srcline">가구·순위 = 한국사회보장정보원 발굴대상자 명단 · 나머지 = 현장 기록 · «받는 사람»은 비워도 받을 수 있습니다(종이에 손으로 적음)</p>';
+      return ctl(pk7 + flowBtns("d7", true, "hwpx 받기")) + sheet("d7", "한 장 인계 카드", bas + " · 가구 " + x7.id, legendBox([["발굴 순위", "한국사회보장정보원 명단의 차수 순위"], ["방문·연락", "이 가구에 남은 방문·연락 기록 횟수"], ["넘겨줄 일", "부재 = 근무일 2일 뒤 재방문 · 거절 = 근무일 5일 뒤 다시 권유 · 만남 = 열린 약속"], ["받는 사람", "비워 두면 종이에 손으로 적습니다"]]),
+        paper("한 장 인계 카드", "가구 " + x7.id + " · " + x7.h.area + " · 담당자 교체·부재 때 넘김", D7.fields));
     }
     if (k === "d8") {
       var c8 = bigCands(M.cases);
       if (!c8.length) return '<div class="emptyc"><b>남길 안내문이 없습니다</b>만남·부재 가구가 생기면 큰 글씨 안내문이 만들어집니다.</div>';
       var pk8 = hhPick(c8), x8 = M.cases.filter(function (c) { return c.id === docHid; })[0], B8 = d8Model(x8, now);
-      return pk8 + flowBtns("d8", true, "hwpx 받기") + paper(B8.title, B8.sub, B8.cards.map(function (c) { return { k: c.k, src: "rule", v: c.v + (c.s ? " · " + c.s : "") }; })) + LEG +
-        '<p class="srcline">한글에서 22pt 굵은 글씨로 열립니다 · 집에 남기는 종이라 가구 번호·성명·주소·사정은 넣지 않습니다 · 전화번호 칸은 손으로 적습니다</p>';
+      // 집에 남기는 종이 — «읽는 법»은 담당자 화면에만(인쇄본에는 넣지 않음)
+      return ctl(pk8 + flowBtns("d8", true, "hwpx 받기")) + sheet("d8", "큰 글씨 안내문", "방문일 " + vday, legendBox([["날짜", "부재 = 근무일 2일 뒤 · 만남 = 다음 연락 예정일"], ["넣지 않는 것", "가구 번호·성명·주소·사정 — 집에 남기는 종이라서"], ["전화번호", "담당자가 손으로 적습니다 · 한글에서 22pt 굵은 글씨로 열립니다"]], "", "no-print"),
+        paper(B8.title, B8.sub, B8.cards.map(function (c) { return { k: c.k, src: "rule", v: c.v + (c.s ? " · " + c.s : "") }; })));
     }
     docHid = "";
     var R = roundRows();
-    return flowBtns("d6", true, "xlsx 받기") + '<div class="paper"><div class="ruler"><i style="background:var(--src-data)"></i><i style="background:var(--src-data)"></i><i style="background:var(--src-rule)"></i></div><h3>차수 처리 결과 명단</h3><div class="sub">' + esc(roundYm()) + " 명단 " + R.length + "가구 · 명단 열 + 방문 4열(방문일·결과·연계·다음 확인)</div>" +
-      '<table class="doc-t wide"><tr><th>가구</th><th>읍면</th><th>발굴 순위</th><th>방문일</th><th>결과</th><th>연계</th><th>다음 확인</th></tr>' + R.slice(0, 8).map(function (r) { return "<tr>" + r.map(function (v, i) { return "<td>" + (i >= 3 ? '<span class="rule">' + esc(v) + "</span>" : esc(v)) + "</td>"; }).join("") + "</tr>"; }).join("") + (R.length > 8 ? '<tr><td colspan="7" style="text-align:center;color:var(--mute)">… ' + (R.length - 8) + "가구 더</td></tr>" : "") + "</table></div>" + LEG +
-      '<p class="srcline">명단 열 = 한국사회보장정보원 발굴대상자 조회 서식(43열 중 가구 번호·읍면·순위만 표시, 개인정보 4칸 제외) · 방문 4열 = 현장 기록</p>';
+    return ctl(flowBtns("d6", true, "xlsx 받기")) + sheet("d6", "차수 처리 결과 명단", roundYm() + " 차수 · 명단 " + R.length + "가구", legendBox([["결과", "가구마다 마지막 방문 기록(만남·부재·거절·방문 전)"], ["다음 확인", "열린 약속의 날짜와 내용"], ["출처", "명단 열 = 한국사회보장정보원 발굴대상자 조회 서식(43열 중 가구 번호·읍면·순위만, 개인정보 4칸 제외) · 방문 4열 = 현장 기록"]], srcSw(["data", "rule"])),
+      '<div class="paper">' + rulerOf(["data", "data", "rule"]) + '<h3>차수 처리 결과 명단</h3><div class="sub">' + esc(roundYm()) + " 명단 " + R.length + "가구 · 명단 열 + 방문 4열(방문일·결과·연계·다음 확인)</div>" +
+      '<table class="doc-t wide"><thead><tr><th>가구</th><th>읍면</th><th>발굴 순위</th><th>방문일</th><th>결과</th><th>연계</th><th>다음 확인</th></tr></thead><tbody>' + R.map(function (r) { return "<tr>" + r.map(function (v, i) { return "<td" + (i >= 3 ? ' data-src="rule"><span class="rule">' + esc(v) + "</span>" : ' data-src="data">' + esc(v)) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>");
   }
   var SIGN_REV = {}; Object.keys(SIGN_OF).forEach(function (k) { SIGN_REV[SIGN_OF[k]] = k; });
   /** D5 실적 집계 — 숫자는 현장 기록 규칙 집계만(per: "wk" 주간 | "mo" 월간). 월간은 주차별 추세 + 15062448 비교 */
@@ -1221,7 +1327,7 @@
     return hwpxP;
   }
   function getDoc(M, k, alt) {
-    var now = new Date(), area = BY[M.dd.ids[0]].area, made = now.getFullYear() + ". " + (now.getMonth() + 1) + ". " + now.getDate() + ".", office = "상주시청 · " + area + " 맞춤형복지팀";
+    var now = M.past && M.dd.date ? new Date(M.dd.date + "T17:30:00") : new Date(), area = BY[M.dd.ids[0]].area, made = now.getFullYear() + ". " + (now.getMonth() + 1) + ". " + now.getDate() + ".", office = "상주시청 · " + area + " 맞춤형복지팀";
     var stamp = ymd(now).replace(/-/g, "");
     if (k === "d1" && !alt) { var x = M.cases.filter(function (c) { return c.id === docHid; })[0]; copy(d1Draft(x).text); markDone(M, k, x.id); render(); return; }
     if (k === "d4") { var z = M.cases.filter(function (c) { return c.id === docHid; })[0]; var vt = F.visitTime.profile(attempts(), z.id, {}); copy(NT.alimtalk(z.st === "absent" ? "absent" : "link", { area: z.h.area, date: z.at ? ymd(z.at) : null, time: z.at ? hm(z.at) : null, nextDate: ymd(U.addWorkdays(now, A.retryGap)), nextSlot: vt.best && /오전/.test(vt.best.label) ? "오전" : "오후" }).copy); markDone(M, k, z.id); render(); return; }
@@ -1263,6 +1369,17 @@
       }
     }).then(function () { toast("내려받았습니다"); render(); }, function () { toast("파일을 만들지 못했습니다 — 다시 눌러 주세요"); });
   }
+  /** S12-e 43: 지금 미리보기 한 장을 A4로 — 창 제목을 문서 이름으로 바꿔 PDF 저장 이름이 «복명서_20261103»처럼 나오게 */
+  function printDoc() {
+    var a = app.querySelector(".print-doc"); if (!a) return;
+    var old = document.title, M = docModel(), d = M.dd && M.dd.date ? M.dd.date.replace(/-/g, "") : ymd(new Date()).replace(/-/g, "");
+    document.title = (a.dataset.docName || "문서").replace(/\s+/g, "") + (docHid ? "_" + docHid : "") + "_" + d;
+    document.body.classList.add("printing-doc");
+    var back = function () { document.title = old; document.body.classList.remove("printing-doc"); window.removeEventListener("afterprint", back); };
+    window.addEventListener("afterprint", back);
+    try { window.print(); } catch (e) { /* 인쇄 불가 */ }
+    setTimeout(back, 1500);
+  }
   /** S12-d 40: 목록에서 문서를 고르면 미리보기로 옮긴다 — 폰(한 줄 배치)에서 미리보기가 목록 아래에 있어 안 보이던 문제. 이미 화면 안이면 포커스만 */
   function toPrev() {
     var pv = document.getElementById("docPrev"); if (!pv) return;
@@ -1275,7 +1392,8 @@
   function bindDocs() {
     var M = docModel(); if (!M.dd) return;
     app.querySelectorAll("[data-doc]").forEach(function (b) { b.addEventListener("click", function () { docSel = b.dataset.doc; docHid = null; render(); toPrev(); }); });
-    app.querySelectorAll("[data-day]").forEach(function (b) { b.addEventListener("click", function () { docDay = +b.dataset.day; docHid = null; render(); }); });
+    app.querySelectorAll("[data-day]").forEach(function (b) { b.addEventListener("click", function () { var v = b.dataset.day; docDay = /^h/.test(v) ? v : +v; docHid = null; render(); if (b.closest(".dhist")) toPrev(); }); });
+    var pr = app.querySelector('[data-act="print"]'); if (pr) pr.addEventListener("click", function () { printDoc(); });
     app.querySelectorAll("[data-hh]").forEach(function (b) { b.addEventListener("click", function () { docHid = b.dataset.hh; render(); }); });
     app.querySelectorAll("[data-org]").forEach(function (b) { b.addEventListener("click", function () { docOrg = b.dataset.org; made1["d3:" + docHid] = made1["d3:" + docHid] || false; render(); }); });
     var mk = app.querySelector('[data-act="make"]'); if (mk) mk.addEventListener("click", function () { vib(); made1[(docSel === "d5" ? "d5:" + docPer : docSel) + ":" + (docHid || "")] = true; render(); });

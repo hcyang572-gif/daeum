@@ -645,7 +645,6 @@ dialog.acct::backdrop { background: rgba(17,26,39,.45); }
 .rk.k-elder, .rk.k-etc { background: var(--go-soft); color: var(--go-ink); }
 .resw .srcline { padding: 0 14px 12px; margin-top: 4px; }
 
-@media print { .top, .bnav, .toast { display: none !important; } body { background: #fff; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } .mp .rt { stroke-dashoffset: 0; } }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -858,12 +857,6 @@ dialog.acct::backdrop { background: rgba(23,28,38,.42); backdrop-filter: blur(3p
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
 }
-@media print {
-  body::before { display: none; }
-  .blk, .well, .paper, .dcard, .svc, .hs, .qcard { background-image: none !important; box-shadow: none !important; border: 1px solid #ccc; }
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-  .hero h1 span { color: var(--now); background: none; -webkit-background-clip: border-box; background-clip: border-box; }
-}
 /* 39 출처 꼬리표 — 고정폭 글꼴엔 한글이 없어 자간이 벌어졌다 → 본문 글꼴 + 같은 폭 숫자 */
 .chip small, .plug { font-family: var(--f); font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 .rule { font-family: var(--f-doc); font-variant-numeric: tabular-nums; }
@@ -947,7 +940,6 @@ dialog.acct::backdrop { background: rgba(23,28,38,.42); backdrop-filter: blur(3p
   .word small { font-size: 10px; letter-spacing: .08em; }
   .top .hlp { padding: 6px 10px; }
 }
-@media print { .top .tabs { display: none !important; } body[data-s] #app { padding-left: 0 !important; } }
 /* 현장 폰 화면 하단 메뉴도 위 하단 탭바와 같은 손맛(높이·모서리) */
 .bnav nav { border-radius: 18px; }
 .bnav a { min-height: 46px; display: grid; place-items: center; border-radius: 13px; }
@@ -1009,7 +1001,6 @@ dialog.acct::backdrop { background: rgba(23,28,38,.42); backdrop-filter: blur(3p
   .dk-head, .dk-aside { display: none !important; }
   .desk, .dk-body { display: contents; }
 }
-@media print { .fsteps, .dk-head, .dk-aside { display: none !important; } .desk, .dk-body { display: block; } }
 
 @media (min-width: 1024px) {
   /* 좌측 메뉴열: 큰 메뉴 4개 아래 «현장 7단계» 묶음 — 어느 화면에서도 7단계가 다 보인다 */
@@ -1166,3 +1157,230 @@ dialog.acct::backdrop { background: rgba(23,28,38,.42); backdrop-filter: blur(3p
 .wbars .wcol i { display: block; min-height: 2px; }
 .wbars b { font-size: 11.5px; font-weight: 800; color: var(--mute); white-space: nowrap; }
 .wbars .wb.now b { color: var(--ink); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   43 문서 한 장 틀 · «읽는 법» 상자 · A4 인쇄 — 🩵 미르 2026-11-03
+   호창님 11-03: «만들어지는 모든 보고서는 언제든 바로 A4로 출력해 보고할 수 있는 수준»
+   · 화면: .print-doc(머리·읽는 법·본문·꼬리) — 장식 없이 얇은 선과 위계로만
+   · 인쇄: 아래 @media print 한 곳에만 모았다(옛 648·861·950·1012행 블록 통합)
+   · 흑백 인쇄 이중 부호화(색 + 무늬): 만남=짙은 단색 · 부재=빗금 · 거절=점 · 방문 전=흰 바탕+테
+     출처 칸: 명단·API=짙은 단색 · 규칙=점 · 자동 문장=빗금 · 빈칸=붉은 점선 테
+   파로 hook(app.js): .print-doc[data-doc] · .doc-head(.dh-org/.dh-name/.dh-date) · .doc-legend(.dl-t·dl·.legend.dl-sw) ·
+   .doc-body · .doc-foot(.df-l/.df-r/.doc-page) · .doc-ctl.no-print · .pr-btn · .pr-val · .doc-chart(.dc-stack/.dc-seg · .dc-cols/.dc-c/.dc-bar) ·
+   .pg-keep · .pg-break · .only-screen · .xrow · [data-src=data|rule|ai|empty] · [data-series] · [data-pat] · .pat-<계열>
+   ══════════════════════════════════════════════════════════════════════ */
+.print-only, .xrow, .pr-val { display: none; }
+tr.xrow { display: none; }
+
+/* ── 문서 조작줄(화면 전용) ── */
+.doc-ctl { display: grid; gap: 10px; margin-bottom: 14px; }
+.doc-ctl > .flow2 { margin-bottom: 0; }
+.doc-ctl .hh-pick { margin: 0; }
+.pr-btn { justify-self: end; border: 0; border-radius: 10px; padding: 8px 14px; font: 800 12.5px var(--f); background: #fff; color: var(--ink); box-shadow: 0 2px 0 var(--edge), inset 0 0 0 1px rgba(17,26,39,.12); display: inline-flex; align-items: center; gap: 7px; }
+.pr-btn::before { content: ""; width: 14px; height: 12px; border: 1.6px solid currentColor; border-radius: 2px; box-shadow: inset 0 -4px 0 -2.2px currentColor; }
+.pr-btn:hover { background: #F7F5F0; }
+.pr-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--edge), inset 0 0 0 1px rgba(17,26,39,.12); }
+
+/* ── 문서 한 장(화면) — 종이 위 머리줄·꼬리줄 ── */
+.print-doc { display: block; background: #fff; border-radius: 6px; padding: 18px 22px 14px; box-shadow: 0 0 0 1px #E1E5EB, 0 10px 22px -16px rgba(17,26,39,.5); }
+.print-doc .paper { box-shadow: none; padding: 0; border-radius: 0; }
+.print-doc .paper .ruler { display: none; }
+.print-doc .paper h3 { margin-top: 2px; }
+.doc-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; gap: 10px; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--ink); font-size: 11.5px; color: var(--mute); }
+.doc-head .dh-org { font-weight: 700; letter-spacing: .06em; }
+.doc-head .dh-name { font-weight: 800; color: var(--ink); font-size: 12px; text-align: center; }
+.doc-head .dh-date { text-align: right; font-variant-numeric: tabular-nums; }
+.doc-body { min-width: 0; display: flex; flex-direction: column; }
+.doc-body > .paper { order: -1; } /* 문서 제목·표가 먼저, 그래프·범례·출처는 그 아래 */
+.doc-body > .legend, .doc-body > .srcline { margin-top: 10px; }
+.doc-foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 14px; margin-top: 14px; padding-top: 8px; border-top: 1px solid #DDD8CE; font-size: 11px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.doc-page:empty { display: none; }
+
+/* ── «읽는 법» 상자: 왼쪽 표제 칸 + 오른쪽 뜻·범례. 얇은 테 한 줄, 장식 없음 ── */
+.doc-legend { margin: 0 0 14px; padding: 10px 14px 11px; border: 1px solid #D9D3C7; border-radius: 8px; background: #FBFAF7; font-size: 12px; line-height: 1.5; color: #3A4250; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 6px 14px; align-items: start; }
+.doc-legend > :is(h4, .dl-t) { margin: 0; grid-row: 1 / span 9; font: 800 11px/1.6 var(--f); letter-spacing: .14em; color: var(--ink); padding-right: 12px; border-right: 1px solid #E2DDD2; white-space: nowrap; align-self: stretch; }
+.doc-legend > :not(h4):not(.dl-t) { grid-column: 2; min-width: 0; }
+.doc-legend dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0,1fr); gap: 2px 12px; }
+.doc-legend dt { font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.doc-legend dd { margin: 0; color: var(--mute); }
+.doc-legend .legend { margin: 0; padding-top: 6px; border-top: 1px dashed #E2DDD2; gap: 4px 14px; font-size: 11.5px; color: #3A4250; }
+.doc-legend ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 3px 14px; }
+.doc-legend li { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.doc-legend p { margin: 0; font-size: 11px; color: var(--mute); }
+.sw, .doc-legend i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; flex: none; box-shadow: inset 0 0 0 .5px rgba(17,26,39,.25); }
+@media (max-width: 520px) {
+  .doc-legend { grid-template-columns: 1fr; }
+  .doc-legend > :is(h4, .dl-t) { grid-row: auto; border-right: 0; padding: 0 0 4px; border-bottom: 1px solid #E2DDD2; }
+  .doc-legend > :not(h4):not(.dl-t) { grid-column: 1; }
+  .doc-legend dl { grid-template-columns: 1fr; gap: 0; } .doc-legend dd { margin-bottom: 4px; }
+  .doc-head { grid-template-columns: 1fr 1fr; } .doc-head .dh-name { grid-column: 1 / -1; grid-row: 1; }
+  .print-doc { padding: 14px 14px 12px; }
+}
+
+/* ── 문서 안 그래프: 쌓은 막대(stack) · 세로 막대(cols) ── */
+.doc-chart { margin: 14px 0 0; }
+.doc-chart figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 12px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.doc-chart figcaption small { font-weight: 700; color: var(--mute); font-variant-numeric: tabular-nums; }
+.dc-stack { display: flex; gap: 2px; height: 26px; border-radius: 5px; overflow: hidden; background: var(--well); }
+.dc-seg { display: flex; align-items: center; justify-content: center; min-width: 0; font-style: normal; }
+.dc-seg span { font-size: 11px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: clip; padding: 0 6px; text-shadow: 0 1px 1px rgba(0,0,0,.25); }
+.dc-seg.dc-zero { flex: 1; color: var(--mute); font-size: 11.5px; font-weight: 700; background: transparent; }
+.dc-cols { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0,1fr); gap: 8px; align-items: end; height: 132px; padding-top: 4px; }
+.dc-c { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; gap: 3px; }
+.dc-c em { font: 800 11.5px/1 var(--f); font-style: normal; color: var(--ink); font-variant-numeric: tabular-nums; }
+.dc-bar { display: block; width: min(34px, 100%); min-height: 2px; max-height: calc(100% - 36px); border-radius: 4px 4px 0 0; box-shadow: 0 1px 0 #C9C4BA; }
+.dc-c b { font-size: 10.5px; font-weight: 700; color: var(--mute); white-space: nowrap; padding-top: 3px; border-top: 1px solid #C9C4BA; align-self: stretch; text-align: center; }
+
+/* 범례 칩 색(화면) — inline 색이 없을 때의 바탕 */
+:is(.pat-met, [data-series="met"]) { background-color: var(--go); }
+:is(.pat-absent, [data-series="absent"]) { background-color: var(--now); }
+:is(.pat-refuse, [data-series="refuse"]) { background-color: var(--src-rule); }
+:is(.pat-visit, [data-series="visit"]) { background-color: #5D6B80; }
+.legend span[data-series], .legend span[data-src] { background: none; }
+
+/* ── 43 문서함 이력(파로 9aad90d): 주별 방문일 고르기 · 주별 문서 이력 표 · 표 제목 ── */
+.dpick-wk { align-items: center; row-gap: 8px; }
+.dpick-wk .dwk-l { font-size: 11px; font-weight: 800; letter-spacing: .04em; color: var(--mute); padding: 0 2px 0 10px; border-left: 1px solid var(--edge); margin-left: 4px; }
+.dpick-wk .dwk-l:first-child { border-left: 0; padding-left: 0; margin-left: 0; }
+.dpick button.past { color: #8A909B; font-weight: 700; }
+.dpick button.past[aria-pressed="true"] { color: var(--ink); font-weight: 800; }
+.dhist { margin-top: 20px; padding: 16px 18px; }
+.dhist h2 { margin: 0 0 12px; font-size: 13px; font-weight: 800; color: var(--mute); letter-spacing: .03em; display: flex; justify-content: space-between; align-items: baseline; }
+.dhist h2 small { font-size: 12px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.dhist-t { font-size: 12.5px; }
+.dhist-t thead th { width: auto; text-align: center; background: #F5F3EE; font-size: 11.5px; white-space: nowrap; }
+.dhist-t tbody th { width: 76px; white-space: nowrap; }
+.dhist-t td { text-align: center; font-variant-numeric: tabular-nums; vertical-align: middle; }
+.dhist-t td.dh-days { text-align: left; }
+.dh-days button { border: 0; border-radius: 7px; margin: 2px 4px 2px 0; padding: 3px 8px; font: 700 12px var(--f); background: var(--well); color: var(--ink); }
+.dh-days button:hover { background: #fff; box-shadow: 0 1px 0 var(--edge), inset 0 0 0 1px rgba(17,26,39,.1); }
+.dh-days button[aria-current="true"] { background: var(--rail); color: #fff; }
+.dhist-t .dh-sum { font-weight: 900; white-space: nowrap; }
+.dhist-t tr.cur > * { background: #FFF6EF; }
+.dhist-t tr.cur > th { box-shadow: inset 3px 0 0 var(--now); }
+.doc-t > caption { caption-side: top; text-align: left; padding: 0 0 6px; font: 800 12px var(--f); color: var(--ink); }
+.doc-hh, .doc-rcp { margin-top: 14px; }
+.doc-hh thead th, .doc-rcp thead th { width: auto; text-align: center; }
+@media (max-width: 640px) { .dhist { padding: 12px; overflow-x: auto; } .dhist-t { min-width: 560px; } }
+
+@page { /* 여백 상자엔 쪽번호(숫자)만 — 한글을 넣으면 Chromium이 2쪽부터 글자를 깨뜨린다(실측). 기관·문서명은 .doc-head */
+  size: A4; margin: 16mm 16mm 17mm;
+  @bottom-center { content: counter(page) " / " counter(pages); font: 700 8pt "Pretendard Variable", "Pretendard", "Malgun Gothic", sans-serif; color: #3A4250; vertical-align: top; padding-top: 3mm; }
+}
+
+@media print {
+  :root {
+    --pt-hatch: repeating-linear-gradient(135deg, rgba(17,26,39,.42) 0 1px, transparent 1px 3.6px);
+    --pt-dots: radial-gradient(circle, rgba(17,26,39,.62) .8px, transparent 1.1px);
+  }
+  *, *::before, *::after { animation: none !important; transition: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { background: #fff !important; }
+  body { color: #111A27; font-size: 10pt; line-height: 1.6; min-height: 0; overflow: visible !important; }
+  body::before, body::after { display: none !important; }
+  h1, h2, h3, h4, figcaption, .doc-head { break-after: avoid; page-break-after: avoid; }
+  p, li, dd { orphans: 3; widows: 3; }
+  .print-only { display: block !important; }
+  .xrow { display: block !important; } tr.xrow { display: table-row !important; }
+  .pr-val { display: inline !important; }
+  .pg-break { break-before: page; page-break-before: always; }
+  thead { display: table-header-group; } tfoot { display: table-footer-group; }
+  .doc-t > caption { font-size: 9pt; padding-bottom: 1.5mm; break-after: avoid; }
+  .doc-hh, .doc-rcp { margin-top: 5mm; }
+  .doc-t thead th { background: #EFEDE8 !important; }
+  body.printing-doc main > :not(.dgrid), body.printing-doc .dhist, body.printing-doc .dpick { display: none !important; }
+  .pg-keep, .blk, .dcard, .svc, .hs, .qcard, figure, svg, .legend, .mlg, .rlg, .doc-legend, .srcline, .ab-r, .wbars, .wds, .todo2 li, .doc-t tr, .doc-foot { break-inside: avoid; page-break-inside: avoid; }
+  table.pg-keep { break-inside: auto; page-break-inside: auto; } /* 긴 표는 줄 단위로 넘김(통째로 밀면 앞 쪽이 빈다) */
+
+  /* 화면 전용 — 메뉴·탭·알림·버튼줄·고르기·창 */
+  .top, .tabs, .bnav, .toast, .fsteps, .dk-head, .dk-aside, .sfa, .pwa, .hlp, .sync, dialog, .no-print, .only-screen, .pr-btn,
+  .flow2, .hh-pick, .dpick, .dep, body[data-s="docs"] .dhead, .doc-t td input { display: none !important; }
+  body[data-s] #app, #app { padding: 0 !important; margin: 0 !important; }
+  .wrap { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .desk, .dk-body { display: block !important; }
+  .hero h1 span { color: var(--now); background: none; -webkit-background-clip: border-box; background-clip: border-box; }
+
+  /* 판·홈: 입체 그림자·결 걷고 얇은 테 한 줄 */
+  .blk, .well, .dcard, .svc, .hs, .qcard, .wd { background: #fff !important; background-image: none !important; box-shadow: none !important; border: .6pt solid #C9C4BA; border-radius: 2mm; }
+
+  /* ── 문서함: 고른 문서 한 장만 A4 본문으로 ── */
+  .dgrid { display: block !important; }
+  .prev { padding: 0 !important; border: 0 !important; background: none !important; }
+  .prev:has(.print-doc) > :not(.print-doc), body[data-s="docs"] main:has(.print-doc) > :not(.dgrid) { display: none !important; } /* 문서함 인쇄 = 고른 문서 한 장(이력 표·안내줄 제외) */
+  .print-doc { box-shadow: none !important; border-radius: 0; padding: 0 !important; background: #fff !important; }
+  .doc-head { font-size: 8.5pt; color: #3A4250; border-bottom: 1.4pt solid #111A27; padding-bottom: 2mm; margin-bottom: 5mm; }
+  .doc-head .dh-name { font-size: 8.5pt; }
+  .doc-foot { margin-top: 6mm; padding-top: 2mm; border-top: .6pt solid #8C8F96; font-size: 7.5pt; color: #4A5260; }
+  .doc-page { display: none !important; }
+  .paper { box-shadow: none !important; border: 0 !important; border-radius: 0; padding: 0 !important; overflow: visible !important; font-size: 10.5pt; background: #fff !important; }
+  .paper .ruler { display: none !important; }
+  .paper h3 { font-size: 18pt; letter-spacing: .3em; margin: 0 0 1.5mm; }
+  .paper .sub, .paper .org { font-size: 8.5pt; color: #4A5260; margin: 1mm 0 5mm; }
+  .doc-t { font-size: 10pt; border-top: 1.4pt solid #111A27; border-bottom: 1.1pt solid #111A27; }
+  .doc-t th, .doc-t td { border: .5pt solid #8C8F96; padding: 2.2mm 2.8mm; line-height: 1.6; }
+  .doc-t tr:first-child > * { border-top: 0; }
+  .doc-t th { background: #EFEDE8 !important; color: #111A27; font-weight: 700; width: 27mm; }
+  .doc-t.wide { font-size: 8.5pt; } .doc-t.wide th, .doc-t.wide td { padding: 1.4mm 1.8mm; } .doc-t.wide th { width: auto; text-align: center; }
+  .doc-t td[data-src="empty"] { outline: .9pt dashed var(--src-empty); outline-offset: -1.6pt; background: var(--src-empty-soft) !important; }
+  .doc-pre { font-size: 10.5pt; line-height: 1.75; }
+  mark { background: var(--src-ai-soft) !important; box-shadow: none !important; text-decoration: underline dotted 1.1pt #6E5500; text-underline-offset: 2.2pt; }
+  .legend { margin-top: 3mm; font-size: 8.5pt; color: #3A4250; gap: 1.5mm 5mm; }
+  .legend i, .sw, .doc-legend i { width: 5mm !important; height: 3.2mm !important; border-radius: .5mm; box-shadow: inset 0 0 0 .5pt #3A4250 !important; }
+  .srcline { font-size: 8pt; color: #4A5260; margin-top: 2mm; }
+  .foot { margin-top: 5mm; padding-top: 2mm; border-top: .5pt solid #C9C4BA; font-size: 8pt; }
+  .foot a { display: none; }
+  .demo-tag { background: #fff !important; box-shadow: inset 0 0 0 .6pt #8C8F96; }
+  /* 큰 글씨 안내문(D8) — 집에 남기는 종이: 본문을 크게 */
+  .print-doc[data-doc="d8"] .paper h3 { font-size: 24pt; letter-spacing: .02em; }
+  .print-doc[data-doc="d8"] .doc-t th { font-size: 13pt; width: 45mm; }
+  .print-doc[data-doc="d8"] .doc-t td { font-size: 20pt; font-weight: 800; line-height: 1.4; padding: 4mm; }
+
+  /* «읽는 법» 상자 — 테 한 줄 + 왼쪽 굵은 기준선 */
+  .doc-legend { background: #fff !important; border: .6pt solid #9EA2A8; border-left: 2.2pt solid #111A27; border-radius: 0; padding: 2.4mm 3.5mm; margin: 0 0 5mm; font-size: 8.5pt; color: #222A36; }
+  .doc-legend > :is(h4, .dl-t) { font-size: 8.5pt; border-right-color: #C9C4BA; }
+  .doc-legend dd, .doc-legend p { color: #3A4250; }
+  .doc-legend .legend { margin: 0; font-size: 8pt; border-top-color: #C9C4BA; }
+
+  /* 문서 안 그래프 */
+  .dc-stack { height: 8mm; background: #fff !important; box-shadow: inset 0 0 0 .5pt #3A4250; gap: .8pt; }
+  .dc-seg span { color: #111A27; text-shadow: none; background: rgba(255,255,255,.92); border-radius: .6mm; padding: 0 1.4mm; font-size: 8pt; }
+  .dc-cols { height: 36mm; } .dc-c b { border-top-color: #3A4250; }
+  .dc-bar { box-shadow: inset 0 0 0 .5pt #3A4250; }
+
+  /* ── 실적 화면 인쇄: 표지 문장 + 2단 ── */
+  .dhead { margin: 0 0 4mm; }
+  .dhead h1 { font-size: 16pt; line-height: 1.3; }
+  .dhead p { font-size: 8.5pt; max-width: none; }
+  .pfgrid { grid-template-columns: 60mm minmax(0,1fr) !important; gap: 4mm; }
+  .ringc { grid-row: auto !important; }
+  .todoc { grid-column: 1 / -1; break-inside: auto !important; page-break-inside: auto !important; } /* 할 일 목록은 줄 단위로 넘김(통째로 밀면 앞 쪽이 빈다) */
+  .pfgrid h2, .week h2, .wtrend h2 { font-size: 9.5pt; color: #111A27; }
+  .week, .wtrend { margin-top: 4mm; }
+  .wds { overflow: visible !important; grid-template-columns: repeat(5, minmax(0,1fr)) !important; }
+  .wd { min-height: 22mm; }
+  .wbars { height: 42mm; }
+  .ckb { box-shadow: none !important; border: .6pt solid #3A4250; background: #fff !important; }
+
+  /* ── 흑백 이중 부호화: 색은 inline 그대로, 무늬만 덧입힌다(!important = inline 바탕 위에 겹치기) ── */
+  /* 만남(단색, 한 단계 짙게) */
+  :is(.ab-b .done, .mlg i.a, .wcol i[style*="#0C8767"], .rlg i[style*="#0C8767"], .pat-met, [data-series="met"]:is(i, .sw, .dc-seg, .dc-bar), [data-pat="met"]) { background-color: #06664D !important; }
+  /* 부재 = 빗금 */
+  :is(.ab-b .absent, .mlg i.c, .wcol i[style*="#E0581F"], .rlg i[style*="#E0581F"], .pat-absent, [data-series="absent"]:is(i, .sw, .dc-seg, .dc-bar), [data-pat="hatch"]:is(i, .sw, .dc-seg, .dc-bar), [data-pat="absent"]) { background-image: var(--pt-hatch) !important; }
+  /* 거절 = 점(바탕 한 단계 옅게) */
+  :is(.ab-b .refused, .mlg i.d, .wcol i[style*="#8A9396"], .rlg i[style*="#8A9396"], .pat-refuse, [data-series="refuse"]:is(i, .sw, .dc-seg, .dc-bar), [data-pat="dot"]:is(i, .sw, .dc-seg, .dc-bar), [data-pat="refuse"]) { background-image: var(--pt-dots) !important; background-size: 3px 3px !important; }
+  :is(.ab-b .refused, .mlg i.d, .wcol i[style*="#8A9396"], .rlg i[style*="#8A9396"], .pat-refuse, [data-series="refuse"]:is(i, .sw, .dc-seg, .dc-bar), [data-pat="refuse"]) { background-color: #C3C9CC !important; }
+  /* 방문한 곳(visit) = 남회색 + 가로줄 */
+  :is(.pat-visit, [data-pat="visit"], [data-series="visit"]:is(i, .sw, .dc-seg, .dc-bar)) { background-color: #5D6B80 !important; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.55) 0 .9px, transparent .9px 3.4px) !important; }
+  /* 방문 전 = 흰 바탕 + 테 */
+  :is(.ab-b .planned, .mlg i.e, .rlg i[style*="#E1E5EB"], .pat-planned, [data-series="planned"]:is(i, .sw, .dc-seg, .dc-bar), [data-pat="outline"]:is(i, .sw, .dc-seg, .dc-bar)) { background-color: #fff !important; background-image: none !important; box-shadow: inset 0 0 0 .8pt #3A4250 !important; }
+  .ab-b, .wcol { box-shadow: inset 0 0 0 .5pt #3A4250 !important; gap: .6pt !important; background: #fff !important; }
+  .mlg i, .rlg i { width: 5mm !important; height: 3mm !important; border-radius: .5mm; }
+  /* 출처 칸: 명단·API=짙은 단색 · 규칙=점 · 자동 문장=빗금 · 빈칸=붉은 점선 테 */
+  :is(.legend i[style*="src-data"], [data-src="data"]:is(i, .sw), i[data-pat="data"], .sw.pat-data) { background-color: #4F5E75 !important; }
+  :is(.legend i[style*="src-rule"], [data-src="rule"]:is(i, .sw), i[data-pat="rule"], .sw.pat-rule) { background-color: #C9CED1 !important; background-image: var(--pt-dots) !important; background-size: 3px 3px !important; }
+  :is(.legend i[style*="src-ai"], [data-src="ai"]:is(i, .sw), i[data-pat="ai"], .sw.pat-ai) { background-color: #F7DB7A !important; background-image: var(--pt-hatch) !important; }
+  :is(.legend i[style*="src-empty"], [data-src="empty"]:is(i, .sw), i[data-pat="empty"], .sw.pat-empty) { background: var(--src-empty-soft) !important; box-shadow: none !important; outline: .8pt dashed var(--src-empty); outline-offset: -.8pt; }
+  /* 진도 고리(SVG) — 선엔 무늬를 못 넣어 명도 4단(약 28%·48%·78%·95%) */
+  .ring circle[stroke="#0C8767"] { stroke: #06664D; }
+  .ring circle[stroke="#8A9396"] { stroke: #C3C9CC; }
+  .ring circle[stroke="#E1E5EB"] { stroke: #F1F2F4; }
+}
