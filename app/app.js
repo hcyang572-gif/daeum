@@ -160,7 +160,7 @@
   }
 
   // ═════ P0 오늘 ═════
-  var STN = [["순서", "명단 43열"], ["동선", "명단 우선방문 열"], ["요약", "급여 열·15090532"], ["확인", "명단 위기정보"], ["상담", "서비스 원문 15090532"], ["기록", "서비스 목록 15108347"], ["보고", "수급권자 15062448"]];
+  var STN = [["순서", "발굴 명단"], ["동선", "명단 우선방문 열"], ["요약", "급여 열·15090532"], ["확인", "명단 위기정보"], ["상담", "서비스 원문 15090532"], ["기록", "서비스 목록 15108347"], ["보고", "수급권자 15062448"]];
   function stationHref(i, hid) {
     var x = hid ? ":" + hid : "";
     return ["#plan", "#route" + x, "#home" + x, "#check" + x, "#talk" + x, "#record" + x, "#docs"][i];
@@ -174,7 +174,7 @@
   function today() {
     var c = dayCtx(), now = new Date();
     var dm = docModel(), pend = dm.pending;
-    if (!c) return top("today", "<strong>" + md(now) + "</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>방문 계획이 아직 없습니다</b>방문 계획 화면에서 한국사회보장정보원 명단을 불러오면 이 화면이 채워집니다.<br><br><a class="cta" href="' + OFF + '#s1"><b>명단 불러오기</b><small>행복이음 내려받기 서식(43열)</small></a></div></main>';
+    if (!c) return top("today", "<strong>" + md(now) + "</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>방문 계획이 아직 없습니다</b>방문 계획 화면에서 한국사회보장정보원 명단을 불러오면 이 화면이 채워집니다.<br><br><a class="cta" href="' + OFF + '#s1"><b>명단 불러오기</b><small>행복이음 내려받기 서식</small></a></div></main>';
     var first = c.planned[0] || null, area = BY[c.d.ids[0]] ? BY[c.d.ids[0]].area : "";
     var whenLbl = c.isToday ? "오늘" : (c.d.date ? md(c.d.date) : "다음 방문일");
     var rb = rankBy(), p = plan(), mt = meta();
@@ -201,14 +201,14 @@
       '<a class="cta" href="' + (first ? "#home:" + first : "#docs") + '"><b>' + (first ? (c.isToday ? "오늘 일 시작" : whenLbl + " 방문 준비") : "문서 만들기") + "</b><small>방문 " + c.planned.length + "곳 · 문서 " + pend + "건 대기</small></a></div>" +
       '<section class="scene well" id="scene" aria-label="데이터 → 기능 → 목표"><canvas id="cv" aria-hidden="true"></canvas>' +
       '<div class="col"><h2><em>데이터</em>한국사회보장정보원</h2><div class="chips">' +
-      '<div class="chip blk" data-feeds="0,2,3,6"><b>발굴대상자 명단 43열</b><small>행복이음 내려받기 서식</small></div>' +
+      '<div class="chip blk" data-feeds="0,2,3,6"><b>발굴대상자 명단</b><small>행복이음 내려받기 서식</small></div>' +
       '<div class="chip blk" data-feeds="2,3,4,5"><b>복지서비스 OpenAPI</b><small>15090532 · 15108347</small></div>' +
       '<div class="chip blk" data-feeds="1,4"><b>자원정보서비스 · 연계처</b><small>15001839 연동 · 상주 ' + (RES ? RES.facilities.length + "곳 " + RES.total + "건" : "—") + "</small></div>" +
       '<div class="chip blk" data-feeds="6"><b>수급권자 현황</b><small>15062448</small></div></div></div>' +
       '<div class="col"><h2><em>기능</em>하루 7단계가 앞 결과를 이어 받음</h2>' + rail + "</div>" +
       '<div class="col"><h2><em>목표</em>두 번 쓰지 않는 보고서</h2>' + fan + "</div></section>" +
       '<div class="board"><div class="rows blk"><div class="rows-h"><span>' + esc(whenLbl) + " 방문 · " + c.d.ids.length + "곳" + (c.d.confirmed ? " · 확정" : " · 자동 배정안") + '</span><span>출발 상주시청 · ' + esc(c.d.s.end || "") + " 복귀</span></div>" + rows + "</div>" +
-      '<div class="side">' + dead + '<div class="links blk"><h3>이어지는 화면</h3><a href="#plan">방문 계획<span>일차·순서 바꾸기</span></a><a href="#route' + (hid0 ? ":" + hid0 : "") + '">동선·길안내<span>네이버 지도</span></a><a href="#perf">실적·사후관리<span>재방문·약속</span></a><a href="' + OFF + '#s1">명단 불러오기<span>엑셀 43열</span></a></div></div></div>' +
+      '<div class="side">' + dead + '<div class="links blk"><h3>이어지는 화면</h3><a href="#plan">방문 계획<span>일차·순서 바꾸기</span></a><a href="#route' + (hid0 ? ":" + hid0 : "") + '">동선·길안내<span>네이버 지도</span></a><a href="#perf">실적·사후관리<span>재방문·약속</span></a><a href="' + OFF + '#s1">명단 불러오기<span>엑셀 파일</span></a></div></div></div>' +
       '<p class="foot"><span class="demo-tag">가상 데이터</span><span>가구 번호·나이·사유·메모는 모두 시연용 가상 · 실제 개인정보 없음</span><a href="#help">사용 방법</a><a href="shared/data.html">활용 데이터</a><a href="?demo=reset#today">시연 처음 상태로</a></p></main>';
     return html;
   }
@@ -277,13 +277,13 @@
     var vt = F.visitTime.profile(att, hid, { neighborLog: neighborLog() }), L = lastLog(hid);
     var reasons = indText(h);
     var lines = [];
-    lines.push({ lb: "발굴 이유", t: (reasons.join(" · ") || "위기정보") + (m.lonely ? " · 고독사 우선방문 대상" : ""), plug: ["명단 43열"] });
+    lines.push({ lb: "발굴 이유", t: (reasons.join(" · ") || "위기정보") + (m.lonely ? " · 고독사 우선방문 대상" : ""), plug: ["발굴 명단"] });
     var past = [];
     if (L) past.push(mdDot(L.at) + " " + (L.result === "met" ? "만남" : L.result === "absent" ? "부재" : "거절") + (L.memo ? " — " + clip(L.memo, 34) : ""));
     else if (vt.absences.length) past.push(vt.absences.length + "번 부재(" + uniq(vt.absences.map(function (a) { return a.label; })).join("·") + ")");
     else past.push("처음 찾아가는 집" + (r && r.gap != null ? " · 상담 공백 " + r.gap + "일" : ""));
     if (m.aiRes) past.push("AI초기상담 " + m.aiRes);
-    lines.push({ lb: "지난 기록", t: past.join(" · "), plug: L ? ["명단 43열", "현장 기록"] : ["명단 43열"] });
+    lines.push({ lb: "지난 기록", t: past.join(" · "), plug: L ? ["발굴 명단", "현장 기록"] : ["발굴 명단"] });
     var warn = [], wplug = [];
     if (OH && OH.get() && OH.isOld(h)) { warn.push("오래된 집이 많은 읍면(30년 넘은 주택 " + Math.round(OH.rate(h.area) * 100) + "%)"); wplug.push("건축물대장"); }
     if (w) { warn.push(w.name + " — " + (/폭염/.test(w.name) ? "시원한 곳·마실 물" : "난방이 되는지 먼저")); wplug.push("기상청 특보"); }
@@ -630,7 +630,7 @@
   function stTag(st) { return st === "done" ? '<span class="tg ok">만남</span>' : st === "absent" ? '<span class="tg ab">부재</span>' : st === "refused" ? '<span class="tg rf">거절</span>' : ""; }
   function planView() {
     var ds = days(), dl = deadline(), p = plan();
-    if (!ds.length) return top("plan", "<strong>방문 계획</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>명단이 아직 없습니다</b>한국사회보장정보원 발굴대상자 명단(행복이음 내려받기 43열)을 불러오면 일차가 자동으로 나뉩니다.<br><br><a class="cta" href="' + OFF + '#s1"><b>명단 불러오기</b><small>엑셀 43열</small></a></div></main>';
+    if (!ds.length) return top("plan", "<strong>방문 계획</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>명단이 아직 없습니다</b>한국사회보장정보원 발굴대상자 명단(행복이음 내려받기)을 불러오면 일차가 자동으로 나뉩니다.<br><br><a class="cta" href="' + OFF + '#s1"><b>명단 불러오기</b><small>엑셀 파일</small></a></div></main>';
     if (!planDay || !ds.some(function (d) { return d.n === planDay; })) { var fd = fieldDay(ds); planDay = fd ? fd.n : ds[0].n; }
     var D4 = ds.filter(function (d) { return d.n === planDay; })[0], rb = rankBy(), mt = meta(), total = ds.reduce(function (a, d) { return a + d.ids.length; }, 0);
     var cards = ds.map(function (d) {
@@ -667,7 +667,7 @@
       '<div id="pmopt">' + rtOptHtml(rtCmp(rtListOrder(D4.ids), D4.ids)) + "</div>" + conf +
       '<div class="dlset blk"><div class="k">기한 점검</div><div class="dlrow"><label>명단 기한<input type="date" id="dlUntil" value="' + esc(dl.until || "") + '"></label><label>하루 방문<select id="dlPer">' + per + "</select></label></div>" +
       (dp && dp.set ? '<div class="dln"><b>' + dp.left + "</b> 근무일 남음 · " + (dp.over ? '<em class="bad">이대로면 넘김</em>' : '<em class="ok">여유 ' + dp.spare + "일</em>") + "</div><p>" + esc(dp.line) + "</p>" : "<p>기한을 넣으면 하루 몇 집씩 봐야 하는지 계산합니다.</p>") + "</div></div></div>" +
-      '<p class="foot"><span class="demo-tag">가상 데이터</span><span>가구 번호·읍면만 표시 · 이동 시간은 직선 거리 근사(«약») · 순서 근거 = 한국사회보장정보원 발굴 순위 + 거리</span><a href="' + OFF + '#s1">명단 불러오기(엑셀 43열)</a></p></main>';
+      '<p class="foot"><span class="demo-tag">가상 데이터</span><span>가구 번호·읍면만 표시 · 이동 시간은 직선 거리 근사(«약») · 순서 근거 = 한국사회보장정보원 발굴 순위 + 거리</span><a href="' + OFF + '#s1">명단 불러오기(엑셀)</a></p></main>';
   }
   function bindPlan() {
     var ds = days(); if (!ds.length) return;
@@ -931,7 +931,7 @@
     { k: "d3", nm: "서비스 연계 의뢰서", sub: "연계 확정 때 · hwpx 1쪽", meter: [["m", 4], ["r", 3], ["a", 2]] },
     { k: "d4", nm: "안내 문자 문안", sub: "이름·주소 빼고 쉬운 말 · 복사", meter: [["m", 2], ["a", 3]] },
     { k: "d5", nm: "주간·월간 추진 실적 보고", sub: "수급권자 현황 15062448 비교 · hwpx", meter: [["r", 9], ["m", 2], ["a", 1]] },
-    { k: "d6", nm: "차수 처리 결과 명단", sub: "명단 43열 + 방문 4열 · xlsx", meter: [["m", 12], ["r", 4]] },
+    { k: "d6", nm: "차수 처리 결과 명단", sub: "발굴 명단 + 방문 기록 · xlsx", meter: [["m", 12], ["r", 4]] },
     { k: "d7", nm: "한 장 인계 카드", sub: "선택 · 담당 교체·부재 때 · hwpx 1쪽", meter: [["m", 3], ["r", 6], ["a", 1], ["e", 1]] },
     { k: "d8", nm: "큰 글씨 안내문", sub: "선택 · 어르신 가구에 남김 · hwpx 1쪽", meter: [["r", 4], ["a", 1]] }
   ];
@@ -1280,7 +1280,7 @@
     }
     docHid = "";
     var R = roundRows();
-    return ctl(flowBtns("d6", true, "xlsx 받기")) + sheet("d6", "차수 처리 결과 명단", roundYm() + " 차수 · 명단 " + R.length + "가구", legendBox([["결과", "가구마다 마지막 방문 기록(만남·부재·거절·방문 전)"], ["다음 확인", "열린 약속의 날짜와 내용"], ["출처", "명단 열 = 한국사회보장정보원 발굴대상자 조회 서식(43열 중 가구 번호·읍면·순위만, 개인정보 4칸 제외) · 방문 4열 = 현장 기록"]], srcSw(["data", "rule"])),
+    return ctl(flowBtns("d6", true, "xlsx 받기")) + sheet("d6", "차수 처리 결과 명단", roundYm() + " 차수 · 명단 " + R.length + "가구", legendBox([["결과", "가구마다 마지막 방문 기록(만남·부재·거절·방문 전)"], ["다음 확인", "열린 약속의 날짜와 내용"], ["출처", "명단 열 = 한국사회보장정보원 발굴대상자 조회 서식(가구 번호·읍면·순위만, 개인정보 4칸 제외) · 방문 4열 = 현장 기록"]], srcSw(["data", "rule"])),
       '<div class="paper">' + rulerOf(["data", "data", "rule"]) + '<h3>차수 처리 결과 명단</h3><div class="sub">' + esc(roundYm()) + " 명단 " + R.length + "가구 · 명단 열 + 방문 4열(방문일·결과·연계·다음 확인)</div>" +
       '<table class="doc-t wide"><thead><tr><th>가구</th><th>읍면</th><th>발굴 순위</th><th>방문일</th><th>결과</th><th>연계</th><th>다음 확인</th></tr></thead><tbody>' + R.map(function (r) { return "<tr>" + r.map(function (v, i) { return "<td" + (i >= 3 ? ' data-src="rule"><span class="rule">' + esc(v) + "</span>" : ' data-src="data">' + esc(v)) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>");
   }
@@ -1416,7 +1416,7 @@
   };
   function ico(dev, k) { return '<svg viewBox="0 0 64 64" aria-hidden="true">' + ICO[dev] + (k ? '<g transform="' + (dev === "ph" ? "translate(0,2)" : "translate(0,-2)") + '">' + ICO[k] + "</g>" : "") + "</svg>"; }
   var HELP = [
-    { s: "s1", dev: "pc", t: "방문 계획", w: "사무실 PC · 명단을 받은 날", d: "한국사회보장정보원 발굴 순위대로 일차가 나뉘어 있습니다. ▲▼로 순서만 손보고 «확정»", f: "명단 43열 · 발굴 순위 · 기한(근무일)", n: "확정 1번", h: "#plan" },
+    { s: "s1", dev: "pc", t: "방문 계획", w: "사무실 PC · 명단을 받은 날", d: "한국사회보장정보원 발굴 순위대로 일차가 나뉘어 있습니다. ▲▼로 순서만 손보고 «확정»", f: "발굴 명단 · 발굴 순위 · 기한(근무일)", n: "확정 1번", h: "#plan" },
     { s: "s2", dev: "ph", t: "동선", w: "폰 · 출발 전", d: "남은 집이 지도에 순서대로. «네이버 지도로 길안내» 한 번이면 차 길안내가 시작됩니다", f: "방문 계획(실시간)", n: "1번", h: "#route" },
     { s: "s3", dev: "ph", t: "집 앞 요약", w: "폰 · 집 앞 차 안 30초", d: "발굴 이유·지난 기록·주의할 점·받는 급여를 5줄로. 읽고 «들어가기»", f: "명단 위기정보·급여 열 · 건축물대장 · 기상특보", n: "0번(읽기만)", h: "#home" },
     { s: "s4", dev: "ph", t: "현장 확인", w: "폰 · 집 안에서", d: "명단 위기정보에 맞춘 체크 5~8줄. 줄마다 «괜찮음»이나 «문제 있음» 한 번", f: "명단 위기정보 유형", n: "줄마다 1번", h: "#check" },
