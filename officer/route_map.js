@@ -123,6 +123,14 @@
       line = [o].concat(opts.stops.map(function (s) { return new N.LatLng(s.lat, s.lng); }));
       if (opts.ret && opts.stops.length) line.push(o);
     }
+    // 42 다른 일차(흐린 점선·작은 점) — 범위 맞춤에는 넣지 않는다(지금 일차가 화면에 크게)
+    (opts.ghosts || []).forEach(function (gs) {
+      if (!gs.length) return;
+      state.overlays.push(new N.Polyline({ map: map, path: [o].concat(gs.map(function (s) { return new N.LatLng(s.lat, s.lng); })).concat(opts.ret ? [o] : []),
+        strokeColor: "#7B8BA3", strokeOpacity: .55, strokeWeight: 3, strokeStyle: "shortdash", strokeLineCap: "round", strokeLineJoin: "round", zIndex: 1 }));
+      gs.forEach(function (s) { state.overlays.push(new N.Marker({ map: map, position: new N.LatLng(s.lat, s.lng), clickable: false, zIndex: 5,
+        icon: { content: '<i class="nm-ghost" aria-hidden="true"></i>', anchor: new N.Point(6, 6) } })); });
+    });
     var anim = state.animateNext && !REDUCED && !!window.requestAnimationFrame; state.animateNext = false;
     if (line.length > 1) {
       var poly = new N.Polyline({ map: map, path: anim ? line.slice(0, 1).concat(line.slice(0, 1)) : line, strokeColor: opts.color || "#5B4FD0", strokeOpacity: .9,

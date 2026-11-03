@@ -120,14 +120,14 @@ var F = require(path.join(base, "officer/features.js"));
 global.DaeumRequests = { key: "daeum.requests", list: function () { return JSON.parse(mem["daeum.requests"] || "[]"); } };
 function seed() { delete require.cache[require.resolve(path.join(base, "officer/demo_seed.js"))]; require(path.join(base, "officer/demo_seed.js")); }
 function J(k) { return JSON.parse(mem[k] || "null"); }
-t("빈 저장소 → 명단 열 9가구(발굴순위 1~9·발굴년월)·명단 밖 메모 4·확정 기록 2·방문 계획 9·방문 결과 5 · 시연 신고 0(S11-k)", function () {
+t("빈 저장소 → 명단 열 9가구(발굴순위 1~9·발굴년월)·명단 밖 메모 4·확정 기록 2·방문 계획 9·방문 결과 5+지난 6주 18(S12-e 42) · 시연 신고 0(S11-k)", function () {
   seed();
   var m = J("daeum.s11.importMeta"); assert.strictEqual(m.__seed, "S9j"); assert.deepStrictEqual(IDS.map(function (id) { return m[id].prio; }), ["1", "2", "3", "4", "5", "6", "7", "8", "9"]); assert.strictEqual(m["A-056"].ym, "2026-10");
   var o = J("daeum.officer.outside"); assert.strictEqual(o.length, 4); assert.deepStrictEqual(o.map(function (x) { return x.status; }), ["not_in_list", "in_list", "registered", "referred"]);
   o.forEach(function (x) { assert.ok(!x.name && !x.phone, "이름·전화 없음"); });
   assert.strictEqual(J("daeum.officer.records").length, 2); assert.strictEqual(DaeumRequests.list().length, 0, "시연 신고 0건");
   var p = J("daeum.visit.plan"); assert.strictEqual(p.seed, "S9j"); assert.strictEqual(p.rows.length, 9); assert.deepStrictEqual(p.rows.filter(function (r) { return r.day === 1; }).map(function (r) { return r.household_no; }), ["P-033", "P-026", "Q-033", "A-009", "P-013"]);
-  var L = J("daeum.visit.log"); assert.strictEqual(L.length, 5); L.forEach(function (x) { assert.ok(!/d{6}-?d{7}|01d-?d{3,4}-?d{4}|가상리/.test(x.memo), "메모 개인정보 없음"); });
+  var L = J("daeum.visit.log"); assert.strictEqual(L.length, 23); assert.strictEqual(L.filter(function (x) { return /^VL-H/.test(x.id); }).length, 18); L.forEach(function (x) { assert.ok(!/d{6}-?d{7}|01d-?d{3,4}-?d{4}|가상리/.test(x.memo), "메모 개인정보 없음"); });
   assert.strictEqual(m["Q-033"].aiRes, "안 닿음");
 });
 t("날이 바뀌어 다시 깔아도 시연 기록이 겹치지 않음 · 담당자가 남긴 메모는 남음", function () {
