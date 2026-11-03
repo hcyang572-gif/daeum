@@ -280,7 +280,7 @@
     var sign = notes.length + (L && L.tags ? L.tags.filter(function (t) { return FIELD_SIGNS.indexOf(t) >= 0; }).length : 0);
     var prev = c.d.ids[i - 1], next = c.d.ids[i + 1];
     return '<main class="ph">' + phBrand() + mini(2, hid) +
-      '<section class="idc blk" aria-label="가구"><span class="num">' + hid + '</span><span class="who">' + esc(h.area + " · " + ageLine(h) + " 사심 · 발굴 " + (+m.cnt || 1) + "회째") + '</span><span class="rk well">정보원 순위<b>' + esc(lr) + "</b></span>" +
+      '<section class="idc blk" aria-label="가구"><span class="num">' + hid + '</span><span class="who">' + esc(h.area + " · " + ageLine(h) + " 사심 · 발굴 " + (+m.cnt || 1) + "회째") + '</span><span class="rk well">한국사회보장정보원<br>발굴 순위<b>' + esc(lr) + "</b></span>" +
       '<span class="eta">' + (eta ? "도착 예정 <b>" + esc(eta) + "</b> · " : "") + c.d.ids.length + "곳 중 <b>" + (i + 1) + "번째</b>" + (c.isToday ? "" : " · " + (c.d.date ? md(c.d.date) : "")) + "</span></section>" +
       '<ul class="stops blk">' + lines.slice(0, 5).map(function (x, n) { return '<li class="' + (x.warn ? "warn" : "") + '"><i>' + (x.warn ? "!" : n + 1) + '</i><div><span class="lb">' + esc(x.lb) + "</span>" + esc(x.t) + (x.plug.length ? "<br>" + x.plug.map(function (p) { return '<span class="plug">' + esc(p) + "</span>"; }).join("") : "") + "</div></li>"; }).join("") + "</ul>" +
       '<section class="basis well" aria-label="판단 근거 카드"><div class="ttl"><span>판단 근거 카드</span><span>점수 없음 · 판단은 담당자</span></div><div><b>' + reasons.length + "</b>명단 사유</div><div><b>" + (+m.cnt || 1) + "</b>발굴 횟수</div><div><b>" + (sign || "?") + "</b>현장 징후</div>" +
@@ -438,7 +438,7 @@
     var a = done[key] || []; if (a.indexOf(id) < 0) a.push(id); done[key] = a; lsSet(LS_DOCS, done);
   }
   function fills() { return lsGet(LS_FILL, {}) || {}; }
-  /** 복명서 칸 — 칸마다 출처(data 명단·정보원 / rule 규칙 / ai 자동 문장 / empty 입력 필요) */
+  /** 복명서 칸 — 칸마다 출처(data 명단·한국사회보장정보원 / rule 규칙 / ai 자동 문장 / empty 입력 필요) */
   function d2Fields(M) {
     var dd = M.dd, logsD = M.cases.filter(function (x) { return x.at; }).map(function (x) { return x.at; }).sort();
     var areas = uniq(dd.ids.map(function (id) { return BY[id].area; }));
