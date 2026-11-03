@@ -969,6 +969,9 @@ dialog.acct::backdrop { background: rgba(23,28,38,.42); backdrop-filter: blur(3p
 .rt-map .rt-nbox { width: 100% !important; height: 100% !important; }
 .rt-map.has-naver .rt-svg { visibility: hidden; }
 .rt-map .mtop { z-index: 5; }
+.rt-map.rt-plan { min-height: 320px; border-radius: 14px; }
+.rt-map.rt-plan .rt-nmap { inset: 0; }
+#pmopt .rt-opt { margin-top: 0; }
 .rt-nmap .nm-stop { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #0C8767; color: #fff; font: 800 13px/1 "IBM Plex Mono", monospace; box-shadow: 0 0 0 2px #fff, 0 4px 10px -3px rgba(17,26,39,.5); }
 .rt-nmap .nm-stop.nx { background: #E0581F; transform: scale(1.18); box-shadow: 0 0 0 3px #fff, 0 0 0 7px rgba(224,88,31,.28), 0 6px 14px -4px rgba(17,26,39,.55); }
 .rt-nmap .nm-stop.dn { background: #D7F0E8; color: #075B45; }

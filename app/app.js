@@ -653,8 +653,9 @@
       '<div class="dcards" role="group" aria-label="일차">' + cards + "</div>" +
       (ow.over ? '<p class="warnline">' + esc(ow.why.join(" · ")) + " — 한 집을 다음 일차로 미뤄 보세요.</p>" : "") +
       '<div class="pgrid"><ol class="tline blk" aria-label="' + D4.n + '일차 순서">' + tl + "</ol>" +
-      '<div class="pside"><div class="mapw blk">' + mapSvg({ id: "pm", days: ds.map(function (d) { return { ids: d.ids, focus: d.n === planDay }; }), done: listIds().filter(function (id) { return statusOf(id) !== "planned"; }), labels: true, h: 380, label: D4.n + "일차 방문 순서 지도" }) +
-      '<div class="mlg"><span><i class="a"></i>' + D4.n + '일차</span><span><i class="b"></i>다른 일차</span><span>직선 거리 근사 · 실제 길은 폰 «동선»에서 네이버 지도로</span></div></div>' + conf +
+      '<div class="pside"><div class="mapw blk"><div class="rt-map rt-plan" id="pmmap"><div class="rt-svg">' + mapSvg({ id: "pm", days: ds.map(function (d) { return { ids: d.ids, focus: d.n === planDay }; }), done: listIds().filter(function (id) { return statusOf(id) !== "planned"; }), labels: true, h: 380, label: D4.n + "일차 방문 순서 지도" }) + '</div><div class="rt-nmap" aria-label="네이버 지도 — ' + D4.n + '일차 방문 순서"><div class="rt-nbox"></div></div></div>' +
+      '<div class="mlg"><span><i class="a"></i>' + D4.n + '일차</span><span class="rt-lg-b"><i class="b"></i>다른 일차</span><span class="rt-lg-t">직선 거리 근사 · 네이버 지도를 불러오는 중</span></div></div>' +
+      '<div id="pmopt">' + rtOptHtml(rtCmp(rtListOrder(D4.ids), D4.ids)) + "</div>" + conf +
       '<div class="dlset blk"><div class="k">기한 점검</div><div class="dlrow"><label>명단 기한<input type="date" id="dlUntil" value="' + esc(dl.until || "") + '"></label><label>하루 방문<select id="dlPer">' + per + "</select></label></div>" +
       (dp && dp.set ? '<div class="dln"><b>' + dp.left + "</b> 근무일 남음 · " + (dp.over ? '<em class="bad">이대로면 넘김</em>' : '<em class="ok">여유 ' + dp.spare + "일</em>") + "</div><p>" + esc(dp.line) + "</p>" : "<p>기한을 넣으면 하루 몇 집씩 봐야 하는지 계산합니다.</p>") + "</div></div></div>" +
       '<p class="foot"><span class="demo-tag">가상 데이터</span><span>가구 번호·읍면만 표시 · 이동 시간은 직선 거리 근사(«약») · 순서 근거 = 한국사회보장정보원 발굴 순위 + 거리</span><a href="' + OFF + '#s1">명단 불러오기(엑셀 43열)</a></p></main>';
@@ -668,6 +669,7 @@
     var u = document.getElementById("dlUntil"), pd = document.getElementById("dlPer");
     function setDl() { lsSet(LS_DL, { until: u.value || null, perDay: +pd.value || 5 }); render(); }
     if (u) u.addEventListener("change", setDl); if (pd) pd.addEventListener("change", setDl);
+    if (D4) rtMapBind("pmmap", "pmopt", D4.ids, null, "#0C8767");
   }
   function reorder(D4, ids) {
     var p = plan();
@@ -796,22 +798,24 @@
     var c = k.c, left = c.d.ids.filter(function (id) { return statusOf(id) === "planned"; });
     var nb = app.querySelector('[data-act="nav"]'); if (nb) nb.addEventListener("click", function () { vib(); launch(left.length ? left : c.d.ids, 0); });
     app.querySelectorAll("[data-seg]").forEach(function (b) { b.addEventListener("click", function () { launch(left, +b.dataset.seg); }); });
-    bindRouteMap(c, k.hid);
+    rtMapBind("rtmap", "rtopt", c.d.ids, k.hid, "#0C8767");
   }
   var rtAsked = {}, rtRO = null;
-  function bindRouteMap(c, hid) {
-    var wrap = document.getElementById("rtmap"), box = wrap && wrap.querySelector(".rt-nbox"); if (!box) return; // 네이버가 지도 판에 position:relative 를 덮어써서 바깥 칸(절대 위치)이 아닌 안쪽 판에 그린다
-    var ids = c.d.ids, before = rtListOrder(ids);
+  /** 네이버 지도(도로 경로선·번호 핀) + 최적화 비교 카드 — 동선(②)·방문 계획(①) 공용. wrapId 칸 안 .rt-nbox 에 그린다 */
+  function rtMapBind(wrapId, optId, ids, hid, color) {
+    var wrap = document.getElementById(wrapId), box = wrap && wrap.querySelector(".rt-nbox"); if (!box) return; // 네이버가 지도 판에 position:relative 를 덮어써서 바깥 칸(절대 위치)이 아닌 안쪽 판에 그린다
+    var before = rtListOrder(ids);
     function stops() { return ids.map(function (id, j) { var p = RP.toLatLng(BY[id]), st = statusOf(id); return { lat: p.lat, lng: p.lng, no: j + 1, label: "방문 " + (j + 1), cls: id === hid ? "nx" : st !== "planned" ? "dn" : "" }; }); }
     function paint() {
-      var RM = window.DaeumRouteMap, r = rtCmp(before, ids), o = document.getElementById("rtopt");
+      var RM = window.DaeumRouteMap, r = rtCmp(before, ids), o = document.getElementById(optId);
       if (o) o.innerHTML = rtOptHtml(r);
+      var lt = wrap.parentNode.querySelector(".rt-lg-t"); if (lt) lt.textContent = r.road ? "네이버 지도 · 도로 경로(Directions 15)" : "네이버 지도 · 선은 직선 근사(도로 경로 받는 중)";
       var mt = wrap.querySelector(".mtop span:last-child"); if (mt && r.road) mt.textContent = (Math.round(r.a.km * 10) / 10).toFixed(1) + "km · 이동 " + Math.round(r.a.min) + "분(도로)";
       if (!RM || !document.body.contains(box)) return;
       var off = RP.toLatLng(OFFICE), ra = RM.cacheGet(RP.cacheKey(rtStops(ids), true));
-      var ok = RM.draw({ box: box, office: { lat: off.lat, lng: off.lng, name: "상주시청", short: "시청" }, stops: stops(), path: ra ? ra.path : null, ret: true, color: "#0C8767" });
+      var ok = RM.draw({ box: box, office: { lat: off.lat, lng: off.lng, name: "상주시청", short: "시청" }, stops: stops(), path: ra ? ra.path : null, ret: true, color: color || "#0C8767" });
       if (!ok) return;
-      var shown = function () { wrap.classList.add("has-naver"); };
+      var shown = function () { wrap.classList.add("has-naver"); var lb = wrap.parentNode.querySelector(".rt-lg-b"); if (lb) lb.hidden = true; };
       try { naver.maps.Event.once(RM.state.map, "tilesloaded", shown); } catch (e) { /* 이벤트 없음 */ }
       setTimeout(function () { if (box.querySelector("img")) shown(); }, 1500); // 이미 받아 둔 타일이면 tilesloaded 가 안 올 수 있다
     }
@@ -819,7 +823,10 @@
       return RM.load().then(function () {
         paint();
         if (rtRO) rtRO.disconnect();
-        if (window.ResizeObserver) { rtRO = new ResizeObserver(function () { if (document.body.contains(box)) RM.refresh(); else rtRO.disconnect(); }); rtRO.observe(box); }
+        if (window.ResizeObserver) { var was = box.clientWidth * box.clientHeight; rtRO = new ResizeObserver(function () { // 숨김(0px)에서 보이게 되면 다시 그려 범위를 맞추고, 크기만 바뀌면 판 크기만 맞춘다
+          if (!document.body.contains(box)) { rtRO.disconnect(); return; }
+          var now = box.clientWidth * box.clientHeight; if (!now) { was = 0; return; }
+          if (!was) paint(); else RM.refresh(); was = now; }); rtRO.observe(box); }
         // 도로 경로 — 두 순서(명단·최적) 모두. 같은 순서·복귀면 7일 보관이라 다시 부르지 않는다
         if (ids.length > RP.MAX_ROAD_STOPS) return;
         [before, ids].forEach(function (ord) {
