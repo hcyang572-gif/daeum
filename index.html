@@ -7,105 +7,59 @@
 <link rel="apple-touch-icon" href="shared/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="닿음">
-<title>닿음 · 복지 사각지대 현장 업무 도우미</title>
-<meta name="description" content="복지 사각지대 현장 업무 도우미 닿음 — 한국사회보장정보원 위기가구 명단 이후의 현장 업무(오늘·방문·기록·보고)를 돕는 상주시 적용 예시 시제품">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="현장 업무 도우미">
+<title>복지 사각지대 현장 업무 도우미 — 닿음</title>
+<meta name="description" content="복지 사각지대 현장 업무 도우미(닿음) — 한국사회보장정보원 발굴 명단을 받은 날부터 방문·기록·보고까지, 같은 내용을 두 번 쓰지 않는 공무원 전용 시제품(상주시 적용 예시, 가구는 모두 가상)">
 <meta name="color-scheme" content="light">
-<meta name="theme-color" content="#F3F5F4">
+<meta name="theme-color" content="#EEF0F3">
 <link rel="icon" href="shared/icons/daeum.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="닿음">
+<meta property="og:site_name" content="복지 사각지대 현장 업무 도우미 — 닿음">
 <meta property="og:url" content="https://hcyang572-gif.github.io/daeum/">
-<meta property="og:title" content="닿음 — 복지 사각지대 현장 업무 도우미">
-<meta property="og:description" content="찾아가는 발걸음부터 도움이 닿기까지">
+<meta property="og:title" content="복지 사각지대 현장 업무 도우미 — 닿음">
+<meta property="og:description" content="나가기 전부터 보고서까지, 한 번에">
 <meta property="og:image" content="https://hcyang572-gif.github.io/daeum/shared/og/invite_800x400.png">
 <meta property="og:image:width" content="800">
 <meta property="og:image:height" content="400">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="shared/tokens.css">
-<link rel="stylesheet" href="shared/s11_page.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;600;700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="app/app.css?v=s12d1">
 <style>
-  /* 첫 화면 — S11 시안 B «소나무빛»(S11-d 채점 7): 흰 카드 한 장 + 문 두 개. 3초 안에: 출처 꼬리표 · 제목 · 4메뉴 흐름 · 누구로 들어갈지 */
-  body { display: flex; flex-direction: column; }
-  main { flex: 1; width: 100%; max-width: 64rem; margin: 0 auto; padding: var(--sp-5) var(--sp-4) var(--sp-8); display: grid; gap: var(--sp-4); align-content: start; }
-  .hero { border-radius: var(--r-lg); padding: 32px 26px 28px; min-height: min(56vh, 30rem); display: flex; flex-direction: column; }
-  .brand { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: var(--fw-b); letter-spacing: -.04em; color: var(--ink); }
-  .hero .s11-tagline { margin-top: 18px; }
-  .brand i { position: relative; width: 30px; height: 30px; border-radius: 10px; background: var(--enamel); box-shadow: var(--enamel-sh); }
-  .brand i::before, .brand i::after { content: ""; position: absolute; top: 11px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
-  .brand i::before { left: 6px; opacity: .65; } .brand i::after { right: 6px; }
-  .hero h1 { margin: auto 0 0; padding-top: var(--sp-10); font-size: clamp(2rem, 8.6vw, 3.25rem); line-height: 1.22; font-weight: var(--fw-b); letter-spacing: -.045em; color: var(--ink); }
-  .hero h1 em { font-style: normal; color: var(--pine); }
-  .hero p { margin: 14px 0 0; font-size: var(--fs-b); line-height: 1.6; color: var(--muted); }
-  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 22px 0 0; padding: 0; list-style: none; font-size: .875rem; font-weight: 600; color: var(--pine); }
-  .flow li { padding: 6px 12px; border-radius: 14px; background: var(--pine-soft); }
-  .flow li b { font-weight: 700; margin-right: 4px; }
-  .flow li + li::before { content: ""; display: inline-block; width: 14px; height: 1px; margin: 0 10px 0 -22px; vertical-align: middle; background: var(--line); }
-  .flow li + li { margin-left: 22px; }
-  .doors { display: grid; gap: var(--sp-3); }
-  .door { display: flex; align-items: center; gap: 16px; padding: 18px 20px; min-height: 88px; border-radius: var(--r); text-decoration: none; color: var(--ink); transition: transform var(--t-fast) var(--c-std); }
-  .door:active { transform: scale(.98); }
-  .door .di { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; flex: none; background: var(--acc-soft); color: var(--acc-ink); }
-  .door b { display: block; font-size: 1.125rem; font-weight: var(--fw-b); letter-spacing: -.02em; }
-  .door span.t { display: block; font-size: var(--fs-xs); color: var(--ink2); margin-top: 2px; }
-  .door .arr { margin-left: auto; color: var(--ink2); }
-  .door.p { color: #fff; background: var(--enamel); box-shadow: var(--enamel-sh); }
-  .door.p span.t, .door.p .arr { color: rgba(255,255,255,.86); }
-  .door.p .di { color: #fff; background: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
-  .door.p:active { box-shadow: var(--enamel-dn); }
-  .pwa { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 18px; border-radius: var(--r); font-size: var(--fs-s); color: var(--ink2); }
+  .pwa { max-width: 460px; margin: 0 auto 120px; padding: 0 16px; font-size: 12.5px; color: #586273; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .pwa[hidden], .pwa [hidden] { display: none; }
-  .pwa b { color: var(--ink); font-weight: var(--fw-b); }
-  /* 홈 화면 설치 카드 — 눈에 띄게: 쪽빛 채움 + 오른쪽 호박색 단추(호창님 10-30) */
-  #pwa-install { background: var(--pine); color: var(--on-acc); border: 0; box-shadow: var(--d2); }
-  #pwa-install b { color: var(--on-acc); }
-  #pwa-install [data-pwa=btn], #pwa-install [data-pwa=ext] { margin-left: auto; min-height: 44px; padding: 0 20px; background: var(--mustard); color: #2A1A05; font-weight: var(--fw-b); box-shadow: none; border: 0; }
-  #pwa-install [data-pwa=btn]:active, #pwa-install [data-pwa=ext]:active { transform: translateY(1px); }
-  #pwa-install [data-pwa=msg], #pwa-install [data-pwa=ios], #pwa-install [data-pwa=and], #pwa-install [data-pwa=kakao] { flex-basis: 100%; color: var(--on-acc); opacity: .92; }
-  #pwa-install [data-pwa=kakao] { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  #pwa-install[hidden], #pwa-install [hidden] { display: none; }
+  .pwa button { border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 800; background: #1C2839; color: #fff; }
   html.pwa-app .pwa { display: none; }
-  footer { max-width: 64rem; width: 100%; margin: 0 auto; padding: var(--sp-4) var(--sp-4) var(--sp-8); font-size: var(--fs-xs); color: var(--ink2); }
-  @media (min-width: 900px) {
-    main { grid-template-columns: 1.35fr 1fr; align-items: stretch; padding-top: var(--sp-12); gap: var(--sp-5); }
-    .hero { min-height: 32rem; padding: 44px 40px 36px; }
-    .doors { align-content: end; gap: var(--sp-4); }
-    .door { min-height: 120px; padding: 24px; }
-  }
+  body[data-s="today"] .pwa, body[data-s="docs"] .pwa { max-width: 1240px; margin-bottom: 32px; padding: 0 24px; }
 </style>
 </head>
 <body>
-<div class="d-aura" aria-hidden="true"></div>
-<main>
-  <section class="hero d-card d-rise" aria-labelledby="hero-h">
-    <div class="brand"><i aria-hidden="true"></i>닿음</div>
-    <span class="s11-tagline"><i aria-hidden="true"></i>한국사회보장정보원 공공데이터 활용</span>
-    <h1 id="hero-h">위기가구 명단 이후<br><em>현장 업무</em> 도우미</h1>
-    <p>복지 사각지대 현장 업무 도우미 · 상주시 적용 예시(가구 정보는 모두 가상)</p>
-    <ol class="flow" aria-label="업무 순서"><li><b>1</b>오늘</li><li><b>2</b>방문</li><li><b>3</b>기록</li><li><b>4</b>보고</li></ol>
-  </section>
-  <nav class="doors" aria-label="창구 선택">
-    <a class="door p d-rise" style="--d:2" href="officer/index.html" data-h="light">
-      <span class="di" aria-hidden="true"><svg class="d-ico" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-      <span><b>공무원으로 시작</b><span class="t">오늘 방문할 집 · 방문 순서 · AI 상담 초안 · 보고서</span></span>
-      <svg class="d-ico arr" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
-    </a>
-    <div id="pwa-install" class="pwa d-card d-rise" style="--d:4" hidden>
-      <span><b>홈 화면에 설치</b> · 앱처럼 전체 화면으로 열립니다</span>
-      <button type="button" class="d-btn d-btn-p" data-pwa="btn" data-h="light" hidden>설치하기</button>
-      <span data-pwa="msg" role="status" aria-live="polite" hidden></span>
-      <span data-pwa="ios" hidden>아이폰: 아래 공유 단추 → «홈 화면에 추가»</span>
-      <span data-pwa="and" hidden>안드로이드: 오른쪽 위 ⋮ 메뉴 → «홈 화면에 추가»(또는 «앱 설치»)</span>
-      <span data-pwa="kakao" hidden>카카오톡 안에서는 설치가 안 됩니다<button type="button" class="d-btn d-btn-p" data-pwa="ext" data-h="light">바깥 브라우저로 열기</button></span>
-    </div>
-  </nav>
-</main>
-<footer>
-  <div class="dg-links"><button type="button" class="d-btn d-btn-s" data-guide="intro" data-h="light">소개</button><button type="button" class="d-btn d-btn-s" data-guide="help" data-h="light">사용 방법</button><a class="d-btn d-btn-s" href="shared/data.html" data-h="light">활용 데이터</a></div>
-  상주시 적용 예시 시제품 · 공개 데이터와 합성(가상) 데이터만 씁니다 · 실제 개인정보 없음 · 복지 서비스 찾기·신청은 복지로</footer>
-<script src="shared/ui.js"></script>
-<script src="shared/guide.js"></script>
+<div id="app" aria-live="polite"><p style="padding:24px">불러오는 중…</p></div>
+<div id="pwa-install" class="pwa" hidden>
+  <span><b>홈 화면에 설치</b> · 앱처럼 전체 화면으로 열립니다</span>
+  <button type="button" data-pwa="btn" hidden>설치하기</button>
+  <span data-pwa="msg" role="status" aria-live="polite" hidden></span>
+  <span data-pwa="ios" hidden>아이폰: 아래 공유 단추 → «홈 화면에 추가»</span>
+  <span data-pwa="and" hidden>안드로이드: 오른쪽 위 ⋮ 메뉴 → «홈 화면에 추가»</span>
+  <span data-pwa="kakao" hidden>카카오톡 안에서는 설치가 안 됩니다 <button type="button" data-pwa="ext">바깥 브라우저로 열기</button></span>
+</div>
+<noscript><p style="padding:24px">이 화면은 자바스크립트가 켜져 있어야 합니다.</p></noscript>
+<script src="shared/config.js"></script>
+<script src="data/households.js"></script>
+<script src="data/alerts_demo.js"></script>
+<script src="data/old_house.js"></script>
+<script src="data/recipients_sangju.js"></script>
+<script src="officer/features.js"></script>
+<script src="officer/fieldwork.js"></script>
+<script src="officer/priority.js"></script>
+<script src="officer/route_plan.js"></script>
+<script src="officer/old_house.js"></script>
+<script src="officer/notify.js"></script>
+<script src="officer/demo_seed.js"></script>
+<script src="shared/sync.js"></script>
+<script src="app/app.js?v=s12d1"></script>
 <script src="shared/pwa.js?v=3"></script>
 </body>
 </html>

@@ -137,7 +137,7 @@
   function tabOf(n) { return n <= 2 ? 1 : n <= 4 ? 2 : n === 8 ? 3 : n === 9 ? 4 : 0; }
   function top(n) {
     var on = tabOf(n), dl = deadline(), dp = dl.until ? F.deadline.plan(listIds().length, dl.until, dl.perDay) : null;
-    return '<header class="top"><a class="logo" href="#s2" aria-label="닿음 처음으로"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><defs><linearGradient id="lg0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1A8A8F"/><stop offset="1" stop-color="#0B5458"/></linearGradient></defs><rect width="30" height="30" rx="9" fill="url(#lg0)"/><rect x=".5" y=".5" width="29" height="29" rx="8.5" fill="none" stroke="#fff" stroke-opacity=".25"/><path d="M8 19c3-6 11-6 14 0" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="15" cy="11" r="3" fill="#F2A57B"/></svg><div><b>닿음</b><br><small>현장 업무 도우미</small></div></a>' +
+    return '<header class="top"><a class="logo" href="../index.html#today" aria-label="복지 사각지대 현장 업무 도우미 오늘 화면으로"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><defs><linearGradient id="lg0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1A8A8F"/><stop offset="1" stop-color="#0B5458"/></linearGradient></defs><rect width="30" height="30" rx="9" fill="url(#lg0)"/><rect x=".5" y=".5" width="29" height="29" rx="8.5" fill="none" stroke="#fff" stroke-opacity=".25"/><path d="M8 19c3-6 11-6 14 0" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="15" cy="11" r="3" fill="#F2A57B"/></svg><div><b>현장 업무 도우미</b><br><small>복지 사각지대 · 닿음</small></div></a>' +
       '<nav class="tabs" aria-label="업무 순서">' + TABS.map(function (t, i) { return (i ? '<span class="sep"></span>' : "") + '<a class="tab' + (i + 1 === on ? " on" : i + 1 < on ? " past" : "") + '" href="#s' + t[2] + '"' + (i + 1 === on ? ' aria-current="page"' : "") + ">" + ic(t[0], "s") + t[1] + "</a>"; }).join("") +
       '<span class="sep"></span><a class="tab" href="#s5" title="현장에서 폰으로 보는 화면">' + ic("i-phone", "s") + "현장</a></nav>" +
       '<div class="round">' + syncChip(false) + (dp && dp.set ? '<span class="dchip">기한 ' + esc(dl.until.slice(5).replace("-", ".")) + " · 근무일 " + dp.left + "일</span>" : "") +
@@ -795,7 +795,7 @@
     html = cur === 1 ? s1() : cur === 2 ? s2() : cur === 3 ? s3() : cur === 4 ? s4() : cur === 5 ? s5(curArg) : cur === 6 ? s6(curArg) : cur === 7 ? s7(curArg) : cur === 8 ? s8() : s9();
     document.body.classList.toggle("is-ph", ph);
     app.innerHTML = '<div class="screen on" data-s="' + cur + '">' + html + "</div>";
-    document.title = "닿음 · " + NUM.charAt(cur - 1) + " " + ["명단 불러오기", "전체 명단·기한", "우선순위 근거", "일차별 방문", "집 앞 요약", "동선·길안내", "확인·메모", "보고서", "사후관리"][cur - 1];
+    document.title = "복지 사각지대 현장 업무 도우미 — 닿음 · " + NUM.charAt(cur - 1) + " " + ["명단 불러오기", "전체 명단·기한", "우선순위 근거", "일차별 방문", "집 앞 요약", "동선·길안내", "확인·메모", "보고서", "사후관리"][cur - 1];
     if (cur === 1) bind1(); else if (cur === 2) bind2(); else if (cur === 3) bind3(); else if (cur === 4) bind4(); else if (cur === 5) bind5(); else if (cur === 6) bind6(curArg); else if (cur === 7) bind7(curArg); else if (cur === 8) bind8(); else bind9();
     app.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); });
     if (chg) { var mn = document.getElementById("main"); if (mn) mn.scrollTop = 0; }
