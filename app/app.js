@@ -1218,7 +1218,7 @@
       var hh = '<table class="doc-t doc-hh pg-keep"><caption>가구별 결과</caption><thead><tr><th>가구</th><th>읍면</th><th>결과</th><th>요지</th></tr></thead><tbody>' + M.cases.map(function (c) { return "<tr><td>" + c.id + "</td><td>" + esc(c.h.area) + '</td><td data-src="rule"><span class="rule">' + (ST_LBL[c.st] || "방문 전") + '</span></td><td data-src="ai">' + (c.st === "done" ? "<mark>" + esc(clip(c.memo, 46)) + "</mark>" : c.st === "absent" ? "다시 방문" : c.st === "refused" ? "근무일 5일 뒤 다시 권유" : "") + "</td></tr>"; }).join("") + "</tbody></table>";
       return ctl(flowBtns("d2", !empties, "hwpx 받기")) + sheet("d2", "복명서", bas, legendBox([["결과", "그날 확정한 방문 결과를 센 가구 수(만남·부재·거절)"], ["명단 사유 밖 징후", "현장 확인에서 «문제 있음»을 고른 가구 수"], ["기준", "방문일 하루 · 출장 시각은 첫 기록~마지막 기록"], ["출처", "가구 = 한국사회보장정보원 발굴대상자 명단 · 나머지 = 현장 기록"]], serSw(["met", "absent", "refuse"]) + srcSw()),
         stackFig("그날 방문 결과", [["met", M.met.length], ["absent", M.ab.length], ["refuse", M.cases.filter(function (x) { return x.st === "refused"; }).length]]) + paper("복명서", "상주시청 · " + area + " 맞춤형복지팀 · " + mdDot(now) + " 작성", fs) + hh +
-        srcLine("빈칸이 0이 되면 받기가 켜집니다 · 칸 이름은 시군 서식에 맞춰 바꿀 수 있는 가정(정의서 §7)"));
+        '<p class="srcline only-screen">빈칸이 0이 되면 받기가 켜집니다 · 칸 이름은 시군 서식에 맞춰 바꿀 수 있는 가정(정의서 §7)</p>');
     }
     if (k === "d1") {
       if (!M.met.length) return '<div class="emptyc"><b>만난 가구가 없습니다</b>상담일지 초안은 «만남»으로 확정한 가구에만 생깁니다.</div>';

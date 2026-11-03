@@ -1183,7 +1183,7 @@ tr.xrow { display: none; }
 
 /* ── 문서 한 장(화면) — 종이 위 머리줄·꼬리줄 ── */
 .print-doc { display: block; background: #fff; border-radius: 6px; padding: 18px 22px 14px; box-shadow: 0 0 0 1px #E1E5EB, 0 10px 22px -16px rgba(17,26,39,.5); }
-.print-doc .paper { box-shadow: none; padding: 0; border-radius: 0; }
+.print-doc .paper { box-shadow: none; padding: 0; border-radius: 0; margin: 0; background: none; } /* 45 미르: 겹친 종이 여백(812행 margin 6px) 걷기 — 표 오른쪽 끝이 머리줄·읽는 법 상자와 맞게 */
 .print-doc .paper .ruler { display: none; }
 .print-doc .paper h3 { margin-top: 2px; }
 .doc-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; gap: 10px; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--ink); font-size: 11.5px; color: var(--mute); }
@@ -1197,7 +1197,8 @@ tr.xrow { display: none; }
 .doc-page:empty { display: none; }
 
 /* ── «읽는 법» 상자: 왼쪽 표제 칸 + 오른쪽 뜻·범례. 얇은 테 한 줄, 장식 없음 ── */
-.doc-legend { margin: 0 0 14px; padding: 10px 14px 11px; border: 1px solid #D9D3C7; border-radius: 8px; background: #FBFAF7; font-size: 12px; line-height: 1.5; color: #3A4250; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 6px 14px; align-items: start; }
+.doc-legend { margin: 0 0 14px; padding: 10px 14px 11px; border: 1px solid #D9D3C7; border-radius: 8px; background: #FBFAF7; font-size: 12px; line-height: 1.5; color: #3A4250; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 0 14px; align-items: start; }
+.doc-legend > :not(h4):not(.dl-t) ~ :not(h4):not(.dl-t) { margin-top: 6px; } /* 45 미르: 줄 간격을 형제 여백으로 — 표제 칸 span 9 의 빈 줄마다 gap 이 쌓여 상자 아래가 비던 것 */
 .doc-legend > :is(h4, .dl-t) { margin: 0; grid-row: 1 / span 9; font: 800 11px/1.6 var(--f); letter-spacing: .14em; color: var(--ink); padding-right: 12px; border-right: 1px solid #E2DDD2; white-space: nowrap; align-self: stretch; }
 .doc-legend > :not(h4):not(.dl-t) { grid-column: 2; min-width: 0; }
 .doc-legend dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0,1fr); gap: 2px 12px; }
@@ -1307,16 +1308,16 @@ tr.xrow { display: none; }
   .prev { padding: 0 !important; border: 0 !important; background: none !important; }
   .prev:has(.print-doc) > :not(.print-doc), body[data-s="docs"] main:has(.print-doc) > :not(.dgrid) { display: none !important; } /* 문서함 인쇄 = 고른 문서 한 장(이력 표·안내줄 제외) */
   .print-doc { box-shadow: none !important; border-radius: 0; padding: 0 !important; background: #fff !important; }
-  .doc-head { font-size: 8.5pt; color: #3A4250; border-bottom: 1.4pt solid #111A27; padding-bottom: 2mm; margin-bottom: 5mm; }
+  .doc-head { font-size: 8.5pt; color: #3A4250; border-bottom: 1.4pt solid #111A27; padding-bottom: 2mm; margin-bottom: 4mm; }
   .doc-head .dh-name { font-size: 8.5pt; }
-  .doc-foot { margin-top: 6mm; padding-top: 2mm; border-top: .6pt solid #8C8F96; font-size: 7.5pt; color: #4A5260; }
+  .doc-foot { margin-top: 4mm; padding-top: 2mm; border-top: .6pt solid #8C8F96; font-size: 7.5pt; color: #4A5260; }
   .doc-page { display: none !important; }
   .paper { box-shadow: none !important; border: 0 !important; border-radius: 0; padding: 0 !important; overflow: visible !important; font-size: 10.5pt; background: #fff !important; }
   .paper .ruler { display: none !important; }
   .paper h3 { font-size: 18pt; letter-spacing: .3em; margin: 0 0 1.5mm; }
   .paper .sub, .paper .org { font-size: 8.5pt; color: #4A5260; margin: 1mm 0 5mm; }
   .doc-t { font-size: 10pt; border-top: 1.4pt solid #111A27; border-bottom: 1.1pt solid #111A27; }
-  .doc-t th, .doc-t td { border: .5pt solid #8C8F96; padding: 2.2mm 2.8mm; line-height: 1.6; }
+  .doc-t th, .doc-t td { border: .5pt solid #8C8F96; padding: 1.9mm 2.8mm; line-height: 1.6; }
   .doc-t tr:first-child > * { border-top: 0; }
   .doc-t th { background: #EFEDE8 !important; color: #111A27; font-weight: 700; width: 27mm; }
   .doc-t.wide { font-size: 8.5pt; } .doc-t.wide th, .doc-t.wide td { padding: 1.4mm 1.8mm; } .doc-t.wide th { width: auto; text-align: center; }
@@ -1335,8 +1336,9 @@ tr.xrow { display: none; }
   .print-doc[data-doc="d8"] .doc-t td { font-size: 20pt; font-weight: 800; line-height: 1.4; padding: 4mm; }
 
   /* «읽는 법» 상자 — 테 한 줄 + 왼쪽 굵은 기준선 */
-  .doc-legend { background: #fff !important; border: .6pt solid #9EA2A8; border-left: 2.2pt solid #111A27; border-radius: 0; padding: 2.4mm 3.5mm; margin: 0 0 5mm; font-size: 8.5pt; color: #222A36; }
+  .doc-legend { background: #fff !important; border: .6pt solid #9EA2A8; border-left: 2.2pt solid #111A27; border-radius: 0; padding: 2.4mm 3.5mm; margin: 0 0 4mm; font-size: 8.5pt; color: #222A36; }
   .doc-legend > :is(h4, .dl-t) { font-size: 8.5pt; border-right-color: #C9C4BA; }
+  .doc-legend > :not(h4):not(.dl-t) ~ :not(h4):not(.dl-t) { margin-top: 1.5mm; }
   .doc-legend dd, .doc-legend p { color: #3A4250; }
   .doc-legend .legend { margin: 0; font-size: 8pt; border-top-color: #C9C4BA; }
 
