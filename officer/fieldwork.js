@@ -296,7 +296,7 @@
       o.ask.forEach(function (a) { blocks.push({ t: "li", lv: 1, text: a }); });
       blocks.push({ t: "li", lv: 1, text: "붙임: " + o.docs.join(", ") + " · 회신: " + office });
       blocks.push({ t: "p", kind: "note", text: "※ 닿음 확정 기록으로 만든 초안 · 성명·주민등록번호·연락처·주소는 행복이음 확인 후 기재 · 본인 동의 확인 후 발송  끝." });
-      return { title: o.title, subtitle: o.org + " 앞", made: made, office: office, blocks: blocks };
+      return { title: o.title, subtitle: o.org + " 앞", made: made, office: office, compact: true, blocks: blocks }; // compact = 한 쪽 맞춤(S12-d 40)
     }
   };
 

@@ -40,8 +40,10 @@
     [2, 14, 1, "#FFFFFF"], [1, 20, 0, "#FFFFFF"], [2, 10, 0, "#DDEBE8"], [2, 20, 1, "#17594F"], [2, 20, 1, "#8A5A0C"], [2, 9, 1, "#17594F"], [2, 9, 0, "#56635F"], [2, 11, 1, "#14211F"], [2, 9, 1, "#17594F"], [2, 6, 0, "#000000"], [2, 10, 1, "#FFFFFF"],
     [2, 10, 1, PAL[0].hex], [2, 10, 1, PAL[1].hex], [2, 10, 1, PAL[2].hex], [2, 10, 1, PAL[3].hex], [2, 10, 1, PAL[4].hex], [2, 10, 0, "#14211F"], [2, 10, 1, "#17594F"], [2, 10, 1, "#FFFFFF"], [2, 9, 0, "#333333"], [2, 12, 1, "#14211F"],
     // S11-d4 C안(공문 정제형) — 크기 4단 22·15·13·10. 29 제목 · 30 소제목 · 31 본문 굵게 · 32 본문 굵은 빨강 · 33 숫자 카드 큰 글 · 34 카드 라벨 · 35 작은 굵은 빨강 · 36 표 머리 · 37 표 칸 · 38 표 칸 빨강 · 39 표 합계 · 40 부제 · 41 카드 단위 · 42 그림 제목 · 43 본문 작은 회색 · 44 작은 굵은 초록
-    [2, 22, 1, "#14211F"], [2, 15, 1, "#14211F"], [0, 13, 1, "#000000"], [0, 13, 1, "#B42318"], [2, 22, 1, "#2F5D50"], [2, 10, 0, "#333333"], [2, 10, 1, "#B42318"], [2, 10, 0, "#595959"], [2, 10, 0, "#000000"], [2, 10, 1, "#B42318"], [2, 10, 1, "#000000"], [2, 10, 0, "#595959"], [2, 13, 0, "#333333"], [2, 13, 1, "#14211F"], [0, 10, 0, "#595959"], [2, 10, 1, "#2F5D50"]];
-  var C4 = { title: 29, sec: 30, bold: 31, red: 32, kBig: 33, kLab: 34, kRed: 35, th: 36, td: 37, tdRed: 38, tdSum: 39, sub: 40, kUnit: 41, cap: 42, small: 43, green: 44 };
+    [2, 22, 1, "#14211F"], [2, 15, 1, "#14211F"], [0, 13, 1, "#000000"], [0, 13, 1, "#B42318"], [2, 22, 1, "#2F5D50"], [2, 10, 0, "#333333"], [2, 10, 1, "#B42318"], [2, 10, 0, "#595959"], [2, 10, 0, "#000000"], [2, 10, 1, "#B42318"], [2, 10, 1, "#000000"], [2, 10, 0, "#595959"], [2, 13, 0, "#333333"], [2, 13, 1, "#14211F"], [0, 10, 0, "#595959"], [2, 10, 1, "#2F5D50"],
+    // S12-d 40 큰 글씨(kpi2 big): 45 카드 머리말 18pt 굵게 · 46 카드 값 26pt 굵게
+    [2, 18, 1, "#333333"], [2, 26, 1, "#2F5D50"]];
+  var C4 = { title: 29, sec: 30, bold: 31, red: 32, kBig: 33, kLab: 34, kRed: 35, th: 36, td: 37, tdRed: 38, tdSum: 39, sub: 40, kUnit: 41, cap: 42, small: 43, green: 44, bigLab: 45, bigVal: 46 };
   // 문단 모양: [정렬, 왼쪽, 내어쓰기(음수 — 한글은 첫 줄을 왼쪽 여백에 두고 둘째 줄부터 그만큼 안으로), 위, 아래, 줄간격%, 다음과 함께]
   var PP = { body: 0, center: 1, right: 2, l1: 3, l2: 4, l3: 5, l4: 6, cellL: 7, cellR: 8, cellC: 9, ch: 10, note: 11, cap: 12, tight: 13, legend: 14 };
   var PPS = [["JUSTIFY", 0, 0, 0, 0, 160, 0], ["CENTER", 0, 0, 0, 0, 160, 0], ["RIGHT", 0, 0, 0, 0, 160, 0],
@@ -49,8 +51,12 @@
     ["LEFT", 0, 0, 0, 0, 130, 0], ["RIGHT", 0, 0, 0, 0, 130, 0], ["CENTER", 0, 0, 0, 0, 130, 0], ["LEFT", 0, 0, 1800, 600, 160, 1], ["LEFT", 0, 0, 200, 0, 130, 0], ["LEFT", 0, 0, 800, 150, 130, 1],
     ["CENTER", 0, 0, 0, 0, 100, 0], ["LEFT", 0, 0, 200, 0, 140, 0],
     // S11-d4: 15 ○ 줄 · 16 - 줄 · 17 □ 소제목 · 18 제목 · 19 그림 제목 · 20 부제
-    ["JUSTIFY", 2000, -2000, 100, 0, 140, 0], ["JUSTIFY", 3400, -1400, 0, 0, 140, 0], ["LEFT", 0, 0, 1000, 200, 130, 1], ["CENTER", 0, 0, 800, 100, 130, 0], ["LEFT", 0, 0, 800, 100, 130, 1], ["CENTER", 0, 0, 0, 300, 130, 0]];
+    ["JUSTIFY", 2000, -2000, 100, 0, 140, 0], ["JUSTIFY", 3400, -1400, 0, 0, 140, 0], ["LEFT", 0, 0, 1000, 200, 130, 1], ["CENTER", 0, 0, 800, 100, 130, 0], ["LEFT", 0, 0, 800, 100, 130, 1], ["CENTER", 0, 0, 0, 300, 130, 0],
+    // S12-d 40 doc.compact(한 쪽 맞춤 선택): 21 장 제목 · 22 □ 줄 — 위 간격·줄간격만 줄임
+    ["LEFT", 0, 0, 600, 250, 150, 1], ["JUSTIFY", 0, -1800, 200, 0, 145, 0]];
   var P4 = { o: 15, d: 16, sec: 17, title: 18, cap: 19, sub: 20 };
+  var PC = { ch: 21, l1: 22 }; // doc.compact 전용
+  var COMPACT = false;     // section() 동안만 켜진다
   // 테두리/배경: 1 없음(쪽) · 2 없음(글자) · 3 표 칸 · 4 머리 칸(회색) · 5 합계 칸(옅은 회색, 위 굵은 선) · 6 제목 상자 · 7 결론 상자
   function bf(id, line, w, fill, top) {
     var s = function (n, t, ww) { return "<hh:" + n + ' type="' + t + '" width="' + ww + '" color="#000000"/>'; };
@@ -110,7 +116,7 @@
   function t(s) { return "<hp:t>" + esc(s) + "</hp:t>"; }
   function para(pp, runs, brk) { return '<hp:p id="0" paraPrIDRef="' + pp + '" styleIDRef="0" pageBreak="' + (brk ? 1 : 0) + '" columnBreak="0" merged="0">' + runs + "</hp:p>"; }
   function secPr(plain) {
-    var mt = plain ? 3400 : PAGE.t, mb = plain ? 3000 : PAGE.b;
+    var mt = plain ? 3400 : COMPACT ? 3400 : PAGE.t, mb = plain ? 3000 : COMPACT ? 3000 : PAGE.b;
     var nf = function (place, len) { return '<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/><hp:noteLine length="' + len + '" type="SOLID" width="0.12 mm" color="#000000"/><hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/><hp:numbering type="CONTINUOUS" newNum="1"/><hp:placement place="' + place + '" beneathText="0"/>'; };
     var pbf = function (ty) { return '<hp:pageBorderFill type="' + ty + '" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>'; };
     return '<hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="0" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">' +
@@ -163,7 +169,7 @@
     }
     var out = [];
     if (b.title) out.push(para(PP.cap, run(CP.label, t(b.title)) + (b.unit ? run(CP.note, t("  " + b.unit)) : "")));
-    out.push(inTable(table(rows, { cols: nc, headRows: 1, split: true, rowH: 1500 })));
+    out.push(inTable(table(rows, { cols: nc, headRows: 1, split: true, rowH: COMPACT ? 1200 : 1500 })));
     if (b.src) out.push(para(PP.note, run(CP.note, t(b.src))));
     out.push(spacer());
     return out.join("");
@@ -258,7 +264,8 @@
   function kpi2(b) {
     var it = b.items, n = it.length, w = Math.floor(TW / n);
     var cells = it.map(function (k, i) {
-      var inner = para(PP.center, run(C4.kLab, t(k.k))) + para(PP.center, run(C4.kBig, t(k.v)) + (k.u ? run(C4.kUnit, t(" " + k.u)) : "")) + para(PP.center, rich(k.s || "", C4.kLab, C4.kLab, C4.kRed));
+      var lab = b.big ? C4.bigLab : C4.kLab, val = b.big ? C4.bigVal : C4.kBig; // b.big = 큰 글씨 안내문(머리말 18pt·값 26pt)
+      var inner = para(PP.center, run(lab, t(k.k))) + para(PP.center, run(val, t(k.v)) + (k.u ? run(C4.kUnit, t(" " + k.u)) : "")) + para(PP.center, rich(k.s || "", lab, lab, C4.kRed));
       return { w: i === n - 1 ? TW - w * (n - 1) : w, bf: i && i < n - 1 ? 25 : 24, mg: [300, 300, 200, 200], inner: inner };
     });
     return inTable(table([cells], { cols: n, rowH: 3200 })) + spacer();
@@ -288,12 +295,12 @@
     return out + (b.nospace ? "" : spacer());
   }
   function section(doc) {
-    var P = [];
+    var P = []; COMPACT = !!doc.compact; // doc.compact = 한 쪽 맞춤(여백·장 간격·표 행 높이만 줄임, 내용·글자 크기 그대로)
     // 첫 문단: 구역 설정 + 쪽 번호(중앙 하단 «- n -»)
     P.push(para(PP.center, run(CP.body, secPr(doc.plain) + '<hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl><hp:ctrl><hp:pageNum pos="BOTTOM_CENTER" formatType="DIGIT" sideChar="-"/></hp:ctrl>') + run(CP.body, "<hp:t/>")));
     // 제목 상자
     if (!doc.plain) { // doc.plain = S11-d4 C안: 제목은 {t:"t2"} 블록이 그린다
-      P.push(inTable(table([[{ w: TW, bf: 8, inner: cellP(PP.center, CP.titleW, doc.title || "") + (doc.subtitle ? cellP(PP.center, CP.subL, doc.subtitle) : "") }]], { cols: 1, rowH: 4200 })));
+      P.push(inTable(table([[{ w: TW, bf: 8, inner: cellP(PP.center, CP.titleW, doc.title || "") + (doc.subtitle ? cellP(PP.center, CP.subL, doc.subtitle) : "") }]], { cols: 1, rowH: COMPACT ? 3200 : 4200 })));
       P.push(para(PP.right, run(CP.note, t([doc.made, doc.office].filter(Boolean).join("  ")))));
       if (doc.note) P.push(para(PP.note, run(CP.note, t(doc.note))));
     }
@@ -311,14 +318,15 @@
       else if (b.t === "cap2") P.push(para(P4.cap, run(C4.cap, t(b.title))) + (b.sub ? para(PP.note, run(C4.small, t(b.sub))) : ""));
       else if (b.t === "tbl2") P.push(tbl2(b));
       else if (b.t === "gap") P.push(spacer());
-      else if (b.t === "ch") P.push(para(PP.ch, run(CP.ch, t(b.text))));
-      else if (b.t === "li") { var lv = Math.max(1, Math.min(4, b.lv || 1)); P.push(para(PP["l" + lv], run(lv === 1 ? CP.l1 : CP.body, t(SYM[lv - 1] + " " + b.text)))); }
+      else if (b.t === "ch") P.push(para(COMPACT ? PC.ch : PP.ch, run(CP.ch, t(b.text))));
+      else if (b.t === "li") { var lv = Math.max(1, Math.min(4, b.lv || 1)); P.push(para(COMPACT && lv === 1 ? PC.l1 : PP["l" + lv], run(lv === 1 ? CP.l1 : CP.body, t(SYM[lv - 1] + " " + b.text)))); }
       else if (b.t === "p" && b.kind === "small") P.push(para(PP.note, run(C4.small, t(b.text))));
       else if (b.t === "p") P.push(b.kind === "att" ? para(PP.body, run(CP.body, t(b.text))) : para(b.kind === "end" ? PP.right : PP.note, run(b.kind === "end" ? CP.body : CP.note, t(b.text))));
       else if (b.t === "break") { if (doc.plain) pend = true; else P.push(para(PP.body, run(CP.body, "<hp:t/>"), true)); }
       else if (b.t === "box") { var warnB = b.tone === "warn"; P.push(inTable(table([[{ w: Math.round(TW * 0.2), bf: warnB ? 14 : 8, inner: cellP(PP.cellC, CP.tagW, b.label || "") }, { w: TW - Math.round(TW * 0.2), bf: warnB ? 22 : 21, mg: [800, 500, 141, 141], inner: cellP(PP.cellL, CP.sayL, b.text || "") }]], { cols: 2, rowH: 2900 })) + spacer()); }
       else if (b.t === "tbl") P.push(dataTable(b));
     });
+    COMPACT = false;
     return XH + "<hs:sec " + NS + ">" + P.join("") + "</hs:sec>";
   }
   function preview(doc) {

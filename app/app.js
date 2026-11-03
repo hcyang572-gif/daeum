@@ -146,8 +146,12 @@
   }
   function brand() { return '<a class="word" href="#today" aria-label="' + NAME + ' 오늘로"><i aria-hidden="true"></i><span><b class="bn"><span>복지 사각지대</span> <span>현장 업무 도우미</span></b><small>' + SUB + "</small></span></a>"; }
   function top(on, dayHtml) {
-    var tabs = [["오늘", "#today", "today"], ["방문 계획", "#plan", "plan"], ["문서함", "#docs", "docs"], ["실적", "#perf", "perf"]];
-    return '<header class="top"><div class="top-in">' + brand() + '<nav class="seg well" aria-label="메뉴">' + tabs.map(function (t) { return '<a href="' + t[1] + '"' + (t[2] === on ? ' class="on" aria-current="page"' : "") + ">" + t[0] + "</a>"; }).join("") + "</nav>" +
+    // 🩵 미르 40: PC=좌측 메뉴열 · 폰=하단 탭바(같은 nav 하나를 CSS로 옮김). 아이콘은 선 그림(이모지 아님)
+    var tabs = [["오늘", "#today", "today", '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.7" fill="currentColor" stroke="none"/>'],
+      ["방문 계획", "#plan", "plan", '<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>'],
+      ["문서함", "#docs", "docs", '<path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'],
+      ["실적", "#perf", "perf", '<path d="M4 20h16"/><rect x="5.5" y="11" width="3.4" height="6" rx="1"/><rect x="10.3" y="6" width="3.4" height="11" rx="1"/><rect x="15.1" y="13" width="3.4" height="4" rx="1"/>']];
+    return '<header class="top"><div class="top-in">' + brand() + '<nav class="seg well tabs" aria-label="메뉴">' + tabs.map(function (t) { return '<a href="' + t[1] + '"' + (t[2] === on ? ' class="on" aria-current="page"' : "") + '><svg class="ti" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + t[3] + "</svg><span>" + t[0] + "</span></a>"; }).join("") + "</nav>" +
       '<div class="day">' + (dayHtml || "") + "</div>" + syncChip() + '<a class="hlp' + (on === "help" ? " on" : "") + '" href="#help">사용 방법</a></div></header>';
   }
 
@@ -187,7 +191,7 @@
     var dead = dp && dp.set ? '<div class="dead blk"><div class="k">기한 점검 · ' + esc(roundYm()) + ' 명단</div><div class="n">' + dp.left + '<small> 근무일 남음</small></div><p>' + esc(dl.until.slice(5).replace("-", ".")) + "까지 · 남은 가구 <b>" + remain + "</b> · 이대로면 기한을 넘길 가구 <b>" + over + "</b><br>하루 " + (dl.perDay || 5) + "집 · 허탕률 " + Math.round(A.missRate * 100) + "% 가정(조정 가능)</p></div>" : "";
     var fan = '<div class="fan" id="fan"><div class="d">상담일지 초안<i class="ai"></i><i></i><i></i></div><div class="d">출장 결과 보고(복명서)<i></i><i class="ai"></i><i></i></div><div class="d">서비스 연계 의뢰서<i></i><i></i><i class="ai"></i></div><div class="d">주간 추진 실적<i></i><i></i><i></i></div></div><a class="fan-done" href="#docs"><b>' + pend + "</b>건 완성 대기</a>";
     var hid0 = first || c.d.ids[0];
-    var rail = '<div class="rail" id="rail"><div class="track"><i></i></div>' + STN.map(function (s, i) { return '<a class="st' + (i === 6 ? " last" : "") + '" href="' + stationHref(i, hid0) + '"><span class="c">' + (i + 1) + '</span><span class="l">' + s[0] + '</span><span class="p">' + s[1] + "</span></a>"; }).join("") + "</div>";
+    var rail = '<div class="rail" id="rail"><div class="track"><i></i></div>' + STN.map(function (s, i) { return '<a class="st' + (i === 6 ? " last" : "") + '" href="' + stationHref(i, hid0) + '"><span class="c">' + (i + 1) + '</span><span class="l">' + s[0] + '</span><span class="p">' + s[1].replace(/·/g, "·|").replace(/ (\d{6,})$/, " |$1").split("|").map(function (x) { return '<span class="pp">' + x + "</span>"; }).join("<wbr>") + "</span></a>"; }).join("") + "</div>";
     var html = top("today", "<strong>" + md(now) + "</strong>" + esc(area) + " 맞춤형복지 담당 · 가상") + '<main class="wrap">' +
       '<div class="hero"><div><h1>나가기 전부터<br><span>보고서까지,</span> 한 번에</h1><p>한국사회보장정보원 명단을 받은 날부터 방문·기록·보고까지 같은 내용을 두 번 쓰지 않습니다.</p></div>' +
       '<a class="cta" href="' + (first ? "#home:" + first : "#docs") + '"><b>' + (first ? (c.isToday ? "오늘 일 시작" : whenLbl + " 방문 준비") : "문서 만들기") + "</b><small>방문 " + c.planned.length + "곳 · 문서 " + pend + "건 대기</small></a></div>" +
@@ -813,8 +817,11 @@
     { k: "d3", nm: "서비스 연계 의뢰서", sub: "연계 확정 때 · hwpx 1쪽", meter: [["m", 4], ["r", 3], ["a", 2]] },
     { k: "d4", nm: "안내 문자 문안", sub: "이름·주소 빼고 쉬운 말 · 복사", meter: [["m", 2], ["a", 3]] },
     { k: "d5", nm: "주간·월간 추진 실적 보고", sub: "수급권자 현황 15062448 비교 · hwpx", meter: [["r", 9], ["m", 2], ["a", 1]] },
-    { k: "d6", nm: "차수 처리 결과 명단", sub: "명단 43열 + 방문 4열 · xlsx", meter: [["m", 12], ["r", 4]] }
+    { k: "d6", nm: "차수 처리 결과 명단", sub: "명단 43열 + 방문 4열 · xlsx", meter: [["m", 12], ["r", 4]] },
+    { k: "d7", nm: "한 장 인계 카드", sub: "선택 · 담당 교체·부재 때 · hwpx 1쪽", meter: [["m", 3], ["r", 6], ["a", 1], ["e", 1]] },
+    { k: "d8", nm: "큰 글씨 안내문", sub: "선택 · 어르신 가구에 남김 · hwpx 1쪽", meter: [["r", 4], ["a", 1]] }
   ];
+  var DOC_OPT = { d7: 1, d8: 1 }; // 선택 문서 — «만들 문서 N건» 합계에서 뺀다(S12-d 40)
   var docSel = "d2", docDay = null, docHid = null, docOrg = null, docPer = "wk", made1 = {};
   function reportDays() { return days().filter(function (d) { return d.ids.some(function (id) { return statusOf(id) !== "planned"; }); }); }
   function caseOf(id) {
@@ -833,11 +840,11 @@
     var cases = dd ? dd.ids.map(caseOf) : [], met = cases.filter(function (x) { return x.st === "done"; }), ab = cases.filter(function (x) { return x.st === "absent"; });
     var done = lsGet(LS_DOCS, {}) || {}, key = dd ? roundYm() + ":" + dd.n : "";
     var linked = met.filter(function (x) { return x.refs.length; });
-    var cnt = { d2: dd ? 1 : 0, d1: met.length, d3: linked.length, d4: ab.length + linked.length, d5: 1, d6: 1 };
+    var cnt = { d2: dd ? 1 : 0, d1: met.length, d3: linked.length, d4: ab.length + linked.length, d5: 1, d6: 1, d7: handCands(cases).length, d8: bigCands(cases).length };
     var got = function (k) { return (done[key + ":" + k] || []).length; };
     var wk = weekRange(), wkKey = ymd(wk.from);
-    var pend = { d2: Math.max(0, cnt.d2 - got("d2")), d1: Math.max(0, cnt.d1 - got("d1")), d3: Math.max(0, cnt.d3 - got("d3")), d4: Math.max(0, cnt.d4 - got("d4")), d5: (done[perKey(docPer)] || []).length ? 0 : 1, d6: (done["round:" + roundYm() + ":d6"] || []).length ? 0 : 1 };
-    return { rd: rd, dd: dd, cases: cases, met: met, ab: ab, linked: linked, cnt: cnt, pend: pend, key: key, wkKey: wkKey, pending: Object.keys(pend).reduce(function (s, k) { return s + pend[k]; }, 0) };
+    var pend = { d2: Math.max(0, cnt.d2 - got("d2")), d1: Math.max(0, cnt.d1 - got("d1")), d3: Math.max(0, cnt.d3 - got("d3")), d4: Math.max(0, cnt.d4 - got("d4")), d5: (done[perKey(docPer)] || []).length ? 0 : 1, d6: (done["round:" + roundYm() + ":d6"] || []).length ? 0 : 1, d7: Math.max(0, cnt.d7 - got("d7")), d8: Math.max(0, cnt.d8 - got("d8")) };
+    return { rd: rd, dd: dd, cases: cases, met: met, ab: ab, linked: linked, cnt: cnt, pend: pend, key: key, wkKey: wkKey, pending: Object.keys(pend).reduce(function (s, k) { return s + (DOC_OPT[k] ? 0 : pend[k]); }, 0) };
   }
   function markDone(M, k, id) {
     var done = lsGet(LS_DOCS, {}) || {}, key = k === "d5" ? perKey(docPer) : k === "d6" ? "round:" + roundYm() + ":d6" : M.key + ":" + k;
@@ -879,7 +886,7 @@
       '<div class="dhead"><h1>만들 문서 <span>' + M.pending + '</span>건</h1><p>막대 색 = 칸을 채운 곳 · <b style="color:#5D6B80">남색</b> 한국사회보장정보원 명단·API · 회색 규칙 숫자 · 노랑 자동 문장(확인) · 빨강 빈칸(입력 필요)</p></div>' +
       (M.rd.length > 1 ? '<div class="dpick" role="group" aria-label="방문한 날">' + M.rd.map(function (d) { return '<button type="button" data-day="' + d.n + '" aria-pressed="' + (d.n === M.dd.n) + '">' + (d.date ? mdDot(d.date) : d.n + "일차") + "</button>"; }).join("") + "</div>" : "") +
       '<div class="dgrid"><div class="dep blk"><div class="hd"><span>대기</span><span>문서</span><span>채워진 칸</span><span></span></div>' + list + "</div>" +
-      '<section class="prev blk" aria-label="' + esc(D0.nm) + ' 미리보기">' + pv + "</section></div>" +
+      '<section class="prev blk" id="docPrev" tabindex="-1" aria-label="' + esc(D0.nm) + ' 미리보기">' + pv + "</section></div>" +
       '<p class="foot"><span class="demo-tag">가상 데이터</span><span>개인정보 4칸(성명·주민등록번호·연락처·주소) 미기재 · 가구 번호·읍면만 · 상담일지 입력·전자서명은 행복이음에서</span></p></main>';
   }
   function flowBtns(k, ready, label2, label3) {
@@ -912,6 +919,74 @@
     } else B.push({ t: "li", lv: 1, text: w.rcp + " — 한국사회보장정보원 복지사업 시군구별 수급권자 현황(15062448)" });
     B.push({ t: "p", kind: "note", text: "※ 숫자는 현장 기록 규칙 집계 · 시연용 가상 가구 · 담당자 확인 후 확정  끝." });
     return { title: w.name + " 추진 실적 보고", subtitle: mdDot(w.from) + " ~ " + mdDot(w.to), made: made, office: office, blocks: B };
+  }
+  // ── S12-d 40 선택 문서: D7 한 장 인계 카드 · D8 큰 글씨 안내문(호창님 B 선택) ──
+  /** D7 대상 = 그날 방문 기록이 있는 가구 전부 */
+  function handCands(cases) { return cases.filter(function (x) { return x.st !== "planned"; }); }
+  /** D8 대상 = 만남·부재 가구 중 65세 이상(없으면 만남·부재 전부 — 시연 화면이 비지 않게) */
+  function bigCands(cases) {
+    var c = cases.filter(function (x) { return x.st === "done" || x.st === "absent"; });
+    var old = c.filter(function (x) { var m = x.h.members && x.h.members[0]; return m && m.age >= 65; });
+    return old.length ? old : c;
+  }
+  var ST_LBL = { done: "만남·상담", absent: "부재", refused: "거절" };
+  var EASY = { care: "안부 확인·생활 도움(돌봄) 신청", mental: "마음 건강 상담", housing: "집 고치기·주거 지원 신청", emergency: "급한 생활비 지원 검토" };
+  /** 다음 할 일·날짜 — 부재 = 근무일 2일 뒤 재방문 · 거절 = 근무일 5일 뒤 다시 권유 · 만남 = 열린 약속(없으면 연계 결과 확인 근무일 5일 뒤) */
+  function nextStep(x, now) {
+    var pr = F.promises.open(F.store.get("promises", []), x.id)[0], vt = F.visitTime.profile(attempts(), x.id, {});
+    var slot = vt.best ? vt.best.label : "";
+    if (x.st === "absent") { var d = U.addWorkdays(now, A.retryGap); return { date: d, text: "다시 방문" + (slot ? "(" + slot + ")" : ""), slot: slot, best: vt.best }; }
+    if (x.st === "refused") return { date: U.addWorkdays(now, 5), text: "다시 권유(근무일 5일 뒤)", slot: slot, best: vt.best };
+    if (pr) return { date: pr.due && /^\d{4}-\d{2}-\d{2}/.test(pr.due) ? pr.due.slice(0, 10) : U.addWorkdays(now, 5), text: clip(pr.text, 40), slot: slot, best: vt.best };
+    return { date: U.addWorkdays(now, 5), text: x.refs.length ? "연계 결과 확인" : "안부 확인", slot: slot, best: vt.best };
+  }
+  /** D7 인계 카드 칸 — 미리보기·hwpx 가 같은 값을 쓴다. 가구 번호·읍면만(개인정보 4칸 없음) */
+  function d7Fields(M, x, now) {
+    var mt = meta()[x.id] || {}, nx = nextStep(x, now), tries = attempts().filter(function (a) { return a.householdId === x.id; }).length;
+    var to = (fills()[M.key] || {})["to_" + x.id] || "";
+    return { nx: nx, tries: tries, to: to, fields: [
+      { k: "가구", src: "data", v: "가구 " + x.id + " · " + x.h.area + " · " + ageLine(x.h) },
+      { k: "발굴 순위", src: "data", v: "한국사회보장정보원 " + (mt.prio || "—") + "순위 · " + roundYm() + " 차수" },
+      { k: "마지막 방문", src: "rule", v: (x.at ? mdDot(x.at) + " " + hm(x.at) + " · " : "") + (ST_LBL[x.st] || "방문 전") },
+      { k: "지금 상황", src: "ai", v: clip(String(x.memo || "").replace(/^확인:[^.]*\.\s*/, ""), 90) || "기록 없음" },
+      { k: "현장 확인 징후", src: "rule", v: x.field.join(" · ") || "없음" },
+      { k: "연계", src: "rule", v: x.refs.map(function (r) { return F.referral.ORGS[r].org.replace(/\(.*\)/, ""); }).join(" · ") || "없음" },
+      { k: "넘겨줄 일", src: "rule", v: mdDot(nx.date) + " " + nx.text },
+      { k: "만나기 좋은 때", src: "rule", v: nx.best ? nx.best.label + "(" + nx.best.hours + ")" : "기록이 더 쌓이면 나옵니다" },
+      { k: "방문·연락", src: "rule", v: tries + "회" },
+      { k: "받는 사람", src: to ? "rule" : "empty", v: to, input: "to_" + x.id }] };
+  }
+  function d7Hwpx(x, D, made, office, TW) {
+    var w1 = Math.round(TW * 0.24), w3 = Math.floor(TW / 3);
+    return { plain: true, title: "한 장 인계 카드", blocks: [
+      { t: "t2", title: "한 장 인계 카드", sub: "가구 " + x.id + " · " + x.h.area + " · 담당자 교체·부재 때 넘김", made: made + "  " + office },
+      { t: "kpi2", items: [{ k: "마지막 결과", v: ST_LBL[x.st] || "방문 전" }, { k: "방문·연락", v: String(D.tries), u: "회" }, { k: "다음 할 날", v: md(D.nx.date) }] },
+      { t: "sec", text: "가구 상황" },
+      { t: "tbl2", head: ["항목", "내용"], al: ["L", "L"], widths: [w1, TW - w1], rows: D.fields.filter(function (f) { return !f.input; }).map(function (f) { return [f.k, f.v]; }) },
+      { t: "sec", text: "넘겨줄 일" },
+      { t: "ci", lv: 2, text: "**" + md(D.nx.date) + "** " + D.nx.text },
+      { t: "ci", lv: 2, text: "만나기 좋은 때: " + (D.nx.best ? D.nx.best.label + "(" + D.nx.best.hours + ")" : "기록이 더 쌓이면 나옵니다") },
+      { t: "ci", lv: 3, text: "성명·연락처·주소는 행복이음에서 확인" },
+      { t: "sec", text: "주고받기" },
+      { t: "tbl2", head: ["넘긴 사람", "받는 사람", "넘긴 날"], al: ["C", "C", "C"], widths: [w3, w3, TW - w3 * 2], rows: [["(서명)", D.to ? D.to + " (서명)" : "(서명)", made]] },
+      { t: "p", kind: "small", text: "※ 가구 칸 = 한국사회보장정보원 발굴대상자 명단 · 상황 칸 = 현장 기록 자동 정리(담당자 확인) · 개인정보 4칸 미기재 · 시연용 가상 가구  끝." }] };
+  }
+  /** D8 큰 글씨 안내문 — 집에 남기는 종이라 가구 번호·이름·주소·사정은 적지 않는다. 22pt 칸만 쓴다 */
+  function d8Model(x, now) {
+    var nx = nextStep(x, now), ab = x.st === "absent";
+    var help = x.refs.map(function (r) { return EASY[r] || F.referral.ORGS[r].org.replace(/\(.*\)/, ""); });
+    return { nx: nx, ab: ab,
+      title: ab ? "오늘 찾아뵈었는데 안 계셨어요" : "오늘 말씀 나눠 주셔서 고맙습니다",
+      sub: x.h.area + " 행정복지센터 맞춤형복지팀에서 다녀갔습니다",
+      cards: [
+        { k: ab ? "다시 찾아뵙는 날" : "다음에 연락드리는 날", v: md(nx.date) + (nx.slot ? " " + nx.slot : "") },
+        ab ? { k: "준비하실 것", v: "없습니다. 집에 계시면 됩니다" } : { k: "도와 드릴 일", v: help.length ? help.join(", ") : "말씀하신 일을 함께 알아보겠습니다" },
+        { k: "궁금하시면 전화 주세요", v: "☎ ____________", s: x.h.area + " 행정복지센터 맞춤형복지팀" }] };
+  }
+  function d8Hwpx(B, made) {
+    return { plain: true, title: "큰 글씨 안내문", blocks: [{ t: "t2", title: B.title, sub: B.sub, made: made }]
+      .concat(B.cards.map(function (c) { return { t: "kpi2", big: true, items: [c] }; }))
+      .concat([{ t: "p", kind: "small", text: "※ 큰 글씨 안내문 · 성명·주소·사정은 적지 않았습니다 · 전화번호는 담당자가 손으로 적어 드립니다 · 시연용 가상 가구" }]) };
   }
   function hhPick(arr) {
     if (!arr.length) return "";
@@ -969,6 +1044,20 @@
       var perSw = '<div class="hh-pick" role="group" aria-label="보고 기간">' + [["wk", "주간"], ["mo", "월간"]].map(function (p) { return '<button type="button" data-per="' + p[0] + '" aria-pressed="' + (p[0] === docPer) + '">' + p[1] + "</button>"; }).join("") + "</div>";
       return perSw + flowBtns("d5:" + docPer, true, "hwpx 받기") + paper(w.name + " 추진 실적 보고", "상주시청 · " + area + " 맞춤형복지팀", fs5) + LEG + '<p class="srcline">숫자는 규칙 집계(현장 기록) · 지역 배경 = 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448, 기준 2025-12)</p>';
     }
+    if (k === "d7") {
+      var c7 = handCands(M.cases);
+      if (!c7.length) return '<div class="emptyc"><b>넘길 가구가 없습니다</b>방문 기록이 있는 가구에만 인계 카드가 생깁니다.</div>';
+      var pk7 = hhPick(c7), x7 = M.cases.filter(function (c) { return c.id === docHid; })[0], D7 = d7Fields(M, x7, now);
+      return pk7 + flowBtns("d7", true, "hwpx 받기") + paper("한 장 인계 카드", "가구 " + x7.id + " · " + x7.h.area + " · 담당자 교체·부재 때 넘김", D7.fields) + LEG +
+        '<p class="srcline">가구·순위 = 한국사회보장정보원 발굴대상자 명단 · 나머지 = 현장 기록 · «받는 사람»은 비워도 받을 수 있습니다(종이에 손으로 적음)</p>';
+    }
+    if (k === "d8") {
+      var c8 = bigCands(M.cases);
+      if (!c8.length) return '<div class="emptyc"><b>남길 안내문이 없습니다</b>만남·부재 가구가 생기면 큰 글씨 안내문이 만들어집니다.</div>';
+      var pk8 = hhPick(c8), x8 = M.cases.filter(function (c) { return c.id === docHid; })[0], B8 = d8Model(x8, now);
+      return pk8 + flowBtns("d8", true, "hwpx 받기") + paper(B8.title, B8.sub, B8.cards.map(function (c) { return { k: c.k, src: "rule", v: c.v + (c.s ? " · " + c.s : "") }; })) + LEG +
+        '<p class="srcline">한글에서 22pt 굵은 글씨로 열립니다 · 집에 남기는 종이라 가구 번호·성명·주소·사정은 넣지 않습니다 · 전화번호 칸은 손으로 적습니다</p>';
+    }
     docHid = "";
     var R = roundRows();
     return flowBtns("d6", true, "xlsx 받기") + '<div class="paper"><div class="ruler"><i style="background:var(--src-data)"></i><i style="background:var(--src-data)"></i><i style="background:var(--src-rule)"></i></div><h3>차수 처리 결과 명단</h3><div class="sub">' + esc(roundYm()) + " 명단 " + R.length + "가구 · 명단 열 + 방문 4열(방문일·결과·연계·다음 확인)</div>" +
@@ -1014,7 +1103,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js"); });
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12e40")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12e40"); });
     return hwpxP;
   }
   function getDoc(M, k, alt) {
@@ -1044,6 +1133,14 @@
         var w = periodModel(docPer);
         return W2.download(d5Hwpx(w, made, office, TW), (w.per === "mo" ? "월간실적_" : "주간실적_") + stamp + ".hwpx").then(function () { markDone(M, k, w.per); });
       }
+      if (k === "d7") {
+        var x7 = M.cases.filter(function (c) { return c.id === docHid; })[0];
+        return W2.download(d7Hwpx(x7, d7Fields(M, x7, now), made, office, TW), "인계카드_" + x7.id + "_" + stamp + ".hwpx").then(function () { markDone(M, k, x7.id); });
+      }
+      if (k === "d8") {
+        var x8 = M.cases.filter(function (c) { return c.id === docHid; })[0];
+        return W2.download(d8Hwpx(d8Model(x8, now), made), "큰글씨안내문_" + x8.id + "_" + stamp + ".hwpx").then(function () { markDone(M, k, x8.id); });
+      }
       if (k === "d6") {
         var R = roundRows();
         return window.DaeumXlsx.download({ title: "차수 처리 결과 명단", subtitle: roundYm() + " 명단", made: made + " " + hm(now), office: office, conclusion: "명단 " + R.length + "가구 중 " + R.filter(function (r) { return r[4] === "만남"; }).length + "가구 상담", note: "※ 시연용 가상 자료 · 개인정보 4칸 없음",
@@ -1052,9 +1149,18 @@
       }
     }).then(function () { toast("내려받았습니다"); render(); }, function () { toast("파일을 만들지 못했습니다 — 다시 눌러 주세요"); });
   }
+  /** S12-d 40: 목록에서 문서를 고르면 미리보기로 옮긴다 — 폰(한 줄 배치)에서 미리보기가 목록 아래에 있어 안 보이던 문제. 이미 화면 안이면 포커스만 */
+  function toPrev() {
+    var pv = document.getElementById("docPrev"); if (!pv) return;
+    var r = pv.getBoundingClientRect(), vh = window.innerHeight || 800;
+    pv.focus({ preventScroll: true });
+    if (r.top >= 0 && r.top < vh * 0.5) return;
+    var y = window.pageYOffset + r.top - 12;
+    window.scrollTo(RM_ ? { top: y } : { top: y, behavior: "smooth" });
+  }
   function bindDocs() {
     var M = docModel(); if (!M.dd) return;
-    app.querySelectorAll("[data-doc]").forEach(function (b) { b.addEventListener("click", function () { docSel = b.dataset.doc; docHid = null; render(); }); });
+    app.querySelectorAll("[data-doc]").forEach(function (b) { b.addEventListener("click", function () { docSel = b.dataset.doc; docHid = null; render(); toPrev(); }); });
     app.querySelectorAll("[data-day]").forEach(function (b) { b.addEventListener("click", function () { docDay = +b.dataset.day; docHid = null; render(); }); });
     app.querySelectorAll("[data-hh]").forEach(function (b) { b.addEventListener("click", function () { docHid = b.dataset.hh; render(); }); });
     app.querySelectorAll("[data-org]").forEach(function (b) { b.addEventListener("click", function () { docOrg = b.dataset.org; made1["d3:" + docHid] = made1["d3:" + docHid] || false; render(); }); });
@@ -1107,7 +1213,7 @@
     d.innerHTML = '<form method="dialog" class="acct-in"><h3>PC와 폰 실시간 연동</h3><p>같은 공무원 계정으로 PC와 폰에서 로그인하면 방문 계획과 현장 기록이 서로 바로 나타납니다. 서버에는 가구 번호·순서·상태·가린 메모만 갑니다.</p>' +
       "<p>" + syncChip() + " " + esc(s.mode === "live" ? "실시간 연동 중" : why[s.why] || "") + "</p>" +
       (s.user ? "<p>로그인: <b>" + esc(s.user.email) + '</b></p><div class="acct-b"><button class="sbtn" type="button" data-act="out">로그아웃</button><button class="sbtn pri" value="close">닫기</button></div>'
-        : '<label>전자우편<input type="email" id="aEmail" autocomplete="username" required></label><label>비밀번호<input type="password" id="aPw" autocomplete="current-password" minlength="8" required></label><p id="aMsg" role="status"></p><div class="acct-b"><button class="sbtn" type="button" data-act="up">처음이면 가입</button><button class="sbtn pri" type="button" data-act="in">로그인</button></div>') +
+        : '<label>전자우편<input type="email" id="aEmail" autocomplete="username" required autofocus></label><label>비밀번호<input type="password" id="aPw" autocomplete="current-password" minlength="8" required></label><p id="aMsg" role="status"></p><div class="acct-b"><button class="sbtn" type="button" data-act="up">처음이면 가입</button><button class="sbtn pri" type="button" data-act="in">로그인</button></div>') +
       '<p>시연 데이터: 모든 가구·메모는 가상입니다 · <a href="?demo=reset#today">시연 처음 상태로</a> · <a href="shared/data.html">활용 데이터</a></p><button class="acct-x" value="close" aria-label="닫기">×</button></form>';
     document.body.appendChild(d); d.showModal();
     d.addEventListener("close", function () { d.remove(); });

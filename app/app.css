@@ -867,3 +867,97 @@ dialog.acct::backdrop { background: rgba(23,28,38,.42); backdrop-filter: blur(3p
 /* 39 출처 꼬리표 — 고정폭 글꼴엔 한글이 없어 자간이 벌어졌다 → 본문 글꼴 + 같은 폭 숫자 */
 .chip small, .plug { font-family: var(--f); font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 .rule { font-family: var(--f-doc); font-variant-numeric: tabular-nums; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   40 화면 틀 — 🩵 미르 2026-11-03
+   «PC는 좌측 메뉴열 · 폰은 하단 탭바» 한 nav(.tabs)를 CSS로만 옮긴다(기능·주소 그대로).
+   PC 화면(오늘·방문 계획·문서함·실적·사용 방법)만 해당 — 현장 폰 화면(.ph)은 원래 하단 메뉴(.bnav).
+   ══════════════════════════════════════════════════════════════════════ */
+.ti { width: 18px; height: 18px; flex: none; display: block; }
+.tabs a { display: flex; align-items: center; gap: 8px; }
+.tabs a .ti { opacity: .78; transition: opacity .2s, transform .2s var(--ease); }
+.tabs a.on .ti { opacity: 1; color: var(--now); }
+/* 레일 꼬리표: «급여 열·» / «15090532» 덩어리로만 줄바꿈(가운뎃점 앞에서 끊기지 않게) */
+.st .p .pp { white-space: nowrap; }
+.st .p .pp:only-child { white-space: normal; }
+
+/* ── PC: 좌측 메뉴열 ── */
+@media (min-width: 1024px) {
+  :root { --side: 224px; }
+  body[data-s="today"] #app, body[data-s="plan"] #app, body[data-s="docs"] #app, body[data-s="perf"] #app, body[data-s="help"] #app { padding-left: var(--side); }
+  html body[data-s="today"] .pwa, html body[data-s="docs"] .pwa, html body[data-s="plan"] .pwa, html body[data-s="perf"] .pwa, html body[data-s="help"] .pwa { margin-left: calc(var(--side) + max(0px, (100% - var(--side) - 1240px) / 2)); margin-right: auto; max-width: 1240px; padding: 0 24px; }
+  .top { position: fixed; inset: 0 auto 0 0; width: var(--side); z-index: 25; border-bottom: 0; border-right: 1px solid rgba(33,30,46,.08);
+    background: var(--grain-bg), linear-gradient(180deg, #F3F1EC, #ECE9E3 70%, #E8E5DE);
+    box-shadow: inset -1px 0 0 rgba(255,255,255,.65), 12px 0 30px -26px rgba(33,30,46,.55); overflow-y: auto; scrollbar-width: none; }
+  .top-in { max-width: none; height: 100%; min-height: 520px; margin: 0; padding: 22px 16px 18px; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0; }
+  .word { align-items: flex-start; padding: 2px 6px 0; }
+  .word > i { margin-top: 5px; }
+  .word .bn { font-size: 17px; line-height: 1.22; }
+  .word .bn span { display: block; }
+  .word small { margin-top: 5px; }
+  .top .tabs { margin-top: 22px; flex-direction: column; padding: 6px; gap: 4px; }
+  .top .tabs a { padding: 11px 12px; font-size: 14.5px; border-radius: 10px; }
+  .top .tabs a:hover:not(.on) { background: rgba(255,255,255,.45); }
+  .top .tabs .ti { width: 20px; height: 20px; }
+  .top .day { margin: auto 0 0; padding: 14px 6px 12px; text-align: left; border-top: 1px solid var(--line); font-size: 12px; }
+  .top .day strong { font-size: 15px; margin-bottom: 2px; }
+  .top .sync { align-self: stretch; white-space: normal; text-align: left; line-height: 1.35; padding: 8px 12px 8px 11px; border-radius: 12px; }
+  .top .sync i { flex: none; }
+  .top .hlp { margin-top: 10px; align-self: stretch; text-align: center; padding: 9px 12px; border-radius: 12px; font-size: 12.5px; }
+}
+@media (min-width: 1440px) { :root { --side: 248px; } .top-in { padding: 26px 20px 20px; } }
+/* 메뉴열을 뺀 남은 폭이 좁은 노트북(1024~1399): 장면 양 옆 칸을 줄여 가운데 레일 숨통 */
+@media (min-width: 1024px) and (max-width: 1399.98px) {
+  .scene { grid-template-columns: 210px minmax(0,1fr) 190px; gap: 22px; padding: 20px; align-items: center; }
+  /* 가운데 칸이 7칸 가로로는 좁다 → 세로 레일(폰과 같은 꼴)로 세워 꼬리표까지 한 줄에 */
+  .rail { grid-template-columns: 1fr; gap: 8px; padding-left: 2px; }
+  .track { left: 17px; right: auto; top: 21px; bottom: 21px; width: 10px; height: auto; }
+  .track i { width: 100% !important; height: 0; transition: height 1.2s cubic-bezier(.4,0,.2,1); background: linear-gradient(180deg, #0A7C5E, #16A57D 60%, #2BC08F); }
+  .rail.go .track i { height: 100%; }
+  .st { grid-template-columns: 44px auto minmax(0,1fr); justify-items: start; align-items: center; text-align: left; gap: 10px; padding: 0; }
+  .st .p { justify-self: end; text-align: right; }
+  .board { grid-template-columns: minmax(0,1fr) 236px; }
+  .r { grid-template-columns: 76px minmax(0,1fr) minmax(0,1.2fr) 128px; gap: 12px; }
+}
+
+/* ── 폰·태블릿: 위는 이름·연동만, 탭은 엄지 닿는 하단 ── */
+@media (max-width: 1023.98px) {
+  .top-in { gap: 8px 12px; flex-wrap: nowrap; padding-top: 10px; padding-bottom: 10px; }
+  .word { flex: 1 1 auto; }
+  .top .day { flex: none; }
+  .top .sync { flex: none; }
+  .top .tabs { position: fixed; left: 0; right: 0; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 30; order: 0; width: calc(100% - 24px); max-width: 520px; margin: 0 auto; overflow: visible;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 5px; border-radius: 18px;
+    box-shadow: inset 0 2px 5px rgba(33,30,46,.14), inset 0 -1px 0 rgba(255,255,255,.7), 0 0 0 1px rgba(33,30,46,.05), 0 14px 30px -12px rgba(33,30,46,.45); }
+  .top .tabs a { flex-direction: column; justify-content: center; gap: 3px; min-height: 54px; padding: 7px 2px 6px; font-size: 12px; border-radius: 13px; letter-spacing: -.02em; }
+  .top .tabs .ti { width: 22px; height: 22px; }
+  .top ~ .wrap { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+  html body[data-s="today"] .pwa, html body[data-s="docs"] .pwa, html body[data-s="plan"] .pwa, html body[data-s="perf"] .pwa, html body[data-s="help"] .pwa { margin-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  .toast { bottom: calc(92px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 640px) {
+  /* 폰: 머리는 따라오지 않는다(탭은 아래에 있으니). 1줄 이름+사용 방법, 2줄 연동 표지 */
+  .top { position: relative; }
+  .top-in { flex-wrap: wrap; gap: 8px 10px; }
+  .word { flex: 1 1 210px; }
+  .top .hlp { order: 2; flex: none; }
+  .top .sync { order: 3; flex: 0 1 auto; font-size: 11.5px; padding: 5px 11px 5px 9px; }
+  .top .day { display: none; }
+  .word .bn { font-size: 15.5px; }
+  .word small { font-size: 10px; letter-spacing: .08em; }
+  .top .hlp { padding: 6px 10px; }
+}
+@media print { .top .tabs { display: none !important; } body[data-s] #app { padding-left: 0 !important; } }
+/* 현장 폰 화면 하단 메뉴도 위 하단 탭바와 같은 손맛(높이·모서리) */
+.bnav nav { border-radius: 18px; }
+.bnav a { min-height: 46px; display: grid; place-items: center; border-radius: 13px; }
+/* 연동 창: 상태 표지와 설명을 한 덩어리로(표지 뒤 글이 들쭉날쭉 감기지 않게) · 빈 안내줄은 자리 차지 않음 */
+.acct-in > p:has(> .sync) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.acct-in > p:empty { display: none; }
+.acct-in .sync { pointer-events: none; }
+.acct-b .sbtn { min-height: 40px; padding-left: 14px; padding-right: 14px; }
+/* 현장 폰 화면 머리도 PC 화면 폰 머리와 같은 꼴: 1줄 이름 + ?, 2줄 연동 표지(왼쪽 기준선) */
+.ph-brand { align-items: center; gap: 6px 10px; }
+.ph-home { flex: 1 1 210px; min-width: 0; }
+.ph-brand .hlp.q { order: 2; margin-left: 0; flex: none; }
+.ph-brand .sp { order: 3; margin-left: 0; }
