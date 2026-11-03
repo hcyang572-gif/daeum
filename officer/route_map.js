@@ -10,7 +10,7 @@
   // S11-c 경로 그리기 움직임(고도화 #16): 방문 화면에 «들어올 때마다» 묶은 뒤 경로를 1.1초 동안 그리고 번호 핀을 차례로 띄운다.
   // 같은 화면 안에서 순서만 바꿀 때는 움직이지 않는다(바뀐 것만 움직인다). 움직임 줄이기 설정이면 끈다.
   var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  window.addEventListener("hashchange", function () { if (location.hash === "#route") state.animateNext = true; });
+  window.addEventListener("hashchange", function () { if (/^#route(:|$)/.test(location.hash)) state.animateNext = true; });
   var GAP = 34; // 번호 표지(32px)끼리 이만큼(px) 안이면 겹친 것으로 보고 둥글게 벌린다
 
   function load() {
@@ -50,7 +50,7 @@
   // 화면 픽셀로 GAP 안에 모인 표지를 한 무리로 묶어, 무리 가운데를 중심으로 고르게 벌려 놓는다.
   // 실제 집 자리에는 작은 점을 남기고 지시선으로 번호와 잇는다. 확대·이동이 끝날 때마다(idle) 다시 계산한다.
   function stopHtml(s, dx, dy, pop) {
-    var cls = "nm-stop" + (s.req ? " req" : "") + (pop ? " pop" : "");
+    var cls = "nm-stop" + (s.req ? " req" : "") + (s.cls ? " " + s.cls : "") + (pop ? " pop" : ""); // s.cls: 현장 폰 동선(dn 끝난 집·nx 다음 집)
     if (!dx && !dy) return '<div class="nm-spot" aria-hidden="true"><div class="' + cls + '"' + (pop ? ' style="animation-delay:' + (180 + s.no * 90) + 'ms"' : "") + '>' + s.no + "</div></div>";
     var len = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dy, dx) * 180 / Math.PI;
     return '<div class="nm-spot spread" aria-hidden="true"><i class="nm-lead" style="width:' + len.toFixed(1) + "px;transform:rotate(" + ang.toFixed(1) + 'deg)"></i><i class="nm-dot"></i>' +
@@ -158,7 +158,10 @@
     }
     window.requestAnimationFrame(step);
   }
-  function refresh() { if (state.map && window.naver) { try { naver.maps.Event.trigger(state.map, "resize"); state.map.refreshStyles && state.map.refreshStyles(); } catch (e) { /* 무시 */ } } }
+  function refresh() { if (state.map && window.naver) { try {
+    var el = state.map.getElement(), w = el && el.clientWidth, h = el && el.clientHeight; // 화면 크기가 바뀌면 지도 판 크기도 맞춘다(0px 이면 건너뜀)
+    if (w && h) state.map.setSize(new naver.maps.Size(w, h));
+    naver.maps.Event.trigger(state.map, "resize"); state.map.refreshStyles && state.map.refreshStyles(); } catch (e) { /* 무시 */ } } }
 
   // ── 도로 경로(서버 경유) ─────────────────────────────────
   function cacheAll() { try { return JSON.parse(localStorage.getItem(LS_ROAD) || "{}"); } catch (e) { return {}; } }

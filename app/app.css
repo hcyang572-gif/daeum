@@ -961,3 +961,179 @@ dialog.acct::backdrop { background: rgba(23,28,38,.42); backdrop-filter: blur(3p
 .ph-home { flex: 1 1 210px; min-width: 0; }
 .ph-brand .hlp.q { order: 2; margin-left: 0; flex: none; }
 .ph-brand .sp { order: 3; margin-left: 0; }
+
+/* ═════ 41 동선 — 네이버 지도 배경 + 최적화 결과(파로 ⚙️, route 전용) ═════ */
+.rt-map { position: relative; min-height: 300px; overflow: hidden; }
+.rt-map .rt-nmap { position: absolute; inset: 6px; border-radius: 14px; overflow: hidden; opacity: 0; transition: opacity .4s ease; }
+.rt-map.has-naver .rt-nmap { opacity: 1; }
+.rt-map .rt-nbox { width: 100% !important; height: 100% !important; }
+.rt-map.has-naver .rt-svg { visibility: hidden; }
+.rt-map .mtop { z-index: 5; }
+.rt-nmap .nm-stop { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #0C8767; color: #fff; font: 800 13px/1 "IBM Plex Mono", monospace; box-shadow: 0 0 0 2px #fff, 0 4px 10px -3px rgba(17,26,39,.5); }
+.rt-nmap .nm-stop.nx { background: #E0581F; transform: scale(1.18); box-shadow: 0 0 0 3px #fff, 0 0 0 7px rgba(224,88,31,.28), 0 6px 14px -4px rgba(17,26,39,.55); }
+.rt-nmap .nm-stop.dn { background: #D7F0E8; color: #075B45; }
+.rt-nmap .nm-stop.pop { animation: rtPop .35s cubic-bezier(.3,1.5,.6,1) both; }
+@keyframes rtPop { from { transform: scale(0); opacity: 0; } }
+.rt-nmap .nm-office { display: grid; place-items: center; min-width: 44px; height: 28px; padding: 0 8px; border-radius: 8px; background: #1C2839; color: #fff; font: 800 12px/1 inherit; }
+.rt-nmap .nm-spot { position: relative; width: 0; height: 0; }
+.rt-nmap .nm-spot .nm-stop { position: absolute; left: -16px; top: -16px; }
+.rt-nmap .nm-spot .nm-lead { position: absolute; left: 0; top: -1px; height: 2px; border-radius: 1px; transform-origin: 0 50%; background: #1C2839; opacity: .7; }
+.rt-nmap .nm-spot .nm-dot { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #1C2839; box-shadow: 0 0 0 2px #fff; }
+.rt-opt { padding: 14px 16px; margin-top: 10px; }
+.rt-opt .rt-tag { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .04em; color: #0C8767; background: #E3F4EE; border-radius: 99px; padding: 3px 9px; }
+.rt-opt .rt-h { display: block; margin: 8px 0 10px; font-size: 16px; line-height: 1.4; }
+.rt-opt .rt-h em { font-style: normal; color: #0C8767; }
+.rt-bars { display: grid; gap: 6px; }
+.rt-r { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 8px; font-size: 12.5px; }
+.rt-r > span { color: #586273; font-weight: 700; }
+.rt-r > i { display: block; height: 10px; border-radius: 99px; background: #C9D1DA; }
+.rt-r.on > i { background: #0C8767; }
+.rt-r > b { font-variant-numeric: tabular-nums; font-size: 12.5px; white-space: nowrap; }
+.rt-r.on > b { color: #0C8767; }
+.rt-pct { margin: 8px 0 0; font-size: 12.5px; font-weight: 700; }
+.rt-src { margin: 6px 0 0; font-size: 11px; line-height: 1.45; color: #6B7482; }
+@media (prefers-reduced-motion: reduce) { .rt-map .rt-nmap { transition: none; } .rt-nmap .nm-stop.pop { animation: none; } }
+
+/* ══════════════════════════════════════════════════════════════════════
+   41 PC 현장 책상 — 🩵 미르 2026-11-03
+   호창님: «PC화면에서도 순서·동선·요약·확인·상담·기록·보고 전체를 다 포함하게, 풍성하게»
+   PC(≥1024) = 좌측 메뉴열(+현장 7단계 묶음) · 위 7단계 진행판 · 넓은 2칸 작업판 · 오른쪽 오늘 방문/채우는 문서.
+   폰·태블릿(<1024) = 덧붙인 판을 모두 숨기고 .desk·.dk-body 를 display:contents 로 풀어 원래 폰 화면 그대로.
+   ══════════════════════════════════════════════════════════════════════ */
+.fsteps { display: none; }
+@media (max-width: 1023.98px) {
+  body[data-s="route"] .top, body[data-s="home"] .top, body[data-s="check"] .top, body[data-s="talk"] .top, body[data-s="record"] .top,
+  .dk-head, .dk-aside { display: none !important; }
+  .desk, .dk-body { display: contents; }
+}
+@media print { .fsteps, .dk-head, .dk-aside { display: none !important; } .desk, .dk-body { display: block; } }
+
+@media (min-width: 1024px) {
+  /* 좌측 메뉴열: 큰 메뉴 4개 아래 «현장 7단계» 묶음 — 어느 화면에서도 7단계가 다 보인다 */
+  .fsteps { display: block; position: relative; margin-top: 18px; padding: 0 2px; }
+  .fsteps h3 { margin: 0 0 6px; padding: 0 8px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--mute); display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+  .fsteps h3 small { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0; font-weight: 600; color: #7A7F8A; }
+  .fsteps::before { content: ""; position: absolute; left: 20px; top: 34px; bottom: 14px; width: 2px; border-radius: 1px; background: linear-gradient(180deg, rgba(12,135,103,.45), rgba(33,30,46,.14)); }
+  .fsteps a { position: relative; display: grid; grid-template-columns: 22px auto minmax(0,1fr); align-items: center; gap: 9px; padding: 6px 8px; margin: 1px 0; border-radius: 10px; text-decoration: none; color: var(--ink); transition: background-color .2s, box-shadow .2s; }
+  .fsteps a i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-family: var(--f-mono); font-size: 11px; font-weight: 600; background: #F6F4EF; color: var(--go-ink); box-shadow: inset 0 0 0 1.5px rgba(12,135,103,.45), 0 1px 0 #fff; position: relative; z-index: 1; }
+  .fsteps a b { font-size: 13.5px; font-weight: 800; }
+  .fsteps a small { font-size: 11px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+  .fsteps a:hover:not(.on) { background: rgba(255,255,255,.5); }
+  .fsteps a.on { background: linear-gradient(180deg, #fff, #FAF8F4); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(33,30,46,.07), 0 2px 0 var(--edge), 0 8px 14px -10px rgba(33,30,46,.45); }
+  .fsteps a.on i { background: linear-gradient(180deg, #F0703A, #DA521B); color: #fff; box-shadow: 0 2px 0 var(--now-edge), 0 0 0 3px rgba(224,88,31,.16); }
+  .fsteps a.on small { color: var(--now-edge); }
+
+  /* 현장 화면 틀: 메뉴열 자리 + 넓은 책상 */
+  body[data-s="route"] #app, body[data-s="home"] #app, body[data-s="check"] #app, body[data-s="talk"] #app, body[data-s="record"] #app { padding-left: var(--side); }
+  html body[data-s="route"] .pwa, html body[data-s="home"] .pwa, html body[data-s="check"] .pwa, html body[data-s="talk"] .pwa, html body[data-s="record"] .pwa { margin-left: calc(var(--side) + max(0px, (100% - var(--side) - 1480px) / 2)); margin-right: auto; max-width: 1480px; padding: 0 28px; margin-bottom: 32px; }
+  body[data-s="route"] .bnav, body[data-s="home"] .bnav, body[data-s="check"] .bnav, body[data-s="talk"] .bnav, body[data-s="record"] .bnav { display: none; }
+  .desk { max-width: 1480px; margin: 0 auto; padding: 24px 28px 36px; display: flex; flex-direction: column; gap: 18px; }
+  .desk .ph-brand, .desk .mini { display: none; }
+
+  /* ① 위: 7단계 진행판 — 정거장 7개가 한 줄 레일 위에 서고, 각 정거장에 이 가구의 실제 값 */
+  .dk-head { padding: 18px 22px 16px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px 18px; align-items: end; position: relative; overflow: hidden; }
+  .dk-head::after { content: ""; position: absolute; right: -60px; top: -90px; width: 320px; height: 220px; pointer-events: none; background: radial-gradient(closest-side, rgba(224,88,31,.10), rgba(224,88,31,0)); }
+  .dk-k { display: block; font-size: 12.5px; font-weight: 700; color: var(--mute); }
+  .dk-k b { font-family: var(--f-mono); font-weight: 600; color: var(--ink); }
+  .dk-t h1 { margin: 4px 0 0; font-size: 26px; line-height: 1.15; font-weight: 900; letter-spacing: -.035em; display: flex; align-items: center; gap: 10px; }
+  .dk-t h1 em { font-style: normal; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-family: var(--f-mono); font-size: 17px; font-weight: 600; color: #fff; background: linear-gradient(180deg, #F0703A, #DA521B); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 3px 0 var(--now-edge), 0 8px 14px -8px rgba(224,88,31,.8); }
+  .dk-nav { display: flex; gap: 8px; position: relative; z-index: 1; }
+  .dk-nav .sbtn { text-decoration: none; white-space: nowrap; }
+  .dk-steps { grid-column: 1 / -1; list-style: none; margin: 2px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 6px; position: relative; }
+  .dk-steps::before, .dk-steps::after { content: ""; position: absolute; top: 25px; left: calc(100% / 14); height: 6px; border-radius: 3px; }
+  .dk-steps::before { right: calc(100% / 14); background: var(--well); box-shadow: inset 0 1px 2px rgba(33,30,46,.18), 0 1px 0 #fff; }
+  .dk-steps::after { width: calc((100% - 100% / 7) * var(--p, 0)); background: linear-gradient(90deg, #0A7C5E, #16A57D 60%, #2BC08F); box-shadow: 0 0 0 1px rgba(6,102,77,.12); }
+  .dk-steps li { position: relative; z-index: 1; min-width: 0; }
+  .dk-steps a { display: grid; justify-items: center; text-align: center; gap: 1px; padding: 8px 4px 10px; border-radius: 13px; text-decoration: none; color: var(--ink); transition: background-color .22s, box-shadow .22s; }
+  .dk-steps a:hover { background: rgba(255,255,255,.7); }
+  .dk-steps i { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-family: var(--f-mono); font-size: 14px; font-weight: 600; background: #fff; color: var(--mute); box-shadow: inset 0 0 0 2px #CFC9BE, 0 2px 0 var(--edge); margin-bottom: 5px; }
+  .dk-steps b { font-size: 14px; font-weight: 900; letter-spacing: -.02em; }
+  .dk-steps span { font-size: 13px; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .dk-steps small { font-size: 11px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .dk-steps .dn i { background: linear-gradient(180deg, #13A07A, var(--go)); color: #fff; box-shadow: 0 2px 0 var(--go-deep); }
+  .dk-steps .now a { background: linear-gradient(180deg, #fff, #FBF9F5); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(224,88,31,.22), 0 3px 0 #E9C6B4, 0 14px 22px -14px rgba(224,88,31,.55); }
+  .dk-steps .now i { background: linear-gradient(180deg, #F0703A, #DA521B); color: #fff; box-shadow: 0 3px 0 var(--now-edge), 0 0 0 5px rgba(224,88,31,.16); }
+  .dk-steps .now small { color: var(--now-edge); }
+
+  /* ② 가운데: 작업판(폰 화면 내용 그대로, 2칸 이름 칸) + 오른쪽 보조판.
+     긴 쪽(체크 목록·지도·초안)이 여러 줄을 걸치고 마지막 1fr 줄이 남는 높이를 받아, 짧은 쪽 칸이 벌어지지 않는다. */
+  .dk-body { display: grid; grid-template-columns: minmax(0,1fr); gap: 18px; align-items: start; }
+  .desk .ph { max-width: none; margin: 0; padding: 0; min-width: 0; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); column-gap: 18px; row-gap: 0; align-items: start; }
+  .desk .ph > * { grid-column: 1 / -1; min-width: 0; margin: 0 0 16px; }
+  .desk .ph > .sfa { grid-area: t1; }
+  .desk .ph > .safe { grid-area: t2; }
+  .desk .ph > .subnav { grid-area: nav; margin: 0; padding-top: 4px; border-top: 1px solid var(--line); }
+  /* ③ 집 앞 요약: 왼쪽 가구·다섯 줄 / 오른쪽 판단 근거·들어가기 */
+  body[data-s="home"] .desk .ph { grid-template-areas: "t1 t1" "idc basis" "stops go" "nav nav"; }
+  body[data-s="home"] .desk .ph > .idc { grid-area: idc; }
+  body[data-s="home"] .desk .ph > .basis { grid-area: basis; }
+  body[data-s="home"] .desk .ph > .stops { grid-area: stops; }
+  body[data-s="home"] .desk .ph > .big { grid-area: go; }
+  body[data-s="home"] .desk .ph > .stops li { padding: 11px 0; font-size: 14px; }
+  /* ④ 현장 확인: 왼쪽 체크 목록 길게 / 오른쪽 진행 고리·장소·근거·다음 */
+  body[data-s="check"] .desk .ph { grid-template-areas: "t1 t1" "t2 t2" "list a" "list b" "list c" "list d" "list e" "list f" "nav nav"; grid-template-rows: auto auto auto auto auto auto auto 1fr auto; }
+  body[data-s="check"] .desk .ph > .cks { grid-area: list; }
+  body[data-s="check"] .desk .ph > .ck-head { grid-area: a; }
+  body[data-s="check"] .desk .ph > .switch { grid-area: b; }
+  body[data-s="check"] .desk .ph > .vs { grid-area: c; }
+  body[data-s="check"] .desk .ph > .crit { grid-area: d; }
+  body[data-s="check"] .desk .ph > .big { grid-area: e; }
+  /* ⑤ 상담 도움: 왼쪽 질문 카드 / 오른쪽 받을 수 있는 서비스 */
+  body[data-s="talk"] .desk .ph > .idc, body[data-s="record"] .desk .ph > .idc { display: none; }
+  body[data-s="talk"] .desk .ph { grid-template-areas: "t1 t1" "t2 t2" "q svc" "go svc" "f svc" "nav nav"; grid-template-rows: auto auto auto auto 1fr auto; }
+  body[data-s="talk"] .desk .ph > .qwrap { grid-area: q; }
+  body[data-s="talk"] .desk .ph > .big { grid-area: go; }
+  body[data-s="talk"] .desk .ph > section[aria-label="받을 수 있는 서비스"] { grid-area: svc; }
+  /* ⑥ 상담 후 기록: 왼쪽 결과·채워진 칸·말하기·메모 / 오른쪽 상담일지 초안이 바로 옆에서 채워지고 그 아래 확정 */
+  body[data-s="record"] .desk .ph { grid-template-areas: "t1 t1" "t2 t2" "sw dr" "pre dr" "mic dr" "memo dr" "ab dr" "f dr" "f go" "nav nav"; grid-template-rows: auto auto auto auto auto auto auto 1fr auto auto; }
+  body[data-s="record"] .desk .ph > .switch { grid-area: sw; }
+  body[data-s="record"] .desk .ph > .pre { grid-area: pre; }
+  body[data-s="record"] .desk .ph > .micw { grid-area: mic; }
+  body[data-s="record"] .desk .ph > .memo { grid-area: memo; }
+  body[data-s="record"] .desk .ph > .absent { grid-area: ab; }
+  body[data-s="record"] .desk .ph > .draft { grid-area: dr; position: sticky; top: 20px; }
+  body[data-s="record"] .desk .ph > .big { grid-area: go; }
+  /* ② 동선: 왼쪽 큰 지도(왼칸 높이만큼 늘어남 — 지도 그리기는 파로 route_map) / 오른쪽 최적화 결과·다음 집·길안내·순서 */
+  body[data-s="route"] .desk .ph { grid-template-columns: minmax(0,1.45fr) minmax(0,1fr); grid-template-areas: "t1 t1" "map opt" "map next" "map gnav" "map segs" "map note" "map list" "map go" "map f" "res res"; grid-template-rows: auto auto auto auto auto auto auto auto 1fr auto; }
+  body[data-s="route"] .desk .ph > .ph-map { grid-area: map; align-self: stretch; min-height: 540px; }
+  body[data-s="route"] .desk .ph > #rtopt { grid-area: opt; }
+  body[data-s="route"] .desk .ph > #rtopt .rt-opt { margin-top: 0; }
+  body[data-s="route"] .desk .ph > .nextc { grid-area: next; }
+  body[data-s="route"] .desk .ph > .big.nav { grid-area: gnav; }
+  body[data-s="route"] .desk .ph > .segs { grid-area: segs; }
+  body[data-s="route"] .desk .ph > .navnote { grid-area: note; }
+  body[data-s="route"] .desk .ph > .rlist { grid-area: list; }
+  body[data-s="route"] .desk .ph > .big.dark { grid-area: go; }
+  body[data-s="route"] .desk .ph > .resw { grid-area: res; }
+
+  /* 오른쪽 보조판(좁은 PC에서는 작업판 아래 두 칸) */
+  .dk-aside { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; align-items: start; min-width: 0; }
+  .dk-aside h3 { margin: 0 0 8px; font-size: 13.5px; font-weight: 900; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .dk-aside h3 small { font-size: 11.5px; font-weight: 700; color: var(--mute); }
+  .dk-day { padding: 14px 14px 10px; }
+  .dk-day ol { list-style: none; margin: 0; padding: 0; }
+  .dk-day li a { display: grid; grid-template-columns: 42px 22px auto minmax(0,1fr) auto; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 10px; text-decoration: none; font-size: 12.5px; }
+  .dk-day li + li a { box-shadow: 0 -1px 0 var(--line); }
+  .dk-day li a:hover { background: rgba(33,30,46,.04); }
+  .dk-day .t { font-family: var(--f-mono); font-weight: 600; color: var(--mute); }
+  .dk-day i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 900; background: #fff; box-shadow: inset 0 0 0 2px var(--rail); }
+  .dk-day b { font-family: var(--f-mono); font-weight: 600; font-size: 13px; }
+  .dk-day small { color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dk-day .dn i { background: var(--go-soft); color: var(--go-ink); box-shadow: inset 0 0 0 2px rgba(12,135,103,.4); }
+  .dk-day .cur a { background: linear-gradient(90deg, rgba(224,88,31,.12), rgba(224,88,31,.02)); box-shadow: inset 3px 0 0 var(--now); }
+  .dk-day .cur i { background: var(--now); color: #fff; box-shadow: 0 2px 0 var(--now-edge); }
+  .dk-feed { padding: 14px; }
+  .dk-feed ul { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 6px; }
+  .dk-feed li { display: grid; gap: 1px; padding: 8px 10px 8px 14px; border-radius: 10px; background: rgba(255,255,255,.72); box-shadow: 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px rgba(33,30,46,.05); position: relative; font-size: 12px; color: var(--mute); }
+  .dk-feed li::before { content: ""; position: absolute; left: 5px; top: 9px; bottom: 9px; width: 3px; border-radius: 2px; background: var(--src-ai); }
+  .dk-feed li b { color: var(--ink); font-size: 13px; font-weight: 800; }
+  .dk-docs { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 11px; text-decoration: none; color: #fff; font-size: 13px; font-weight: 800; background: linear-gradient(180deg, #2A3A52, #1A2536); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 3px 0 #070C14, 0 10px 16px -10px rgba(17,26,39,.7); }
+  .dk-docs b { color: #A9E3D2; font-weight: 800; }
+  .dk-src { grid-column: 1 / -1; margin: 0; font-size: 11.5px; color: var(--mute); }
+  .dk-src span { font-weight: 800; margin-right: 6px; color: var(--ink); }
+}
+@media (min-width: 1360px) {
+  .dk-body { grid-template-columns: minmax(0,1fr) 296px; gap: 22px; }
+  .dk-aside { grid-template-columns: minmax(0,1fr); position: sticky; top: 20px; }
+}
+@media (min-width: 1680px) { .dk-body { grid-template-columns: minmax(0,1fr) 328px; } .dk-steps b { font-size: 15px; } .dk-steps span { font-size: 14px; } }

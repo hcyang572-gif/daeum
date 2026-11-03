@@ -151,7 +151,7 @@
       ["방문 계획", "#plan", "plan", '<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>'],
       ["문서함", "#docs", "docs", '<path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'],
       ["실적", "#perf", "perf", '<path d="M4 20h16"/><rect x="5.5" y="11" width="3.4" height="6" rx="1"/><rect x="10.3" y="6" width="3.4" height="11" rx="1"/><rect x="15.1" y="13" width="3.4" height="4" rx="1"/>']];
-    return '<header class="top"><div class="top-in">' + brand() + '<nav class="seg well tabs" aria-label="메뉴">' + tabs.map(function (t) { return '<a href="' + t[1] + '"' + (t[2] === on ? ' class="on" aria-current="page"' : "") + '><svg class="ti" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + t[3] + "</svg><span>" + t[0] + "</span></a>"; }).join("") + "</nav>" +
+    return '<header class="top"><div class="top-in">' + brand() + '<nav class="seg well tabs" aria-label="메뉴">' + tabs.map(function (t) { return '<a href="' + t[1] + '"' + (t[2] === on ? ' class="on" aria-current="page"' : "") + '><svg class="ti" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + t[3] + "</svg><span>" + t[0] + "</span></a>"; }).join("") + "</nav>" + sideSteps() +
       '<div class="day">' + (dayHtml || "") + "</div>" + syncChip() + '<a class="hlp' + (on === "help" ? " on" : "") + '" href="#help">사용 방법</a></div></header>';
   }
 
@@ -738,6 +738,41 @@
       '<ul class="resl">' + li + "</ul>" +
       '<p class="srcline">출처: ' + esc(s["기관"] || "한국사회보장정보원") + " " + esc(s["데이터명"] || "자원정보서비스") + "(" + esc(s["번호"] || "15001839") + ") · " + esc(s["기준일"] || "") + " 조회 · 자료에 주소가 없어 지도에는 표시하지 않습니다 · 연계 여부는 담당 공무원 판단</p></details>";
   }
+  // ── 41 동선 배경 = 네이버 지도(officer/route_map.js 를 처음 동선 화면에서만 불러옴) + 최적화 전·후 비교 ──
+  //   비교 «전» = 명단(한국사회보장정보원 순위) 순서, «후» = 지금 화면 순서(최근접 이웃 → 2-opt). 둘 다 시청 출발·복귀.
+  //   값: 도로 경로 서버(daeum-route, 네이버 Directions 15)가 두 순서 모두 주면 그 값, 아니면 직선거리×1.3·시속 40km 근사(«약»).
+  var rmP = null;
+  function rmLoad() {
+    if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
+    if (rmP) return rmP;
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12e41"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    return rmP;
+  }
+  function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
+  function rtListOrder(ids) { var inDay = {}; ids.forEach(function (id) { inDay[id] = 1; }); var o = rank().map(function (r) { return r.id; }).filter(function (id) { return inDay[id]; }); return o.length === ids.length ? o : ids.slice(); }
+  function rtPts(ids) { var off = RP.toLatLng(OFFICE), a = [[off.lng, off.lat]]; ids.forEach(function (id) { var q = RP.toLatLng(BY[id]); a.push([q.lng, q.lat]); }); a.push([off.lng, off.lat]); return a; }
+  function rtSum(ids, road) {
+    if (road && road.legs) { var m = 0, s = 0; road.legs.forEach(function (l) { m += l.m; s += l.s; }); return { km: m / 1000, min: s / 60, road: true }; }
+    var km = RP.tourKm(rtStops(ids), OFFICE, true); return { km: km, min: km / RP.KMH * 60, road: false };
+  }
+  function rtCmp(before, after) {
+    var RM = window.DaeumRouteMap, rb = RM && RM.cacheGet(RP.cacheKey(rtStops(before), true)), ra = RM && RM.cacheGet(RP.cacheKey(rtStops(after), true));
+    var road = !!(rb && ra), b = rtSum(before, road ? rb : null), a = rtSum(after, road ? ra : null);
+    return { b: b, a: a, road: road, same: before.join() === after.join(), dKm: b.km - a.km, dMin: b.min - a.min, pct: b.km > 0 ? (b.km - a.km) / b.km * 100 : 0, path: road ? ra.path : null };
+  }
+  function rtOptHtml(r) {
+    var y = r.road ? "" : "약 ", f1 = function (v) { return (Math.round(v * 10) / 10).toFixed(1); }, f0 = function (v) { return Math.round(v); };
+    var head = r.same || r.dKm < 0.05 ? '<b class="rt-h">명단 순서가 이미 가장 짧은 길입니다</b>'
+      : r.dKm > 0 ? '<b class="rt-h">이 순서로 돌면 <em>' + y + f1(r.dKm) + "km · " + f0(Math.max(0, r.dMin)) + "분</em> 짧아집니다</b>"
+      : '<b class="rt-h">직접 바꾼 순서 · 명단 순서보다 ' + y + f1(-r.dKm) + "km 깁니다</b>";
+    var w = r.b.km > 0 ? Math.max(8, Math.min(100, r.a.km / r.b.km * 100)) : 100;
+    return '<section class="rt-opt blk" aria-label="동선 최적화 결과"><div class="rt-tag">동선 최적화 결과</div>' + head +
+      '<div class="rt-bars"><div class="rt-r"><span>명단 순서</span><i class="rt-b0" style="width:100%"></i><b>' + y + f1(r.b.km) + "km · " + f0(r.b.min) + "분</b></div>" +
+      '<div class="rt-r on"><span>최적 순서</span><i class="rt-b1" style="width:' + w.toFixed(0) + '%"></i><b>' + y + f1(r.a.km) + "km · " + f0(r.a.min) + "분</b></div></div>" +
+      (r.dKm >= 0.05 ? '<p class="rt-pct">이동 거리 ' + f0(r.pct) + "% 줄임 · 상담 시간은 그대로</p>" : "") +
+      '<p class="rt-src">' + (r.road ? "거리·시간: 네이버 Directions 15 도로 경로(닿음 서버 daeum-route)" : "거리·시간: 직선거리 × 1.3(우회 계수) · 시속 40km 근사 — 도로 경로를 받으면 실제 값으로 바뀝니다") +
+      " · 순서: 최근접 이웃 → 2-opt · 상주시청 출발·복귀 · 가구 위치는 가상(시연용)</p></section>";
+  }
   function routeView(want) {
     var k = pickHid(want); if (!k) return phEmpty();
     var c = k.c, hid = k.hid, h = BY[hid], i = c.d.ids.indexOf(hid), row = c.d.s.rows[i] || {};
@@ -745,8 +780,9 @@
     var vt = F.visitTime.profile(attempts(), hid, { neighborLog: neighborLog() }), segs = Math.ceil(left.length / 6);
     var stops = c.d.ids.map(function (id, j) { var st = statusOf(id); return '<a class="rs' + (st !== "planned" ? " dn" : "") + (id === hid ? " nx" : "") + '" href="#route:' + id + '"><i>' + (st !== "planned" ? "✓" : j + 1) + '</i><b>' + id + "</b><span>" + esc(BY[id].area) + stTag(st) + '</span><em>' + esc((c.d.s.rows[j] || {}).arrive || "") + "</em></a>"; }).join("");
     return '<main class="ph">' + phBrand() + mini(1, hid) +
-      '<div class="mapw blk ph-map">' + mapSvg({ id: "rm", days: [{ ids: c.d.ids, focus: true }], done: done, next: hid, h: 360, label: "오늘 동선 지도" }) +
+      '<div class="mapw blk ph-map rt-map" id="rtmap"><div class="rt-svg">' + mapSvg({ id: "rm", days: [{ ids: c.d.ids, focus: true }], done: done, next: hid, h: 360, label: "오늘 동선 지도" }) + '</div><div class="rt-nmap" aria-label="네이버 지도 — 오늘 방문 순서"><div class="rt-nbox"></div></div>' +
       '<div class="mtop"><span>' + (c.isToday ? "오늘" : c.d.date ? md(c.d.date) : c.d.n + "일차") + " · " + c.d.ids.length + "집</span><span>" + c.d.s.km + "km 약 · " + c.d.s.end + " 복귀</span></div></div>" +
+      '<div id="rtopt">' + rtOptHtml(rtCmp(rtListOrder(c.d.ids), c.d.ids)) + "</div>" +
       '<section class="nextc blk"><span class="pin">' + (i + 1) + '</span><div><b>다음 집 ' + hid + "</b><small>" + esc(h.area + " · " + ageLine(h)) + (vt.best && vt.absences.length ? " · " + esc(vt.absences[0].label) + " 부재 " + vt.absences.length + "번 → " + esc(vt.best.label) : "") + '</small></div><span class="eta">' + esc(row.arrive || "") + "<small>" + (row.km != null ? row.km + "km · " + row.travelMin + "분" : "") + "</small></span>" +
       '<div class="dprog" style="grid-template-columns:repeat(' + c.d.ids.length + ',1fr)">' + c.d.ids.map(function (id) { return '<i class="' + (id === hid ? "n" : statusOf(id) !== "planned" ? "d" : "") + '"></i>'; }).join("") + '</div><div class="dprog-l"><span>' + done.length + "집 끝</span><span>남은 " + left.length + "집</span></div></section>" +
       '<button type="button" class="big nav" data-act="nav"><span>네이버 지도로 길안내</span><small>남은 ' + Math.min(6, left.length || c.d.ids.length) + "곳 경유</small></button>" +
@@ -760,6 +796,39 @@
     var c = k.c, left = c.d.ids.filter(function (id) { return statusOf(id) === "planned"; });
     var nb = app.querySelector('[data-act="nav"]'); if (nb) nb.addEventListener("click", function () { vib(); launch(left.length ? left : c.d.ids, 0); });
     app.querySelectorAll("[data-seg]").forEach(function (b) { b.addEventListener("click", function () { launch(left, +b.dataset.seg); }); });
+    bindRouteMap(c, k.hid);
+  }
+  var rtAsked = {}, rtRO = null;
+  function bindRouteMap(c, hid) {
+    var wrap = document.getElementById("rtmap"), box = wrap && wrap.querySelector(".rt-nbox"); if (!box) return; // 네이버가 지도 판에 position:relative 를 덮어써서 바깥 칸(절대 위치)이 아닌 안쪽 판에 그린다
+    var ids = c.d.ids, before = rtListOrder(ids);
+    function stops() { return ids.map(function (id, j) { var p = RP.toLatLng(BY[id]), st = statusOf(id); return { lat: p.lat, lng: p.lng, no: j + 1, label: "방문 " + (j + 1), cls: id === hid ? "nx" : st !== "planned" ? "dn" : "" }; }); }
+    function paint() {
+      var RM = window.DaeumRouteMap, r = rtCmp(before, ids), o = document.getElementById("rtopt");
+      if (o) o.innerHTML = rtOptHtml(r);
+      var mt = wrap.querySelector(".mtop span:last-child"); if (mt && r.road) mt.textContent = (Math.round(r.a.km * 10) / 10).toFixed(1) + "km · 이동 " + Math.round(r.a.min) + "분(도로)";
+      if (!RM || !document.body.contains(box)) return;
+      var off = RP.toLatLng(OFFICE), ra = RM.cacheGet(RP.cacheKey(rtStops(ids), true));
+      var ok = RM.draw({ box: box, office: { lat: off.lat, lng: off.lng, name: "상주시청", short: "시청" }, stops: stops(), path: ra ? ra.path : null, ret: true, color: "#0C8767" });
+      if (!ok) return;
+      var shown = function () { wrap.classList.add("has-naver"); };
+      try { naver.maps.Event.once(RM.state.map, "tilesloaded", shown); } catch (e) { /* 이벤트 없음 */ }
+      setTimeout(function () { if (box.querySelector("img")) shown(); }, 1500); // 이미 받아 둔 타일이면 tilesloaded 가 안 올 수 있다
+    }
+    rmLoad().then(function (RM) {
+      return RM.load().then(function () {
+        paint();
+        if (rtRO) rtRO.disconnect();
+        if (window.ResizeObserver) { rtRO = new ResizeObserver(function () { if (document.body.contains(box)) RM.refresh(); else rtRO.disconnect(); }); rtRO.observe(box); }
+        // 도로 경로 — 두 순서(명단·최적) 모두. 같은 순서·복귀면 7일 보관이라 다시 부르지 않는다
+        if (ids.length > RP.MAX_ROAD_STOPS) return;
+        [before, ids].forEach(function (ord) {
+          var key = RP.cacheKey(rtStops(ord), true);
+          if (RM.cacheGet(key) || rtAsked[key]) return; rtAsked[key] = 1;
+          RM.road(key, rtPts(ord)).then(function () { if (document.body.contains(box)) paint(); }, function () { /* 직선 근사 유지 */ });
+        });
+      });
+    }).catch(function (why) { wrap.classList.add("no-naver"); if (window.console) console.warn("[닿음 동선] 네이버 지도 대신 그림 지도 — " + why); });
   }
 
   // ═════ P3 실적·사후관리 — 명단 진도·읍면별·이번 주 할 일(약속·재방문·연계 뒤 확인) ═════
@@ -1228,6 +1297,61 @@
   var toastT = null;
   function toast(t) { var el = document.getElementById("toast"); if (!el) { el = document.createElement("div"); el.id = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); } el.textContent = t; el.className = "toast on"; clearTimeout(toastT); toastT = setTimeout(function () { el.className = "toast"; }, 2600); }
 
+  // ═════ 41 PC 현장 책상 — 🩵 미르 11-03 «PC에서도 순서·동선·요약·확인·상담·기록·보고 전부» ═════
+  // 폰 현장 화면(.ph)을 그대로 쓰되, PC(≥1024)에서는 좌측 메뉴열 + 위 «7단계 진행판» + 넓은 2칸 작업판 + 오른쪽 «오늘 방문·이 단계가 채우는 문서».
+  // 데이터·기능은 폰과 같은 함수(새로 지어낸 값 없음). 폰(<1024)에서는 이 덧붙인 판이 모두 숨고 원래 화면 그대로.
+  var FSTEP = { plan: 0, route: 1, home: 2, check: 3, talk: 4, record: 5, docs: 6 };
+  var FSUB = ["방문 계획", "네이버 길안내", "집 앞 요약", "현장 확인", "상담 도움", "상담 후 기록", "문서함"];
+  var FFEED = {
+    route: [["출장 결과 보고(복명서)", "방문한 날 · 다녀온 집"], ["주간·월간 추진 실적 보고", "방문 가구 수"]],
+    home: [["상담일지 초안", "발굴 이유 · 지난 기록"], ["한 장 인계 카드", "주의할 점 · 만나기 좋은 때"]],
+    check: [["상담일지 초안", "상황 칸 — 현장 징후"], ["한 장 인계 카드", "현장 확인 징후"], ["주간·월간 추진 실적 보고", "명단 사유 밖 징후 수"]],
+    talk: [["상담일지 초안", "욕구 칸 — 물어본 질문"], ["서비스 연계 의뢰서", "연계 후보 서비스"]],
+    record: [["상담일지 초안", "상황·욕구·연계·다음"], ["출장 결과 보고(복명서)", "만남·부재·거절"], ["차수 처리 결과 명단", "방문 4열"]]
+  };
+  function sideSteps() {
+    var k = pickHid(curArg), hid = k ? k.hid : null, now = FSTEP[cur];
+    return '<nav class="fsteps" aria-label="현장 7단계"><h3>현장 7단계' + (hid ? "<small>가구 " + esc(hid) + "</small>" : "") + "</h3>" +
+      STN.map(function (s, i) { return '<a href="' + stationHref(i, hid) + '"' + (i === now ? ' class="on" aria-current="step"' : "") + "><i>" + (i + 1) + "</i><b>" + s[0] + "</b><small>" + FSUB[i] + "</small></a>"; }).join("") + "</nav>";
+  }
+  function stepVals(c, hid) {
+    var h = BY[hid], o = recOf(hid), i = c.d.ids.indexOf(hid), row = c.d.s.rows[i] || {}, st = statusOf(hid), m = meta()[hid] || {}, r = rankBy()[hid];
+    var p = plan(), pr = p && p.rows.filter(function (x) { return x.household_no === hid; })[0];
+    var lr = pr && pr.list_rank != null ? pr.list_rank : r ? r.listRank : m.prio || "—";
+    var L = checkList(h, o.res === "absent"), ck = o.checks || {}, dn = L.filter(function (x) { return ck[x.k]; }).length, bd = L.filter(function (x) { return ck[x.k] === "bad"; }).length;
+    var Q = questionsFor(hid, o), as = askedOf(hid), aN = Q.filter(function (q) { return as[q.key]; }).length, svN = chosenSvcs(hid, o).length;
+    return [
+      [(c.d.n || 1) + "일차 " + (i + 1) + "번째", "발굴 " + lr + "순위"],
+      [row.arrive ? row.arrive + " 도착" : "—", row.km != null ? row.km + "km · " + row.travelMin + "분" : c.d.s.km + "km"],
+      [indText(h).length + "가지 사유", h.area],
+      [dn + " / " + L.length, bd ? "징후 " + bd + "개" : dn ? "이상 없음" : "체크 전"],
+      ["질문 " + aN + " / " + Q.length, "연계 후보 " + svN + "개"],
+      [st === "planned" ? "확정 전" : ST_LBL[st] || "확정", st === "planned" ? (o.memo ? "메모 있음" : "말하기 1분") : "확정됨"],
+      [docModel().pending + "건", "만들 문서"]];
+  }
+  function desk(s, want, html) {
+    var k = pickHid(want); if (!k) return html;
+    var c = k.c, hid = k.hid, h = BY[hid], now = FSTEP[s], V = stepVals(c, hid), st = statusOf(hid), dm = docModel();
+    var head = '<section class="dk-head blk" aria-label="현장 7단계 진행판"><div class="dk-t"><span class="dk-k">현장 7단계 · 가구 <b>' + esc(hid) + "</b> · " + esc(h.area + " · " + ageLine(h)) + "</span><h1><em>" + (now + 1) + "</em>" + esc(FSUB[now]) + "</h1></div>" +
+      '<div class="dk-nav">' + '<a class="sbtn" href="' + stationHref(now - 1, hid) + '">← ' + STN[now - 1][0] + "</a>" + '<a class="sbtn go" href="' + stationHref(now + 1, hid) + '">' + STN[now + 1][0] + " →</a></div>" +
+      '<ol class="dk-steps" style="--p:' + (now / 6).toFixed(3) + '">' + STN.map(function (x, i) {
+        var cls = i === now ? "now" : i < now || (i === 5 && st !== "planned") ? "dn" : "";
+        return '<li class="' + cls + '"><a href="' + stationHref(i, hid) + '"' + (i === now ? ' aria-current="step"' : "") + "><i>" + (i + 1) + "</i><b>" + x[0] + "</b><span>" + esc(V[i][0]) + "</span><small>" + esc(V[i][1]) + "</small></a></li>";
+      }).join("") + "</ol></section>";
+    var dayL = c.d.ids.map(function (id, j) {
+      var ss = statusOf(id), tg = ss === "done" ? '<span class="tg ok">만남</span>' : ss === "absent" ? '<span class="tg ab">부재</span>' : ss === "refused" ? '<span class="tg rf">거절</span>' : "";
+      return '<li class="' + (id === hid ? "cur" : "") + (ss !== "planned" ? " dn" : "") + '"><a href="#' + s + ":" + id + '"><span class="t">' + esc((c.d.s.rows[j] || {}).arrive || "") + "</span><i>" + (ss !== "planned" ? "✓" : j + 1) + "</i><b>" + esc(id) + "</b><small>" + esc(BY[id].area) + "</small>" + tg + "</a></li>";
+    }).join("");
+    var feed = (FFEED[s] || []).map(function (f) { return "<li><b>" + esc(f[0]) + "</b><span>" + esc(f[1]) + "</span></li>"; }).join("");
+    var aside = '<aside class="dk-aside" aria-label="오늘 방문과 문서">' +
+      '<section class="dk-day blk"><h3>' + (c.isToday ? "오늘" : c.d.date ? md(c.d.date) : c.d.n + "일차") + " 방문 " + c.d.ids.length + "곳<small>" + esc(c.d.s.km + "km 약 · " + (c.d.s.end || "") + " 복귀") + "</small></h3><ol>" + dayL + "</ol></section>" +
+      '<section class="dk-feed well"><h3>이 단계 기록이 들어가는 문서</h3><ul>' + feed + '</ul><a class="dk-docs" href="#docs">문서함 열기<b>' + dm.pending + "건 대기</b></a></section>" +
+      '<p class="dk-src"><span>근거 데이터</span>' + esc(STN[now][1]) + " · 가상 가구</p></aside>";
+    var i0 = html.indexOf('<main class="ph">'), i1 = html.indexOf("</main>", i0);
+    if (i0 < 0 || i1 < 0) return html;
+    return html.slice(0, i0) + '<div class="desk">' + head + '<div class="dk-body">' + html.slice(i0, i1 + 7) + aside + "</div></div>" + html.slice(i1 + 7);
+  }
+
   // ── 길잡이(해시) ──
   var cur = "", curArg = null;
   var TITLES = { today: "오늘", plan: "방문 계획", route: "동선", perf: "실적·사후관리", help: "사용 방법", home: "집 앞 요약", check: "현장 확인", talk: "상담 도움", record: "상담 후 기록", docs: "문서함" };
@@ -1238,6 +1362,7 @@
     var VIEW = { today: today, plan: planView, route: routeView, perf: perfView, help: helpView, home: home, check: checkView, talk: talkView, record: record, docs: docsView };
     var html = VIEW[cur](curArg), bar = alertBar();
     if (bar) { var pb = phBrand(); html = html.indexOf(pb) >= 0 ? html.replace(pb, pb + bar) : html.replace(/<main class="wrap">/, '<main class="wrap">' + bar); }
+    if (FSTEP[cur] >= 1 && FSTEP[cur] <= 5) { var kk = pickHid(curArg), ar = kk ? BY[kk.hid].area : ""; html = top("field", "<strong>" + md(new Date()) + "</strong>" + esc(ar) + " 현장 · 가상") + desk(cur, curArg, html); } // 41 PC 현장 책상(폰에서는 CSS로 숨김)
     document.body.dataset.s = cur;
     app.innerHTML = html;
     document.title = TITLES[cur] + " · " + NAME + " — " + SUB;
