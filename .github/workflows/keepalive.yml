@@ -1,0 +1,23 @@
+# 닿음 서버(Supabase «daeum», 무료 플랜) 잠들기 방지 — 🩵 미르 45회차(2026-11-03, 호창님 «언제든 심사자가 시연해도»)
+# 무료 플랜은 7일 동안 요청이 없으면 프로젝트가 일시정지된다 → 이틀마다 공개(publishable) 키로 가벼운 요청을 보낸다.
+# ⛔ 상주 정책플랫폼 Supabase 와 무관 — 닿음 전용 프로젝트 주소만 부른다. 비밀값 없음(공개 키는 shared/config.js 와 같은 값).
+# 주의: 저장소에 60일 동안 커밋이 없으면 GitHub 가 schedule 을 멈춘다(배포 때마다 커밋되므로 평소엔 문제없음).
+name: keepalive
+on:
+  schedule:
+    - cron: "17 0 */2 * *"   # 이틀마다 09:17 KST
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: 닿음 Supabase 깨우기
+        run: |
+          U=https://gicjzrxgktpovnphtjhi.supabase.co
+          K=sb_publishable_Gh5BZa8H-8YP4cLT3fW2-g_l0Bqn7ZR
+          a=$(curl -s -o /dev/null -w "%{http_code}" -m 30 -H "apikey: $K" "$U/auth/v1/health")
+          r=$(curl -s -o /dev/null -w "%{http_code}" -m 30 -H "apikey: $K" "$U/rest/v1/visit_plan?select=round_ym&limit=1")
+          echo "auth=$a rest=$r"
+          # 5xx·응답 없음(000)·540(일시정지)이면 실패로 알린다. 401/403(권한)은 DB까지 닿은 것이라 정상.
+          for c in $a $r; do case $c in 000|5*) echo "서버 이상: $c"; exit 1;; esac; done
