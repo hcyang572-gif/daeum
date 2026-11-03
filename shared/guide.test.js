@@ -60,6 +60,11 @@ t("첫 화면이 안내 부품을 싣고 사용 방법 · 공무원 화면은 �
   // S12-d 1부(11-03): 첫 화면은 «단계 레일» 앱(app/app.js)으로 새로 지었다. 옛 흐름 ①~⑨ 사용 방법(guide.js)은 공무원 화면에만 두고, 새 안내는 2부에서 붙인다.
   assert.ok(/app\/app\.js/.test(s), "index.html = 단계 레일 앱"); assert.ok(!/data-guide="help"/.test(s) || /guide\.js/.test(s), "사용 방법 단추가 있으면 guide.js 도 있어야 함");
   assert.ok(/\.\.\/shared\/data\.html/.test(fs.readFileSync(path.join(ROOT, "officer/flow.js"), "utf8")), "공무원 화면 → 활용 데이터");
+  var ap = fs.readFileSync(path.join(ROOT, "app/app.js"), "utf8"); // S12-d 2부: 새 앱 사용 방법 = #help(7단계)
+  assert.ok(/help: helpView/.test(ap) && /href="#help"/.test(ap), "단계 레일 앱에 사용 방법 화면");
+  ["#plan", "#route", "#check", "#talk", "#record", "#docs"].forEach(function (h) { assert.ok(ap.indexOf('h: "' + h + '"') >= 0, "사용 방법 단계 " + h); });
+  var ap2 = ap.replace(/한국사회보장정보원/g, "").replace(/^\/\*[\s\S]*?\*\//, ""); // 머리 주석(금지 목록) 제외
+  ["정보원", "영업일", "달력에 넣기", "오늘 줄인 시간", "신고 접수", "발굴 의뢰"].forEach(function (w) { assert.ok(ap2.indexOf(w) < 0, "금지 표현 " + w); });
   var g = fs.readFileSync(path.join(ROOT, "shared/guide.js"), "utf8"); assert.ok(/officer\/index\.html#s1/.test(g) && /officer\/index\.html#s9/.test(g) && !/#today|신고 접수/.test(g), "사용 방법 = 새 흐름");
 });
 
