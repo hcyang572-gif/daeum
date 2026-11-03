@@ -143,11 +143,11 @@
       var ch = c.channel("daeum-" + uid0)
         .on("postgres_changes", { event: "*", schema: "public", table: "visit_plan", filter: "owner_id=eq." + uid0 }, function () { later(pull); })
         .on("postgres_changes", { event: "*", schema: "public", table: "visit_log", filter: "owner_id=eq." + uid0 }, function () { later(pull); })
-        .on("broadcast", { event: "safety" }, function (m) { if (safeMerge(m && m.payload)) later(function () { emit("safety"); }); });
+        .on("broadcast", { event: "safety" }, function (m) { var pl = m && m.payload; if (pl && pl.ask) later(function () { emit("safety-ask"); }); else if (safeMerge(pl)) later(function () { emit("safety"); }); });
       S.ch = ch;
       ch.subscribe(function (st) {
         if (g !== S.gen) return;
-        if (st === "SUBSCRIBED") { mode("live"); later(function () { pull().catch(function () {}); flush(); }); } // 끊긴 사이 바뀐 것도 다시 읽는다
+        if (st === "SUBSCRIBED") { mode("live"); later(function () { pull().catch(function () {}); flush(); try { ch.send({ type: "broadcast", event: "safety", payload: { ask: 1 } }); } catch (e) { /* 무시 */ } }); } // 늦게 연 화면: 다른 화면에 안전 모드 다시 알려 달라고 묻는다 // 끊긴 사이 바뀐 것도 다시 읽는다
         else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT" || st === "CLOSED") mode("offline", "socket");
       });
     }).catch(function () { /* mode 는 pull 이 정함 */ });

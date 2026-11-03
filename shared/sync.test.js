@@ -116,7 +116,7 @@ t("38b 안전 모드 알림: 보내면 이 기기에 남고 실시간 채널로 
   var got = []; b.S.on(function (w) { got.push(w); });
   b.S.safety.send({ id: "SF-A-1", hid: "A-001", area: "화서면", at: new Date().toISOString(), min: 40, state: "on", by: "폰", name: "홍길동", addr: "어디" });
   var ch = b.channels[b.channels.length - 1];
-  assert.strictEqual(ch.sent.length, 1); assert.strictEqual(ch.sent[0].event, "safety");
+  var mine = ch.sent.filter(function (m) { return !m.payload.ask; }); assert.strictEqual(mine.length, 1); assert.strictEqual(mine[0].event, "safety");
   var all = b.S.safety.list(); assert.strictEqual(all["SF-A-1"].state, "on"); assert.ok(got.indexOf("safety") >= 0);
   assert.ok(!("name" in all["SF-A-1"]) && !("addr" in all["SF-A-1"]), "가구 번호·읍면 말고는 남기지 않음");
 });
@@ -128,6 +128,12 @@ t("38b 다른 화면의 «안부 확인 완료»(더 새 rev)는 받아들이고
   assert.strictEqual(b.S.safety.list()["SF-B-1"].min, 70);
   bc({ payload: { id: "SF-B-1", hid: "B-002", at: a.at, min: 40, state: "on", rev: a.rev - 1 } }); await wait(10);
   assert.strictEqual(b.S.safety.list()["SF-B-1"].state, "ok");
+});
+t("38b 늦게 연 화면은 붙자마자 «다시 알려 달라»(ask)를 보내고, ask 를 받으면 safety-ask 로 알림", async function () {
+  var b = boot({ loggedIn: true }); await b.S.init(); await wait(60);
+  var ch = b.channels[b.channels.length - 1]; assert.ok(ch.sent.some(function (m) { return m.payload && m.payload.ask; }));
+  var got = []; b.S.on(function (w) { got.push(w); }); ch.h[2]({ payload: { ask: 1 } }); await wait(10);
+  assert.ok(got.indexOf("safety-ask") >= 0); assert.strictEqual(Object.keys(b.S.safety.list()).length, 0);
 });
 t("38b 로그인 전에도 이 기기(같은 브라우저 다른 창)에는 남는다 — 서버 테이블 없음", async function () {
   var b = boot({ loggedIn: false }); await b.S.init(); await wait(20);

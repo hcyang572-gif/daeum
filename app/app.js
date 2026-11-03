@@ -1099,6 +1099,7 @@
     var ae = document.activeElement;
     if (ae && (ae.id === "memo" || ae.id === "refuseWhy" || ae.hasAttribute && ae.hasAttribute("data-fill"))) return; // 쓰는 중에는 다시 그리지 않는다
     if (micRec) return;
+    if (what === "safety-ask") { resendOwn(); return; }
     if (what === "safety") safeAdopt();
     if (what === "mode" && SY.state().mode === "live") resendOwn();
     if (what === "data" || what === "mode" || what === "sent" || what === "safety") render();
