@@ -11,8 +11,8 @@
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone"],
   "orientation": "any",
-  "background_color": "#EEF0F3",
-  "theme_color": "#EEF0F3",
+  "background_color": "#ECEAE5",
+  "theme_color": "#ECEAE5",
   "categories": ["productivity", "government"],
   "icons": [
     { "src": "shared/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

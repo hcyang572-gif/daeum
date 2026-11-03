@@ -809,13 +809,13 @@
   // ═════ P2 문서함(⑦) ═════
   var DOCS = [
     { k: "d2", nm: "출장 결과 보고(복명서)", sub: "방문한 날 · hwpx 1쪽", meter: [["r", 8], ["a", 3], ["e", 1]] },
-    { k: "d1", nm: "상담일지 초안", sub: "행복이음 입력 순서로 복사", meter: [["m", 5], ["a", 4]] },
+    { k: "d1", nm: "상담일지 초안", sub: "행복이음 입력 순서 복사 · 보관 hwpx", meter: [["m", 5], ["a", 4]] },
     { k: "d3", nm: "서비스 연계 의뢰서", sub: "연계 확정 때 · hwpx 1쪽", meter: [["m", 4], ["r", 3], ["a", 2]] },
     { k: "d4", nm: "안내 문자 문안", sub: "이름·주소 빼고 쉬운 말 · 복사", meter: [["m", 2], ["a", 3]] },
-    { k: "d5", nm: "주간 추진 실적 보고", sub: "수급권자 현황 15062448 비교 · hwpx", meter: [["r", 9], ["m", 2], ["a", 1]] },
+    { k: "d5", nm: "주간·월간 추진 실적 보고", sub: "수급권자 현황 15062448 비교 · hwpx", meter: [["r", 9], ["m", 2], ["a", 1]] },
     { k: "d6", nm: "차수 처리 결과 명단", sub: "명단 43열 + 방문 4열 · xlsx", meter: [["m", 12], ["r", 4]] }
   ];
-  var docSel = "d2", docDay = null, docHid = null, docOrg = null, made1 = {};
+  var docSel = "d2", docDay = null, docHid = null, docOrg = null, docPer = "wk", made1 = {};
   function reportDays() { return days().filter(function (d) { return d.ids.some(function (id) { return statusOf(id) !== "planned"; }); }); }
   function caseOf(id) {
     var L = lastLog(id), st = statusOf(id), memo = L ? L.memo : "", tags = L && L.tags || [];
@@ -824,6 +824,10 @@
     return { id: id, st: st, memo: memo, tags: tags, refs: refs, field: field, at: L ? L.at : null, h: BY[id] };
   }
   function weekRange() { var n = U.startOfDay(new Date()), mon = new Date(n.getTime() - ((n.getDay() + 6) % 7) * 864e5); return { from: mon, to: new Date(mon.getTime() + 4 * 864e5) }; }
+  /** 이번 달 1일 ~ 말일(S12-d 39 월간) */
+  function monthRange() { var n = U.startOfDay(new Date()); return { from: new Date(n.getFullYear(), n.getMonth(), 1), to: new Date(n.getFullYear(), n.getMonth() + 1, 0) }; }
+  /** 실적 보고 저장 키 — 주간 «wk:월요일:d5» · 월간 «mo:YYYY-MM:d5» */
+  function perKey(per) { return per === "mo" ? "mo:" + ymd(monthRange().from).slice(0, 7) + ":d5" : "wk:" + ymd(weekRange().from) + ":d5"; }
   function docModel() {
     var rd = reportDays(), dd = rd.length ? (rd.filter(function (d) { return d.n === docDay; })[0] || rd[rd.length - 1]) : null;
     var cases = dd ? dd.ids.map(caseOf) : [], met = cases.filter(function (x) { return x.st === "done"; }), ab = cases.filter(function (x) { return x.st === "absent"; });
@@ -832,11 +836,11 @@
     var cnt = { d2: dd ? 1 : 0, d1: met.length, d3: linked.length, d4: ab.length + linked.length, d5: 1, d6: 1 };
     var got = function (k) { return (done[key + ":" + k] || []).length; };
     var wk = weekRange(), wkKey = ymd(wk.from);
-    var pend = { d2: Math.max(0, cnt.d2 - got("d2")), d1: Math.max(0, cnt.d1 - got("d1")), d3: Math.max(0, cnt.d3 - got("d3")), d4: Math.max(0, cnt.d4 - got("d4")), d5: (done["wk:" + wkKey + ":d5"] || []).length ? 0 : 1, d6: (done["round:" + roundYm() + ":d6"] || []).length ? 0 : 1 };
+    var pend = { d2: Math.max(0, cnt.d2 - got("d2")), d1: Math.max(0, cnt.d1 - got("d1")), d3: Math.max(0, cnt.d3 - got("d3")), d4: Math.max(0, cnt.d4 - got("d4")), d5: (done[perKey(docPer)] || []).length ? 0 : 1, d6: (done["round:" + roundYm() + ":d6"] || []).length ? 0 : 1 };
     return { rd: rd, dd: dd, cases: cases, met: met, ab: ab, linked: linked, cnt: cnt, pend: pend, key: key, wkKey: wkKey, pending: Object.keys(pend).reduce(function (s, k) { return s + pend[k]; }, 0) };
   }
   function markDone(M, k, id) {
-    var done = lsGet(LS_DOCS, {}) || {}, key = k === "d5" ? "wk:" + M.wkKey + ":d5" : k === "d6" ? "round:" + roundYm() + ":d6" : M.key + ":" + k;
+    var done = lsGet(LS_DOCS, {}) || {}, key = k === "d5" ? perKey(docPer) : k === "d6" ? "round:" + roundYm() + ":d6" : M.key + ":" + k;
     var a = done[key] || []; if (a.indexOf(id) < 0) a.push(id); done[key] = a; lsSet(LS_DOCS, done);
   }
   function fills() { return lsGet(LS_FILL, {}) || {}; }
@@ -878,10 +882,36 @@
       '<section class="prev blk" aria-label="' + esc(D0.nm) + ' 미리보기">' + pv + "</section></div>" +
       '<p class="foot"><span class="demo-tag">가상 데이터</span><span>개인정보 4칸(성명·주민등록번호·연락처·주소) 미기재 · 가구 번호·읍면만 · 상담일지 입력·전자서명은 행복이음에서</span></p></main>';
   }
-  function flowBtns(k, ready, label2) {
-    var m1 = !!made1[k + ":" + (docHid || "")];
+  function flowBtns(k, ready, label2, label3) {
+    var m1 = !!made1[k + ":" + (docHid || "")], on = m1 && ready ? "" : " disabled";
     return '<div class="flow2"><button type="button" class="' + (m1 ? "d1" : "d2") + '" data-act="make">' + (m1 ? "1 만들기 ✓" : "1 만들기") + "</button><em>→</em>" +
-      '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get"' + (m1 && ready ? "" : " disabled") + ">2 " + label2 + "</button></div>";
+      '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get"' + on + ">2 " + label2 + "</button>" +
+      (label3 ? '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get" data-alt="1"' + on + ">2 " + label3 + "</button>" : "") + "</div>";
+  }
+  /** D1 상담일지 초안 — 미리보기·복사·보관 hwpx 가 같은 값을 쓰게 한 곳에서 만든다(규칙 «자동 정리») */
+  function d1Draft(x) {
+    return F.askGuide.draft({ label: "가구 " + x.id, area: x.h.area, at: x.at, method: "방문 상담", needs: F.askGuide.detect(x.memo), summary: x.memo, services: x.tags.filter(function (t) { return !isField(t) && !SIGN_REV[t] && !/^(주거|생계|건강|고립)$/.test(t); }), next: (F.promises.open(F.store.get("promises", []), x.id)[0] || {}).text || "", guide: F.askGuide.check(x.memo, null, askedOf(x.id)) });
+  }
+  /** D1 보관용 hwpx 문서 모델 — 가구 번호·읍면만, 성명·주민등록번호·연락처·주소 칸 없음 */
+  function d1Hwpx(x, dft, made, office, TW) {
+    return { title: "상담일지 초안(보관용)", subtitle: "가구 " + x.id + " · " + x.h.area + " · 자동 정리 · 담당자 확인 전", made: made, office: office,
+      blocks: [{ t: "ch", text: "Ⅰ. 상담 내용" }, { t: "tbl", title: "<표 1> 행복이음 입력 순서", head: ["항목", "내용"], widths: TW ? [Math.round(TW * .22), TW - Math.round(TW * .22)] : undefined, rows: dft.fields.map(function (f) { return [f.label, f.value]; }) },
+        { t: "p", kind: "note", text: "※ 현장 기록을 규칙으로 자동 정리한 초안 · 개인정보 4칸(성명·주민등록번호·연락처·주소) 미기재, 가구 번호·읍면만 · 입력·전자서명은 담당자가 행복이음에서 · 시연용 가상 가구  끝." }] };
+  }
+  /** D5 주간·월간 실적 hwpx 문서 모델 — 숫자는 periodModel 규칙 집계만 */
+  function d5Hwpx(w, made, office, TW) {
+    var mo = w.per === "mo", B = [{ t: "ch", text: "Ⅰ. 한 줄 결론" }, { t: "li", lv: 1, text: w.concl }, { t: "ch", text: "Ⅱ. 추진 실적" },
+      { t: "tbl", title: "<표 1> " + (mo ? "이번 달" : "이번 주") + " 방문 결과", head: ["구분", "가구"], rows: [["만남·상담", String(w.met)], ["부재(다시 방문)", String(w.absent)], ["거절", String(w.refuse)], ["합계", String(w.total)]] },
+      { t: "li", lv: 1, text: "읍면별: " + (w.areas.map(function (a) { return a[0] + " " + a[1]; }).join(", ") || "없음") },
+      { t: "li", lv: 1, text: "명단 처리: " + w.listN + "가구 중 " + w.doneN + "가구 확인" }];
+    if (mo) B.push({ t: "li", lv: 1, text: "주차별 추세: " + (w.weeks.map(function (x) { return x[0] + " " + x[1] + "곳"; }).join(", ") || "없음") });
+    B.push({ t: "ch", text: "Ⅲ. 지역 배경" });
+    if (mo && w.rcpRows.length) {
+      B.push({ t: "tbl", title: "<표 2> 상주시 수급권자 현황(한국사회보장정보원 15062448, 2025-12)", head: ["사업명", "수급권자", "수급가구"], rows: w.rcpRows });
+      B.push({ t: "li", lv: 1, text: "비교: " + w.cmp });
+    } else B.push({ t: "li", lv: 1, text: w.rcp + " — 한국사회보장정보원 복지사업 시군구별 수급권자 현황(15062448)" });
+    B.push({ t: "p", kind: "note", text: "※ 숫자는 현장 기록 규칙 집계 · 시연용 가상 가구 · 담당자 확인 후 확정  끝." });
+    return { title: w.name + " 추진 실적 보고", subtitle: mdDot(w.from) + " ~ " + mdDot(w.to), made: made, office: office, blocks: B };
   }
   function hhPick(arr) {
     if (!arr.length) return "";
@@ -904,8 +934,8 @@
     if (k === "d1") {
       if (!M.met.length) return '<div class="emptyc"><b>만난 가구가 없습니다</b>상담일지 초안은 «만남»으로 확정한 가구에만 생깁니다.</div>';
       var pk = hhPick(M.met), x = M.cases.filter(function (c) { return c.id === docHid; })[0];
-      var dft = F.askGuide.draft({ label: "가구 " + x.id, area: x.h.area, at: x.at, method: "방문 상담", needs: F.askGuide.detect(x.memo), summary: x.memo, services: x.tags.filter(function (t) { return !isField(t) && !SIGN_REV[t] && !/^(주거|생계|건강|고립)$/.test(t); }), next: (F.promises.open(F.store.get("promises", []), x.id)[0] || {}).text || "", guide: F.askGuide.check(x.memo, null, askedOf(x.id)) });
-      return pk + flowBtns("d1", true, "입력 순서 복사") + '<div class="paper"><div class="ruler"><i style="background:var(--src-data)"></i><i style="background:var(--src-rule)"></i><i style="background:var(--src-ai)"></i><i style="background:var(--src-ai)"></i></div><h3>상담일지 초안</h3><div class="sub">행복이음 입력용 · 공무원 확정 전</div><table class="doc-t">' +
+      var dft = d1Draft(x);
+      return pk + flowBtns("d1", true, "입력 순서 복사", "보관 hwpx 받기") + '<div class="paper"><div class="ruler"><i style="background:var(--src-data)"></i><i style="background:var(--src-rule)"></i><i style="background:var(--src-ai)"></i><i style="background:var(--src-ai)"></i></div><h3>상담일지 초안</h3><div class="sub">행복이음 입력용 · 자동 정리 · 공무원 확정 전 · 보관 hwpx는 가구 번호·읍면만</div><table class="doc-t">' +
         dft.fields.map(function (f) { return "<tr><th>" + esc(f.label) + "</th><td>" + (/main|situation|plan|needs|action/.test(f.key) ? "<mark>" + esc(f.value) + "</mark>" : '<span class="rule">' + esc(f.value) + "</span>") + "</td></tr>"; }).join("") + "</table></div>" + LEG +
         '<p class="srcline">' + esc(dft.note) + " · 연계 후보 = 한국사회보장정보원 복지서비스 OpenAPI(15090532·15108347)</p>";
     }
@@ -932,10 +962,12 @@
     }
     if (k === "d5") {
       docHid = "";
-      var w = weekModel(), fs5 = [{ k: "기간", src: "rule", v: mdDot(w.from) + " ~ " + mdDot(w.to) }, { k: "방문", src: "rule", v: "만남 " + w.met + " · 부재 " + w.absent + " · 거절 " + w.refuse + " (총 " + w.total + "곳)" },
-        { k: "읍면별", src: "rule", v: w.areas.map(function (a) { return a[0] + " " + a[1]; }).join(" · ") || "—" }, { k: "처리 완료", src: "rule", v: "명단 " + w.listN + "가구 중 " + w.doneN + "가구 확인" },
-        { k: "지역 배경", src: "data", v: w.rcp }, { k: "한 줄 결론", src: "ai", v: w.concl }];
-      return flowBtns("d5", true, "hwpx 받기") + paper("주간 추진 실적 보고", "상주시청 · " + area + " 맞춤형복지팀", fs5) + LEG + '<p class="srcline">숫자는 규칙 집계(현장 기록) · 지역 배경 = 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448, 기준 2025-12)</p>';
+      var w = periodModel(docPer), mo = docPer === "mo", fs5 = [{ k: "기간", src: "rule", v: mdDot(w.from) + " ~ " + mdDot(w.to) }, { k: "방문", src: "rule", v: "만남 " + w.met + " · 부재 " + w.absent + " · 거절 " + w.refuse + " (총 " + w.total + "곳)" },
+        { k: "읍면별", src: "rule", v: w.areas.map(function (a) { return a[0] + " " + a[1]; }).join(" · ") || "—" }, { k: "처리 완료", src: "rule", v: "명단 " + w.listN + "가구 중 " + w.doneN + "가구 확인" }]
+        .concat(mo ? [{ k: "주차별 추세", src: "rule", v: w.weeks.map(function (x) { return x[0] + " " + x[1] + "곳"; }).join(" · ") || "—" }, { k: "수급권자 현황 비교", src: "data", v: w.cmp }] : [])
+        .concat([{ k: "지역 배경", src: "data", v: w.rcp }, { k: "한 줄 결론", src: "ai", v: w.concl }]);
+      var perSw = '<div class="hh-pick" role="group" aria-label="보고 기간">' + [["wk", "주간"], ["mo", "월간"]].map(function (p) { return '<button type="button" data-per="' + p[0] + '" aria-pressed="' + (p[0] === docPer) + '">' + p[1] + "</button>"; }).join("") + "</div>";
+      return perSw + flowBtns("d5:" + docPer, true, "hwpx 받기") + paper(w.name + " 추진 실적 보고", "상주시청 · " + area + " 맞춤형복지팀", fs5) + LEG + '<p class="srcline">숫자는 규칙 집계(현장 기록) · 지역 배경 = 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448, 기준 2025-12)</p>';
     }
     docHid = "";
     var R = roundRows();
@@ -944,8 +976,9 @@
       '<p class="srcline">명단 열 = 한국사회보장정보원 발굴대상자 조회 서식(43열 중 가구 번호·읍면·순위만 표시, 개인정보 4칸 제외) · 방문 4열 = 현장 기록</p>';
   }
   var SIGN_REV = {}; Object.keys(SIGN_OF).forEach(function (k) { SIGN_REV[SIGN_OF[k]] = k; });
-  function weekModel() {
-    var w = weekRange(), to2 = new Date(w.to.getTime() + 864e5), L = logs().filter(function (l) { var t = new Date(l.at); return t >= w.from && t < to2; });
+  /** D5 실적 집계 — 숫자는 현장 기록 규칙 집계만(per: "wk" 주간 | "mo" 월간). 월간은 주차별 추세 + 15062448 비교 */
+  function periodModel(per) {
+    var mo = per === "mo", w = mo ? monthRange() : weekRange(), to2 = new Date(w.to.getTime() + 864e5), L = logs().filter(function (l) { var t = new Date(l.at); return t >= w.from && t < to2; });
     var last = {}; L.forEach(function (l) { if (!last[l.household_no] || last[l.household_no].at < l.at) last[l.household_no] = l; });
     var ids = Object.keys(last), met = ids.filter(function (i) { return last[i].result === "met"; }).length, ab = ids.filter(function (i) { return last[i].result === "absent"; }).length, rf = ids.filter(function (i) { return last[i].result === "refuse"; }).length;
     var ar = {}; ids.forEach(function (i) { if (BY[i]) ar[BY[i].area] = (ar[BY[i].area] || 0) + 1; });
@@ -953,8 +986,22 @@
     var b = RCP && RCP.rows ? RCP.rows.filter(function (r) { return r["사업명"] === "기초생활보장(맞춤형급여)"; })[0] : null;
     return { from: w.from, to: w.to, met: met, absent: ab, refuse: rf, total: ids.length, areas: Object.keys(ar).map(function (a) { return [a, ar[a]]; }), listN: listN, doneN: doneN,
       rcp: b ? "상주시 기초생활보장 수급가구 " + b["수급가구수"].toLocaleString() + "(" + b["기준년월"] + ")" : "수급권자 현황 자료 없음",
-      concl: "이번 주 " + ids.length + "곳 방문해 " + met + "가구 상담" + (ab ? ", 부재 " + ab + "가구는 다음 주 다시 방문" : "") + "." };
+      concl: (mo ? "이번 달 " : "이번 주 ") + ids.length + "곳 방문해 " + met + "가구 상담" + (ab ? ", 부재 " + ab + "가구는 " + (mo ? "다음 방문 때" : "다음 주") + " 다시 방문" : "") + ".",
+      name: mo ? "월간" : "주간", per: mo ? "mo" : "wk", weeks: mo ? weekTrend(w, L) : [], rcpRows: rcpRows(),
+      cmp: b ? "이번 달 상담 " + met + "가구 = 상주 기초생활보장 수급가구 " + b["수급가구수"].toLocaleString() + "의 " + (met / b["수급가구수"] * 100).toFixed(2) + "%(" + b["기준년월"] + " 기준)" : "수급권자 현황 자료 없음" };
   }
+  /** 월간 주차별 방문 곳 수(월요일 시작 주, 규칙 집계) */
+  function weekTrend(w, L) {
+    var out = [], s = new Date(w.from.getTime()), i = 1;
+    while (s <= w.to) {
+      var e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7 - ((s.getDay() + 6) % 7)), seen = {};
+      L.forEach(function (l) { var t = new Date(l.at); if (t >= s && t < e) seen[l.household_no] = 1; });
+      out.push([i + "주", Object.keys(seen).length]); s = e; i++;
+    }
+    return out;
+  }
+  /** 한국사회보장정보원 15062448 상주 행 — 사업명·수급권자수·수급가구수(위 4줄) */
+  function rcpRows() { return RCP && RCP.rows ? RCP.rows.slice(0, 4).map(function (r) { return [r["사업명"], r["수급권자수"].toLocaleString(), r["수급가구수"].toLocaleString()]; }) : []; }
   function roundRows() {
     var p = plan(), mt = meta();
     return listIds().map(function (id) {
@@ -970,13 +1017,17 @@
     hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js"); });
     return hwpxP;
   }
-  function getDoc(M, k) {
+  function getDoc(M, k, alt) {
     var now = new Date(), area = BY[M.dd.ids[0]].area, made = now.getFullYear() + ". " + (now.getMonth() + 1) + ". " + now.getDate() + ".", office = "상주시청 · " + area + " 맞춤형복지팀";
     var stamp = ymd(now).replace(/-/g, "");
-    if (k === "d1") { var x = M.cases.filter(function (c) { return c.id === docHid; })[0]; copy(F.askGuide.draft({ label: "가구 " + x.id, area: x.h.area, at: x.at, method: "방문 상담", needs: F.askGuide.detect(x.memo), summary: x.memo, next: (F.promises.open(F.store.get("promises", []), x.id)[0] || {}).text || "", guide: F.askGuide.check(x.memo, null, askedOf(x.id)) }).text); markDone(M, k, x.id); render(); return; }
+    if (k === "d1" && !alt) { var x = M.cases.filter(function (c) { return c.id === docHid; })[0]; copy(d1Draft(x).text); markDone(M, k, x.id); render(); return; }
     if (k === "d4") { var z = M.cases.filter(function (c) { return c.id === docHid; })[0]; var vt = F.visitTime.profile(attempts(), z.id, {}); copy(NT.alimtalk(z.st === "absent" ? "absent" : "link", { area: z.h.area, date: z.at ? ymd(z.at) : null, time: z.at ? hm(z.at) : null, nextDate: ymd(U.addWorkdays(now, A.retryGap)), nextSlot: vt.best && /오전/.test(vt.best.label) ? "오전" : "오후" }).copy); markDone(M, k, z.id); render(); return; }
     needLibs().then(function () {
       var W2 = window.DaeumHwpx, TW = W2 && W2.TW || 0;
+      if (k === "d1") {
+        var x1 = M.cases.filter(function (c) { return c.id === docHid; })[0];
+        return W2.download(d1Hwpx(x1, d1Draft(x1), made, office, TW), "상담일지초안_" + x1.id + "_" + stamp + ".hwpx").then(function () { markDone(M, k, x1.id); });
+      }
       if (k === "d2") {
         var fs = d2Fields(M);
         return W2.download({ title: "복명서", subtitle: "복지사각지대 발굴대상자 현장 확인 출장", made: made, office: office,
@@ -990,14 +1041,8 @@
         return W2.download(F.referral.build(rec, docOrg, { office: y.h.area + " 맞춤형복지팀" }), F.referral.fileName(docOrg)).then(function () { markDone(M, k, y.id); });
       }
       if (k === "d5") {
-        var w = weekModel();
-        return W2.download({ title: "주간 추진 실적 보고", subtitle: mdDot(w.from) + " ~ " + mdDot(w.to), made: made, office: office,
-          blocks: [{ t: "ch", text: "Ⅰ. 한 줄 결론" }, { t: "li", lv: 1, text: w.concl }, { t: "ch", text: "Ⅱ. 추진 실적" },
-            { t: "tbl", title: "<표 1> 이번 주 방문 결과", head: ["구분", "가구"], rows: [["만남·상담", String(w.met)], ["부재(다시 방문)", String(w.absent)], ["거절", String(w.refuse)], ["합계", String(w.total)]] },
-            { t: "li", lv: 1, text: "읍면별: " + (w.areas.map(function (a) { return a[0] + " " + a[1]; }).join(", ") || "없음") },
-            { t: "li", lv: 1, text: "명단 처리: " + w.listN + "가구 중 " + w.doneN + "가구 확인" },
-            { t: "ch", text: "Ⅲ. 지역 배경" }, { t: "li", lv: 1, text: w.rcp + " — 한국사회보장정보원 복지사업 시군구별 수급권자 현황(15062448)" },
-            { t: "p", kind: "note", text: "※ 숫자는 현장 기록 규칙 집계 · 시연용 가상 가구 · 담당자 확인 후 확정  끝." }] }, "주간실적_" + stamp + ".hwpx").then(function () { markDone(M, k, "wk"); });
+        var w = periodModel(docPer);
+        return W2.download(d5Hwpx(w, made, office, TW), (w.per === "mo" ? "월간실적_" : "주간실적_") + stamp + ".hwpx").then(function () { markDone(M, k, w.per); });
       }
       if (k === "d6") {
         var R = roundRows();
@@ -1013,8 +1058,9 @@
     app.querySelectorAll("[data-day]").forEach(function (b) { b.addEventListener("click", function () { docDay = +b.dataset.day; docHid = null; render(); }); });
     app.querySelectorAll("[data-hh]").forEach(function (b) { b.addEventListener("click", function () { docHid = b.dataset.hh; render(); }); });
     app.querySelectorAll("[data-org]").forEach(function (b) { b.addEventListener("click", function () { docOrg = b.dataset.org; made1["d3:" + docHid] = made1["d3:" + docHid] || false; render(); }); });
-    var mk = app.querySelector('[data-act="make"]'); if (mk) mk.addEventListener("click", function () { vib(); made1[docSel + ":" + (docHid || "")] = true; render(); });
-    var gt = app.querySelector('[data-act="get"]'); if (gt) gt.addEventListener("click", function () { vib(); getDoc(M, docSel); });
+    var mk = app.querySelector('[data-act="make"]'); if (mk) mk.addEventListener("click", function () { vib(); made1[(docSel === "d5" ? "d5:" + docPer : docSel) + ":" + (docHid || "")] = true; render(); });
+    app.querySelectorAll('[data-act="get"]').forEach(function (gt) { gt.addEventListener("click", function () { vib(); getDoc(M, docSel, !!gt.dataset.alt); }); });
+    app.querySelectorAll("[data-per]").forEach(function (b) { b.addEventListener("click", function () { docPer = b.dataset.per === "mo" ? "mo" : "wk"; render(); }); });
     app.querySelectorAll("[data-fill]").forEach(function (inp) { inp.addEventListener("change", function () { var a = fills(), o = a[M.key] || {}; o[inp.dataset.fill] = inp.value.trim().slice(0, 40); a[M.key] = o; lsSet(LS_FILL, a); render(); }); });
   }
 
