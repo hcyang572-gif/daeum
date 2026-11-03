@@ -7,7 +7,7 @@
 (function (root) {
   "use strict";
   var C = root.DAEUM_CONFIG || {}, F = root.DaeumFeatures || {};
-  var K = { plan: "daeum.visit.plan", log: "daeum.visit.log", queue: "daeum.visit.queue" };
+  var K = { plan: "daeum.visit.plan", log: "daeum.visit.log", queue: "daeum.visit.queue", safe: "daeum.s12.safeAlerts" };
   var LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js";
   var GUARD = /gicjzrxgktpovnphtjhi\.supabase\.co$/; // 닿음 전용 프로젝트만 허용
   var S = { mode: "local", why: "login", user: null, at: null, client: null, ch: null, subs: [], gen: 0, conUser: null, flushing: null, pullAgain: false, pulling: null };
@@ -34,6 +34,25 @@
   function plan() { return get(K.plan, null); }
   function logs() { return get(K.log, []) || []; }
   function queue() { return get(K.queue, []) || []; }
+  /* 38b ③ 안전 모드 알림 — 테이블 없이 같은 채널의 broadcast(«safety»)로만 주고받는다(서버에 남지 않음).
+     같은 브라우저의 다른 창은 localStorage(storage 이벤트)로 받는다 → 로그인 전 시연에서도 두 창이 이어진다.
+     싣는 것: 알림 id·가구 관리 번호·읍면·시작 시각·예정 분·상태(on/ok/end)·rev 뿐. 성명·주소·연락처 없음. */
+  function safeAll() { return get(K.safe, {}) || {}; }
+  function safeMerge(a) {
+    if (!a || !a.id || !a.hid) return false;
+    var all = safeAll(), old = all[a.id];
+    if (old && (old.rev || 0) >= (a.rev || 0)) return false;
+    all[a.id] = { id: String(a.id).slice(0, 60), hid: String(a.hid).slice(0, 12), area: String(a.area || "").slice(0, 20), at: a.at, min: +a.min || 40, state: a.state, rev: +a.rev || Date.now(), by: String(a.by || "").slice(0, 12) };
+    var cut = Date.now() - 12 * 3600e3; // 반나절 지난 것은 지운다
+    Object.keys(all).forEach(function (k) { if (new Date(all[k].at).getTime() < cut || (all[k].state === "end" && k !== a.id && all[k].rev < Date.now() - 600e3)) delete all[k]; });
+    set(K.safe, all); return true;
+  }
+  function safeSend(a) {
+    a.rev = Math.max(Date.now(), ((safeAll()[a.id] || {}).rev || 0) + 1);
+    safeMerge(a); emit("safety");
+    if (S.ch && S.mode === "live" && S.ch.send) { try { S.ch.send({ type: "broadcast", event: "safety", payload: a }); } catch (e) { /* 다음 다시 보내기 때 */ } }
+    return a;
+  }
   function enqueue(op) { var q = queue(); q.push(op); set(K.queue, q.slice(-200)); } // 로그인 안 한 채 오래 써도 200건까지만
 
   function loadLib() {
@@ -123,7 +142,8 @@
       if (g !== S.gen) return;
       var ch = c.channel("daeum-" + uid0)
         .on("postgres_changes", { event: "*", schema: "public", table: "visit_plan", filter: "owner_id=eq." + uid0 }, function () { later(pull); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "visit_log", filter: "owner_id=eq." + uid0 }, function () { later(pull); });
+        .on("postgres_changes", { event: "*", schema: "public", table: "visit_log", filter: "owner_id=eq." + uid0 }, function () { later(pull); })
+        .on("broadcast", { event: "safety" }, function (m) { if (safeMerge(m && m.payload)) later(function () { emit("safety"); }); });
       S.ch = ch;
       ch.subscribe(function (st) {
         if (g !== S.gen) return;
@@ -139,6 +159,7 @@
     state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email } : null, at: S.at, pending: queue().length, enabled: enabled() }; },
     on: function (f) { S.subs.push(f); },
     plan: plan, logs: logs,
+    safety: { list: safeAll, send: safeSend },
     init: function () {
       if (!enabled()) { mode("local", "off"); return Promise.resolve(); }
       return client().then(function (c) {
@@ -178,7 +199,7 @@
   // 길안내 갔다 «뒤로»(뒤로 가기 캐시) 오면 실시간 연결이 끊겨 있다 — 다시 붙는다(실기기 11-03)
   root.addEventListener && root.addEventListener("pageshow", function (e) { if (e && e.persisted && S.user) later(connect); });
   // 다른 탭에서 로그인·로그아웃하면(같은 저장소 키) 이 탭도 따라간다
-  root.addEventListener && root.addEventListener("storage", function (e) { if (e.key === "daeum.auth" && S.client) later(function () { setUser(storedUser()); }); });
+  root.addEventListener && root.addEventListener("storage", function (e) { if (e.key === "daeum.auth" && S.client) later(function () { setUser(storedUser()); }); else if (e.key === K.safe) later(function () { emit("safety"); }); });
   // 화면이 다시 보이면 놓친 알림이 있을 수 있으니 한 번 읽고 남은 것을 보낸다(폰 화면 꺼짐·탭 전환)
   root.document && root.document.addEventListener && root.document.addEventListener("visibilitychange", function () {
     if (root.document.visibilityState === "visible" && S.user && S.mode === "live") { pull().catch(function () {}); flush(); } });

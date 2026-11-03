@@ -587,5 +587,48 @@ dialog.acct::backdrop { background: rgba(17,26,39,.45); }
 .emptyc { padding: 22px; text-align: center; color: var(--mute); font-size: 14px; }
 .emptyc b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 6px; }
 
+/* 38b ③ 안전 모드 알림 줄 — 같은 계정 다른 화면에서 시간을 넘긴 방문 */
+.sfa { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 0 0 14px; border-radius: 14px; background: linear-gradient(90deg, #FDE7E8, #FFF4F4); color: var(--risk); box-shadow: inset 0 0 0 1.5px rgba(198,47,58,.35), 0 6px 18px -10px rgba(198,47,58,.45); }
+.ph .sfa { margin: 0; }
+.sfa > i { width: 12px; height: 12px; border-radius: 50%; background: var(--risk); flex: none; animation: sfaPing 1.6s ease-out infinite; }
+@keyframes sfaPing { 0% { box-shadow: 0 0 0 0 rgba(198,47,58,.45); } 100% { box-shadow: 0 0 0 12px rgba(198,47,58,0); } }
+.sfa > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sfa b { font-size: 14.5px; font-weight: 900; color: #8E1E28; }
+.sfa div > span { font-size: 12.5px; font-weight: 700; }
+.sfa button { margin-left: auto; flex: none; min-height: 44px; border: 0; border-radius: 11px; padding: 0 14px; background: var(--risk); color: #fff; font: 800 13.5px var(--f); box-shadow: 0 3px 0 #8E1E28; cursor: pointer; }
+.sfa button:active { transform: translateY(2px); box-shadow: 0 1px 0 #8E1E28; }
+.sfa.calm { background: var(--block); color: var(--mute); box-shadow: inset 0 0 0 1px var(--edge); font-size: 12.5px; font-weight: 700; padding: 8px 12px; }
+.sfa.calm > i { width: 9px; height: 9px; background: var(--go); animation: none; box-shadow: 0 0 0 3px var(--go-soft); }
+.sfa.calm b { font-size: 12.5px; color: var(--ink); }
+.sfa .lnk { background: none; color: var(--go-ink); box-shadow: none; min-height: 32px; padding: 0 4px; text-decoration: underline; font-size: 12.5px; }
+.safe span small { display: block; font-size: 11.5px; font-weight: 700; opacity: .85; }
+@media (max-width: 520px) { .sfa { flex-wrap: wrap; } .sfa button:not(.lnk) { width: 100%; } }
+
+/* 38b ② 상담일지 초안 — 줄 머리 정렬 */
+.draft p { display: grid; grid-template-columns: 34px 1fr; gap: 6px; }
+.draft p b { margin: 0; padding-top: 1px; }
+.draft .dnote { display: block; margin-top: 6px; font-size: 11px; color: var(--mute); }
+
+/* 38b 연계처 — 한국사회보장정보원 자원정보서비스(15001839) */
+.resw { padding: 0; overflow: hidden; }
+.resw summary { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; padding: 12px 14px; cursor: pointer; list-style: none; min-height: 44px; }
+.resw summary::-webkit-details-marker { display: none; }
+.resw summary b { font-size: 14px; font-weight: 900; }
+.resw summary b::after { content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 8px; border-right: 2px solid var(--mute); border-bottom: 2px solid var(--mute); transform: translateY(-3px) rotate(45deg); transition: transform .2s; }
+.resw[open] summary b::after { transform: translateY(0) rotate(-135deg); }
+.resw summary span { font-size: 12px; font-weight: 700; color: var(--mute); }
+.resl { list-style: none; margin: 0; padding: 0 14px; }
+.resl li { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: start; padding: 10px 0; border-top: 1px solid var(--well); }
+.resl li > div { min-width: 0; }
+.resl li b { display: block; font-size: 13.5px; font-weight: 800; }
+.resl li small { display: block; font-size: 12px; color: var(--mute); }
+.resl li em { grid-column: 2; font-style: normal; font-size: 11.5px; font-weight: 800; color: var(--go-ink); }
+.resl li:not(.hit) { opacity: .72; }
+.rk { font-size: 10.5px; font-weight: 900; padding: 3px 7px; border-radius: 6px; white-space: nowrap; margin-top: 1px; }
+.rk.k-child { background: #FFF1D6; color: #7A4B00; }
+.rk.k-disab { background: #E4ECFA; color: #1F3F7A; }
+.rk.k-elder, .rk.k-etc { background: var(--go-soft); color: var(--go-ink); }
+.resw .srcline { padding: 0 14px 12px; margin-top: 4px; }
+
 @media print { .top, .bnav, .toast { display: none !important; } body { background: #fff; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } .mp .rt { stroke-dashoffset: 0; } }

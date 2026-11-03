@@ -48,7 +48,7 @@ function boot(opt) {
         signOut: function () { return Promise.resolve({}); }
       },
       from: q,
-      channel: function (name) { var ch = { name: name, h: [] }; ch.on = function (a, f, cb) { ch.h.push(cb); return ch; }; ch.subscribe = function (cb) { sub = cb; setTimeout(function () { cb("SUBSCRIBED"); }, 2); return ch; }; channels.push(ch); return ch; },
+      channel: function (name) { var ch = { name: name, h: [] }; ch.on = function (a, f, cb) { ch.h.push(cb); return ch; }; ch.sent = []; ch.send = function (m) { ch.sent.push(m); }; ch.subscribe = function (cb) { sub = cb; setTimeout(function () { cb("SUBSCRIBED"); }, 2); return ch; }; channels.push(ch); return ch; },
       removeChannel: function (ch) { ch.removed = true; }
     };
   } };
@@ -109,6 +109,31 @@ t("⑤ «더 보기» 단추 44px 이상 · ⑥ 길안내에서 돌아오면 ⑥
   var fl = fs.readFileSync(path.join(ROOT, "officer/flow.js"), "utf8");
   assert.ok(/data-act="moreq" style="min-height:44px"/.test(fl));
   assert.ok(/sessionStorage\.setItem\(NAVBACK/.test(fl) && /if \(!navBack\(\)\) render\(\)/.test(fl) && /pageshow/.test(fl));
+});
+
+t("38b 안전 모드 알림: 보내면 이 기기에 남고 실시간 채널로 broadcast(«safety»)", async function () {
+  var b = boot({ loggedIn: true }); await b.S.init(); await wait(60);
+  var got = []; b.S.on(function (w) { got.push(w); });
+  b.S.safety.send({ id: "SF-A-1", hid: "A-001", area: "화서면", at: new Date().toISOString(), min: 40, state: "on", by: "폰", name: "홍길동", addr: "어디" });
+  var ch = b.channels[b.channels.length - 1];
+  assert.strictEqual(ch.sent.length, 1); assert.strictEqual(ch.sent[0].event, "safety");
+  var all = b.S.safety.list(); assert.strictEqual(all["SF-A-1"].state, "on"); assert.ok(got.indexOf("safety") >= 0);
+  assert.ok(!("name" in all["SF-A-1"]) && !("addr" in all["SF-A-1"]), "가구 번호·읍면 말고는 남기지 않음");
+});
+t("38b 다른 화면의 «안부 확인 완료»(더 새 rev)는 받아들이고 옛 것은 무시", async function () {
+  var b = boot({ loggedIn: true }); await b.S.init(); await wait(60);
+  var a = b.S.safety.send({ id: "SF-B-1", hid: "B-002", at: new Date().toISOString(), min: 40, state: "on" });
+  var ch = b.channels[b.channels.length - 1], bc = ch.h[2];
+  bc({ payload: { id: "SF-B-1", hid: "B-002", at: a.at, min: 70, state: "ok", rev: a.rev + 5 } }); await wait(10);
+  assert.strictEqual(b.S.safety.list()["SF-B-1"].min, 70);
+  bc({ payload: { id: "SF-B-1", hid: "B-002", at: a.at, min: 40, state: "on", rev: a.rev - 1 } }); await wait(10);
+  assert.strictEqual(b.S.safety.list()["SF-B-1"].state, "ok");
+});
+t("38b 로그인 전에도 이 기기(같은 브라우저 다른 창)에는 남는다 — 서버 테이블 없음", async function () {
+  var b = boot({ loggedIn: false }); await b.S.init(); await wait(20);
+  b.S.safety.send({ id: "SF-C-1", hid: "C-003", at: new Date().toISOString(), min: 40, state: "on" });
+  assert.ok(JSON.parse(b.store["daeum.s12.safeAlerts"])["SF-C-1"]);
+  var src = fs.readFileSync(path.join(ROOT, "shared/sync.js"), "utf8"); assert.ok(!/from\("safety|from\("safe_/.test(src), "안전 모드는 테이블에 쓰지 않음");
 });
 
 (async function () {
