@@ -5,6 +5,7 @@
 | Pretendard | `shared/tokens.css` | SIL OFL 1.1(상업 이용 가능) | https://github.com/orioncactus/pretendard |
 | Manrope | `shared/tokens.css`·`officer/s11.css` | SIL OFL 1.1 | https://fonts.google.com/specimen/Manrope |
 | IBM Plex Sans KR | `officer/s11.css` | SIL OFL 1.1 | https://fonts.google.com/specimen/IBM+Plex+Sans+KR |
+| SUIT Variable 2.0.5 | 닿음 랜딩 apps/daeum/(`APP-LANDING/daeum/_work/template.html`, jsDelivr) | SIL OFL 1.1(상업 이용 가능) | https://github.com/sun-typeface/SUIT |
 | «딩동» 알림음 | `officer/s11d2.js` | 직접 합성(Web Audio) | 외부 음원 없음 |
 | 아이콘 | 전 화면 | 직접 그린 SVG | 외부 아이콘 없음 |
 
