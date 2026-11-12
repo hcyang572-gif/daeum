@@ -152,8 +152,7 @@
       root._anims.push(lens.animate(kf, { duration: END, easing: "cubic-bezier(.45,.05,.55,.95)", fill: "both" }));
     }
     clearTimeout(root._t);
-    root._t = setTimeout(function () { finish(root); lsSet(LS_SEEN, "1"); }, END + 300);
-    played = true;
+    root._t = setTimeout(function () { finish(root); lsSet(LS_SEEN, "1"); played = true; }, END + 300); // i6: 다 본 뒤에만 «재생함» — 재생 중 화면이 다시 그려져도(폰 첫 동기화) 렌즈가 끊기지 않게
   }
   function finish(root) {
     clearTimeout(root._t);

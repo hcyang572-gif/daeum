@@ -354,7 +354,7 @@
     var k = pickHid(want); if (!k) return;
     if (FD) FD.bindHome(app, k.hid);
     bindChips();
-    var b = app.querySelector('[data-act="enter"]'); if (b) b.addEventListener("click", function () { vib(); var sf = { id: "SF-" + k.hid + "-" + Date.now(), hid: k.hid, at: new Date().toISOString(), min: minPick() }; lsSet(LS_SAFE, sf); safePush(sf, "on"); location.hash = "#check:" + k.hid; });
+    var b = app.querySelector('[data-act="enter"]'); if (b) b.addEventListener("click", function () { vib(); var sf = { id: "SF-" + k.hid + "-" + Date.now(), hid: k.hid, at: new Date().toISOString(), min: minPick(), tab: TAB }; lsSet(LS_SAFE, sf); safePush(sf, "on"); location.hash = "#check:" + k.hid; });
   }
   // S12-i3 현장 기능(app/field.js) — 도구 묶음을 한 번 넘긴다(화면 가림·자동 잠금 단추도 여기서 붙음)
   var FD = window.DaeumField && window.DaeumField.use ? window.DaeumField : null;
@@ -365,6 +365,9 @@
 
   // ═════ 안전 모드(④⑤⑥ 공통) — «들어가기»부터 확정까지 ═════
   // 38b ③: 예정 시간을 넘기면 같은 계정의 다른 화면(사무실 PC 등)·같은 브라우저 다른 창에 배너. 「안부 확인 완료」로 양쪽 모두 해제.
+  // i6: 창마다 이름표(sessionStorage) — 안전 모드를 켠 창만 «이 기기»로 본다(같은 브라우저 두 창 시연에서 PC 창이 남의 안전 모드를 제 것으로 보지 않게)
+  var TAB = (function () { try { var t = sessionStorage.getItem("daeum.tab"); if (!t) { t = Math.random().toString(36).slice(2, 10); sessionStorage.setItem("daeum.tab", t); } return t; } catch (e) { return "t"; } })();
+  function ownTab(sf) { return !sf.tab || sf.tab === TAB; }
   function elMin(at) { return Math.max(0, Math.round((new Date() - new Date(at)) / 60000)); }
   function devName() { return window.matchMedia && matchMedia("(max-width: 760px)").matches ? "폰" : "PC"; }
   function safePush(sf, state) { if (!SY.safety) return; SY.safety.send({ id: sf.id || "SF-" + sf.hid, hid: sf.hid, area: (BY[sf.hid] || {}).area || "", at: sf.at, min: sf.min, state: state, by: devName(), help: sf.help || 0, hok: sf.hok || 0, hat: sf.hat || "", fin: sf.fin || "" }); dayNote(); }
@@ -427,6 +430,7 @@
   /** 화면 맨 위 알림 줄 — 시간을 넘긴 안전 모드 + PC 첫 화면의 시연 알림(동료, 가상) */
   function safeAlerts() {
     var own = lsGet(LS_SAFE, null), all = SY.safety ? SY.safety.list() : {}, out = [];
+    if (own && !ownTab(own)) own = null; // i6: 같은 브라우저 다른 창(시연 PC↔폰)은 «내 것»이 아님 — 조용한 도움 요청이 동료 창에 뜨게
     Object.keys(all).forEach(function (k) {
       var a = all[k], mine = own && own.id === a.id, who = a.by === "폰" ? "현장 폰" : mine ? "이 기기" : "같은 계정 " + (a.by || "화면");
       if (a.state === "end") { // ④ 무사 종료 — 사무실 화면에 10분 동안 조용히 남긴다
@@ -1761,7 +1765,7 @@
   // 안전 모드 시계 — 20초마다 넘김 여부를 다시 본다(바뀌면 다시 그림, 아니면 분 숫자만) · 60초마다 내 안전 모드를 다시 알린다(나중에 연 화면도 받게)
   var safeSig = "", safeTick = 0;
   function sigNow() { return safeAlerts().map(function (a) { return a.id + (a.late ? "!" : ""); }).join(","); }
-  function resendOwn() { var sf = lsGet(LS_SAFE, null); if (sf && SY.safety) { var a = SY.safety.list()[sf.id]; safePush(sf, a && a.state === "ok" ? "ok" : "on"); } }
+  function resendOwn() { var sf = lsGet(LS_SAFE, null); if (sf && ownTab(sf) && SY.safety) { var a = SY.safety.list()[sf.id]; safePush(sf, a && a.state === "ok" ? "ok" : "on"); } }
   setInterval(function () {
     if (++safeTick % 3 === 0 && SY.state().mode === "live") resendOwn();
     var ae = document.activeElement, typing = micRec || (ae && (ae.id === "memo" || ae.id === "refuseWhy" || ae.hasAttribute && ae.hasAttribute("data-fill")));
