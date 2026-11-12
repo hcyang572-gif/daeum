@@ -253,7 +253,7 @@
       }).catch(function () { mode("local", "lib"); });
     },
     signIn: function (email, pw) { return client().then(function (c) { return c.auth.signInWithPassword({ email: email, password: pw }); }).then(function (r) { if (r.error) throw r.error; return r; }); },
-    signUp: function (email, pw) { return client().then(function (c) { return c.auth.signUp({ email: email, password: pw }); }).then(function (r) { if (r.error) throw r.error; return r; }); },
+    signUp: function (email, pw) { return client().then(function (c) { var base = location.href.indexOf('/daeum/') > -1 ? location.href.split('/daeum/')[0] + '/daeum/' : location.origin + '/'; return c.auth.signUp({ email: email, password: pw, options: { emailRedirectTo: base } }); /* 72회차: 확인 메일이 Site URL(github.io 뿌리=앱 모음 랜딩)로 가던 것 → 닿음으로 */ }).then(function (r) { if (r.error) throw r.error; return r; }); },
     /** S12-v U24(1-5): o.wipe 이면 서버 로그아웃 뒤 이 기기의 닿음 저장분(daeum.* — 방문 기록·계획·명단 메타·보낼 줄 등)과 sessionStorage 를 지운다.
      *  서버에 못 닿아도(끊김) 이 기기 정리는 한다. 시연 데이터는 다음에 열 때 demo_seed.js 가 다시 깐다(daeum.demo.seededFor 도 지워지므로) */
     signOut: function (o) {
