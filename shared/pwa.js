@@ -1,5 +1,5 @@
-/* 닿음 PWA 공통(모든 화면) — ① /daeum/sw.js 등록 ② 옛 주민 창구 서비스워커 정리 ③ 첫 화면 «홈 화면에 설치» 안내.
-   설치 안내는 #pwa-install 이 있는 화면(첫 화면)에서만 보이고, 이미 설치된 앱으로 열렸으면 숨긴다. */
+/* 닿음 PWA 공통(모든 화면) — ① /daeum/sw.js 등록 ② 옛 주민 창구 서비스워커 정리 ③ «홈 화면에 설치» 상태 판정.
+   76회차부터 안내는 «더 보기 › 이 기기» 한 줄(app.js morePanel)에서만 — 이미 설치된 앱으로 열렸으면 숨긴다. */
 (function () {
   var me = document.currentScript && document.currentScript.src;
   var root = me ? new URL("../", me) : new URL("./", location.href);
@@ -20,9 +20,9 @@
   var why = function (w) { window.__daeumPwaWhy = w; if (box) box.setAttribute("data-why", w); };
   if (!box) { window.__daeumPwaWhy = "no-box"; return; }
   if (standalone) { why("standalone"); return; }
-  // 70회차: 닫기(×) → 7일 동안 띄우지 않는다
-  var HIDE = "daeum-pwa-hide", hid = 0; try { hid = Number(localStorage.getItem(HIDE)) || 0; } catch (e) {}
-  if (Date.now() - hid < 7 * 864e5) { why("hide7d"); box.remove(); window.__daeumPwa = null; return; }
+  // 76회차(11-13 호창님 «홈화면에 설치 안내는 오늘탭에 넣지 말고 … 더보기 안에»): 띠(#pwa-install)는 화면에 붙이지 않고 상태만 판정한다.
+  //   «더 보기 › 이 기기 › 홈 화면에 설치» 줄이 window.__daeumPwaApi 로 읽는다(설치 신호 있으면 바로 설치 · 없으면 브라우저별 안내 · 설치돼 있으면 숨김).
+  //   옛 닫기(×) 7일 숨김(daeum-pwa-hide)은 띠가 없어졌으므로 판정에서 뺀다.
   var xb = box.querySelector("[data-pwa=x]"); if (xb) xb.addEventListener("click", function () { try { localStorage.setItem(HIDE, String(Date.now())); } catch (e) {} box.hidden = true; if (box.parentNode) box.parentNode.removeChild(box); window.__daeumPwa = null; });
   var btn = box.querySelector("[data-pwa=btn]"), ios = box.querySelector("[data-pwa=ios]");
   var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -79,5 +79,24 @@
       } else { btn.hidden = false; deferred = d; }
     }).catch(function () {});
   });
+  window.__daeumPwaApi = {
+    hidden: function () { var w = window.__daeumPwaWhy; return standalone || installed || w === "installed-hide" || w === "standalone"; },
+    can: function () { return !!deferred; },
+    guide: function () {
+      if (/KAKAOTALK/i.test(navigator.userAgent)) return "카카오톡 안에서는 설치가 안 됩니다 — 바깥 브라우저(크롬·사파리)로 연 뒤 설치하세요";
+      if (isIOS) return "아이폰: 아래 공유 단추 → «홈 화면에 추가»";
+      if (isAnd) return "안드로이드: 오른쪽 위 ⋮ 메뉴 → «홈 화면에 추가» 또는 «앱 설치»";
+      if (touch) return "브라우저 메뉴(⋮ 또는 공유) → «홈 화면에 추가»";
+      return "PC: 주소창 오른쪽 설치 아이콘(⊕) 또는 브라우저 메뉴 → «앱» → «이 사이트를 앱으로 설치»";
+    },
+    install: function () {
+      if (!deferred) return Promise.resolve("none");
+      var d = deferred; deferred = null; d.prompt();
+      return d.userChoice.then(function (c) {
+        if (c && c.outcome === "accepted") { try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {} installed = true; return "accepted"; }
+        deferred = d; return "dismissed";
+      }).catch(function () { deferred = d; return "error"; });
+    }
+  };
   window.addEventListener("appinstalled", function () { try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {} say(DONE); });
 })();

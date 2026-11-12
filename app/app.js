@@ -193,34 +193,51 @@
   function topHTML() {
     var si = syncChip(), md_ = document.documentElement.getAttribute("data-mode") || "phone", wide = md_ === "pc" || md_ === "tab";
     var k = SH.tabOf ? SH.tabOf(cur) : 0, T = SH.TABS && SH.TABS[k], D_ = { visit: "순서·동선", field: "집 앞·확인·상담", rec: "고르면 문장", rep: "문서·실적" };
-    var sf = lsGet(LS_SAFE, null), sk;
-    if (sf && sf.hid) { var mn = elMin(sf.at), pl = sf.min || A.safetyMin, over = mn >= pl; sk = '<button class="ky pr ' + (over ? "safe-warn" : "safe-on") + '" data-act="safety" aria-label="안전 모드 켜짐 · 가구 ' + esc(sf.hid) + '">' + I.shield + '<span class="num">' + (over ? "확인" : Math.max(0, pl - mn) + "분") + "</span></button>"; }
-    else sk = '<button class="ky pr" data-act="safety" aria-label="동료 안부 설명">' + I.shield + "</button>";
+    // 76회차(11-13 호창님 «동료 안부 확인기능을 … 최상단 더보기 왼쪽에 빨강으로 강조된 버튼으로»): 진입은 머리 «안부» 단추 하나(더 보기 바로 왼쪽)
+    //   문제(새 판정 없음 — 기존 경보 그대로: 내 안전 모드 예정 시간 넘김 · safeAlerts 의 시간 넘김/조용한 도움 요청 · 팀 알림 TM.alerts)면 .alarm(부드러운 맥박)
+    var sf = lsGet(LS_SAFE, null), ba = buddyAlarm(), sk, skt, skl;
+    if (sf && sf.hid) { var mn = elMin(sf.at), pl = sf.min || A.safetyMin, over = mn >= pl; skt = over ? "확인" : Math.max(0, pl - mn) + "분"; skl = "안전 · 안전 모드 켜짐 · 가구 " + esc(sf.hid) + (over ? " · 예정 시간 넘김" : " · " + skt + " 남음"); }
+    else { skt = "안전"; skl = "안전 — 나의 안전 알리기 · 동료 안부 · 팀 연결"; }
+    if (ba) skl += " · 동료 확인 필요";
+    sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\"></i></button>";
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z75" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z76" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + (I.lock || "") + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
-      sk + '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eye + "</button>" +
+      '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eye + "</button>" +
       '<button class="ky pr" data-go="#help" aria-label="사용 방법">' + I.help + (wide ? "<span>사용 방법</span>" : "") + "</button>" +
-      '<button class="ky pr" data-act="more" aria-label="더 보기">' + I.more + "</button>";
+      sk + '<button class="ky pr" data-act="more" aria-label="더 보기">' + I.more + "</button>";
   }
   // 머리 «…» 더 보기 — 시안 v3 moreSheet 그대로(.ov > .scrim + .sheet > .list > .li) · 항목은 라이브에 있는 기능만
   //   폰 = 아래에서 올라오는 시트 · 폴드·태블릿·PC = 가운데 창(v3.css). 바깥(scrim)·«닫기»·Esc 로 닫힘. 다시 그리기(실시간) 뒤에도 열린 채 유지(render 끝).
   var OV = { el: null, on: false };
-  function sheetClose() { OV.on = false; if (OV.el) { OV.el.classList.remove("on"); OV.el.innerHTML = ""; if (OV.el.parentNode) OV.el.parentNode.removeChild(OV.el); } }
+  function sheetClose() { OV.on = false; OV.kind = ""; if (OV.el) { OV.el.classList.remove("on"); OV.el.innerHTML = ""; if (OV.el.parentNode) OV.el.parentNode.removeChild(OV.el); } }
   function sheetOpen(html, label) {
     if (!OV.el) {
       OV.el = document.createElement("div"); OV.el.className = "ov"; OV.el.id = "ov";
-      OV.el.addEventListener("click", function (e) { var t = e.target.closest ? e.target.closest("[data-ov]") : null; if (!t) return; var k = t.getAttribute("data-ov"); sheetClose(); if (k === "account") accountPanel(); else if (k === "team") { if (window.DaeumTeamUI) window.DaeumTeamUI.open(); } else if (k === "ob") { if (window.DaeumOnboard) window.DaeumOnboard.open(); } else if (k === "nudge") nudgeToggle(); else if (k === "fs") { if (SH.fs) toast(SH.fs.toggle() ? "전체화면을 켰습니다" : "전체화면을 껐습니다 · 더 보기에서 다시 켭니다"); } else if (k === "pick") { if (cur === "today") { var f = document.getElementById("listFile"); if (f) f.click(); } else { pickNext = true; location.hash = "#today"; } } });
+      OV.el.addEventListener("click", function (e) { var pi = e.target.closest ? e.target.closest("[data-pwai]") : null; if (pi) { pwaTap(pi); return; } var t = e.target.closest ? e.target.closest("[data-ov]") : null; if (!t) return; var k = t.getAttribute("data-ov"); sheetClose(); if (k === "account") accountPanel(); else if (k === "team") { if (window.DaeumTeamUI) window.DaeumTeamUI.open(); } else if (k === "ob") { if (window.DaeumOnboard) window.DaeumOnboard.open(); } else if (k === "nudge") nudgeToggle(); else if (k === "fs") { if (SH.fs) toast(SH.fs.toggle() ? "전체화면을 켰습니다" : "전체화면을 껐습니다 · 더 보기에서 다시 켭니다"); } else if (k === "pick") { if (cur === "today") { var f = document.getElementById("listFile"); if (f) f.click(); } else { pickNext = true; location.hash = "#today"; } } });
       document.addEventListener("keydown", function (e) { if (OV.on && e.key === "Escape") sheetClose(); });
     }
     OV.el.innerHTML = '<div class="scrim" data-ov="x"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label || "") + '"><div class="grab"></div>' + html + "</div>";
     OV.el.classList.add("on"); OV.on = true; app.appendChild(OV.el);
     var f0 = OV.el.querySelector(".li"); if (f0) try { f0.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
   }
+  // 76회차: «더 보기 › 이 기기» 홈 화면에 설치 — 설치 신호 있으면 바로 설치 · 없으면 브라우저별 안내 펼침 · 설치돼 있으면(앱으로 열림 포함) 줄을 숨김
+  function pwaLi(li) {
+    var P = window.__daeumPwaApi; if (!P || P.hidden()) return "";
+    return li("button", 'type="button" data-pwai="1" aria-expanded="false"', I.upload || I.more, "홈 화면에 설치", P.can() ? "누르면 바로 설치 · 앱처럼 전체 화면으로 열림" : "앱처럼 전체 화면으로 열림 · 누르면 방법 안내");
+  }
+  function pwaTap(b) {
+    var P = window.__daeumPwaApi; if (!P) return;
+    var sm = b.querySelector("small");
+    if (P.can()) { sheetClose(); P.install().then(function (r) { if (r === "accepted") toast("설치하는 중입니다 — 홈 화면에 «닿음» 아이콘이 생길 때까지 잠시 기다려 주세요"); }); return; }
+    var open = b.getAttribute("aria-expanded") === "true";
+    b.setAttribute("aria-expanded", open ? "false" : "true");
+    if (sm) sm.textContent = open ? "앱처럼 전체 화면으로 열림 · 누르면 방법 안내" : P.guide();
+  }
   function morePanel() {
-    var si = syncChip(), sf = lsGet(LS_SAFE, null);
+    OV.kind = "more"; var si = syncChip(), sf = lsGet(LS_SAFE, null);
     var li = function (tag, attr, ic, b, sm) { return "<" + tag + ' class="li pr" ' + attr + ">" + ic + "<span><b>" + b + "</b><small>" + sm + "</small></span></" + tag + ">"; };
     var su = SY.state().user; // 73회차 🔐: 맨 위 = 로그아웃(로그인 때, 이 기기 기록 지우기 선택 창) / 들어가기(로그인 전) — 옛 «계정 · 연동» 줄을 합침
     sheetOpen("<h3>더 보기</h3><div class=\"list\">" +
@@ -230,9 +247,8 @@
       li("button", 'type="button" data-ov="pick"', I.upload || I.db, "발굴대상자 명단 불러오기", "행복이음에서 받은 한국사회보장정보원 조회 서식 엑셀") +
       li("a", 'href="shared/data.html"', I.db, "쓰는 데이터와 출처", "한국사회보장정보원 공공데이터 · 공공 보조") +
       li("a", 'href="shared/ai_check.html"', I.check, "AI 문장 점검", "규칙 문장과 AI 요약 견주기") +
-      li("a", 'href="' + (sf && sf.hid ? "#check:" + esc(sf.hid) : "#help") + '" data-ov="go"', I.shield, "동료 안부", sf && sf.hid ? "안전 모드 켜짐 · 가구 " + esc(sf.hid) : "들어가기 → 예상 시간 → 1차 동료 → 2차 팀장") +
-      (window.DaeumTeamUI ? li("button", 'type="button" data-ov="team"', I.user, "우리 팀" + (teamN() ? ' <em class="li-n">' + teamN() + "</em>" : ""), esc(window.DaeumTeamUI.label ? window.DaeumTeamUI.label() : "1차 동료·팀장 짝 지정 · 팀 현황")) : "") +
       (window.DaeumOnboard ? li("button", 'type="button" data-ov="ob"', I.help, "처음 안내 다시 보기", "명단 → 동선 → 현장 → 기록 → 보고 · 그림 다섯 장") : "") + // S12-z3 추천안(가): 자동은 처음 한 번, 다시 보기는 여기 // 69회차: 떠 있던 «팀» 단추 → 메뉴(PC 레일·폰 머리 모두 같은 «더 보기»)
+      pwaLi(li) +
       li("button", 'type="button" data-ov="nudge" aria-pressed="' + (nudgeOn() ? "true" : "false") + '"', I.bell || I.help, "다음 할 일 안내 · " + (nudgeOn() ? "켜짐" : "꺼짐"), nudgeOn() ? "주 단추 위 한 줄 안내 · 누르면 끕니다" : "꺼져 있음 · 누르면 다시 켭니다") +
       (SH.fs && SH.fs.able() ? li("button", 'type="button" data-ov="fs" aria-pressed="' + (SH.fs.on() ? "true" : "false") + '"', I.more || I.help, "전체화면 · " + (SH.fs.on() ? "켜짐" : "꺼짐"), SH.fs.on() ? "주소창 없이 넓게 · 누르면 끕니다" : "꺼져 있음 · 누르면 다시 켭니다") : "") + // 75회차 ⓪-2
       li("button", 'type="button" data-fd-lock="1" data-ov="lock"', I.lock, "지금 잠그기", "자리 비우면 3분 뒤 자동 잠금 · 가구번호만 표시") +
@@ -261,7 +277,44 @@
     return { nx: st, show: show, glow: here && fr, tabGlow: !here && fr && mine !== st.tab ? st.tab : null };
   }
   // 방패: 안전 모드가 켜져 있으면 그 집 현장 확인(안전 띠·«괜찮아요»가 있는 곳)으로, 꺼져 있으면 사용 방법(동료 안부 설명)
-  function safetyKey() { var sf = lsGet(LS_SAFE, null); location.hash = sf && sf.hid ? "#check:" + sf.hid : "#help"; }
+  // 76회차(11-13 호창님 «안전과 관련한 기능을 해당버튼에서 모두 처리»): 머리 «안전» 단추 → 안전 화면 하나(더 보기와 같은 시트)
+  //   ①나의 안전(안전 모드 진행·괜찮아요·도움 요청·무사히 끝남 = 기존 safeBanner/bindSafe 그대로) ②동료 안부(기존 alertBar/bindAlerts·하루 요약·팀 알림) ③팀 연결(우리 팀 · 팀 코드 = DaeumTeamUI)
+  //   기능 로직은 그대로 — 본문(오늘 띠·현장/상담/기록 카드)과 더 보기에 흩어져 있던 자리만 이리로 옮겼다. 집 앞 «들어가기»(안전 모드 켜기)는 방문 흐름이라 그대로.
+  function safetyPanel() {
+    var sf = lsGet(LS_SAFE, null), T = tm(), ta = 0; try { ta = T && T.alerts ? T.alerts().length : 0; } catch (e) { ta = 0; }
+    var my;
+    if (sf && sf.hid) my = safeBanner(sf.hid) + '<a class="sp-go pr" href="#check:' + esc(sf.hid) + '" data-ov="go">가구 ' + esc(sf.hid) + " 현장 화면으로 ›</a>";
+    else {
+      var here = /^(home|check|talk|record)$/.test(cur) && curArg && BY[curArg] && statusOf(curArg) === "planned" ? curArg : null, nx = here || (nudgeState(0).hid || null);
+      my = '<p class="sp-off">안전 모드 꺼짐 · 집에 들어갈 때 켜면 예정 시간을 넘길 때 1차 동료 → 2차 팀장에게 알립니다</p>' +
+        (here ? '<button type="button" class="btn safe" data-sp="enter">' + (I.shield || "") + "가구 " + esc(here) + " 들어가기 <small>안전 모드 " + minPick() + "분</small></button>"
+          : nx ? '<a class="sp-go pr" href="#home:' + esc(nx) + '" data-ov="go">다음 가구 ' + esc(nx) + " 집 앞으로 › «들어가기»를 누르면 켜집니다</a>" : "");
+    }
+    var bar = alertBar();
+    sheetOpen('<h3 class="sp-h">' + (I.shield || "") + "안전</h3>" +
+      '<section class="sp-sec" aria-label="나의 안전"><div class="sp-k">나의 안전</div>' + my + "</section>" +
+      '<section class="sp-sec" aria-label="동료 안부"><div class="sp-k">동료 안부' + (ta ? ' <em class="li-n">' + ta + "</em>" : "") + "</div>" + (bar || "") +
+        (!/sfa/.test(bar || "") && !ta ? '<p class="sp-off">지금 확인할 동료 알림이 없습니다</p>' : "") + (cur !== "today" && SX ? daySumSafe() : "") +
+        (ta ? '<button type="button" class="li pr" data-sp="team">' + (I.user || "") + "<span><b>팀 알림 " + ta + "건 보기</b><small>1차 동료·팀장 알림 · 연락했어요</small></span></button>" : "") + "</section>" +
+      (window.DaeumTeamUI ? '<section class="sp-sec" aria-label="팀 연결"><div class="sp-k">팀 연결</div><button type="button" class="li pr" data-sp="team">' + (I.user || "") + "<span><b>우리 팀 · 팀 코드" + (teamN() ? ' <em class="li-n">' + teamN() + "</em>" : "") + "</b><small>" + esc(window.DaeumTeamUI.label ? window.DaeumTeamUI.label() : "1차 동료·팀장 짝 지정 · 팀 현황") + "</small></span></button></section>" : "") +
+      '<button type="button" class="btn ghost pr" data-ov="x">닫기</button>', "안전");
+    OV.kind = "safety";
+    var root = OV.el; bindSafe(root); bindAlerts(root);
+    root.querySelectorAll('[data-sp="team"]').forEach(function (b) { b.addEventListener("click", function () { sheetClose(); if (window.DaeumTeamUI) window.DaeumTeamUI.open(); }); });
+    var en = root.querySelector('[data-sp="enter"]'); if (en) en.addEventListener("click", function () { var h = curArg; vib(); safeEnter(h); sheetClose(); location.hash = "#check:" + h; render(); });
+  }
+  function daySumSafe() { try { return daySum(); } catch (e) { return ""; } }
+  function safetyKey() { safetyPanel(); }
+  /** 76회차: 동료 «문제» 여부 — 새 판정 없이 기존 경보만: 내 안전 모드 예정 넘김 · safeAlerts(시간 넘김·조용한 도움 요청, 시연 경보 포함) · 팀 알림(TM.alerts) */
+  function buddyAlarm() {
+    var n = 0, sf = lsGet(LS_SAFE, null);
+    if (sf && sf.hid && elMin(sf.at) >= (sf.min || A.safetyMin)) n++;
+    try { n += safeAlerts().filter(function (a) { return !a.done && (a.help || a.late); }).length; } catch (e) { /* 무시 */ }
+    try { var T = tm(); n += T && T.alerts ? T.alerts().length : 0; } catch (e) { /* 무시 */ }
+    return n;
+  }
+  if (typeof window !== "undefined") window.__daeumBuddyAlarm = function () { return buddyAlarm(); };
+  function budMark() { if (typeof document === "undefined") return; var n = buddyAlarm(); document.querySelectorAll('.ky.bud').forEach(function (b) { b.classList.toggle("alarm", !!n); var l = (b.getAttribute("aria-label") || "").replace(/ · 동료 확인 필요$/, ""); b.setAttribute("aria-label", n ? l + " · 동료 확인 필요" : l); }); }
 
   // ═════ P0 오늘 ═════
   // S12-v U40(F6): [단계, 근거 데이터(번호 없이 — 번호는 «활용 데이터» 화면에만), 탭] · 탭 이름을 단계 앞에 작게 붙여 «현장» 탭과 «요약» 단계가 따로 노는 혼란을 막는다
@@ -293,7 +346,6 @@
       ["db", "발굴 명단 " + qv(ids.length) + "가구", "읍면 막대 · 미처리·우선방문", 'data-qto=".lcard"'],
       dp && dp.set ? ["clock", "남은 기한 " + qv(dp.left) + "근무일", "기한 넘길 가구 미리 셈", 'data-qto=".card.dead"'] : ["clock", "남은 기한", "기한을 넣으면 하루 몇 가구인지 셈", 'data-go="#plan"'],
       FD ? ["pin", "주소 정리", "도로명주소 «확인 필요» 표시", 'data-qto=".fd-addr"'] : null,
-      ["shield", "동료 안부", sf && sf.hid ? "안전 모드 켜짐 · 가구 " + sf.hid : "들어가기 → 1차 동료 → 2차 팀장", 'data-go="' + (sf && sf.hid ? "#check:" + esc(sf.hid) : "#help") + '"'],
       ["today", "방문 계획", "일차·순서 바꾸기", 'data-go="#plan"'],
       ["route", "동선·길안내", "네이버 지도", 'data-go="#route' + (hid0 ? ":" + hid0 : "") + '"'],
       ["report", "실적·사후관리", "재방문·약속", 'data-go="#perf"'],
@@ -496,7 +548,7 @@
   }
   /** 팀 알림·짝 요청 건수 — «더 보기» 단추 점(data-badge)과 «우리 팀» 항목 알약(.li-n) */
   function teamN() { var T = tm(); if (!T) return 0; try { return (T.alerts ? T.alerts().length : 0) + (T.incoming ? T.incoming().length : 0); } catch (e) { return 0; } }
-  function moreDot() { if (typeof document === "undefined") return; var n = teamN(); document.querySelectorAll('[data-act="more"]').forEach(function (b) { if (n) b.setAttribute("data-badge", String(n)); else b.removeAttribute("data-badge"); b.classList.toggle("has-dot", !!n); }); }
+  function moreDot() { if (typeof document === "undefined") return; var n = teamN(); document.querySelectorAll('[data-act="more"]').forEach(function (b) { if (n) b.setAttribute("data-badge", String(n)); else b.removeAttribute("data-badge"); b.classList.toggle("has-dot", !!n); });  budMark(); }
   function reachTo() { return teamLive() ? "1차 동료·팀장 화면" : live() ? "같은 계정 내 다른 화면(팀 연동 꺼짐)" : "이 기기에만(연동 꺼짐)"; }
   // 팀 짝·연동이 바뀌면(수락·연동 켜짐/꺼짐) 안전 모드 띠 문구·전화 단추·꼬리표를 다시 그린다 — team_sync.js 가 뒤에 적재되므로 한 박자 뒤에 붙인다
   if (typeof window !== "undefined") setTimeout(function () { var T = tm(); if (T && T.on) T.on(function (w) { if ((w === "board" || w === "error") && lsGet(LS_SAFE, null)) render(); else moreDot(); }); moreDot(); }, 0);
@@ -546,15 +598,15 @@
     return late ? '<section class="card buddy ft sfb late lv' + st.lv + '" role="alert"><div class="safep">' + ring + '<div class="tx"><b>' + lim + "분 지났습니다 · 괜찮으세요?</b><small>" + simTag(esc(st.line)) + " · " + esc(reachLine()) + "</small><div class=\"row2\"><button type=\"button\" class=\"btn sm safe\" data-act=\"safeok\">안부 확인 완료 · 20분 더</button></div>" + safeTools(sf) + "</div></div></section>"
       : '<section class="card buddy ft sfb"><div class="safep">' + ring + '<div class="tx"><b>안전 모드 · ' + el + "분째</b><small>" + simTag(esc(st.line)) + (teamLive() ? "" : " · " + esc(reachLine())) + "</small>" + safeTools(sf) + "</div></div></section>";
   }
-  function bindSafe() { var ok = app.querySelector('[data-act="safeok"]'); if (ok) ok.addEventListener("click", function () { var sf = lsGet(LS_SAFE, null); if (sf) { sf.min = Math.max(sf.min || A.safetyMin, elMin(sf.at)) + 20; lsSet(LS_SAFE, sf); safePush(sf, "ok"); toast(teamLive() ? "안부 확인 완료 · 1차 동료·팀장 화면 알림도 해제" : live() ? "안부 확인 완료 · 같은 계정 다른 화면 알림도 해제" : "안부 확인 완료"); } render(); });
-    var hp = app.querySelector('[data-act="safehelp"]'); if (hp) hp.addEventListener("click", function () { // ③ 조용한 도움 요청 — 소리·큰 알림 없이 한 번에
+  function bindSafe(root) { root = root || app; var ok = root.querySelector('[data-act="safeok"]'); if (ok) ok.addEventListener("click", function () { var sf = lsGet(LS_SAFE, null); if (sf) { sf.min = Math.max(sf.min || A.safetyMin, elMin(sf.at)) + 20; lsSet(LS_SAFE, sf); safePush(sf, "ok"); toast(teamLive() ? "안부 확인 완료 · 1차 동료·팀장 화면 알림도 해제" : live() ? "안부 확인 완료 · 같은 계정 다른 화면 알림도 해제" : "안부 확인 완료"); } render(); });
+    var hp = root.querySelector('[data-act="safehelp"]'); if (hp) hp.addEventListener("click", function () { // ③ 조용한 도움 요청 — 소리·큰 알림 없이 한 번에
       var sf = lsGet(LS_SAFE, null); if (!sf) return; sf.help = (sf.help || 0) + 1; sf.hat = new Date().toISOString(); lsSet(LS_SAFE, sf);
       var a = SY.safety ? SY.safety.list()[sf.id] : null; safePush(sf, a && a.state === "ok" ? "ok" : "on");
       try { if (navigator.vibrate) navigator.vibrate([12, 70, 12]); } catch (e) { /* 무시 */ }
       hp.classList.add("on"); hp.setAttribute("aria-label", teamLive() ? "도움 요청을 보냈습니다 · 1차 동료·팀장 화면에 떠 있습니다" : "팀 연동 꺼짐 — 도움 요청이 동료에게 가지 않습니다 · " + peerWho() + " 직접 전화하세요");
       if (!teamLive()) toast("팀 연동 꺼짐 — 도움 요청이 동료에게 가지 않습니다 · " + peerWho() + " 직접 전화하세요");
     });
-    var en = app.querySelector('[data-act="safeend"]'); if (en) en.addEventListener("click", function () { // ④ 무사 종료 — 타이머 정리 + 동료 화면에 «무사히 끝남»
+    var en = root.querySelector('[data-act="safeend"]'); if (en) en.addEventListener("click", function () { // ④ 무사 종료 — 타이머 정리 + 동료 화면에 «무사히 끝남»
       vib(); var sf = lsGet(LS_SAFE, null); if (sf) { sf.fin = "safe"; safePush(sf, "end"); try { localStorage.removeItem(LS_SAFE); } catch (e) { /* 무시 */ } toast(teamLive() ? "무사히 끝났습니다 · 1차 동료·팀장 화면 알림도 정리했습니다" : live() ? "무사히 끝났습니다 · 같은 계정 다른 화면 알림도 정리했습니다" : "무사히 끝났습니다"); } render();
     });
   }
@@ -602,14 +654,14 @@
         : '<div class="sfa calm" role="status"><i></i><span>' + esc(a.who) + " · 가구 " + esc(a.hid) + " 방문 중 <b>" + a.el + "분째</b> · 예정 " + a.min + "분</span></div>";
     }).join("") + sum;
   }
-  function bindAlerts() {
-    app.querySelectorAll("[data-sfack]").forEach(function (b) { b.addEventListener("click", function () {
+  function bindAlerts(root) {
+    root = root || app; root.querySelectorAll("[data-sfack]").forEach(function (b) { b.addEventListener("click", function () {
       vib(); var id = b.dataset.sfack;
       if (id === "DEMO") lsSet(LS_SDEMO, ymd(new Date()));
       else { var a = SY.safety.list()[id]; if (a) safePush(Object.assign({}, a, { min: elMin(a.at) + 20 }), "ok"); safeAdopt(); } // 도움 요청 횟수 등은 그대로 싣는다
       toast(id === "DEMO" ? "안부 확인 완료(시연 알림)" : live() ? "안부 확인 완료 · 현장 폰 알림도 해제했습니다" : "안부 확인 완료 · 이 브라우저의 다른 창에도 반영"); render();
     }); });
-    app.querySelectorAll("[data-sfhelp]").forEach(function (b) { b.addEventListener("click", function () { // ③ 받은 쪽: «연락했어요»로 도움 요청을 닫는다
+    root.querySelectorAll("[data-sfhelp]").forEach(function (b) { b.addEventListener("click", function () { // ③ 받은 쪽: «연락했어요»로 도움 요청을 닫는다
       vib(); var a = SY.safety && SY.safety.list()[b.dataset.sfhelp]; if (a) safePush(Object.assign({}, a, { hok: a.help }), a.state === "ok" ? "ok" : "on"); safeAdopt();
       toast(live() ? "도움 요청 확인 · 현장 폰에도 반영했습니다" : "도움 요청 확인 · 이 브라우저의 다른 창에도 반영"); render();
     }); });
@@ -648,7 +700,7 @@
     }).join("");
     var crit = absent ? "" : '<span class="why crit"><b>소득·재산 기준은 여기서 판정하지 않습니다</b> — 선정기준 원문(한국사회보장정보원 복지서비스)은 «상담» 화면에 요약해 두었습니다 · 판정은 담당 확인</span>';
     // S12-x 66회차: 시안 v3 scrField(check) — 첫 칸(단계 줄 · 안전 모드 · 가구 카드 · 집 안/문 앞) | 둘째 칸(현장 확인 목록 · 판단 근거 막대 · 상담으로)
-    return '<main class="phx">' + mini(3, hid) + safeBanner(hid) +
+    return '<main class="phx">' + mini(3, hid) +
       '<section class="card next ck-head"><div class="hh"><span class="no">' + (k.c.d.ids.indexOf(hid) + 1) + '</span><span class="t"><b>' + esc(h.area + " " + hid) + "</b><small>" + esc(ageLine(h)) + " · 확인 " + doneN + "/" + L.length + '</small></span><svg class="ck-ring" viewBox="0 0 56 56" role="img" aria-label="확인 ' + doneN + "/" + L.length + '"><circle cx="28" cy="28" r="22" fill="none" stroke="#E1E5EB" stroke-width="7"/><circle cx="28" cy="28" r="22" fill="none" stroke="var(--go)" stroke-width="7" stroke-linecap="round" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" transform="rotate(-90 28 28)"/><text x="28" y="33" text-anchor="middle" font-size="15" font-weight="900" fill="#11181C">' + doneN + "/" + L.length + "</text></svg></div></section>" +
       '<div class="subseg" role="radiogroup" aria-label="어디서 확인하나요"><button type="button" role="radio" class="pr' + (absent ? "" : " on") + '" data-place="met" aria-checked="' + !absent + '">집 안 · 만남</button><button type="button" role="radio" class="pr' + (absent ? " on" : "") + '" data-place="absent" aria-checked="' + absent + '">문 앞 · 못 만남</button></div>' + C2 +
       '<section class="card"><h3>현장 확인<span class="num">' + doneN + "/" + L.length + '</span></h3><ul class="cks">' + rows + "</ul>" +
@@ -727,7 +779,7 @@
         '<button type="button" class="evb svc-t" data-svc="' + s[0] + '" aria-pressed="' + on + '">' + (on ? "✓ 연계 후보로 넣음" : "연계 후보로 넣기") + "</button></div>";
     }).join("");
     // S12-x 66회차: 시안 v3 scrField(consult) — 첫 칸(단계 줄 · 안전 모드 · 질문 순서) | 둘째 칸(받을 수 있는 서비스 · 의뢰 사유 · 기록으로)
-    return '<main class="phx">' + mini(4, hid) + safeBanner(hid) +
+    return '<main class="phx">' + mini(4, hid) +
       '<section class="card qwrap" aria-label="질문 순서 카드"><h3>질문 순서<span>' + esc(h.area + " " + hid) + " · 현장 확인에서 고른 것부터</span></h3><div class=\"deck\">" + deck + "</div>" + dots +
       (qi < Q.length ? '<div class="row2"><button type="button" class="btn sm ghost" data-act="qskip">넘기기</button><button type="button" class="btn sm pri" data-act="qok">물어봤어요 ›</button></div>' : "") + "</section>" + C2 +
       '<section class="card" aria-label="받을 수 있는 서비스"><h3>받을 수 있는 서비스<span>고른 것 ' + Object.keys(o.svcs || {}).filter(function (x) { return o.svcs[x]; }).length + '개 → 의뢰서로</span></h3><div class="list svcs">' + cards + "</div>" +
@@ -816,7 +868,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z75"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z76"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -856,7 +908,7 @@
   function record(want) {
     var k = pickHid(want); if (!k) return phEmpty();
     var c = k.c, hid = k.hid, h = BY[hid], o = recOf(hid), now = new Date();
-    var safe = safeBanner(hid), ctx = recCtx(hid, o);
+    var safe = "", ctx = recCtx(hid, o); // 76회차: 안전 카드는 머리 «안전» 화면으로
     var nextId = c.d.ids.filter(function (id) { return id !== hid && statusOf(id) === "planned"; })[0];
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition, met = "";
     if (o.res === "met") {
@@ -1284,7 +1336,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z75"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z76"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -1976,7 +2028,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z75")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z75"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z76")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z76"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -2310,7 +2362,7 @@
     var a = parse(); if (!a) { toToday(); a = parse(); if (!a) return; } // 75회차: 해시만 바꾸고(hashchange 없음) 그대로 그린다
     var chg = a.s !== cur || a.h !== curArg; cur = a.s; curArg = a.h;
     var VIEW = { today: today, plan: planView, route: routeView, perf: perfView, help: helpView, home: home, check: checkView, talk: talkView, record: record, docs: docsView };
-    var html = VIEW[cur](curArg), bar = alertBar(), nxs = nextStepCard();
+    var html = VIEW[cur](curArg), bar = "", nxs = nextStepCard(); // 76회차: 동료 경보 띠·하루 요약은 본문에 붙이지 않는다(머리 «안전» 화면 ②)
     var MO = /<main class="(wrap|phx)[^"]*">/; // S12-x 65회차: 다음 할 일 → 그 위에 동료 안부 띠(내용 칸 맨 앞)
     if (nxs) { var mi = html.search(MO); if (mi >= 0) { var me = html.indexOf(">", mi) + 1; html = html.slice(0, me) + nxs + html.slice(me); } }
     if (bar) { var mi2 = html.search(MO); if (mi2 >= 0) { var me2 = html.indexOf(">", mi2) + 1; html = html.slice(0, me2) + bar + html.slice(me2); } }
@@ -2328,13 +2380,12 @@
     }
     lastBody = body; lastChrome = chrome; RSTAT.full++;
     if (HBAR && HBAR.parentNode) HBAR.parentNode.removeChild(HBAR); // 날씨 값이 지워지지 않게 띠는 떼어 두었다가 다시 붙인다
-    var PWA = window.__daeumPwa || (window.__daeumPwa = document.getElementById("pwa-install")); if (PWA && PWA.parentNode) PWA.parentNode.removeChild(PWA); // 70회차: 설치 띠는 «오늘» 첫 칸 맨 위에만(다른 화면엔 안 붙임)
+    var PWA = window.__daeumPwa || (window.__daeumPwa = document.getElementById("pwa-install")); if (PWA && PWA.parentNode) PWA.parentNode.removeChild(PWA); // 76회차: 설치 띠는 화면에 붙이지 않는다(더 보기 › 이 기기 › 홈 화면에 설치)
     app.innerHTML = '<nav class="rail" aria-label="주 메뉴">' + SH.railHTML(cur, curArg, I, { dot: dn, foot: foot }) + '</nav>' +
       '<div class="hdw"><header class="top">' + topHTML() + "</header></div>" +
       colsOf(html) +
       '<nav class="tabs" aria-label="주 메뉴">' + SH.tabsHTML(cur, curArg, I, { dot: dn }) + "</nav>";
     var cs = app.querySelectorAll(".main > .col"), col = cs[cs.length - 1] || null;
-    if (PWA && cur === "today" && cs[0]) cs[0].insertBefore(PWA, cs[0].firstChild);
     document.title = TITLES[cur] + " · " + NAME + " — " + SUB;
     ({ today: bindToday, plan: bindPlan, route: bindRoute, perf: bindPerf, help: function () {}, home: bindHome, check: bindCheck, talk: bindTalk, record: bindRecord, docs: bindDocs })[cur](curArg);
     app.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); });
@@ -2346,7 +2397,7 @@
     scopeMount();
     hbarPlace();
     Array.prototype.forEach.call(cs, function (c, i) { c.scrollTop = keepY[i] || 0; }); // 화면이 바뀌면 맨 위 · 같은 화면이면 칸마다 읽던 자리
-    if (OV.on) app.appendChild(OV.el); // 더 보기 시트가 열려 있으면 다시 붙인다(실시간 다시 그리기)
+    if (OV.on) { if (OV.kind === "safety") safetyPanel(); else app.appendChild(OV.el); } // 더 보기 시트가 열려 있으면 다시 붙인다(실시간 다시 그리기) · 76회차: 안전 화면은 새 상태로 다시
   }
   // 폭(폰·폴드·태블릿·PC)이 바뀌면 머리 글자(PC 연동 글자·폰 탭 이름)만 다시 그린다 — app/s12x_bg.js 가 html[data-mode] 와 함께 알림
   window.addEventListener("daeum:mode", function () { var ae = document.activeElement; if (!micRec && !(ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName))) { render(); return; } var t = app.querySelector(".hdw > .top"); if (t) { t.innerHTML = topHTML(); t.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); }); t.querySelectorAll('[data-act="more"]').forEach(function (b) { b.addEventListener("click", morePanel); }); t.querySelectorAll('[data-act="safety"]').forEach(function (b) { b.addEventListener("click", safetyKey); }); } });

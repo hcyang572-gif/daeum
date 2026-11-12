@@ -340,7 +340,7 @@
     document.querySelectorAll("[data-fd-veil]").forEach(function (b) { b.setAttribute("aria-pressed", on); if (b.classList.contains("ky")) return; b.classList.toggle("on", on); b.innerHTML = svg(on ? "eyeOff" : "eye") + "<span>가림</span>"; }); // S12-x 65회차: 셸 머리 눈 단추(.ky)는 시안 아이콘 그대로 · 눌림만
   }
   var lockEl = null, idleT = null, hidAt = 0, alertT = null;
-  function lockAlerts() { var a = document.getElementById("app"); return a ? a.querySelectorAll('.sfa[role="alert"], .safe.late').length : 0; }
+  function lockAlerts() { if (window.__daeumBuddyAlarm) { try { return window.__daeumBuddyAlarm(); } catch (e) { /* 아래로 */ } } var a = document.getElementById("app"); return a ? a.querySelectorAll('.sfa[role="alert"], .safe.late').length : 0; } // 76회차: 경보 띠가 머리 «안전» 화면으로 옮겨 판정 함수를 쓴다
   function lockIds() { var c = C && C.dayCtx(); return c ? c.d.ids : []; }
   function paintLock() {
     if (!lockEl) return; var n = lockAlerts(), b = lockEl.querySelector(".fd-lk-al");

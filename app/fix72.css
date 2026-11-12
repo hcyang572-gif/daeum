@@ -36,3 +36,31 @@
   .col > #pwa-install.pwa > span:first-of-type b { color: #174F5B; font-weight: 900; }
 }
 html.pwa-app #pwa-install { display: none !important; }
+
+/* ── 76회차 ⚙️ 파로: 머리 «안전» 단추(더 보기 바로 왼쪽, 11-13 호창님) — 평소 차분한 빨강 · 동료 문제(기존 경보)일 때만 부드러운 맥박 ── */
+#app .ky.bud { gap: 4px; padding: 0 10px 0 8px; color: #fff; background: linear-gradient(180deg, #B4544A, #8E3A32); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 0 0 1px rgba(90,26,20,.45), 0 6px 14px -10px rgba(110,30,20,.7); animation: none; }
+#app .ky.bud > svg { width: 19px; height: 19px; filter: none; }
+#app .ky.bud .ic-d { fill: #fff; opacity: .24; }
+#app .ky.bud .bt { font: 800 13px/1 var(--ff, system-ui, sans-serif); letter-spacing: -.02em; white-space: nowrap; }
+#app .ky.bud .bd { display: none; }
+#app .ky.bud::after { box-shadow: none; }
+#app .ky.bud:hover::after, #app .ky.bud:focus-visible::after { box-shadow: inset 0 0 0 1px rgba(255,255,255,.55); }
+#app .ky.bud.alarm { animation: budPulse 1.1s ease-in-out infinite; }
+@keyframes budPulse {
+  0%, 100% { filter: brightness(1); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 0 0 1px rgba(90,26,20,.45), 0 0 0 0 rgba(196,64,52,0); }
+  50% { filter: brightness(1.18); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 0 0 1px rgba(90,26,20,.5), 0 0 0 6px rgba(196,64,52,.28); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app .ky.bud.alarm { animation: none; box-shadow: inset 0 0 0 2.5px #fff, 0 0 0 2px #8E3A32; }
+  #app .ky.bud.alarm .bd { display: block; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: #FFE08A; box-shadow: 0 0 0 1.5px #8E3A32; }
+}
+/* 안전 화면(시트) — ①나의 안전 ②동료 안부 ③팀 연결 */
+.sheet .sp-h { display: flex; align-items: center; gap: 8px; }
+.sheet .sp-h svg { width: 22px; height: 22px; color: #8E3A32; }
+.sheet .sp-sec { display: grid; gap: 8px; margin: 12px 0 0; }
+.sheet .sp-k { font: 800 13px/1.3 var(--ff, system-ui, sans-serif); color: #8E3A32; letter-spacing: -.01em; }
+.sheet .sp-off { margin: 0; font-size: 13px; line-height: 1.5; color: #5A646B; }
+.sheet .sp-go { display: flex; align-items: center; min-height: 44px; font-weight: 800; font-size: 14px; color: #174F5B; text-decoration: none; }
+.sheet .sp-sec .card.buddy { margin: 0; }
+.sheet .sp-sec .sfa { margin: 0; }
+.sheet .sp-sec .btn.safe { width: 100%; }
