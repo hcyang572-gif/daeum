@@ -179,12 +179,8 @@
       IM.readFile(file).then(function (rows) {
         var r = IM.importRows(rows, D.households);
         if (!r.ok) { importMsg = { ok: false, cols: r.cols, text: r.err === "cols" ? "가구를 가리키는 열을 찾지 못했습니다. «발굴대상자 조회» 엑셀(머리글에 «소재행정동»·«(행복이음)주소») 또는 «관리번호» 열이 있는 CSV인지 확인해 주세요." : r.err === "empty" ? "가구 줄이 없는 빈 서식입니다. 조회 결과가 담긴 파일을 불러와 주세요." : "명단의 가구를 지도에서 찾지 못했습니다(" + r.n + "줄). 시연에서는 «시연용 가상 명단»의 가상 주소만 지도에 놓입니다." }; render(); return; }
-        var M = {}; r.ids.forEach(function (id) { M[id] = r.meta[id]; if (!M[id].ym) M[id].ym = ymd(new Date()).slice(0, 7); });
-        lsSet(LS_META, M); lsSet(LS_IMPORT, { name: file.name, n: r.ids.length, at: Date.now() });
-        var cur = { ym: r.ym || ymd(new Date()).slice(0, 7), ids: r.ids, ranks: {}, cnts: {}, name: file.name, at: new Date().toISOString() };
-        r.ids.forEach(function (id) { cur.ranks[id] = M[id].prio; cur.cnts[id] = M[id].cnt; });
-        F.store.set("rounds", F.rounds.remember(F.store.get("rounds", []), cur));
-        importMsg = { ok: true, cols: r.cols, skipped: r.skipped, total: r.total, text: "<b>" + esc(file.name) + "</b> · " + r.ids.length + "가구를 불러왔습니다" + (r.miss ? " · 못 찾은 줄 " + r.miss : "") + (r.cut ? " · 30가구까지만" : "") + " · 서버 전송 0" };
+        IM.commit(r, file.name, { get: lsGet, set: lsSet }, F); // S12-i1: 앱 «오늘» 명단 카드와 같은 규칙
+        importMsg = { ok: true, cols: r.cols, skipped: r.skipped, total: r.total, text: "<b>" + esc(file.name) + "</b> · " + r.ids.length + "가구를 불러왔습니다" + (r.miss ? " · 못 찾은 줄 " + r.miss : "") + (r.cut ? " · " + IM.MAX + "가구까지만" : "") + " · 서버 전송 0" };
         render();
       }, function () { importMsg = { ok: false, text: "파일을 읽지 못했습니다. " + (/\.xlsx?$/i.test(file.name) ? "엑셀 읽기 부품을 받지 못했을 수 있습니다 — CSV로 저장해 다시 불러와 주세요." : "CSV(쉼표 구분)인지 확인해 주세요.") }; render(); });
     }

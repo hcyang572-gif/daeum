@@ -11,7 +11,7 @@
   "use strict";
   var F = root.DaeumFeatures, REQ = root.DaeumRequests, C = root.DAEUM_CONFIG || {};
   if (!F || !F.util || !F.store) return;
-  var U = F.util, TAG = "S9j", VERSION = 8, FLAG = "daeum.demo.seededFor"; // v8(S12-e 42): 지난 6주 방문 기록 18건(⑨)·시연 계획을 편집해도 다음 날엔 그날 기준으로 다시 깜 · v7(S11-k 재구축): 신고 4건 걷어냄 · 발굴년월을 «열어 본 날» 기준(이번 차수 경과 56일 미만) · Q-033 AI 초기상담 안 닿음 · 방문 계획(1일차 = 지난 근무일, 2일차 = 그다음)·방문 결과 기록 · v6(S11-i): 신고는 «공무원 접수»(전화·통장·이웃 방문)·지난 차수 명단·이웃 탐문·주의 꼬리표·약속·사후관리(1·3·6개월)도 깐다 · v5(S11-d2): 정보원 명단 열(발굴순위·횟수·처리여부·발굴년월)·명단 밖 가구 메모 4건·확정 기록 2건도 깐다 · v4(S10n-2 O-08): 긴급 신호는 당일 기한이라 오늘 접수로 깐다 · v2: 읍면 배치(S10b) — 옛 남원동 가구 번호 기록을 지우고 다시 깐다 · v3(S10n O-04): 시연 기록 가구를 모두 발굴 명단(위기 정보가 있는 집) 안 가구로 바꿈
+  var U = F.util, TAG = "S9j", VERSION = 9, FLAG = "daeum.demo.seededFor"; // v9(S12-i1): 명단 열을 가상 48가구 전체로 · v8(S12-e 42): 지난 6주 방문 기록 18건(⑨)·시연 계획을 편집해도 다음 날엔 그날 기준으로 다시 깜 · v7(S11-k 재구축): 신고 4건 걷어냄 · 발굴년월을 «열어 본 날» 기준(이번 차수 경과 56일 미만) · Q-033 AI 초기상담 안 닿음 · 방문 계획(1일차 = 지난 근무일, 2일차 = 그다음)·방문 결과 기록 · v6(S11-i): 신고는 «공무원 접수»(전화·통장·이웃 방문)·지난 차수 명단·이웃 탐문·주의 꼬리표·약속·사후관리(1·3·6개월)도 깐다 · v5(S11-d2): 정보원 명단 열(발굴순위·횟수·처리여부·발굴년월)·명단 밖 가구 메모 4건·확정 기록 2건도 깐다 · v4(S10n-2 O-08): 긴급 신호는 당일 기한이라 오늘 접수로 깐다 · v2: 읍면 배치(S10b) — 옛 남원동 가구 번호 기록을 지우고 다시 깐다 · v3(S10n O-04): 시연 기록 가구를 모두 발굴 명단(위기 정보가 있는 집) 안 가구로 바꿈
   // 가구 번호 머리글자 = 읍면 코드(data/tools/make_households.py SANGJU 순서)
   var AREA_OF = { A: "함창읍", B: "사벌국면", P: "공검면", Q: "이안면" };
   function areaOf(hid) { return AREA_OF[String(hid).charAt(0)] || ""; }
@@ -47,6 +47,19 @@
     ["homeNotes", "afterThree"].forEach(function (n) { var o = F.store.get(n, {}) || {}; if (o.__seed === TAG) F.store.set(n, {}); });
     // S11-k 방문 결과 기록(시연분만)
     lsSet("daeum.visit.log", (lsGet("daeum.visit.log", []) || []).filter(notSeed));
+  }
+  // S12-i1: 가상 48가구 명단(브라우저 = data/demo_list_full.js 의 전역, node 시험 = .json) → importRows 결과. 부품이 없으면 null(옛 9가구만)
+  function loadFull() {
+    try {
+      var IM = root.DaeumImport, L = root.__DAEUM_DEMO_LIST__, H = root.__DAEUM_HOUSEHOLDS__;
+      if (typeof module !== "undefined" && module.exports && typeof require === "function") {
+        var pth = require("path"); IM = IM || require(pth.join(__dirname, "import_list.js"));
+        L = L || require(pth.join(__dirname, "..", "data", "demo_list_full.json")); H = H || require(pth.join(__dirname, "..", "data", "households.json"));
+      }
+      if (!IM || !L || !H) return null;
+      var r = IM.importRows([L.columns].concat(L.rows), H.households || []);
+      return r && r.ok ? r : null;
+    } catch (e) { return null; }
   }
   var OUT_KEY = "daeum.officer.outside", REC_KEY = "daeum.officer.records", META_KEY = "daeum.s11.importMeta";
 
@@ -113,9 +126,14 @@
   if (!meta0 || !Object.keys(meta0).length || meta0.__seed === TAG) {
     var M = { __seed: TAG }, L9 = [["A-009", 1, "미처리", 1], ["Q-033", 1, "미처리", 1], ["P-026", 1, "처리중", 0], ["P-033", 1, "미처리", 1], ["P-013", 1, "미처리", 1],
       ["B-015", 3, "처리중", 1], ["A-056", 2, "미처리", 1], ["B-059", 2, "미처리", 1], ["A-086", 1, "미처리", 1]];
-    L9.forEach(function (x, i) { M[x[0]] = { prio: String(i + 1), cnt: x[1], proc: x[2], lonely: !!x[3], child: false, ben: x[0] === "P-033" ? ["기초생계급여"] : [], hasBen: true, aiReq: x[0] === "Q-033" ? "요청" : "", aiRes: x[0] === "Q-033" ? "안 닿음" : "", vars: "", ym: RYM }; });
+    // S12-i1(11-12): 기본 탑재 = 가상 명단 data/demo_list_full(48가구, «발굴대상자 조회» 서식 열 그대로). 같은 파일을 «불러오기»로 올려도 같은 열 규칙(DaeumImport.importRows)으로 읽힌다.
+    //   앞 9가구는 S11-k 시연 순서(우선순위 근거 ③ 9가구)를 지키려고 위 L9 값으로 덮는다. 발굴년월은 «열어 본 날» 기준 차수(RYM).
+    var FULL = loadFull(), n0 = 9;
+    if (FULL) Object.keys(FULL.meta).forEach(function (id) { var x = FULL.meta[id]; x.ym = RYM; M[id] = x; });
+    L9.forEach(function (x, i) { M[x[0]] = Object.assign({}, M[x[0]] || {}, { prio: String(i + 1), cnt: x[1], proc: x[2], lonely: !!x[3], child: false, ben: x[0] === "P-033" ? ["기초생계급여"] : [], hasBen: true, aiReq: x[0] === "Q-033" ? "요청" : "", aiRes: x[0] === "Q-033" ? "안 닿음" : "", vars: (M[x[0]] && M[x[0]].vars) || "", ym: RYM }); });
+    if (FULL) n0 = Object.keys(M).length - 1;
     lsSet(META_KEY, M);
-    lsSet("daeum.s11.import", { name: "시연용 가상 명단(발굴대상자 조회 서식).xlsx", n: 9, at: now.getTime(), demo: true });
+    lsSet("daeum.s11.import", { name: "가상명단_발굴대상자조회_" + n0 + "가구.xlsx", n: n0, at: now.getTime(), demo: true });
   }
 
   // ⑤ S11-d2: 명단 밖 가구 메모(A안) — 현장에서 본 «명단에 없는 걱정되는 집». 주소는 대조 전용(화면에는 «○○읍 일대»까지만)

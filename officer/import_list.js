@@ -89,6 +89,8 @@
   }
 
   /** rows(2차원 배열) + 가구 목록 → { ok, err, meta:{id:{prio,cnt,proc,lonely,child,ben,hasBen,aiReq,aiRes,vars,ym}}, ids, cols:[{src,dst,key}], skipped:[열 이름], miss, n, ym } */
+  // S12-i1(11-12): 옛 30가구 상한을 풀었다 — 한 차수 명단 전체(시연 48가구)를 그대로 싣는다. MAX 는 브라우저 저장소 보호용 안전 상한일 뿐이다.
+  var MAX = 2000;
   function importRows(rows, households) {
     var hd = mapCols(rows || []);
     if (hd.i < 0 || (hd.m.id == null && hd.m.addr == null)) return { ok: false, err: "cols" };
@@ -113,11 +115,27 @@
     var ys = Object.keys(meta).map(function (k) { return meta[k].ym; }).filter(Boolean).sort();
     if (!body.length) return { ok: false, err: "empty", cols: cols, total: head.filter(function (h) { return String(h).trim(); }).length };
     if (!ids.length) return { ok: false, err: "nomatch", n: body.length };
-    return { ok: true, meta: meta, ids: ids.slice(0, 30), cut: ids.length > 30, cols: cols, skipped: skipped, miss: miss, n: body.length,
+    return { ok: true, meta: meta, ids: ids.slice(0, MAX), cut: ids.length > MAX, cols: cols, skipped: skipped, miss: miss, n: body.length,
       total: head.filter(function (h) { return String(h).trim(); }).length, benCols: benCol.length, ym: ys.length ? ys[ys.length - 1] : "" };
   }
 
-  var api = { COLS: COLS, BEN: BEN, SKIP: SKIP, mapCols: mapCols, parseCSV: parseCSV, readFile: readFile, importRows: importRows, addrKey: addrKey };
+  /** S12-i1: importRows 결과를 이 기기 저장소에 싣는다(공무원 화면 ①·앱 «오늘» 명단 카드가 같은 규칙으로) — 서버 전송 0.
+   *  ls = { get(k,d), set(k,v) }, F = DaeumFeatures(차수 기억용, 없으면 건너뜀). 반환: 실은 가구 수 */
+  function commit(r, fileName, ls, F, now) {
+    if (!r || !r.ok) return 0;
+    now = now || new Date();
+    var ym0 = now.getFullYear() + "-" + (now.getMonth() < 9 ? "0" : "") + (now.getMonth() + 1);
+    var M = {}; r.ids.forEach(function (id) { M[id] = r.meta[id]; if (!M[id].ym) M[id].ym = ym0; });
+    ls.set("daeum.s11.importMeta", M); ls.set("daeum.s11.import", { name: fileName, n: r.ids.length, at: now.getTime() });
+    if (F && F.rounds && F.store) {
+      var cur = { ym: r.ym || ym0, ids: r.ids, ranks: {}, cnts: {}, name: fileName, at: now.toISOString() };
+      r.ids.forEach(function (id) { cur.ranks[id] = M[id].prio; cur.cnts[id] = M[id].cnt; });
+      F.store.set("rounds", F.rounds.remember(F.store.get("rounds", []), cur));
+    }
+    return r.ids.length;
+  }
+
+  var api = { MAX: MAX, commit: commit, COLS: COLS, BEN: BEN, SKIP: SKIP, mapCols: mapCols, parseCSV: parseCSV, readFile: readFile, importRows: importRows, addrKey: addrKey };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DaeumImport = api;
 })(typeof window !== "undefined" ? window : globalThis);
