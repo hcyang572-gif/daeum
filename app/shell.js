@@ -61,7 +61,7 @@
   }
   function railHTML(view, hid, I, o) {
     var k = tabOf(view), x = hid ? ":" + hid : "";
-    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z74" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
+    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z75" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
       TABS.map(function (t, i) {
         return '<button type="button" class="rl pr' + (i === k ? " on" : "") + '" data-go="' + go(t, x) + '" data-tab="' + t[0] + '"' + (i === k ? ' aria-current="page"' : "") + ">" + ((I || {})[IK[t[0]]] || svg(t[0])) + "<span>" + t[1] + "<small>" + DESC[t[0]] + "</small></span>" + dotOf(t, o) + "</button>";
       }).join("") + ((o && o.foot) || "");
@@ -86,13 +86,39 @@
     return { k: "done", step: "실적 보기", tx: "오늘 할 일을 다 했습니다 · 실적을 확인하세요", tab: "rep", at: ["perf"] };
   }
   /** 같은 안내를 계속 반복하지 않게 — 열쇠가 바뀐 첫 번째만 빛남·화살표를 돌린다(이 기기 localStorage, 막히면 이 창 메모리) */
-  var seenMem = null, SEEN = "daeum.s12.nudgeSeen";
-  function fresh(k, store) {
-    var st = store || (typeof localStorage !== "undefined" ? localStorage : null), was = seenMem;
-    try { if (st) was = st.getItem(SEEN); } catch (e) { /* 저장 막힘 */ }
+  //   slot = 저장 열쇠(기본 빛남용 · 75회차 안내 줄은 "daeum.s12.nxShown" 따로)
+  var seenMem = {}, SEEN = "daeum.s12.nudgeSeen";
+  function fresh(k, store, slot) {
+    var key = slot || SEEN, st = store || (typeof localStorage !== "undefined" ? localStorage : null), was = seenMem[key];
+    try { if (st) was = st.getItem(key); } catch (e) { /* 저장 막힘 */ }
     if (was === k) return false;
-    seenMem = k; try { if (st) st.setItem(SEEN, k); } catch (e) { /* 저장 막힘 */ }
+    seenMem[key] = k; try { if (st) st.setItem(key, k); } catch (e) { /* 저장 막힘 */ }
     return true;
+  }
+  // ── 75회차 ⓪-2 폰 전체화면 — 터치 + 좁은 폭(짧은 변 < 768) + API 있음 + 설치 앱 아님일 때만 · 첫 누름에 켜고, 풀리면 다음 누름에 다시 ──
+  //   e = { touch, short, standalone, api } → 켤 수 있는 기기인가(순수 함수 — 시험용)
+  function fsAble(e) { e = e || {}; return !!(e.touch && e.short > 0 && e.short < 768 && !e.standalone && e.api); }
+  var LS_FS = "daeum.s12.fs";
+  function fsEnv() {
+    var w = root, de = w.document && w.document.documentElement, mm = function (q) { try { return !!(w.matchMedia && w.matchMedia(q).matches); } catch (e) { return false; } };
+    var sc = w.screen || {}, sh = Math.min(sc.width || w.innerWidth || 0, sc.height || w.innerHeight || 0);
+    return { touch: mm("(pointer: coarse)") && ((w.navigator && w.navigator.maxTouchPoints) || 0) > 0, short: sh,
+      standalone: mm("(display-mode: fullscreen)") || mm("(display-mode: standalone)") || !!(w.navigator && w.navigator.standalone),
+      api: !!(de && (de.requestFullscreen || de.webkitRequestFullscreen)) };
+  }
+  function fsOn() { try { return root.localStorage.getItem(LS_FS) !== "off"; } catch (e) { return true; } } // 기본 켜짐
+  function fsIn() { var d = root.document; return !!(d && (d.fullscreenElement || d.webkitFullscreenElement)); }
+  function fsEnter() {
+    if (!fsOn() || fsIn() || !fsAble(fsEnv())) return false;
+    var de = root.document.documentElement, f = de.requestFullscreen || de.webkitRequestFullscreen;
+    try { var p = f.call(de, { navigationUI: "hide" }); if (p && typeof p.catch === "function") p.catch(function () { /* 거절 — 조용히 */ }); } catch (e) { return false; }
+    return true;
+  }
+  function fsToggle() {
+    var on = !fsOn(); try { root.localStorage.setItem(LS_FS, on ? "on" : "off"); } catch (e) { /* 저장 막힘 — 이번 화면만 */ }
+    if (on) fsEnter();
+    else if (fsIn()) { var d = root.document, x = d.exitFullscreen || d.webkitExitFullscreen; try { var p = x && x.call(d); if (p && p.catch) p.catch(function () {}); } catch (e) { /* 무시 */ } }
+    return on;
   }
   var ARW = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   var DWN = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
@@ -125,12 +151,12 @@
   function dockEl(pri, sec, opt) {
     var nx = opt.nx || null, dk = doc.createElement("div");
     dk.className = "dock"; dk.setAttribute("role", "group"); dk.setAttribute("aria-label", "이 화면의 주 단추");
-    if (nx && nx.tx) {
+    if (nx && nx.tx && opt.show) { // 75회차 ⓪-3: 상태가 바뀐 첫 번째만 · 약 4초 뒤 · 스크롤·누름에 바로 접힘
       var n = doc.createElement("div"); n.className = "nx"; n.setAttribute("role", "status");
       n.innerHTML = '<span class="pill">다음 할 일</span><span class="tx"></span><span class="ar" aria-hidden="true">' + DWN + "</span>";
       n.querySelector(".tx").textContent = nx.tx;
       if (!opt.glow) { var ar = n.querySelector(".ar"); ar.style.animation = "none"; } // 이미 본 안내 — 화살표도 가만히
-      dk.appendChild(n);
+      dk.appendChild(n); dk.classList.add("hasnx");
     }
     var row = doc.createElement("div"); row.className = "row";
     if (sec) row.appendChild(asSbt(sec));
@@ -167,7 +193,10 @@
     if (!pri && sec) { pri = sec; sec = null; }
     doc.body.classList.toggle("has-dock", !!pri);
     app.classList.toggle("hasact", !!pri);
+    var hosts = [pri, sec].map(function (el) { return el && el.parentNode; });
     if (pri) app.appendChild(dockEl(pri, sec, opt || {}));
+    hosts.forEach(function (h) { if (h && h !== app && /(^|\s)row2(\s|$)/.test(h.className || "") && !h.children.length && !(h.textContent || "").trim() && h.parentNode) h.parentNode.removeChild(h); }); // 75회차: 단추를 옮기고 빈 .row2 는 지운다(높이 0인데 간격만 남음)
+    nxArm(app);
     glowTab(app, opt && opt.tabGlow);
     // ④ 전환(탭이 바뀔 때만)
     var k = tabOf(view);
@@ -182,6 +211,19 @@
       }
     }
     lastTab = k;
+  }
+  // 75회차 ⓪-3 안내 줄 접기 — 약 4초 뒤 스스로, 스크롤·누름이면 바로(첫 0.4초 스크롤은 무시 — 그리는 중 읽던 자리 되살리기)
+  var NX_MS = 4000, nxT = null, nxAt = 0;
+  function nxHide() {
+    clearTimeout(nxT); nxT = null;
+    var n = doc && doc.querySelector(".app > .dock > .nx:not(.out)"); if (!n) return;
+    var dk = n.parentNode; n.classList.add("out");
+    setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); if (dk) dk.classList.remove("hasnx"); }, RM.matches ? 0 : 240);
+  }
+  function nxArm(app) {
+    clearTimeout(nxT); nxT = null;
+    if (!app.querySelector(":scope > .dock > .nx")) return;
+    nxAt = Date.now(); nxT = setTimeout(nxHide, NX_MS);
   }
   // ⑤ 진행 표시
   var busyN = 0, busyEl = null;
@@ -205,8 +247,13 @@
       var t = Date.now(); if (t - lastTap < 260) { e.preventDefault(); e.stopPropagation(); return; }
       lastTap = t;
     }, true);
+    doc.addEventListener("scroll", function () { if (nxT && Date.now() - nxAt > 400) nxHide(); }, { capture: true, passive: true });
+    doc.addEventListener("pointerdown", function () { if (nxT) nxHide(); }, true);
+    // ⓪-2 폰 전체화면: 누름(click — 사용자 동작으로 인정되는 때)마다 확인, 이미 전체화면이면 아무것도 안 함
+    doc.addEventListener("click", function (e) { if (e.target && e.target.closest && e.target.closest('[data-ov="fs"]')) return; fsEnter(); }, true); // «전체화면» 칸 누름은 그 칸이 처리
   }
-  var api = { TABS: TABS, SUB: SUB, tabOf: tabOf, links: links, tabsHTML: tabsHTML, railHTML: railHTML, subtabs: subtabs, after: after, busy: busy, nextStep: nextStep, fresh: fresh };
+  var api = { TABS: TABS, SUB: SUB, tabOf: tabOf, links: links, tabsHTML: tabsHTML, railHTML: railHTML, subtabs: subtabs, after: after, busy: busy, nextStep: nextStep, fresh: fresh, NX_MS: NX_MS,
+    fsAble: fsAble, fs: { able: function () { return fsAble(fsEnv()); }, on: fsOn, enter: fsEnter, toggle: fsToggle } };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DaeumShell = api;
 })(typeof window !== "undefined" ? window : globalThis);

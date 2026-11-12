@@ -198,7 +198,7 @@
     else sk = '<button class="ky pr" data-act="safety" aria-label="동료 안부 설명">' + I.shield + "</button>";
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z74" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z75" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + (I.lock || "") + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       sk + '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eye + "</button>" +
@@ -212,7 +212,7 @@
   function sheetOpen(html, label) {
     if (!OV.el) {
       OV.el = document.createElement("div"); OV.el.className = "ov"; OV.el.id = "ov";
-      OV.el.addEventListener("click", function (e) { var t = e.target.closest ? e.target.closest("[data-ov]") : null; if (!t) return; var k = t.getAttribute("data-ov"); sheetClose(); if (k === "account") accountPanel(); else if (k === "team") { if (window.DaeumTeamUI) window.DaeumTeamUI.open(); } else if (k === "ob") { if (window.DaeumOnboard) window.DaeumOnboard.open(); } else if (k === "nudge") nudgeToggle(); else if (k === "pick") { if (cur === "today") { var f = document.getElementById("listFile"); if (f) f.click(); } else { pickNext = true; location.hash = "#today"; } } });
+      OV.el.addEventListener("click", function (e) { var t = e.target.closest ? e.target.closest("[data-ov]") : null; if (!t) return; var k = t.getAttribute("data-ov"); sheetClose(); if (k === "account") accountPanel(); else if (k === "team") { if (window.DaeumTeamUI) window.DaeumTeamUI.open(); } else if (k === "ob") { if (window.DaeumOnboard) window.DaeumOnboard.open(); } else if (k === "nudge") nudgeToggle(); else if (k === "fs") { if (SH.fs) toast(SH.fs.toggle() ? "전체화면을 켰습니다" : "전체화면을 껐습니다 · 더 보기에서 다시 켭니다"); } else if (k === "pick") { if (cur === "today") { var f = document.getElementById("listFile"); if (f) f.click(); } else { pickNext = true; location.hash = "#today"; } } });
       document.addEventListener("keydown", function (e) { if (OV.on && e.key === "Escape") sheetClose(); });
     }
     OV.el.innerHTML = '<div class="scrim" data-ov="x"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label || "") + '"><div class="grab"></div>' + html + "</div>";
@@ -224,7 +224,7 @@
     var li = function (tag, attr, ic, b, sm) { return "<" + tag + ' class="li pr" ' + attr + ">" + ic + "<span><b>" + b + "</b><small>" + sm + "</small></span></" + tag + ">"; };
     var su = SY.state().user; // 73회차 🔐: 맨 위 = 로그아웃(로그인 때, 이 기기 기록 지우기 선택 창) / 들어가기(로그인 전) — 옛 «계정 · 연동» 줄을 합침
     sheetOpen("<h3>더 보기</h3><div class=\"list\">" +
-      (su ? li("button", 'type="button" data-ov="account" data-out="1"', I.lock || I.user, "로그아웃", esc(su.email || "") + " · " + esc(si.txt))
+      (su ? li("button", 'type="button" data-ov="account" data-out="1"', I.lock || I.user, "로그아웃 · 시연 바꾸기", (demoNo(su) ? "지금 시연 " + demoNo(su) + " · " : "") + esc(si.txt)) // 75회차: 이메일 주소는 보이지 않게
         : li("button", 'type="button" data-ov="account"', I.user, "시연으로 둘러보기", "누구나 시연 1·2·3 · 같은 번호면 PC·폰 실시간")) +
       li("a", 'href="#help" data-ov="go"', I.help, "사용 방법", "닿음이 맡는 구간 · 처음 3단계 · 동료 안부") +
       li("button", 'type="button" data-ov="pick"', I.upload || I.db, "발굴대상자 명단 불러오기", "행복이음에서 받은 한국사회보장정보원 조회 서식 엑셀") +
@@ -234,6 +234,7 @@
       (window.DaeumTeamUI ? li("button", 'type="button" data-ov="team"', I.user, "우리 팀" + (teamN() ? ' <em class="li-n">' + teamN() + "</em>" : ""), esc(window.DaeumTeamUI.label ? window.DaeumTeamUI.label() : "1차 동료·팀장 짝 지정 · 팀 현황")) : "") +
       (window.DaeumOnboard ? li("button", 'type="button" data-ov="ob"', I.help, "처음 안내 다시 보기", "명단 → 동선 → 현장 → 기록 → 보고 · 그림 다섯 장") : "") + // S12-z3 추천안(가): 자동은 처음 한 번, 다시 보기는 여기 // 69회차: 떠 있던 «팀» 단추 → 메뉴(PC 레일·폰 머리 모두 같은 «더 보기»)
       li("button", 'type="button" data-ov="nudge" aria-pressed="' + (nudgeOn() ? "true" : "false") + '"', I.bell || I.help, "다음 할 일 안내 · " + (nudgeOn() ? "켜짐" : "꺼짐"), nudgeOn() ? "주 단추 위 한 줄 안내 · 누르면 끕니다" : "꺼져 있음 · 누르면 다시 켭니다") +
+      (SH.fs && SH.fs.able() ? li("button", 'type="button" data-ov="fs" aria-pressed="' + (SH.fs.on() ? "true" : "false") + '"', I.more || I.help, "전체화면 · " + (SH.fs.on() ? "켜짐" : "꺼짐"), SH.fs.on() ? "주소창 없이 넓게 · 누르면 끕니다" : "꺼져 있음 · 누르면 다시 켭니다") : "") + // 75회차 ⓪-2
       li("button", 'type="button" data-fd-lock="1" data-ov="lock"', I.lock, "지금 잠그기", "자리 비우면 3분 뒤 자동 잠금 · 가구번호만 표시") +
       li("a", 'href="?demo=reset#today"', I.sync || I.db, "시연 데이터 처음 상태로", "가상 48가구 · 지난 기록") +
       '</div><button type="button" class="btn ghost pr" data-ov="x">닫기</button>', "더 보기");
@@ -256,7 +257,8 @@
     var st = SH.nextStep(nudgeState(pending)), here = st.at.indexOf(cur) >= 0;
     var ti = SH.tabOf ? SH.tabOf(cur) : -1, mine = SH.TABS && SH.TABS[ti] ? SH.TABS[ti][0] : "";
     var fr = SH.fresh ? SH.fresh(st.k + "|" + (here ? cur : "tab:" + st.tab)) : true; // 같은 안내는 처음 한 번만 빛남
-    return { nx: st, glow: here && fr, tabGlow: !here && fr && mine !== st.tab ? st.tab : null };
+    var show = here && SH.fresh ? SH.fresh(st.k, undefined, "daeum.s12.nxShown") : false; // 75회차 ⓪-3: 안내 줄은 상태가 바뀐 뒤 그 일을 하는 화면에서 한 번만(약 4초) · 다른 탭에선 안 띄움
+    return { nx: st, show: show, glow: here && fr, tabGlow: !here && fr && mine !== st.tab ? st.tab : null };
   }
   // 방패: 안전 모드가 켜져 있으면 그 집 현장 확인(안전 띠·«괜찮아요»가 있는 곳)으로, 꺼져 있으면 사용 방법(동료 안부 설명)
   function safetyKey() { var sf = lsGet(LS_SAFE, null); location.hash = sf && sf.hid ? "#check:" + sf.hid : "#help"; }
@@ -814,7 +816,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z74"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z75"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -1282,7 +1284,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z74"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z75"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -1974,7 +1976,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z74")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z74"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z75")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z75"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -2236,6 +2238,7 @@
   // ── 길잡이(해시) ──
   var cur = "", curArg = null;
   var TITLES = { today: "오늘", plan: "방문 계획", route: "동선", perf: "실적·사후관리", help: "사용 방법", home: "집 앞 요약", check: "현장 확인", talk: "상담 도움", record: "상담 후 기록", docs: "문서함" };
+  function toToday() { try { history.replaceState(null, "", location.pathname + location.search + "#today"); } catch (e) { location.replace("#today"); } }
   function parse() { var m = /^#(today|plan|route|perf|help|home|check|talk|record|docs)(?::([A-Z]{1,3}-\d{1,5}))?$/.exec(location.hash || ""); return m ? { s: m[1], h: m[2] || null } : null; }
   // S12-n «닿음이 맡는 구간» — 큰 그림(오늘·사용 방법) + 화면 머리 아래 작은 위치 띠(지금 단계만 켜짐)
   var SM = window.DaeumScopeMap;
@@ -2304,7 +2307,7 @@
   function bootOpen() { if (BOOT.open) return; BOOT.open = true; render(); }
   function render(soft) { // soft = 실시간·시계처럼 사람이 누르지 않은 다시 그리기(같으면 건너뜀)
     if (!BOOT.open) { BOOT.want = true; RSTAT.held++; return; }
-    var a = parse(); if (!a) { location.replace("#today"); return; }
+    var a = parse(); if (!a) { toToday(); a = parse(); if (!a) return; } // 75회차: 해시만 바꾸고(hashchange 없음) 그대로 그린다
     var chg = a.s !== cur || a.h !== curArg; cur = a.s; curArg = a.h;
     var VIEW = { today: today, plan: planView, route: routeView, perf: perfView, help: helpView, home: home, check: checkView, talk: talkView, record: record, docs: docsView };
     var html = VIEW[cur](curArg), bar = alertBar(), nxs = nextStepCard();
@@ -2401,7 +2404,7 @@
     SY.on(function (what) { if (syncOk || what !== "mode") return; if (/^(live|local|offline)$/.test(SY.state().mode)) { syncOk = true; go(); } });
     try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fontOk = true; go(); }, function () { fontOk = true; go(); }); else fontOk = true; } catch (e) { fontOk = true; }
     setTimeout(bootOpen, authed ? 4000 : 1500);
-    if (!parse()) location.replace("#today");
+    if (!parse()) toToday();
   })();
   nudgeApply(); // 74회차: 다음 할 일 안내 켜고 끄기(이 기기)
   SY.init();

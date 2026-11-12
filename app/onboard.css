@@ -349,9 +349,10 @@ dialog.dob::backdrop{background:transparent}
 .dob .lg73 .wk small{display:block;font-size:12px;opacity:.8;line-height:1.35}
 .dob .lg73 .wk svg{width:16px;height:16px}
 .dob .lg73 .wk:focus-visible{outline:2px solid #8FD9E4;outline-offset:2px}
-.dob .lg73 .alt{margin:10px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;font-size:12.5px;color:#BFD9DD}   /* 74회차 ⓪-1b 동료 계정 링크 — 보이되 조용하게 */
+.dob .lg73 .alt{margin:10px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:2px 12px;font-size:12.5px;color:#BFD9DD}   /* 74회차 ⓪-1b 동료 계정 링크 — 보이되 조용하게 */
 .dob .lg73 .alt .lk{min-width:32px;min-height:32px;padding:0 6px;border-radius:9px;color:#E7F3F4;font:700 13.5px var(--fn);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(231,243,244,.45)}
 .dob .lg73 .alt .lk:hover{background:rgba(255,255,255,.10)}
+.dob .lg73 .alt .lk{position:relative}.dob .lg73 .alt .lk::before{content:'';position:absolute;inset:-6px}   /* 75회차: 겉모습 32px 그대로, 누르는 영역만 44px */
 .dob .lg73 .alt .lk:focus-visible{outline:2px solid #8FD9E4;outline-offset:1px}
 .dob .lg73 .alt>span{opacity:.55}
 .dob .lg73 .alt small{flex-basis:100%;margin-top:4px;font-size:12px;line-height:1.5;color:#A9C7CC}
