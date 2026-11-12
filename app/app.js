@@ -24,7 +24,7 @@
   const I = Object.assign({}, DaeumIcons.I); // S12-x 65회차: 시안 v3 아이콘(shared/icons_s12x.js — index.html 이 먼저 불러옴) · 머리 단추·탭·레일·가구별 기록
   // 정의서 §7 가정값(조정 가능한 가정 — 화면 숫자의 근거 꼬리표에 그대로 적는다)
   var A = { missRate: 0.3, safetyMin: 40, retryGap: 2 };
-  var LS_META = "daeum.s11.importMeta", LS_DL = "daeum.officer.deadline", LS_REC = "daeum.s12.rec", LS_SAFE = "daeum.s12.safety", LS_DOCS = "daeum.s12.docs", LS_FILL = "daeum.s12.fill", LS_SDEMO = "daeum.s12.safeDemo", LS_DOUT = "daeum.officer.dayOut", LS_DMOVE = "daeum.officer.dayMove", LS_SMIN = "daeum.s12.safeMin", LS_SDAY = "daeum.s12.safeDay"; // S12-i5 예상 시간 칩·하루 요약
+  var LS_META = "daeum.s11.importMeta", LS_DL = "daeum.officer.deadline", LS_REC = "daeum.s12.rec", LS_SAFE = "daeum.s12.safety", LS_DOCS = "daeum.s12.docs", LS_FILL = "daeum.s12.fill", LS_SDEMO = "daeum.s12.safeDemo", LS_DOUT = "daeum.officer.dayOut", LS_DMOVE = "daeum.officer.dayMove", LS_DDATE = "daeum.officer.dayDate", LS_SMIN = "daeum.s12.safeMin", LS_SDAY = "daeum.s12.safeDay"; // S12-i5 예상 시간 칩·하루 요약
   var LS_HOW = "daeum.s12.howtoSeen"; // S12-v U40(F2) «닿음이 하는 일» 그림은 처음 한 번만 펼침(시연 처음 상태로 하면 다시 펼침)
   var SX = F && F.safety ? F.safety : null; // S12-i5 동료 안부 고도화(officer/fieldwork.js)
 
@@ -121,7 +121,8 @@
         if (o.length >= ids.length) o = o.slice(0, ids.length - 1); // 한 집은 늘 남는다(빈 일차 금지)
         var mine = (lsGet("daeum.officer.dayOrder", {}) || {})[i + 1], auto = routeOrder(ids.filter(function (x) { return o.indexOf(x) < 0; }));
         var same = mine && mine.length === auto.length && auto.every(function (x) { return mine.indexOf(x) >= 0; });
-        out.push({ n: i + 1, date: dp.go && dp.go[i] ? dp.go[i] : ymd(U.addWorkdays(new Date(), i + 1)), ids: same ? mine : auto, out: o, rows: null, confirmed: false });
+        var myDate = (lsGet(LS_DDATE, {}) || {})[i + 1]; // 72회차 ①: 담당자가 바꾼 방문 날짜(확정 전은 이 기기, 확정 뒤엔 visit_plan.planned_at 으로 실시간)
+        out.push({ n: i + 1, date: myDate || (dp.go && dp.go[i] ? dp.go[i] : ymd(U.addWorkdays(new Date(), i + 1))), ids: same ? mine : auto, out: o, rows: null, confirmed: false });
       });
     }
     out.forEach(function (d) { d.s = sched(d.ids); });
@@ -197,7 +198,7 @@
     else sk = '<button class="ky pr" data-act="safety" aria-label="동료 안부 설명">' + I.shield + "</button>";
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12y70" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z72" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       sk + '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eye + "</button>" +
       '<button class="ky pr" data-go="#help" aria-label="사용 방법">' + I.help + (wide ? "<span>사용 방법</span>" : "") + "</button>" +
@@ -531,6 +532,7 @@
       var help = st.help && !mine; // ③ 조용한 도움 요청은 보낸 기기에는 띄우지 않는다(티 안 나게)
       if (mine && /^(check|talk|record)$/.test(cur) && curArg === a.hid) return; // 그 집 화면엔 이미 띠가 있다
       if (help) out.push({ id: a.id, hid: a.hid, area: a.area, help: true, hat: a.hat, who: who });
+      if (!late && a.state === "ok") return; // 72회차 ②: 한 번 «안부 확인 완료»한 알림은 다시 시간을 넘기기 전까지 칸을 차지하지 않는다
       if (late || /^(today|perf|plan)$/.test(cur)) out.push({ id: a.id, hid: a.hid, area: a.area, el: el, min: a.min, late: late, lv: st.lv, next: st.next, who: who });
     });
     if (cur === "today" && lsGet(LS_SDEMO, "") !== ymd(new Date())) {
@@ -541,7 +543,7 @@
   }
   function alertBar() {
     var L = safeAlerts(), sum = cur === "today" ? daySum() : ""; // ⑤ 하루 요약은 «오늘» 화면(PC·폰 같음)
-    if (!L.length) return cur === "today" ? '<div class="sfa calm" role="status"><i></i><span>안전 모드 알림 없음 · 방문 중 예정 시간을 넘기면 여기에 뜹니다</span><button type="button" class="lnk" data-sfdemo="1">시연 알림 다시 보기</button></div>' + sum : "";
+    if (!L.length) return sum; // 72회차 ②: 알림이 없으면 칸 자체를 숨긴다(옛 «알림 없음» 빈 문구 삭제)
     return L.map(function (a) {
       if (a.help) return '<div class="sfa help" role="alert" data-sfid="' + esc(a.id) + '"><i></i><div><b>조용한 도움 요청 · ' + esc(a.who) + " · 가구 " + esc(a.hid) + " " + esc(a.area) + "</b><span>" + (a.hat ? hm(a.hat) + " 현장에서 보냄 · " : "") + "있는 곳: 방문 중인 가구(" + esc(a.area) + ") · 바로 전화하거나 함께 가 주세요</span></div>" +
         '<button type="button" data-sfhelp="' + esc(a.id) + '">연락했어요</button></div>';
@@ -564,7 +566,6 @@
       vib(); var a = SY.safety && SY.safety.list()[b.dataset.sfhelp]; if (a) safePush(Object.assign({}, a, { hok: a.help }), a.state === "ok" ? "ok" : "on"); safeAdopt();
       toast(live() ? "도움 요청 확인 · 현장 폰에도 반영했습니다" : "도움 요청 확인 · 이 브라우저의 다른 창에도 반영"); render();
     }); });
-    var d = app.querySelector("[data-sfdemo]"); if (d) d.addEventListener("click", function () { try { localStorage.removeItem(LS_SDEMO); } catch (e) { /* 무시 */ } render(); });
   }
 
   // ═════ M3 현장 확인(④) — 명단 위기정보 유형으로 체크 5~8줄을 미리 골라 둔다. 한 줄에 한 번 누름 ═════
@@ -756,7 +757,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12y70"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z72"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -984,7 +985,7 @@
   function planView() {
     var ds = days(), dl = deadline(), p = plan();
     if (!ds.length) return top("plan", "<strong>방문 계획</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>명단이 아직 없습니다</b>한국사회보장정보원 발굴대상자 명단(행복이음 내려받기)을 불러오면 일차가 자동으로 나뉩니다.<br><br><a class="cta" href="#today" data-pick="1"><b>명단 불러오기</b><small>엑셀 파일</small></a></div></main>';
-    if (!planDay || !ds.some(function (d) { return d.n === planDay; })) { var fd = fieldDay(ds); planDay = fd ? fd.n : ds[0].n; }
+    if (!planDay || !ds.some(function (d) { return d.n === planDay; })) planDay = ds[0].n; // 72회차 ①: 방문 탭은 1일차부터(옛: 남은 집이 있는 첫 일차 → 2일차부터 보이던 것)
     var D4 = ds.filter(function (d) { return d.n === planDay; })[0], rb = rankBy(), mt = meta(), total = ds.reduce(function (a, d) { return a + d.ids.length; }, 0);
     var cards = ds.map(function (d) {
       var st = d.ids.map(statusOf), dn = st.filter(function (x) { return x !== "planned"; }).length;
@@ -1014,7 +1015,7 @@
       : '<button type="button" class="btn pri" data-act="confirm" data-dock="1">' + (I.check || "") + '방문 계획 확정 <small>' + ds.length + "일차 " + total + "가구 · 확정하면 같은 계정 폰에 바로</small></button>";
     return top("plan", "<strong>" + esc(roundYm()) + " 명단</strong>" + total + "가구 · 가상") + '<main class="wrap">' +
       '<div class="dhead"><h1><span>' + ds.length + "일</span>이면 명단을 다 봅니다</h1><p>한국사회보장정보원 발굴 순위를 그대로 따르되, 같은 날 묶인 집은 시청에서 가까운 순서로 이었습니다. 가구를 빼거나 되살리고, 순서를 바꾸면 도착 시각·거리·최적화 비교가 다시 계산되고 같은 계정 폰에도 바로 반영됩니다.</p></div>" +
-      '<div class="dcards" role="group" aria-label="일차">' + cards + "</div>" +
+      '<div class="dcards" role="group" aria-label="일차">' + cards + "</div>" + dayDateRow(D4, p) +
       (ow.over ? '<p class="warnline">' + esc(ow.why.join(" · ")) + " — 한 집을 다음 일차로 미뤄 보세요.</p>" : "") +
       '<ol class="tline blk" aria-label="' + D4.n + '일차 순서">' + tl + "</ol>" + C2 + // S12-x 66회차: 첫 칸 = 일차·순서 | 둘째 칸 = 지도·최적화 비교·확정·기한
       '<div class="mapw blk"><div class="rt-map rt-plan" id="pmmap"><div class="rt-svg">' + mapSvg({ id: "pm", days: ds.map(function (d) { return { ids: d.ids, focus: d.n === planDay }; }), done: listIds().filter(function (id) { return statusOf(id) !== "planned"; }), labels: true, h: 380, label: D4.n + "일차 방문 순서 지도" }) + '</div><div class="rt-nmap" aria-label="네이버 지도 — ' + D4.n + '일차 방문 순서"><div class="rt-nbox"></div></div></div>' +
@@ -1024,9 +1025,33 @@
       (dp && dp.set ? '<div class="dln"><b>' + dp.left + "</b> 근무일 남음 · " + (dp.over ? '<em class="bad">이대로면 넘김</em>' : '<em class="ok">여유 ' + dp.spare + "일</em>") + "</div><p>" + esc(dp.line) + "</p>" : "<p>기한을 넣으면 하루 몇 가구씩 봐야 하는지 계산합니다.</p>") + "</div>" +
       '<p class="demo"><span class="samp">가상 데이터</span><span>가구 번호·읍면만 표시 · 이동 시간은 직선 거리 근사(«약») · 순서 근거 = 한국사회보장정보원 발굴 순위 + 거리</span><a href="#today" data-pick="1">명단 불러오기(엑셀)</a></p></main>';
   }
+  /** 72회차 ①: 고른 일차의 방문 날짜 바꾸기(PC·폰 같은 칸, 폭에 따라 배열만) */
+  function dayDateRow(D4, p) {
+    return '<div class="ddate blk" data-fix72="ddate"><label for="dayDate"><b>' + D4.n + '일차 방문 날짜</b></label><input type="date" id="dayDate" value="' + esc(D4.date || "") + '">' +
+      '<small>' + (p ? "바꾸면 같은 계정 폰에도 바로" : "확정하면 같은 계정 폰에도") + "</small></div>";
+  }
+  /** 일차 하나의 방문 날짜를 바꾼다 — 확정 계획이면 그 일차 visit_plan 행의 planned_at(시각은 그대로)을 바꿔 같은 계정 폰에 실시간, 확정 전이면 이 기기에 */
+  function setDayDate(D4, date) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "") || date === D4.date) return false;
+    var p = plan();
+    if (p) {
+      p.rows = p.rows.map(function (r) {
+        if (r.day !== D4.n) return r;
+        var t = r.planned_at ? hm(r.planned_at) : null; // 뺀 가구(planned_at 없음)는 그대로 둔다
+        return t ? Object.assign({}, r, { planned_at: at(date, t) }) : r;
+      });
+      if (p.seed || p.from_seed) p.from_seed = "S9j";
+      SY.savePlan(p);
+    } else {
+      var m = lsGet(LS_DDATE, {}) || {}; m[D4.n] = date; lsSet(LS_DDATE, m);
+    }
+    toast(D4.n + "일차 방문 날짜를 " + md(date) + "로 바꿨습니다" + (p ? (SY.state().mode === "live" ? " · 같은 계정 폰에도 반영" : " · 로그인하면 폰과 연동") : ""));
+    render(); return true;
+  }
   function bindPlan() {
     var ds = days(); if (!ds.length) return;
     var D4 = ds.filter(function (d) { return d.n === planDay; })[0];
+    var dd = document.getElementById("dayDate"); if (dd && D4) dd.addEventListener("change", function () { vib(); if (!setDayDate(D4, dd.value)) dd.value = D4.date || ""; });
     app.querySelectorAll("[data-day]").forEach(function (b) { b.addEventListener("click", function () { planDay = +b.dataset.day; render(); }); });
     app.querySelectorAll("[data-mv]").forEach(function (b) { b.addEventListener("click", function () { var a = b.dataset.mv.split(":"), i = +a[0]; vib(); reorder(D4, RP.move(D4.ids, i, i + +a[1])); }); });
     // 42 편집 — 빼기·되살리기·최적 순서·끌어서 순서(PC). 바꿀 때마다 reorder → 저장(확정 계획이면 실시간) → 다시 그림(지도·비교 카드 재계산)
@@ -1180,7 +1205,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12y70"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z72"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -1842,7 +1867,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12y70")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12y70"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z72")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z72"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -2166,7 +2191,24 @@
     AB.style.left = (M.offsetLeft + c.offsetLeft + 16) + "px"; AB.style.width = Math.max(200, c.clientWidth - 32) + "px";
   }
   var paT = 0; window.addEventListener("resize", function () { clearTimeout(paT); paT = setTimeout(placeAct, 120); }, { passive: true });
-  function render() {
+  // 72회차 ⑥ 첫 로드 깜빡임: 옛 흐름 = 로컬로 1번 그림 → 연동 «연결 중»·«연동됨»·서버 받기·보내기 끝마다 화면 전체(지도 포함)를 다시 그림(로그인 상태 4~6번).
+  //   이제 ① 첫 화면은 연동이 자리 잡을(서버 받기 끝·로컬 판정·최대 1.5초) 때까지 로딩 표시를 두고 한 번에 그린다
+  //   ② 그 뒤 다시 그리기는 내용이 같으면 건너뛰고, 머리·연동 글자만 바뀌었으면 그 칸만 고친다(지도·스크롤 그대로). window.__daeumRenders 로 셀 수 있다.
+  var BOOT = { open: false, want: false }, RSTAT = window.__daeumRenders = { full: 0, chrome: 0, skip: 0, held: 0 }, lastBody = "", lastChrome = "";
+  /** 머리(.top)와 레일 아래 연동 글자(.rfoot)만 새로 — 연동 «연결 중→연동됨» 같은 변화에 화면 전체(지도)를 다시 그리지 않게 */
+  function patchChrome(foot) {
+    var t = app.querySelector(".hdw > .top"), rf = app.querySelector(".rail .rfoot");
+    if (t) t.innerHTML = topHTML();
+    if (rf) { var tmp = document.createElement("div"); tmp.innerHTML = foot; if (tmp.firstChild) rf.parentNode.replaceChild(tmp.firstChild, rf); }
+    [t, app.querySelector(".rail .rfoot")].forEach(function (el) { if (!el) return;
+      el.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); });
+      el.querySelectorAll('[data-act="more"]').forEach(function (b) { b.addEventListener("click", morePanel); });
+      el.querySelectorAll('[data-act="safety"]').forEach(function (b) { b.addEventListener("click", safetyKey); }); });
+    moreDot();
+  }
+  function bootOpen() { if (BOOT.open) return; BOOT.open = true; render(); }
+  function render(soft) { // soft = 실시간·시계처럼 사람이 누르지 않은 다시 그리기(같으면 건너뜀)
+    if (!BOOT.open) { BOOT.want = true; RSTAT.held++; return; }
     var a = parse(); if (!a) { location.replace("#today"); return; }
     var chg = a.s !== cur || a.h !== curArg; cur = a.s; curArg = a.h;
     var VIEW = { today: today, plan: planView, route: routeView, perf: perfView, help: helpView, home: home, check: checkView, talk: talkView, record: record, docs: docsView };
@@ -2177,12 +2219,18 @@
     if (FSTEP[cur] >= 1 && FSTEP[cur] <= 5 && /^(tab|pc)$/.test(modeNow())) html = desk(cur, curArg, html); // 41 PC·태블릿 현장 «진도» 칸(폰·폴드는 안 붙임)
     document.body.dataset.s = cur;
     var keepY = !chg ? Array.prototype.map.call(app.querySelectorAll(".main > .col"), function (c) { return c.scrollTop; }) : []; // 같은 화면 다시 그리기(실시간·안전 모드 시계)면 칸마다 읽던 자리 유지
-    if (HBAR && HBAR.parentNode) HBAR.parentNode.removeChild(HBAR); // 날씨 값이 지워지지 않게 띠는 떼어 두었다가 다시 붙인다
-    var PWA = window.__daeumPwa || (window.__daeumPwa = document.getElementById("pwa-install")); if (PWA && PWA.parentNode) PWA.parentNode.removeChild(PWA); // 70회차: 설치 띠는 «오늘» 첫 칸 맨 위에만(다른 화면엔 안 붙임)
     // S12-x 65회차 새 셸 = 시안 v3 바깥 틀 그대로: .app > 레일(PC·태블릿) · .hdw(머리 .top + 고정 띠 .hbar — 스크롤 칸 밖) · .main > .col(스크롤 칸) · 아래 탭(폰·폴드)
     //   66회차: 내용 = 시안처럼 칸 2~3개(colsOf) — 폰 한 칸 · 폴드·태블릿 두 칸 · PC 세 칸(셋째 칸이 비면 두 칸). <main class="main"> 하나 안에 .col 들.
     var dn = 0; try { dn = docModel().pending || 0; } catch (e) { dn = 0; } // 보고 탭 점 = 만들 문서 대기 건수(시안 docN)
     var si = syncChip(), foot = '<div class="rfoot"><button class="sync pcs pr ' + si.cls + '" data-act="account" style="justify-content:flex-start;padding:0"><i></i>' + esc(si.txt) + '</button><button class="rl pr" data-act="more" style="min-height:44px;font-size:13px">' + I.more + "<span>더 보기</span></button></div>";
+    var body = cur + "|" + curArg + "|" + dn + "|" + modeNow() + "|" + html, chrome = topHTML() + foot;
+    if (soft === true && !chg && body === lastBody && app.querySelector(".main")) { // 72회차 ⑥: 내용이 같으면 다시 그리지 않는다
+      if (chrome === lastChrome) { RSTAT.skip++; return; }
+      lastChrome = chrome; RSTAT.chrome++; patchChrome(foot); return;
+    }
+    lastBody = body; lastChrome = chrome; RSTAT.full++;
+    if (HBAR && HBAR.parentNode) HBAR.parentNode.removeChild(HBAR); // 날씨 값이 지워지지 않게 띠는 떼어 두었다가 다시 붙인다
+    var PWA = window.__daeumPwa || (window.__daeumPwa = document.getElementById("pwa-install")); if (PWA && PWA.parentNode) PWA.parentNode.removeChild(PWA); // 70회차: 설치 띠는 «오늘» 첫 칸 맨 위에만(다른 화면엔 안 붙임)
     app.innerHTML = '<nav class="rail" aria-label="주 메뉴">' + SH.railHTML(cur, curArg, I, { dot: dn, foot: foot }) + '</nav>' +
       '<div class="hdw"><header class="top">' + topHTML() + "</header></div>" +
       colsOf(html) +
@@ -2222,7 +2270,7 @@
     if (what === "safety-ask") { resendOwn(); return; }
     if (what === "safety") { safeAdopt(); dayNote(); }
     if (what === "mode" && SY.state().mode === "live") resendOwn();
-    if (what === "data" || what === "mode" || what === "sent" || what === "safety") render();
+    if (what === "data" || what === "mode" || what === "sent" || what === "safety") render(true); // 72회차 ⑥: 같으면 건너뜀·연동 글자만이면 머리만
   });
   // 안전 모드 시계 — 20초마다 넘김 여부를 다시 본다(바뀌면 다시 그림, 아니면 분 숫자만) · 60초마다 내 안전 모드를 다시 알린다(나중에 연 화면도 받게)
   var safeSig = "", safeTick = 0;
@@ -2231,14 +2279,21 @@
   setInterval(function () {
     if (++safeTick % 3 === 0 && SY.state().mode === "live") resendOwn();
     var ae = document.activeElement, typing = micRec || (ae && (ae.id === "memo" || ae.id === "refuseWhy" || /^h(r|q)/.test(ae.id) || ae.hasAttribute && ae.hasAttribute("data-fill")));
-    if (sigNow() !== safeSig && !typing) { render(); return; }
+    if (sigNow() !== safeSig && !typing) { render(true); return; }
     var all = SY.safety ? SY.safety.list() : {};
     app.querySelectorAll("[data-sfid]").forEach(function (el) { var a = all[el.dataset.sfid], n = el.querySelector("[data-sfel]"); if (a && n) n.textContent = elMin(a.at); });
   }, 20000);
   setInterval(function () { if (/^(check|talk|record)$/.test(cur) && !micRec && !(document.activeElement && /^(memo|refuseWhy)$/.test(document.activeElement.id))) render(); }, 60000); // 안전 모드 분 표시
   if (navBack()) { /* 길안내에서 돌아옴 → 동선 화면 */ }
   window.DaeumApp = { days: days, statusOf: statusOf, docModel: docModel, render: render };
-  render();
+  // 72회차 ⑥: 첫 화면 문 — 연동이 자리 잡으면(로컬 판정·서버 첫 받기 끝·오류) 또는 1.5초가 지나면 그때 한 번 그린다. 글꼴도 같이 기다린다(바뀌며 글자가 출렁이지 않게)
+  (function () {
+    var syncOk = false, fontOk = false, go = function () { if (syncOk && fontOk) bootOpen(); };
+    SY.on(function (what) { if (syncOk) return; var m = SY.state().mode; if (what === "data" || (what === "mode" && /^(local|offline)$/.test(m))) { syncOk = true; go(); } });
+    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fontOk = true; go(); }, function () { fontOk = true; go(); }); else fontOk = true; } catch (e) { fontOk = true; }
+    setTimeout(bootOpen, 1500);
+    if (!parse()) location.replace("#today");
+  })();
   SY.init();
   if (window.DaeumOnboard) { window.DaeumOnboard.hook({ login: accountPanel, start: function () { if (location.hash !== "#today") location.hash = "#today"; } }); window.DaeumOnboard.maybeAuto(); } // S12-z3
 })();

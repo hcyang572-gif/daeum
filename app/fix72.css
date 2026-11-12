@@ -1,0 +1,38 @@
+/* 72회차 기능 보충(⚙️ 파로, 2026-11-12) — 미르 CSS 4개 파일과 겹치지 않게 따로 둔다.
+   ① 방문 계획 «일차 방문 날짜» 칸 · ③ 첫 실행 로딩 표시 · ④ 설치 띠(폰에서 눈에 띄게) */
+
+/* ① 일차 방문 날짜 — PC·폰 같은 칸, 좁으면 글이 아래로 */
+.ddate { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 14px; padding: 10px 14px; border-radius: 14px; background: var(--accSoft, rgba(31,102,118,.10)); box-shadow: inset 0 0 0 1px rgba(31,102,118,.18); }
+.ddate label b { font-size: 14px; font-weight: 800; color: var(--acc2, #174F5B); }
+.ddate input[type="date"] { min-height: 44px; padding: 0 10px; border: 1px solid rgba(31,102,118,.35); border-radius: 10px; background: #fff; font-size: 15px; font-weight: 700; color: var(--ink, #11181C); }
+.ddate small { font-size: 12px; color: var(--ink2, #47535B); }
+@media (max-width: 599px) { .ddate input[type="date"] { flex: 1 1 160px; } .ddate small { flex-basis: 100%; } }
+
+/* ③ 첫 실행 «불러오는 중» — 닿음 청록 고리 + 가는 막대, 움직임 줄이기면 멈춘 표시 */
+.boot { min-height: 70vh; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px; color: var(--ink2, #47535B); font: 600 14px/1.4 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; background: #F3F1EC; }
+.boot-mark { position: relative; width: 56px; height: 56px; }
+.boot-mark::before, .boot-mark::after { content: ""; position: absolute; inset: 0; border-radius: 50%; }
+.boot-mark::before { border: 5px solid rgba(31,102,118,.14); }
+.boot-mark::after { border: 5px solid transparent; border-top-color: #1F6676; border-right-color: #2E8270; animation: bootSpin .9s linear infinite; }
+.boot-mark i { position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #4FA79A, #1F6676); animation: bootPulse 1.6s ease-in-out infinite; }
+.boot b { font-size: 20px; font-weight: 900; letter-spacing: -.02em; color: #11181C; }
+.boot-bar { width: 140px; height: 4px; border-radius: 2px; background: rgba(31,102,118,.14); overflow: hidden; }
+.boot-bar i { display: block; width: 40%; height: 100%; border-radius: 2px; background: linear-gradient(90deg, #1F6676, #2E8270); animation: bootSlide 1.2s ease-in-out infinite; }
+@keyframes bootSpin { to { transform: rotate(360deg); } }
+@keyframes bootPulse { 0%, 100% { transform: scale(.85); opacity: .8; } 50% { transform: scale(1); opacity: 1; } }
+@keyframes bootSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) {
+  .boot-mark::after, .boot-mark i, .boot-bar i { animation: none; }
+  .boot-mark::after { transform: rotate(45deg); }
+  .boot-bar i { width: 60%; }
+}
+
+/* ④ 설치 띠 — 폰(폭 599 이하)에서는 더 굵고 진하게, 앱 아이콘 자리 */
+#pwa-install.pwa { align-items: center; }
+#pwa-install .pwa-ic { width: 28px; height: 28px; flex: none; border-radius: 8px; background: linear-gradient(180deg, #257A8C, #174F5B); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
+#pwa-install .pwa-ic::after { content: "+"; display: grid; place-items: center; height: 100%; color: #fff; font: 900 18px/1 system-ui, sans-serif; }
+@media (max-width: 599px) {
+  .col > #pwa-install.pwa { padding: 10px 6px 10px 12px; border-radius: 16px; background: linear-gradient(180deg, #DDEDEF, #E9F3F3); box-shadow: inset 0 0 0 1.5px rgba(31,102,118,.45), 0 6px 16px -10px rgba(23,79,91,.6); font-size: 14px; }
+  .col > #pwa-install.pwa > span:first-of-type b { color: #174F5B; font-weight: 900; }
+}
+html.pwa-app #pwa-install { display: none !important; }

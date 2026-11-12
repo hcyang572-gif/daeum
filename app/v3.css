@@ -1020,6 +1020,70 @@ html:not([data-mode="phone"]) .app>.actbar .btn small{min-width:0;overflow:hidde
 [class~=dsum] b{font-family:var(--fn);font-variant-numeric:tabular-nums;font-size:22px;line-height:1.1;color:var(--ink)}
 [class~=dsum] [class~=ab] b{color:var(--absent,#C9772E)}
 [class~=nextstep-k]{margin:0 0 10px;font:600 12px var(--fn);letter-spacing:.06em;color:var(--gold,#8A6A2E)}
+/* ═════ 72회차 미르 ⑤ 간격 단위 하나로 · 의미 없는 줄바꿈 없애기 ═════
+   호창님 «배열이 완전 엉망·카드 간 간격 엉망·다닥다닥 붙은 곳 많음» · «글자가 의미 없이 줄바뀌지 않게».
+   간격은 아래 다섯 값만 쓴다(4의 배수). 옛 화면 규칙(v3_live.css)의 제각각 바깥 여백(10·14·16·18·20·22px)이
+   칸 gap 에 더해져 카드 사이가 14~36px 로 들쭉날쭉했던 것 → 칸·카드·시트 «바로 아래 자식»의 바깥 여백을 0 으로 두고 gap 하나로만 띄운다. */
+:root{--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;
+  --gap-sec:var(--sp-4);   /* 칸 안 카드·덩이 사이 */
+  --gap-in:var(--sp-3);    /* 카드 안 덩이 사이 */
+  --gap-tile:var(--sp-2);  /* 나란한 작은 상자(칩·타일·단추) 사이 */
+  --pad-card:var(--sp-4);  /* 카드 안 여백 */
+  --pad-tile:var(--sp-3)}  /* 작은 상자·우물(well) 안 여백 */
+html[data-mode="tab"],html[data-mode="pc"]{--gap-sec:20px;--pad-card:20px}
+.main>.col{gap:var(--gap-sec)}
+.main>.col>:not(.foot):not(.ph):not(.phfold){margin-top:0;margin-bottom:0}
+/* 옛 내용 묶음(main.wrap·main.phx)은 display:block 이라 카드끼리 0px 로 붙어 있었다(오늘·현장·기록 «카드 사이 0px», 헤드리스 측정)
+   → 칸과 같은 세로 흐름·같은 gap. 이름 없는 감싸개 div 도 같은 규칙. 자식의 제각각 바깥 여백은 0. */
+.main>.col>main,.main>.col>main>div:not([class]){display:flex;flex-direction:column;gap:var(--gap-sec);min-width:0}
+.main>.col>main>*,.main>.col>main>div:not([class])>*{flex:none;margin-top:0;margin-bottom:0}
+/* 화면 제목(.ph)은 아래 카드에 8px 로 붙여 한 덩이로 읽히게 */
+.main>.col>.ph,.main>.col>main>.ph{margin:var(--sp-2) 2px calc(var(--sp-2) - var(--gap-sec))}
+.main>.col>.ph:first-child,.main>.col>main>.ph:first-child{margin-top:0}
+/* 앞 카드에 딸린 한 줄 설명·칩 줄은 앞 카드에 8px 로 붙인다(따로 떠 보이지 않게) */
+.main>.col>main>[class~=warnline],.main>.col>main>[class~=navnote],
+.main>.col>[class~=why],.main>.col>main>[class~=why]{margin-top:calc(var(--sp-2) - var(--gap-sec))}
+/* 같이 쌓이는 단추·줄 목록 — 사이 8px */
+[class~=rc-rows],[class~=chipin-ex],[class~=acct-demo-b],[class~=lk-line],html[data-mode] .app .rail{gap:var(--gap-tile)}
+[class~=tline] [class~=otools]{gap:var(--gap-tile) var(--sp-3)}
+.top>.sync{margin-right:0}                  /* 머리줄 단추 사이 14/10/10/10 → 10 하나로 */
+section[class~=lkc]{padding:var(--pad-tile) var(--pad-card) var(--pad-card)}   /* 연계처 카드 아래 글이 테두리에 3px 로 붙던 것 */
+/* 접는 칸 제목 — 옆 작은 글에 밀려 제목이 2px 잘리던 것(«가까운 순 목록»·«연계처 · 자원정보서비스») */
+summary>span:first-child,summary>b:first-child{flex-shrink:0;padding-right:3px}  /* 펼침 꺾쇠(::after, 45° 회전)가 2px 삐져나오던 것 */
+/* 방문 계획 줄(.tline .stop) — 태블릿 칸(400px 안팎)에서 4칸 줄이 «한국사회보장정보원 4순위» 꼬리표를 45px 밀어내던 것 → 폰과 같은 3칸(이동 단추는 둘째 줄) */
+html[data-mode="tab"] [class~=tline] [class~=stop],html[data-mode="fold"] [class~=tline] [class~=stop]{grid-template-columns:minmax(46px,auto) 30px minmax(0,1fr)}
+[class~=tline] [class~=stop] [class~=t]{white-space:nowrap}   /* «09:4/8» 시각 꺾임 */
+[class~=tline] [class~=rk]{display:inline-block}   /* 꼬리표 뒤 글이 꼬리표와 한 덩이로 묶여 «통/신비»처럼 낱말 중간에서 꺾이던 것 */
+[class~=nb-tx] b,[class~=nb-tx] small{overflow-wrap:break-word}   /* anywhere → 기관 이름이 «복지/관»처럼 꺾이던 것 */
+[class~=sfchips] button{white-space:nowrap;min-width:fit-content}   /* «15/분» 꺾임 → 칩이 줄을 넘겨 다음 줄로 */
+html[data-mode="tab"] [class~=tline] [class~=stop] [class~=t],html[data-mode="tab"] [class~=tline] [class~=stop] [class~=ax],
+html[data-mode="fold"] [class~=tline] [class~=stop] [class~=t],html[data-mode="fold"] [class~=tline] [class~=stop] [class~=ax]{grid-row:1/span 2}
+html[data-mode="tab"] [class~=tline] [class~=stop] [class~=mv],html[data-mode="fold"] [class~=tline] [class~=stop] [class~=mv]{grid-column:3;justify-content:end}
+/* 폰·폴드 행동줄 — 두 단추가 반씩 나눠 «네이버 지도로 길안내»가 두 줄로 꺾이고 «집 앞 요약 보기»가 잘리던 것
+   → 글 길이만큼 폭을 나누고, 작은 설명은 둘째 줄 가운데 */
+html[data-mode="phone"] .app>.actbar .btn,html[data-mode="fold"] .app>.actbar .btn{flex:1 1 auto;min-width:0;padding:0 12px;white-space:nowrap}
+html[data-mode="phone"] .app>.actbar .btn:has(small),html[data-mode="fold"] .app>.actbar .btn:has(small){flex-wrap:wrap;align-content:center;row-gap:0;line-height:1.25}
+html[data-mode="phone"] .app>.actbar .btn small,html[data-mode="fold"] .app>.actbar .btn small{flex-basis:100%;margin:0;text-align:center}
+.card{padding:var(--pad-card);gap:var(--gap-in)}
+.card>*{margin-top:0;margin-bottom:0}
+.card.hero{padding:var(--pad-card)}
+.well{padding:var(--pad-tile)}
+.sheet{gap:var(--gap-in)}
+.sheet>*{margin-top:0;margin-bottom:0}
+/* 나란한 작은 상자 줄 — 사이 8px 로 통일 */
+.docq,.stat3,.b3,.steps,.chk,.tags,.row2,[class~=dsum],[class~=dcards],[class~=tm-kpi]{gap:var(--gap-tile)}
+/* (옛 화면 클래스는 [class~=…] 로 — 여기 .클래스 로 쓰면 build_v3_live ⑥ 이 «시안 겹침»으로 옛 규칙을 지운다) */
+.dq,.stat3>div,.b3>div,.svc{padding:var(--pad-tile)}
+/* 줄바꿈 — 한글은 낱말 단위로만 꺾고(keep-all), 긴 영문·주소만 넘칠 때 자른다.
+   overflow-wrap:anywhere 는 «최소 폭»을 한 글자로 줄여 좁은 칸에서 글이 세로로 쪼개지므로 break-word 를 쓴다(넘칠 때만 끊음). */
+body{word-break:keep-all;overflow-wrap:break-word}
+h1,h2,h3,h4,.ph h2,.card h3,.sheet h3,[class~=tm-sec] h4,figcaption,legend{text-wrap-style:balance}
+p,li,dd,small,.why,[class~=srcline],[class~=hint]{text-wrap-style:pretty}
+/* (text-wrap 줄임꼴은 text-wrap-mode 를 wrap 으로 되돌려 부모의 nowrap 을 깨므로 «-style» 낱말만 쓴다) */
+/* 한 줄이어야 하는 짧은 꼬리표 — 꺾지 않고, 넘치면 말줄임 */
+.tag,.samp,.tabs button>span,.rl>span,.subseg button,[class~=chip],[class~=badge],[class~=tm-t],[class~=tm-st],[class~=li-n],[class~=o-samp],[class~=rk]{white-space:nowrap}
+.tag,.samp,[class~=chip],[class~=badge]{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.rl>span small{white-space:normal}
 @media print{
   /* 68회차 미르 ⑧ 복명서 가구별 결과 표 — 좁은 칸(가구·읍면·결과)이 «공검/면»처럼 꺾여 2쪽으로 넘던 것 → 한 줄로 1쪽 */
   [class~=doc-hh] th:nth-child(-n+3),[class~=doc-hh] td:nth-child(-n+3){white-space:nowrap;width:1%}

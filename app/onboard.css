@@ -227,7 +227,7 @@
 .dob .o-demo-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:18px}
 .dob .o-demo-h b{font-size:14px;font-weight:800;letter-spacing:-.02em}
 .dob .o-demo-h small{font:600 11.5px var(--ff);color:var(--onDeep2)}
-.dob .o-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.dob .o-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap-tile,8px);margin-top:10px}
 .dob .o-key{position:relative;min-height:84px;border-radius:20px;display:grid;justify-items:center;align-content:center;gap:2px;color:var(--deep1);
   background:linear-gradient(180deg,#FFFFFF,#E7EEEE 70%,#D6E1E2);box-shadow:inset 0 1px 0 #fff,inset 0 -3px 0 rgba(11,42,49,.16),0 2px 0 rgba(0,0,0,.18),0 14px 22px -12px rgba(0,0,0,.6);transition:transform .14s var(--e-out),box-shadow .14s}
 .dob .o-key:hover{transform:translateY(-2px)}
@@ -240,7 +240,7 @@
 .dob .o-demo-rules li svg{width:13px;height:13px;opacity:.85}
 .dob .o-demo-rules li.o-w{background:rgba(185,155,99,.24);box-shadow:inset 0 0 0 1px rgba(232,206,150,.35)}
 .dob.o-m-pc .o-demo-rules{margin-top:auto;padding-top:20px}
-.dob .o-acct-form{padding:18px 20px 22px;display:flex;flex-direction:column;gap:12px}
+.dob .o-acct-form{padding:18px 20px 22px;display:flex;flex-direction:column;gap:var(--gap-in,12px)}
 .dob.o-m-pc .o-acct-form{flex:1;padding:40px 40px 32px;min-width:0}
 .dob .o-or{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--ink3)}
 .dob .o-or::before,.dob .o-or::after{content:'';flex:1;height:1px;background:var(--line2)}
@@ -254,11 +254,12 @@
 .dob .o-fld .o-in svg{width:18px;height:18px;color:var(--ink3);flex:none}
 .dob .o-fld input{flex:1;min-width:0;border:0;outline:0;background:none;font:500 16px var(--ff);color:var(--ink)}
 .dob .o-fld input::placeholder{color:#A3ABB0}
-.dob .o-fld .o-eye{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--ink3)}
+.dob .o-fld,.dob .o-fld .o-in{min-width:0}  /* 72회차 미르: 360폭 비밀번호 칸이 9px 넘치던 것 */
+.dob .o-fld .o-eye{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--ink3)}
 .dob .o-msg{min-height:20px;margin:0;font-size:13px;font-weight:600;color:var(--warnInk);display:flex;gap:6px;align-items:center}
 .dob .o-msg.o-ok{color:var(--acc2)}
 .dob .o-msg:empty{min-height:0}
-.dob .o-row2{display:grid;grid-template-columns:1fr 1.35fr;gap:10px}
+.dob .o-row2{display:grid;grid-template-columns:1fr 1.35fr;gap:var(--gap-tile,8px)}
 .dob .o-row2 .o-btn{min-height:52px;font-size:15px}
 .dob .o-pp{border-radius:18px;background:linear-gradient(180deg,var(--card0),var(--card1));box-shadow:var(--e1),var(--hl)}
 .dob .o-pp>summary{list-style:none;min-height:50px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:14px;font-weight:700;cursor:pointer}

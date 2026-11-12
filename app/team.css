@@ -1,4 +1,5 @@
-/* 닿음 팀 화면 — 동료 안부 팀 연동·팀 현황 (⚙️ 파로 68회차 S12-z4 · 🩵 미르 69회차 다듬기).
+/* 72회차 🩵 미르: 간격은 v3.css 의 --gap-sec·--gap-in·--gap-tile·--pad-card·--sp-* 로(괄호 값 = 같은 기본값)
+   닿음 팀 화면 — 동료 안부 팀 연동·팀 현황 (⚙️ 파로 68회차 S12-z4 · 🩵 미르 69회차 다듬기).
    v3 토큰(--acc·--ink·--card0·--e1·--e2·--hl·--edge·--sos0 …)만 쓴다. 라이트 고정. tm- 접두어.
    읽는 순서: 팀원 카드의 «상태 띠»(방문 중 · 몇 분째) → 마친·남은 가구 숫자 → 마친 가구 칩. */
 .tm-vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -58,7 +59,7 @@ html[data-mode="tab"] .rl[data-act="more"][data-badge]:not([data-badge="0"]):not
 .tm-top h3 svg{width:34px;height:34px;padding:7px;border-radius:12px;color:var(--acc,#1F6676);background:linear-gradient(180deg,var(--card0,#FCFBF9),var(--card1,#F4F2EE));box-shadow:var(--edge),var(--hl),var(--e1)}
 .tm-x{width:42px;height:42px;border:0;border-radius:21px;background:linear-gradient(180deg,var(--card0,#FCFBF9),var(--card1,#F4F2EE));color:var(--ink2,#47535B);font-size:22px;line-height:1;cursor:pointer;box-shadow:var(--edge),var(--hl),var(--e1)}
 .tm-x:active{transform:scale(.95)}
-.tm-body{overflow:auto;padding:16px 20px 22px;display:grid;gap:18px;font-size:14px;line-height:1.55;overscroll-behavior:contain}
+.tm-body{overflow:auto;padding:16px 20px 22px;display:grid;gap:var(--gap-sec,16px);font-size:14px;line-height:1.55;overscroll-behavior:contain}
 .tm-p,.tm-hint,.tm-off,.tm-demo{margin:0}.tm-hint{color:var(--ink3,#6B767D);font-size:12.5px}
 .tm-off{padding:12px 14px;border-radius:14px;background:var(--warnBg,#F7E6DA);color:var(--warnInk,#9A3412);font-weight:600;box-shadow:inset 0 0 0 1px rgba(154,52,18,.14)}
 
@@ -76,13 +77,13 @@ html[data-mode="tab"] .rl[data-act="more"][data-badge]:not([data-badge="0"]):not
 .tm-sim{padding:0 6px;border-radius:6px;background:transparent;color:var(--ink3,#6B767D);font-size:10.5px;font-weight:600;line-height:17px;box-shadow:inset 0 0 0 1px var(--line2,rgba(17,24,28,.16));opacity:.85}
 
 /* 절 제목 */
-.tm-sec{display:grid;gap:10px}
+.tm-sec{display:grid;gap:var(--sp-2,8px)}
 .tm-sec h4,.tm-f h4{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:15px;font-weight:800;letter-spacing:-.01em}
 .tm-sec h4 small{font-weight:500;color:var(--ink3,#6B767D);font-size:12px}
 .tm-sec h4 small::before{content:"";display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:#2E8270;vertical-align:1px;animation:tmPulse 2.2s var(--e-out,ease) infinite}
 
 /* 숫자 세 칸 — 방문 중 / 마친 가구 / 남은 계획 */
-.tm-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tm-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap-tile,8px)}
 .tm-kpi span{--k:var(--acc,#1F6676);position:relative;overflow:hidden;display:grid;gap:4px;padding:12px 14px 12px;border-radius:16px;color:var(--ink2,#47535B);font-size:12.5px;font-weight:600;
   background:radial-gradient(90% 90% at 100% 0%,color-mix(in srgb,var(--k) 12%,transparent),transparent 65%),linear-gradient(180deg,var(--card0,#FCFBF9),var(--card1,#F4F2EE));box-shadow:var(--edge),var(--hl),var(--e1)}
 .tm-kpi span::before{content:"";position:absolute;left:14px;right:14px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--k)}
@@ -90,8 +91,8 @@ html[data-mode="tab"] .rl[data-act="more"][data-badge]:not([data-badge="0"]):not
 .tm-kpi b{font:800 28px/1 var(--fn,system-ui);color:var(--k);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 
 /* 팀원 카드 */
-.tm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.tm-card{position:relative;overflow:hidden;display:grid;gap:9px;align-content:start;padding:14px 16px 15px;border-radius:20px;
+.tm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--gap-in,12px)}
+.tm-card{position:relative;overflow:hidden;display:grid;gap:var(--sp-2,8px);align-content:start;padding:var(--pad-card,16px);border-radius:20px;
   background:linear-gradient(180deg,var(--card0,#FCFBF9),var(--card1,#F4F2EE));box-shadow:var(--edge),var(--hl),var(--e1);transition:transform .25s var(--e-out,ease),box-shadow .25s var(--e-out,ease)}
 @media (hover:hover){.tm-card:hover{transform:translateY(-2px);box-shadow:var(--edge),var(--hl),var(--e2)}}
 .tm-card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--track,#D9DCDA)}
@@ -130,8 +131,8 @@ html[data-mode="tab"] .rl[data-act="more"][data-badge]:not([data-badge="0"]):not
 .tm-done li small{opacity:.75;font-size:11px}
 
 /* 내 안부 짝 */
-.tm-lks{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
-.tm-lk{display:grid;gap:8px;padding:14px 16px;border-radius:18px;font-weight:700;background:linear-gradient(180deg,var(--card0,#FCFBF9),var(--card1,#F4F2EE));box-shadow:var(--edge),var(--hl),var(--e1)}
+.tm-lks{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--gap-in,12px)}
+.tm-lk{display:grid;gap:var(--sp-2,8px);padding:var(--pad-card,16px);border-radius:18px;font-weight:700;background:linear-gradient(180deg,var(--card0,#FCFBF9),var(--card1,#F4F2EE));box-shadow:var(--edge),var(--hl),var(--e1)}
 .tm-lk>span:first-child{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
 .tm-lk small{font-weight:500;color:var(--ink3,#6B767D);font-size:12px}
 .tm-lk select,.tm-f input{min-height:46px;padding:0 12px;border:0;border-radius:12px;background:var(--well,#ECE9E3);color:var(--ink,#11181C);font:600 15px var(--ff,system-ui);box-shadow:inset 0 1px 3px rgba(70,56,36,.14),inset 0 0 0 1px var(--line,rgba(17,24,28,.09))}
@@ -142,8 +143,8 @@ html[data-mode="tab"] .rl[data-act="more"][data-badge]:not([data-badge="0"]):not
 .tm-req span{flex:1 1 220px}
 
 /* 팀 만들기·들어가기 */
-.tm-forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-.tm-f{display:grid;gap:10px;padding:16px 18px;border-radius:20px;background:linear-gradient(180deg,var(--card0,#FCFBF9),var(--card1,#F4F2EE));box-shadow:var(--edge),var(--hl),var(--e1)}
+.tm-forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--gap-in,12px)}
+.tm-f{display:grid;gap:var(--gap-in,12px);padding:var(--pad-card,16px);border-radius:20px;background:linear-gradient(180deg,var(--card0,#FCFBF9),var(--card1,#F4F2EE));box-shadow:var(--edge),var(--hl),var(--e1)}
 .tm-f label{display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--ink2,#47535B)}
 .tm-f input::placeholder{color:var(--ink3,#6B767D);opacity:.7;font-weight:500}
 
@@ -161,8 +162,8 @@ html[data-mode="tab"] .rl[data-act="more"][data-badge]:not([data-badge="0"]):not
 @media (max-width:760px){
   .tm-dlg{width:100vw;max-width:100vw;max-height:100dvh;height:100dvh;border-radius:0;margin:0}.tm-in{max-height:100dvh}
   .tm-top{padding:12px 16px 10px;padding-top:calc(12px + env(safe-area-inset-top,0px))}
-  .tm-body{padding:14px 16px calc(22px + env(safe-area-inset-bottom,0px));gap:16px}
-  .tm-kpi{gap:8px}.tm-kpi span{padding:11px 10px;font-size:11.5px}.tm-kpi span::before{left:10px;right:10px}.tm-kpi b{font-size:23px}
+  .tm-body{padding:14px 16px calc(22px + env(safe-area-inset-bottom,0px));gap:var(--gap-sec,16px)}
+  .tm-kpi{gap:var(--gap-tile,8px)}.tm-kpi span{padding:11px 10px;font-size:11.5px}.tm-kpi span::before{left:10px;right:10px}.tm-kpi b{font-size:23px}
   .tm-grid{grid-template-columns:1fr}
   .tm-head>div{justify-content:flex-start}
 }

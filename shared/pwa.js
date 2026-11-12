@@ -13,11 +13,16 @@
     navigator.serviceWorker.register(new URL("sw.js", root).href, { scope: root.pathname }).catch(function () {});
   }
 
-  var box = document.getElementById("pwa-install");
-  if (!box || standalone) return;
+  // 72회차 ④ 폰에서 띠가 안 보이던 원인: 앱(app.js)이 먼저 그리며 띠를 «오늘» 칸으로 옮기는데, 첫 화면이 «오늘»이 아니면(동선·현장 등 주소로 새로고침)
+  //   띠가 문서에서 떼어진 채라 getElementById 가 null → 설치 안내가 아예 켜지지 않았다. 떼어 둔 원본(window.__daeumPwa)을 먼저 쓴다.
+  //   안 보일 때 이유는 window.__daeumPwaWhy(standalone·hide7d·kakao·ios·prompt·android-manual·manual·installed)로 텍스트로 확인한다.
+  var box = window.__daeumPwa || document.getElementById("pwa-install");
+  var why = function (w) { window.__daeumPwaWhy = w; if (box) box.setAttribute("data-why", w); };
+  if (!box) { window.__daeumPwaWhy = "no-box"; return; }
+  if (standalone) { why("standalone"); return; }
   // 70회차: 닫기(×) → 7일 동안 띄우지 않는다
   var HIDE = "daeum-pwa-hide", hid = 0; try { hid = Number(localStorage.getItem(HIDE)) || 0; } catch (e) {}
-  if (Date.now() - hid < 7 * 864e5) { box.remove(); window.__daeumPwa = null; return; }
+  if (Date.now() - hid < 7 * 864e5) { why("hide7d"); box.remove(); window.__daeumPwa = null; return; }
   var xb = box.querySelector("[data-pwa=x]"); if (xb) xb.addEventListener("click", function () { try { localStorage.setItem(HIDE, String(Date.now())); } catch (e) {} box.hidden = true; if (box.parentNode) box.parentNode.removeChild(box); window.__daeumPwa = null; });
   var btn = box.querySelector("[data-pwa=btn]"), ios = box.querySelector("[data-pwa=ios]");
   var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -26,21 +31,23 @@
   if (/KAKAOTALK/i.test(navigator.userAgent)) {
     var ext = function () { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); };
     var kk = box.querySelector("[data-pwa=kakao]"), kb = box.querySelector("[data-pwa=ext]");
-    box.hidden = false; if (kk) kk.hidden = false;
+    why("kakao"); box.hidden = false; if (kk) kk.hidden = false;
     if (kb) kb.addEventListener("click", ext);
     ext();
     return;
   }
-  if (isIOS) { box.hidden = false; if (ios) ios.hidden = false; }
+  if (isIOS) { why("ios"); box.hidden = false; if (ios) ios.hidden = false; }
   // 안드로이드에서 설치 신호가 늦거나 오지 않으면(삼성 인터넷 등) 메뉴로 추가하는 길을 알려 준다
   var and = box.querySelector("[data-pwa=and]");
-  if (/Android/i.test(navigator.userAgent) && and) setTimeout(function () { if (!deferred && !seen) { box.hidden = false; and.hidden = false; } }, 3000);
+  // 72회차 ④: 안드로이드가 아니어도 폰·태블릿(터치·좁은 화면)이면 같은 수동 안내 — 브라우저마다 설치 신호를 안 보내는 경우가 많다. 기다림 3초 → 1.5초
+  var gen = box.querySelector("[data-pwa=gen]"), isAnd = /Android/i.test(navigator.userAgent), touch = (navigator.maxTouchPoints || 0) > 0 && Math.min(screen.width || 9999, screen.height || 9999) < 900;
+  if (!isIOS && (isAnd || touch)) setTimeout(function () { if (deferred || seen) return; box.hidden = false; if (isAnd && and) { and.hidden = false; why("android-manual"); } else if (gen) { gen.hidden = false; why("manual"); } }, 1500);
   window.addEventListener("beforeinstallprompt", function (e) {
-    e.preventDefault(); deferred = e; if (seen) return; box.hidden = false; if (btn) btn.hidden = false; if (and) and.hidden = true;
+    e.preventDefault(); deferred = e; if (seen) return; why("prompt"); box.hidden = false; if (btn) btn.hidden = false; if (and) and.hidden = true; if (gen) gen.hidden = true;
   });
   // 설치 진행·완료를 알려 주고, 한 번 설치한 폰에서는 단추를 다시 띄우지 않는다(여러 번 눌러 아이콘이 여러 개 생기던 문제)
   var msg = box.querySelector("[data-pwa=msg]"), KEY = "daeum-installed";
-  var say = function (t) { box.hidden = false; if (btn) btn.hidden = true; if (and) and.hidden = true; if (msg) { msg.hidden = false; msg.textContent = t; } };
+  var say = function (t) { why("installed"); box.hidden = false; if (btn) btn.hidden = true; if (and) and.hidden = true; if (gen) gen.hidden = true; if (msg) { msg.hidden = false; msg.textContent = t; } };
   var DONE = "설치 완료 — 이 창을 닫고 홈 화면의 «닿음» 아이콘으로 여세요. 전체 화면 앱으로 열립니다.";
   var seen = null; try { seen = localStorage.getItem(KEY); } catch (e) {}
   if (seen) say(DONE);
