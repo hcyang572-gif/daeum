@@ -149,17 +149,17 @@
 
   // ── 그리기 ──
   var CHEV = '<svg viewBox="0 0 24 24" class="rc-chev" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-  /** 상황 고르기 카드(접이식) — 줄을 누르면 하단 시트가 열린다 */
+  /** 상황 고르기 카드 — 78회차 ⓪-3(11-13 호창님 «상담일지는 항상 펼친 화면으로»): 접기 없이 늘 펼침(open 인자는 옛 호출 호환용, 무시) · 줄을 누르면 하단 시트가 열린다 */
   function composerHtml(c, ctx, open) {
     var L = lines(c, ctx), picked = ROWS.filter(function (r) { return vals(c, r[0]).length; }).length;
-    return '<section class="rc-cmp blk" data-rc="cmp"><details class="rc-fold"' + (open === false ? "" : " open") + '><summary><span class="rc-h">상황 고르기 <small>→ 상담일지 문장 자동 작성</small></span><span class="rc-n"><b>' + picked + "</b>/" + ROWS.length + "줄</span></summary>" +
+    return '<section class="rc-cmp blk" data-rc="cmp"><div class="rc-fold rc-open"><div class="rc-sum"><span class="rc-h">상황 고르기 <small>→ 상담일지 문장 자동 작성</small></span><span class="rc-n"><b>' + picked + "</b>/" + ROWS.length + "줄</span></div>" +
       '<p class="rc-why">현장 점검·상담에서 고른 것은 미리 반영했습니다. 줄을 누르면 아래에서 고르는 창이 열립니다.</p>' +
       ((c.fromList || []).length ? '<p class="rc-why rc-fromlist">위기 유형 «' + esc(c.fromList.join("·")) + '»은 <b>명단에서 가져옴</b> — 현장에서 확인되지 않으면 빼 주세요</p>' : "") +
       '<div class="rc-rows">' + ROWS.map(function (r, i) {
         var v = vals(c, r[0]);
         return '<button type="button" class="rc-row' + (v.length ? " has" : "") + '" data-cf="' + r[0] + '"><i>' + (i + 1) + '</i><span class="rc-rn">' + r[1] + '</span><span class="rc-rv">' +
           (v.length ? v.slice(0, 3).map(function (x) { return "<em>" + esc(x) + "</em>"; }).join("") + (v.length > 3 ? '<em class="m">+' + (v.length - 3) + "</em>" : "") : "<small>고르기</small>") + "</span>" + CHEV + "</button>";
-      }).join("") + "</div></details>" +
+      }).join("") + "</div></div>" +
       '<div class="rc-lines" aria-live="polite"><div class="rc-lh"><b>자동 문장</b><small>미리 반영 ' + (c.pre || 0) + "개 · 직접 누름 " + (c.taps || 0) + "번 · 글자 0</small></div>" +
       (L.length ? L.map(function (l) { return "<p>· " + esc(l) + "</p>"; }).join("") : '<p class="rc-why">고르면 여기에 문장이 생깁니다.</p>') + "</div></section>";
   }
@@ -286,7 +286,7 @@
   /** m = { hid, area, date, reasons:[], checks:"", lines:[], memo, act:[], will, next } */
   function paperHtml(m) {
     function E(t) { return '<span class="empty">' + esc(t) + "</span>"; }
-    return '<details class="rc-paperw"><summary>실제 보고서 형태로 보기 <small>상담일지 한 장</small></summary>' +
+    return '<section class="rc-paperw rc-open" tabindex="-1" aria-label="상담일지 한 장 미리보기"><div class="rc-sum">실제 보고서 형태로 보기 <small>상담일지 한 장</small></div>' +
       '<div class="rc-legend"><b>읽는 법</b><span><i class="sw rule"></i>회색 = 규칙으로 센 숫자</span><span><i class="sw ai"></i>노란 밑줄 = 자동 정리 문장, 확인 필요</span><span><i class="sw empty"></i>빨간 칸 = 직접 채울 곳</span></div>' +
       '<div class="rc-paper" data-rc="paper"><span class="rc-stamp">자동 정리 · 확인 전</span><h4>상담일지</h4><div class="rc-org">상주시청 · ' + esc(m.date || "") + " · 시연 가상</div><table>" +
       "<tr><th>가구</th><td>" + esc(m.hid) + " · " + esc(m.area || "") + "</td></tr>" +
@@ -297,7 +297,7 @@
       "<tr><th>본인 의사</th><td>" + (m.will ? esc(m.will) : E("고르기")) + "</td></tr>" +
       "<tr><th>연계</th><td>" + (m.act && m.act.length ? esc(m.act.join(", ")) + " <small>(안내·의뢰, 선정 결정 아님)</small>" : E("대응 고르기")) + "</td></tr>" +
       "<tr><th>다음 확인</th><td>" + (m.next ? '<span class="rule">' + esc(m.next) + "</span>" : E("고르기")) + "</td></tr>" +
-      "<tr><th>담당</th><td>" + E("담당자 확인 후 서명") + "</td></tr></table></div></details>";
+      "<tr><th>담당</th><td>" + E("담당자 확인 후 서명") + "</td></tr></table></div></section>";
   }
 
   var api = {

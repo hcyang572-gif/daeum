@@ -61,7 +61,7 @@
   }
   function railHTML(view, hid, I, o) {
     var k = tabOf(view), x = hid ? ":" + hid : "";
-    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z81" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
+    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z82" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
       TABS.map(function (t, i) {
         return '<button type="button" class="rl pr' + (i === k ? " on" : "") + '" data-go="' + go(t, x) + '" data-tab="' + t[0] + '"' + (i === k ? ' aria-current="page"' : "") + ">" + ((I || {})[IK[t[0]]] || svg(t[0])) + "<span>" + t[1] + "<small>" + DESC[t[0]] + "</small></span>" + dotOf(t, o) + "</button>";
       }).join("") + ((o && o.foot) || "");
@@ -145,7 +145,7 @@
     el.textContent = "";
     if (ic) el.appendChild(ic); else { var t = doc.createElement("span"); t.innerHTML = ARW; if (t.firstChild) el.appendChild(t.firstChild); }
     el.appendChild(doc.createTextNode(lbl));
-    el.className = "sbt";
+    el.className = "sbt" + (/길\s?안내/.test(lbl) ? " nav" : ""); // 78회차 ⓪-6: 길안내는 «도착했어요»와 같은 무게(반반·청록 테두리, fix72.css)
     return el;
   }
   function dockEl(pri, sec, opt) {

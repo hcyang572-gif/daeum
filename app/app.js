@@ -201,10 +201,10 @@
     if (sf && sf.hid) { var mn = elMin(sf.at), pl = sf.min || A.safetyMin, over = mn >= pl; skt = over ? "확인" : Math.max(0, pl - mn) + "분"; skl = "안전 · 안전 모드 켜짐 · 가구 " + esc(sf.hid) + (over ? " · 예정 시간 넘김" : " · " + skt + " 남음"); }
     else { skt = "안전"; skl = "안전 — 나의 안전 알리기 · 동료 안부 · 팀 연결"; }
     if (ba) skl += " · 동료 확인 필요";
-    sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\"></i></button>";
+    sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\">" + (ba || "") + "</i></button>"; // 78회차 ⓪-1: 확인할 것 수(점·숫자)
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z81" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z82" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + (I.lock || "") + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eye + "</button>" +
@@ -292,16 +292,16 @@
         (here ? '<button type="button" class="btn safe" data-sp="enter">' + (I.shield || "") + "가구 " + esc(here) + " 들어가기 <small>안전 모드 " + minPick() + "분</small></button>"
           : nx ? '<a class="sp-go pr" href="#home:' + esc(nx) + '" data-ov="go">다음 가구 ' + esc(nx) + " 집 앞으로 › «들어가기»를 누르면 켜집니다</a>" : "");
     }
-    var bar = alertBar();
+    var bar = alertBar(), TU = window.DaeumTeamUI, tb = ta && TU && TU.alertsBlock ? '<div class="sp-tm">' + TU.alertsBlock() + "</div>" : ""; // 78회차 ⓪-1: 배너로 잠깐 뜬 팀 알림은 여기서 보고 «안부 확인 완료»
     sheetOpen('<h3 class="sp-h">' + (I.shield || "") + "안전</h3>" +
       '<section class="sp-sec" aria-label="나의 안전"><div class="sp-k">나의 안전</div>' + my + "</section>" +
-      '<section class="sp-sec" aria-label="동료 안부"><div class="sp-k">동료 안부' + (ta ? ' <em class="li-n">' + ta + "</em>" : "") + "</div>" + (bar || "") +
+      '<section class="sp-sec" aria-label="동료 안부"><div class="sp-k">동료 안부' + (ta ? ' <em class="li-n">' + ta + "</em>" : "") + "</div>" + (bar || "") + tb +
         (!/sfa/.test(bar || "") && !ta ? '<p class="sp-off">지금 확인할 동료 알림이 없습니다</p>' : "") + (cur !== "today" && SX ? daySumSafe() : "") +
         (ta ? '<button type="button" class="li pr" data-sp="team">' + (I.user || "") + "<span><b>팀 알림 " + ta + "건 보기</b><small>1차 동료·팀장 알림 · 연락했어요</small></span></button>" : "") + "</section>" +
       (window.DaeumTeamUI ? '<section class="sp-sec" aria-label="팀 연결"><div class="sp-k">팀 연결</div><button type="button" class="li pr" data-sp="team">' + (I.user || "") + "<span><b>우리 팀 · 팀 코드" + (teamN() ? ' <em class="li-n">' + teamN() + "</em>" : "") + "</b><small>" + esc(window.DaeumTeamUI.label ? window.DaeumTeamUI.label() : "1차 동료·팀장 짝 지정 · 팀 현황") + "</small></span></button></section>" : "") +
       '<button type="button" class="btn ghost pr" data-ov="x">닫기</button>', "안전");
     OV.kind = "safety";
-    var root = OV.el; bindSafe(root); bindAlerts(root);
+    var root = OV.el; bindSafe(root); bindAlerts(root); if (tb && TU.bindAcks) TU.bindAcks(root, function () { if (OV.on && OV.kind === "safety") safetyPanel(); moreDot(); });
     root.querySelectorAll('[data-sp="team"]').forEach(function (b) { b.addEventListener("click", function () { sheetClose(); if (window.DaeumTeamUI) window.DaeumTeamUI.open(); }); });
     var en = root.querySelector('[data-sp="enter"]'); if (en) en.addEventListener("click", function () { var h = curArg; vib(); safeEnter(h); sheetClose(); location.hash = "#check:" + h; render(); });
   }
@@ -316,7 +316,7 @@
     return n;
   }
   if (typeof window !== "undefined") window.__daeumBuddyAlarm = function () { return buddyAlarm(); };
-  function budMark() { if (typeof document === "undefined") return; var n = buddyAlarm(); document.querySelectorAll('.ky.bud').forEach(function (b) { b.classList.toggle("alarm", !!n); var l = (b.getAttribute("aria-label") || "").replace(/ · 동료 확인 필요$/, ""); b.setAttribute("aria-label", n ? l + " · 동료 확인 필요" : l); }); }
+  function budMark() { if (typeof document === "undefined") return; var n = buddyAlarm(); document.querySelectorAll('.ky.bud').forEach(function (b) { b.classList.toggle("alarm", !!n); var bd = b.querySelector(".bd"); if (bd) bd.textContent = n ? String(n) : ""; var l = (b.getAttribute("aria-label") || "").replace(/ · 동료 확인 필요$/, ""); b.setAttribute("aria-label", n ? l + " · 동료 확인 필요" : l); }); }
 
   // ═════ P0 오늘 ═════
   // S12-v U40(F6): [단계, 근거 데이터(번호 없이 — 번호는 «활용 데이터» 화면에만), 탭] · 탭 이름을 단계 앞에 작게 붙여 «현장» 탭과 «요약» 단계가 따로 노는 혼란을 막는다
@@ -808,7 +808,7 @@
     var ok = app.querySelector('[data-act="qok"]'); if (ok) ok.addEventListener("click", function () { step(true); });
     var sk = app.querySelector('[data-act="qskip"]'); if (sk) sk.addEventListener("click", function () { step(false); });
     var re = app.querySelector('[data-act="qre"]'); if (re) re.addEventListener("click", function () { qIdx[hid] = 0; render(); });
-    app.querySelectorAll("[data-svc]").forEach(function (b) { b.addEventListener("click", function () { o.svcs = o.svcs || {}; o.svcs[b.dataset.svc] = !o.svcs[b.dataset.svc]; vib(); saveRec(hid, o); render(); }); });
+    app.querySelectorAll("[data-svc]").forEach(function (b) { b.addEventListener("click", function (e) { e.preventDefault(); o.svcs = o.svcs || {}; o.svcs[b.dataset.svc] = !o.svcs[b.dataset.svc]; vib(); keepPlace('[data-svc="' + b.dataset.svc + '"]'); saveRec(hid, o); render(); }); });
     if (FD) FD.bindRefer(app, hid);
     bindSafe();
   }
@@ -870,7 +870,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z81"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z82"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -960,14 +960,13 @@
     function live() { // 입력 중엔 화면 전체를 다시 그리지 않고 초안·보고서 칸만 바꾼다(입력칸 포커스 유지)
       if (o.res !== "met") return;
       var d = app.querySelector('[data-rc="draft"]'); if (d) d.outerHTML = recDraftSec(hid, o, ctx);
-      var p = app.querySelector(".rc-paperw"); if (p) { var op = p.open; p.outerHTML = recPaper(hid, o, ctx); if (op) app.querySelector(".rc-paperw").open = true; }
+      var p = app.querySelector(".rc-paperw"); if (p) p.outerHTML = recPaper(hid, o, ctx); // 78회차 ⓪-3: 늘 펼침(접힘 상태 없음)
     }
     app.querySelectorAll("[data-res]").forEach(function (b) { b.addEventListener("click", function () { o.res = b.dataset.res; vib(); rerender(); }); });
     app.querySelectorAll("[data-sign]").forEach(function (b) { b.addEventListener("click", function () { var s = b.dataset.sign; o.signs[s] = !o.signs[s]; rerender(); }); });
     app.querySelectorAll("[data-cf]").forEach(function (b) {
       b.addEventListener("click", function () { vib(); RC.openSheet(o.cmp, b.dataset.cf, ctx, { save: function (c) { o.cmp = c; saveRec(hid, o); }, close: function () { render(); } }); });
     });
-    var fold = app.querySelector(".rc-fold"); if (fold) fold.addEventListener("toggle", function () { recFold = fold.open; });
     if (o.res !== "refuse") {
       var set = o.res === "absent" ? "away" : "memo";
       RC.bindEx(app, "memo", set, function (v) { if (set === "away") { if (FD) FD.set(hid, "away", v); else o.away = v; } else o.memo = v; saveRec(hid, o); live(); }, function (g) { exGrp[set] = g; render(); });
@@ -1341,7 +1340,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z81"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z82"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -1603,9 +1602,8 @@
       { k: "목적", src: "data", v: ym[0] + "년 " + (+ym[1]) + "월 차수 복지사각지대 발굴대상자 현장 확인(한국사회보장정보원 명단)" },
       { k: "결과", src: "rule", v: "만남 " + M.met.length + " · 부재 " + M.ab.length + (rf.length ? " · 거절 " + rf.length : "") + " · 명단 사유 밖 징후 " + sigN + "가구" },
       { k: "요지", src: "ai", v: gist.join(" / ") || "만난 가구 없음" },
-      { k: "조치", src: "rule", v: "연계 의뢰서 " + M.linked.length + "건" + (M.ab.length ? " · 재방문 " + mdDot(nextAb) : "") },
-      { k: "동행자", src: f.with ? "rule" : "empty", v: f.with || "", input: "with" }
-    ];
+      { k: "조치", src: "rule", v: "연계 의뢰서 " + M.linked.length + "건" + (M.ab.length ? " · 재방문 " + mdDot(nextAb) : "") }
+    ]; // 78회차 ⓪-4(11-13 호창님 «동행자란인데 해당란은 불필요해»): «동행자» 칸 전면 삭제(필수 검사·화면·hwpx·A4 모두 이 목록에서 나옴) — ⛔ 다시 넣지 않는다
   }
   var SRC_CLS = { data: "var(--src-data)", rule: "var(--src-rule)", ai: "var(--src-ai)", empty: "var(--src-empty)" };
   var MET_SRC = { m: "data", r: "rule", a: "ai", e: "empty" };
@@ -1784,7 +1782,7 @@
     var m1 = !!made1[k + ":" + (docHid || "")], on = m1 && ready ? "" : " disabled";
     return '<div class="flow2"><button type="button" class="' + (m1 ? "d1" : "d2") + '" data-act="make">' + (m1 ? "1 만들기 ✓" : "1 만들기") + "</button><em>→</em>" +
       '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get"' + on + ">2 " + label2 + "</button>" +
-      (label3 ? '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get" data-alt="1"' + on + ">2 " + label3 + "</button>" : "") + (m1 && !ready && why ? '<span class="fwhy" role="note">' + esc(why) + "</span>" : "") + "</div>";
+      (label3 ? '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get" data-alt="1"' + on + ">2 " + label3 + "</button>" : "") + (m1 && !ready && why ? '<button type="button" class="fwhy" data-act="fillgo" title="빈칸으로 이동">' + esc(why) + " · 눌러서 채우기</button>" : "") + "</div>";
   }
   /** D1 상담일지 초안 — 미리보기·복사·보관 hwpx 가 같은 값을 쓰게 한 곳에서 만든다(규칙 «자동 정리») */
   function d1Draft(x) {
@@ -2040,7 +2038,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z81")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z81"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z82")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z82"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -2112,6 +2110,15 @@
     var y = col.scrollTop + r.top - col.getBoundingClientRect().top - 12;
     col.scrollTo(RM_ ? { top: y } : { top: y, behavior: "smooth" });
   }
+  /** 78회차 ⓪-4: 빨간 필수칸(입력 필요) 안내를 누르면 첫 빈 입력칸으로 스크롤+초점 — 옛 흐름은 미리보기 맨 위로만 가서 «빨간 부분 클릭이 안 됨» */
+  function fillGo() {
+    var el = app.querySelector('#docPrev input[data-fill]:not(.ok)') || app.querySelector('.main input[data-fill]:not(.ok)'); if (!el) return false;
+    var c = el.closest(".col"), td = el.closest("td") || el;
+    if (c) { var y = c.scrollTop + td.getBoundingClientRect().top - c.getBoundingClientRect().top - c.clientHeight / 3; colTo(c, Math.max(0, y)); } else td.scrollIntoView({ block: "center" });
+    try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+    td.classList.remove("m-just"); void td.offsetWidth; td.classList.add("m-just");
+    return true;
+  }
   function bindDocs() {
     bindHrec();
     if (FD) FD.bindReport(app);
@@ -2125,8 +2132,9 @@
     var dd = app.querySelector('[data-act="dockdoc"]'); if (dd) dd.addEventListener("click", function () { // 74회차: 주 단추 = 미리보기 안 «만들기»·«받기»를 대신 누름(받기가 꺼져 있으면 미리보기 빈칸으로)
       var pv = app.querySelector("#docPrev"), m = pv && pv.querySelector('[data-act="make"]'), g = pv && pv.querySelector('[data-act="get"]:not([disabled])');
       var m1 = !!made1[(docSel === "d5" ? "d5:" + docPer : docSel) + ":" + (docHid || "")];
-      if (!m1 && m) m.click(); else if (g) g.click(); else if (pv) { pv.scrollIntoView({ block: "start" }); try { pv.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } toast("빨간 빈칸을 채우면 받기가 켜집니다"); }
+      if (!m1 && m) m.click(); else if (g) g.click(); else if (!fillGo() && pv) { pv.scrollIntoView({ block: "start" }); try { pv.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } toast("빨간 빈칸을 채우면 받기가 켜집니다"); }
     });
+    app.querySelectorAll('[data-act="fillgo"]').forEach(function (b) { b.addEventListener("click", function () { if (!fillGo()) toast("채울 빈칸을 찾지 못했습니다"); }); });
     app.querySelectorAll('[data-act="get"]').forEach(function (gt) { gt.addEventListener("click", function () { vib(); getDoc(M, docSel, !!gt.dataset.alt); }); });
     app.querySelectorAll("[data-per]").forEach(function (b) { b.addEventListener("click", function () { docPer = b.dataset.per === "mo" ? "mo" : "wk"; render(); }); });
     app.querySelectorAll("[data-fill]").forEach(function (inp) { inp.addEventListener("change", function () { var a = fills(), o = a[M.key] || {}; o[inp.dataset.fill] = inp.value.trim().slice(0, 40); a[M.key] = o; lsSet(LS_FILL, a); render(); }); });
@@ -2368,6 +2376,21 @@
       el.querySelectorAll('[data-act="safety"]').forEach(function (b) { b.addEventListener("click", safetyKey); }); });
     moreDot();
   }
+  // 78회차 ⓪-2(11-13 호창님 «연계 후보로 넣기를 눌렀을때 화면이 이상하게 움직여»): 원인 = 칸(.col)에 CSS scroll-behavior:smooth 가 걸려 있어
+  //   다시 그린 새 칸(맨 위 0)에 읽던 자리를 넣으면 맨 위에서 그 자리까지 «부드럽게 굴러 내려오는» 움직임이 보였다 → 되살릴 때만 즉시(auto)로.
+  //   + 누른 단추 위쪽 내용(다음 할 일·카드 높이)이 바뀌어도 그 단추가 화면의 같은 높이에 남도록 차이만큼 맞춘다(keepPlace).
+  function colTo(c, y) { var sb = c.style.scrollBehavior; c.style.scrollBehavior = "auto"; c.scrollTop = y; c.style.scrollBehavior = sb; }
+  var keepAt = null;
+  function keepPlace(sel) {
+    var el = app.querySelector(sel); if (!el) return;
+    var y0 = el.getBoundingClientRect().top;
+    keepAt = function () {
+      var n = app.querySelector(sel); if (!n) return;
+      var c = n.closest(".col"), dy = n.getBoundingClientRect().top - y0;
+      if (Math.abs(dy) > 1) { if (c) colTo(c, c.scrollTop + dy); else window.scrollBy(0, dy); }
+      try { n.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+    };
+  }
   function bootOpen() { if (BOOT.open) return; BOOT.open = true; render(); }
   function render(soft) { // soft = 실시간·시계처럼 사람이 누르지 않은 다시 그리기(같으면 건너뜀)
     if (!BOOT.open) { BOOT.want = true; RSTAT.held++; return; }
@@ -2408,7 +2431,8 @@
     placeAct();
     scopeMount();
     hbarPlace();
-    Array.prototype.forEach.call(cs, function (c, i) { c.scrollTop = keepY[i] || 0; }); // 화면이 바뀌면 맨 위 · 같은 화면이면 칸마다 읽던 자리
+    Array.prototype.forEach.call(cs, function (c, i) { colTo(c, keepY[i] || 0); }); // 화면이 바뀌면 맨 위 · 같은 화면이면 칸마다 읽던 자리
+    if (keepAt) { var ka = keepAt; keepAt = null; ka(); } // 78회차 ⓪-2: 누른 단추를 같은 화면 높이에 그대로(위 내용 높이가 바뀌어도)
     if (OV.on) { if (OV.kind === "safety") safetyPanel(); else app.appendChild(OV.el); } // 더 보기 시트가 열려 있으면 다시 붙인다(실시간 다시 그리기) · 76회차: 안전 화면은 새 상태로 다시
   }
   // 폭(폰·폴드·태블릿·PC)이 바뀌면 머리 글자(PC 연동 글자·폰 탭 이름)만 다시 그린다 — app/s12x_bg.js 가 html[data-mode] 와 함께 알림

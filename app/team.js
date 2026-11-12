@@ -1,5 +1,5 @@
 /* 닿음 팀 화면 — 동료 안부 팀 연동·팀 현황 (⚙️ 파로, 68회차 S12-z4, 2026-11-12)
-   - 스스로 DOM 에 붙는 것: ②맨 위 팀 안부 알림 줄 ③팀 창(dialog). 69회차: 떠 있던 ①«팀» 단추는 걷고 진입은 앱 «더 보기» 메뉴(app.js morePanel → DaeumTeamUI.open()).
+   - 스스로 DOM 에 붙는 것: ②맨 위 팀 안부 배너(78회차: 3초 뒤 «안전» 단추로 담김) ③팀 창(dialog). 69회차: 떠 있던 ①«팀» 단추는 걷고 진입은 앱 «더 보기» 메뉴(app.js morePanel → DaeumTeamUI.open()).
    - 메뉴 항목 아래 작은 글은 DaeumTeamUI.label() — 알림·짝 요청·방문 중 수.
    - 데이터·판정은 shared/team_sync.js(window.DaeumTeam). PC·폰 같은 기능, 폭에 따라 배열만 다르다.
    - 가구는 가명 관리 번호·읍면까지만. 팀원 이름은 본인이 정한 표시 이름(직함 권장). 위치(GPS)는 보내지도 보여 주지도 않는다. */
@@ -37,11 +37,66 @@
         '<button type="button" data-tmack="' + i + '">안부 확인 완료</button></div>';
     }).join("");
   }
+  // 78회차 ⓪-1·⓪-5(11-13 호창님 «안부 확인 완료 팝업이 계속 뜨는 것 → 배너로 3초 뒤 상단 안전 버튼에 담기는 애니메이션» · «부드럽게 떠서 부드럽게 이동하며 사라져야» · «너무 자주 뜨지 않게»):
+  //   옛 흐름 = 맨 위 고정 알림 줄이 확인할 때까지 남고, 30초마다 다시 그려 떨어지는 움직임이 되풀이됨.
+  //   새 흐름 = 새로 띄울 알림(TM.popNew — 같은 방문 한 번·동료별 최소 간격·도움 요청/2차는 그대로)만 배너 한 장씩:
+  //   등장 360ms(살짝 내려오며 나타남, ease-out) → 3초 머묾 → 머리 «안전» 단추까지 곡선 경로 720ms(줄어들며 흐려짐, ease-in-out) → 단추가 살짝 반응.
+  //   transform·opacity 만 · 움직임 줄이기면 단순 페이드. 알림 목록·«안부 확인 완료»는 안전 단추 화면(app.js safetyPanel ②)에서 — alertsBlock·bindAcks.
+  var RM = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+  var Q = [], busyB = false;
+  function budBtn() {
+    var L = document.querySelectorAll(".ky.bud"); for (var i = 0; i < L.length; i++) { var r = L[i].getBoundingClientRect(); if (r.width > 0 && r.height > 0) return L[i]; } return null;
+  }
+  function bannerHTML(a) {
+    var who = esc(a.alias) + tag(a.sim), where = "가구 " + esc(a.hid) + (a.area ? " " + esc(a.area) : "");
+    if (a.kind === "help") return '<div class="tm-al help tm-bn" role="alert"><i></i><div><b>조용한 도움 요청 · ' + who + " · " + where + "</b><span>" + a.el + "분째 방문 중 · «안전»에서 확인하세요</span></div></div>";
+    return '<div class="tm-al lv' + a.lv + ' tm-bn" role="alert"><i></i><div><b>' + who + " · " + where + " 방문 " + a.el + "분째</b><span>예정 " + a.min + "분을 넘겼습니다 · «안전»에서 안부를 확인하세요</span></div></div>";
+  }
+  function anim(el, kf, o) { return new Promise(function (res) { if (!el.animate) { res(); return; } var x = el.animate(kf, o); x.onfinish = res; x.oncancel = res; }); }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  /** 곡선 경로 키프레임 — 시작(0,0) → 끝(dx,dy), 조절점은 살짝 아래로 휘게(2차 베지어) · 크기 1 → sc · 불투명 1 → .12 */
+  function flyFrames(dx, dy, sc) {
+    var cx = dx * 0.55, cy = Math.max(dy, 0) + 56, out = [];
+    for (var i = 0; i <= 8; i++) {
+      var t = i / 8, u = 1 - t, x = 2 * u * t * cx + t * t * dx, y = 2 * u * t * cy + t * t * dy, s1 = 1 + (sc - 1) * t;
+      out.push({ offset: t, transform: "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px) scale(" + s1.toFixed(3) + ")", opacity: +(1 - 0.88 * t * t).toFixed(3) });
+    }
+    return out;
+  }
+  function showOne(a) {
+    var w = document.createElement("div"); w.innerHTML = bannerHTML(a); var el = w.firstChild;
+    el.style.animation = "none"; el.style.cursor = "pointer"; el.style.transformOrigin = "50% 50%"; el.style.willChange = "transform, opacity";
+    el.addEventListener("click", function () { var b = budBtn(); if (b) b.click(); });
+    host.appendChild(el); host.hidden = false;
+    var rm = RM.matches;
+    return anim(el, rm ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: "translateY(-14px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: rm ? 200 : 360, easing: "cubic-bezier(.22,1,.36,1)", fill: "both" })
+      .then(function () { return wait(3000); })
+      .then(function () {
+        var b = budBtn();
+        if (rm || !b) return anim(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: "ease", fill: "both" });
+        var r0 = el.getBoundingClientRect(), r1 = b.getBoundingClientRect();
+        var dx = (r1.left + r1.width / 2) - (r0.left + r0.width / 2), dy = (r1.top + r1.height / 2) - (r0.top + r0.height / 2), sc = Math.max(0.06, Math.min(1, r1.width / Math.max(1, r0.width)));
+        return anim(el, flyFrames(dx, dy, sc), { duration: 720, easing: "cubic-bezier(.45,0,.25,1)", fill: "both" }).then(function () {
+          if (b.animate) b.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 320, easing: "cubic-bezier(.34,1.56,.64,1)" });
+        });
+      })
+      .then(function () { el.remove(); if (!host.children.length) host.hidden = true; });
+  }
+  function pump() {
+    if (busyB || !Q.length) return; busyB = true;
+    showOne(Q.shift()).then(function () { busyB = false; pump(); }, function () { busyB = false; pump(); });
+  }
   function drawAlerts() {
-    if (!host) return; var L = TM.alerts(); host.innerHTML = alertsHTML(); host.hidden = !L.length;
-    host.querySelectorAll("[data-tmack]").forEach(function (b) { b.addEventListener("click", function () {
+    if (!host || !TM.popNew) return;
+    TM.popNew().forEach(function (a) { Q.push(a); }); pump();
+  }
+  /** 안전 단추 화면(app.js safetyPanel ②)에 넣을 팀 알림 목록 — 확인 단추 포함 */
+  function alertsBlock() { return alertsHTML(); }
+  function bindAcks(root, after) {
+    var L = TM.alerts();
+    root.querySelectorAll("[data-tmack]").forEach(function (b) { b.addEventListener("click", function () {
       var a = L[+b.dataset.tmack]; if (!a) return; b.disabled = true;
-      TM.ack(a).then(function (r) { toast(r && r.sim ? "확인했습니다(시연 가상 팀원 — 이 기기에서만 닫음)" : a.kind === "help" ? "도움 요청 확인 · 현장 폰에도 반영했습니다" : "안부 확인 완료 · 현장 폰 예정 시간 20분 늘림"); },
+      TM.ack(a).then(function (r) { toast(r && r.sim ? "확인했습니다(시연 가상 팀원 — 이 기기에서만 닫음)" : a.kind === "help" ? "도움 요청 확인 · 현장 폰에도 반영했습니다" : "안부 확인 완료 · 현장 폰 예정 시간 20분 늘림"); if (after) after(); },
         function (e) { b.disabled = false; toast(e.message); });
     }); });
   }
@@ -134,13 +189,13 @@
   function draw() { drawAlerts(); drawBody(); }
   function mount() {
     if (host) return;
-    host = document.createElement("div"); host.className = "tm-alerts"; host.hidden = true; host.setAttribute("aria-label", "팀 안부 알림");
+    host = document.createElement("div"); host.className = "tm-alerts"; host.hidden = true; host.setAttribute("aria-label", "팀 안부 알림 · 잠깐 보인 뒤 «안전» 단추로");
     document.body.appendChild(host);
     TM.on(function (w) { if (w === "board" || w === "error") TM._seen = true; draw(); });
     if (SY && SY.on) SY.on(function (w) { if (w === "mode") draw(); });
     setInterval(function () { drawAlerts(); if (dlg && dlg.open) drawBody(); }, 30e3); // 몇 분째·단계는 시각으로 바뀐다
     draw();
   }
-  window.DaeumTeamUI = { open: open, mount: mount, label: label };
+  window.DaeumTeamUI = { open: open, mount: mount, label: label, alertsBlock: alertsBlock, bindAcks: bindAcks, _t: { flyFrames: flyFrames, bannerHTML: bannerHTML } };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount); else mount();
 })();

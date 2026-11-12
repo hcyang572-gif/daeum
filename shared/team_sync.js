@@ -7,7 +7,7 @@
    window.DaeumTeam */
 (function (root) {
   "use strict";
-  var K = { board: "daeum.team.board", hide: "daeum.team.hide" };
+  var K = { board: "daeum.team.board", hide: "daeum.team.hide", pop: "daeum.team.pop" };
   var LS_SAFE = "daeum.s12.safety"; // app/app.js 안전 모드(이 기기) — 읽기만
   var POLL = 60e3, PUSH_WAIT = 1200;
   var T = { board: null, subs: [], ch: null, chTeam: null, chUid: null, timer: null, loading: null, again: false, lastPush: "", pushT: null, err: "" };
@@ -75,6 +75,22 @@
     });
     return out.filter(function (a) { return !hidden[hideKey(a)]; })
       .sort(function (x, y) { return (y.kind === "help") - (x.kind === "help") || y.el - x.el; });
+  }
+  /** 78회차 ⓪-5(11-13 호창님 «너무 자주 동료 안전 확인이 뜨지 않게»): 맨 위 배너로 «띄울» 알림만 고른다(알림 자체·안전 단추 표시·확인 기능은 그대로).
+      ① 같은 방문·같은 단계(1차/2차)·같은 도움 요청은 한 번만 ② 같은 동료의 1차(시간 넘김)는 최소 간격(실제 30분 · 시연 가상 팀원 180분) 안이면 띄우지 않고 «본 것»으로만 둔다
+      ③ 진짜 위험 신호 — 조용한 도움 요청·2차(팀장까지 간 넘김)는 간격과 무관하게 그대로 띄운다. mem = {d:날짜, k:{키:1}, m:{팀원:마지막으로 띄운 ms}} */
+  var POP_GAP = { real: 30, sim: 180 };
+  function popKey(a) { return hideKey(a) + "|" + (a.kind === "late" ? a.lv : "h"); }
+  function popPlan(list, mem, now) {
+    now = now || Date.now(); var d = ymd(now); mem = mem && mem.d === d ? { d: d, k: Object.assign({}, mem.k), m: Object.assign({}, mem.m) } : { d: d, k: {}, m: {} };
+    var pop = [];
+    (list || []).forEach(function (a) {
+      var k = popKey(a); if (mem.k[k]) return; mem.k[k] = 1;
+      var urgent = a.kind === "help" || (a.kind === "late" && a.lv >= 2), last = mem.m[a.member] || 0, gap = (a.sim ? POP_GAP.sim : POP_GAP.real) * 60000;
+      if (!urgent && last && now - last < gap) return;
+      mem.m[a.member] = now; pop.push(a);
+    });
+    return { pop: pop, mem: mem };
   }
   /** 이 기기 기록으로 내 현황을 만든다. 보낼 것이 없으면(오늘 기록도 방문 중도 없음) null — 시연 계정의 서버 시각표를 덮지 않게 */
   function ownSummary(o) {
@@ -171,6 +187,8 @@
     view: function (id, now) { return view(T.board, id, now); },
     counts: function (now) { return counts(T.board, now); },
     alerts: function (now) { return alerts(T.board, now, hidden()); },
+    /** 78회차 ⓪-5: 지금 알림 중 배너로 새로 띄울 것(이 기기 기억 K.pop 갱신) */
+    popNew: function (now) { var r = popPlan(alerts(T.board, now, hidden()), get(K.pop, null), now); set(K.pop, r.mem); return r.pop; },
     refresh: refresh,
     create: function (name, alias) { return act("daeum_team_create", { p_name: name, p_alias: alias }); },
     join: function (code, alias) { return act("daeum_team_join", { p_code: code, p_alias: alias }); },
@@ -193,7 +211,7 @@
       if (S.live && S.live()) refresh();
       T.timer = setInterval(function () { if (S.live && S.live() && (!root.document || root.document.visibilityState !== "hidden")) refresh(); else emit("tick"); }, POLL);
     },
-    _t: { myLink: myLink, incoming: incoming, view: view, counts: counts, alerts: alerts, ownSummary: ownSummary, rankToMe: rankToMe, hideKey: hideKey }
+    _t: { popPlan: popPlan, POP_GAP: POP_GAP, myLink: myLink, incoming: incoming, view: view, counts: counts, alerts: alerts, ownSummary: ownSummary, rankToMe: rankToMe, hideKey: hideKey }
   };
   root.DaeumTeam = api;
   if (root.document && root.DaeumSync) { if (root.document.readyState === "loading") root.document.addEventListener("DOMContentLoaded", api.init); else api.init(); }

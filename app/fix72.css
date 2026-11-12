@@ -103,3 +103,41 @@ html.pwa-app #pwa-install { display: none !important; }
 .tline .mv button.x[aria-disabled="true"] { opacity: .3; cursor: help; }
 .rt-opt .rt-re { margin: 8px 0 0; }
 .rt-opt .rt-re .sbtn { min-height: 36px; padding: 0 12px; font-size: 13px; font-weight: 800; }
+/* 78회차 ⓪-3(11-13 호창님 «상담일지는 항상 펼친 화면으로»): 상황 고르기·보고서 미리보기 = 접기 없는 머리(.rc-sum), 지금 문장 칸 높이 제한 없음 · PC·폰 같음 */
+#app .rc-fold > .rc-sum { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; }
+#app .rc-paperw > .rc-sum { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 14px; font-size: var(--fs-2); font-weight: 800; color: var(--rail, #1B2328); }
+#app .rc-paperw > .rc-sum small { font-size: var(--fs-1); font-weight: 600; color: var(--mute, #47535B); }
+#app .rc-paperw:focus { outline: none; }
+#app .rc-mini { max-height: none; overflow: visible; }
+/* 78회차 ⓪-6(11-13 호창님 «길안내 버튼이 흰색이라 잘 안보여. 길안내와 도착했어요가 비슷한 크기로»):
+   주 단추 자리(.dock)의 보조 «길안내»(.sbt.nav) = 흰 카드 72px → 청록 옅은 바탕 + 진한 청록 2px 테두리·글자(#1F6676 on #DDEEF1 대비 6.1:1),
+   «도착했어요»(.pri)와 반반 · 높이 56px(폰 52px)·모서리 17px·글자 17px 굵게로 같은 무게. 주 동작은 여전히 진하게 채운 «도착했어요». */
+#app .dock .sbt.nav { flex: 1 1 0; min-width: 0; grid-auto-flow: column; justify-content: center; gap: 8px; min-height: 56px; border-radius: 17px; padding: 6px 12px;
+  font-size: 17px; font-weight: 800; letter-spacing: -.02em; color: #1F6676; background: linear-gradient(180deg, #E6F3F5, #D5EAEE);
+  box-shadow: inset 0 0 0 2px #1F6676, 0 8px 18px -12px rgba(23,79,91,.6); white-space: nowrap; }
+#app .dock .sbt.nav svg { width: 22px; height: 22px; color: #1F6676; }
+#app .dock .sbt.nav:hover { background: linear-gradient(180deg, #DDEEF1, #C9E3E8); }
+#app .dock .row:has(> .sbt.nav) > .pri { flex: 1 1 0; }
+html[data-mode="phone"] #app .dock .sbt.nav { min-height: 52px; font-size: 16px; }
+/* 78회차 ⓪-4: «받기» 꺼진 이유 줄 = 누르면 빨간 빈칸으로 이동하는 글자 단추 */
+#app .flow2 button.fwhy { all: unset; box-sizing: border-box; grid-column: 1 / -1; justify-self: end; min-height: 44px; display: inline-flex; align-items: center; padding: 0 4px; cursor: pointer;
+  font-size: var(--fs-1, 12px); font-weight: 700; color: var(--sos0, #B8473A); text-decoration: underline; text-underline-offset: 3px; line-height: 1.4; }
+#app .flow2 button.fwhy:focus-visible { outline: 2px solid var(--sos0, #B8473A); outline-offset: 2px; border-radius: 6px; }
+/* 78회차 ⓪-7(11-13 호창님 «다음할일 깜빡임이 여전히 촌스러워 … 은은하고 부드럽고 자연스러워야해»): 77회차 nring(고리 진하기·간격·빛번짐 2.4s 계속 반복)을 끈다.
+   대신 ① 주 단추(.dock .pri.glow) 위로 옅은 흰 빛줄기(불투명 18%)가 1.4초에 한 번 지나가고 6초 쉼(주기 7.4s, transform 만) ·
+   ② 탭·기능 카드 등 다른 .glow 는 움직임 없이 옅은 고리만.
+   색(11-13 보정 «청록 말고 다른 은은한 색»): 기존 «다음 할 일» 알약 토큰과 같은 모래빛 금색 — 고리 --goldL #B99B63(55%)·빛줄기 #FFEBC4(22%). 부재 주황 #C9772E·경보 빨강 #B8473A·브랜드 청록 #1F6676과 구분. 움직임 줄이기·안내 끔이면 빛줄기 없음. 안전 경보 맥박(budPulse)은 그대로. */
+#app .glow:is(.pri, .btn, .sbt, .qf, .rl, .tm-btn), #app .tabs button.glow, .tm-dlg .glow.tm-btn { animation: none; filter: none; outline: 2px solid rgba(185,155,99,.55); outline-offset: 3px; }
+#app .dock .pri.glow { overflow: hidden; outline: 2px solid rgba(185,155,99,.6); outline-offset: 3px; }
+#app .dock .pri.glow::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 42%; pointer-events: none;
+  background: linear-gradient(100deg, rgba(255,235,196,0) 0%, rgba(255,235,196,.22) 50%, rgba(255,235,196,0) 100%);
+  transform: translateX(-140%) skewX(-14deg); animation: nsweep 7.4s cubic-bezier(.45,0,.25,1) .9s infinite; }
+@keyframes nsweep { 0% { transform: translateX(-140%) skewX(-14deg); } 18.9% { transform: translateX(360%) skewX(-14deg); } 100% { transform: translateX(360%) skewX(-14deg); } }
+html[data-nudge="off"] #app .dock .pri.glow::after { content: none; animation: none; }
+@media (prefers-reduced-motion: reduce) { #app .dock .pri.glow::after { content: none; animation: none; } }
+/* 78회차 ⓪-1: 안전 단추 «확인할 것» 수(배너가 담긴 뒤 남는 표시) — 경보 맥박과 별개로 늘 보이는 작은 숫자 점 */
+#app .ky.bud.alarm .bd { display: grid; place-items: center; position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: #FFE08A; color: #5A1A12; font: 800 11px/1 var(--ff, system-ui, sans-serif); font-style: normal; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1.5px #8E3A32; }
+.sheet .sp-tm { display: grid; gap: 8px; }
+.sheet .sp-tm .tm-al { animation: none; }
+.tm-alerts .tm-bn { pointer-events: auto; }

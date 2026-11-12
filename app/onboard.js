@@ -217,7 +217,7 @@
     { st: "보고", ey: "보고서 자동 생성", ill: ill4, h: '기록이 그대로<br><em>보고서 한 장</em>으로', p: "출장 결과 보고와 서비스 연계 의뢰서가 hwpx 한 쪽으로 만들어집니다.",
       src: '<b>한국사회보장정보원 복지서비스 목록 · 자원정보 23건</b> · 연계처 712건으로 의뢰' }
   ];
-  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z81" alt="">';
+  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z82" alt="">';
   var REDUCE = !!(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches);
   var H = { login: function () {}, start: function () {} }, OB = { d: null, i: 0, pc: false };
 
