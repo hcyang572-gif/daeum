@@ -1101,10 +1101,120 @@ p,li,dd,small,.why,[class~=srcline],[class~=hint]{text-wrap-style:pretty}
 .tag,.samp,.tabs button>span,.rl>span,.subseg button,[class~=chip],[class~=badge],[class~=tm-t],[class~=tm-st],[class~=li-n],[class~=o-samp],[class~=rk]{white-space:nowrap}
 .tag,.samp,[class~=chip],[class~=badge]{max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .rl>span small{white-space:normal}
+/* ═════ 74회차 🩵 미르 — 탭별 주 단추 하나·다음 할 일·«보이되 조용하게»·한 줄 내비 ═════
+   승인 시안 _design/S12-73_주단추_로그인_시안/index.html (68ef16c, 호창님 11-13 «가 이대로 구현»).
+   ⚠️ 이 파일(v3.css)에 «.이름» 으로 쓴 클래스는 build_v3_live ⑥ 이 «시안 몫»으로 보고 옛 규칙을 지운다.
+      옛 화면과 겹치는 이름(row·go·chip·chips)은 [class~=…] 로만 쓴다. 새 이름: dock·pill·sbt·ql·qg·qf·qcs·v.
+   마크업(⚙️ 파로):
+     <div class="dock">                                   ← .app 바로 아래(.actbar 자리). 탭마다 하나.
+       <div class="nx"><span class="pill">다음 할 일</span><span class="tx">짧은 한 줄</span><span class="ar">(아래 화살표 svg)</span></div>
+       <div class="row"><button class="sbt">(svg)길 안내</button>      ← 보조 하나(없어도 됨)
+         <button class="pri glow"><span><b>도착했어요</b><small>집 앞 요약 열기</small></span><span class="go">(화살표 svg)</span></button></div></div>
+     <div class="ql">이 탭의 다른 기능</div>
+     <div class="qg"><button class="qf"><span class="ic">(svg)</span><span><b>발굴 명단 <span class="v">48</span>가구</b><small>한 줄 효과</small></span></button>…</div>
+     <div class="qcs"><button class="chip on">(svg)방문 가구</button>…</div>   ← 시안 .chips 는 옛 .chips(지표 칸)와 겹쳐 .qc
+   켜고 끄기: 빛남·화살표는 .glow 를 붙인 단추에서 3번만 돈다(반복 피로 없음). «더 보기» 설정에서 끄면 html[data-nudge="off"].
+   폰·폴드 = 내비 바로 위 엄지 자리, 짧은 말 한 줄 · 태블릿·PC = 오른쪽 아래 «안내 칸 | 주 단추» 나란히, 안내는 두 줄까지. */
+.app>.dock{position:absolute;z-index:19;left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom,0px));display:grid;gap:var(--sp-2);padding:10px var(--sp-2) var(--sp-2);border-radius:26px;
+  background:radial-gradient(90% 120% at 12% 0%,rgba(255,255,255,.7),transparent 60%),color-mix(in srgb,var(--card0) 84%,transparent);
+  backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 0 0 1px rgba(60,46,28,.12),0 18px 30px -18px rgba(60,46,28,.55);animation:rise .28s var(--e-out) both}
+.app>.dock[hidden]{display:none}
+html[data-mode="phone"] .app:has(>.dock:not([hidden])) .main>.col{padding-bottom:calc(224px + env(safe-area-inset-bottom,0px))}
+html[data-mode="fold"] .app:has(>.dock:not([hidden])) .main>.col{padding-bottom:224px}
+html[data-mode="tab"] .app:has(>.dock:not([hidden])) .main>.col,html[data-mode="pc"] .app:has(>.dock:not([hidden])) .main>.col{padding-bottom:132px}
+html[data-mode="phone"] .app:has(>.dock:not([hidden])) .toast,html[data-mode="fold"] .app:has(>.dock:not([hidden])) .toast{bottom:206px}
+/* 다음 할 일 한 줄 */
+.dock .nx{display:flex;align-items:center;gap:var(--sp-2);min-width:0;padding:0 var(--sp-2);font-size:13.5px;line-height:1.35;color:var(--ink)}
+.dock .pill{flex:none;font:700 12px/1 var(--ff);color:var(--gold);background:var(--goldSoft);box-shadow:inset 0 0 0 1px rgba(185,155,99,.5);border-radius:999px;padding:4px 9px}
+.dock .nx .tx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dock .nx .ar{flex:none;margin-left:auto;display:grid;place-items:center;color:var(--acc);animation:nudge 1.2s ease-in-out 3}
+.dock .nx .ar svg{width:16px;height:16px}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@keyframes nudgex{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+/* 주 단추(하나만 크고 진하게) + 옆 보조 하나 */
+.dock>[class~=row]{display:flex;gap:var(--sp-2);align-items:stretch;min-width:0}
+.dock .pri{position:relative;flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 40px;align-items:center;gap:var(--sp-3);min-height:64px;padding:8px 12px 8px 18px;border-radius:20px;color:var(--onAcc);text-align:left;
+  background:radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.22),transparent 55%),linear-gradient(180deg,#2A8295,var(--acc) 45%,var(--acc2));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -2px 0 rgba(0,0,0,.14),0 0 0 1px rgba(10,50,60,.45),0 12px 22px -10px rgba(23,79,91,.75),0 0 0 4px rgba(31,102,118,.10);
+  transition:transform var(--t-up) var(--e-up),box-shadow var(--t-up) var(--e-out)}
+.dock .pri::before{content:'';position:absolute;left:1px;right:1px;top:1px;height:46%;border-radius:19px 19px 12px 12px;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));pointer-events:none}
+.dock .pri:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -2px 0 rgba(0,0,0,.14),0 0 0 1px rgba(10,50,60,.45),0 16px 26px -10px rgba(23,79,91,.8),0 0 0 5px rgba(31,102,118,.14)}
+.dock .pri:active{transform:translateY(1px) scale(.985);transition-duration:var(--t-down)}
+.dock .pri>span:first-child{min-width:0}
+.dock .pri b{display:block;font-size:17px;font-weight:800;line-height:1.2;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dock .pri small{display:block;font-size:12px;line-height:1.3;opacity:.86;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dock .pri>[class~=go]{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(0,0,0,.12)}
+.dock .pri>[class~=go] svg{width:20px;height:20px}
+.dock .pri[disabled]{opacity:.5;pointer-events:none}
+.dock .sbt{flex:none;min-width:80px;min-height:64px;border-radius:18px;display:grid;place-items:center;align-content:center;gap:3px;padding:6px 10px;font-size:12.5px;font-weight:700;color:var(--ink2);
+  background:linear-gradient(180deg,var(--card0),var(--card1));box-shadow:var(--edge),var(--hl),var(--e1);transition:transform var(--t-up) var(--e-up)}
+.dock .sbt svg{width:20px;height:20px;color:var(--acc)}
+.dock .sbt:active{transform:translateY(1px) scale(.97);transition-duration:var(--t-down)}
+/* 다음 할 일이 가리키는 단추 — 살짝 빛남(고리 3번) · 다른 탭 단추·기능 카드에도 .glow 로 */
+@keyframes nring{0%{outline-color:rgba(42,130,149,.8);outline-offset:1px}100%{outline-color:rgba(42,130,149,0);outline-offset:10px}}
+.glow:is(.pri,.btn,.sbt,.qf,.rl,.tm-btn),.tabs button.glow{outline:2px solid rgba(42,130,149,0);outline-offset:1px;animation:nring 1.8s var(--e-out) 3}
+html[data-nudge="off"] .dock .nx{display:none}
+html[data-nudge="off"] .glow:is(.pri,.btn,.sbt,.qf,.rl,.tm-btn),html[data-nudge="off"] .tabs button.glow,html[data-nudge="off"] .dock .nx .ar{animation:none;outline:0}
+/* 폴드 — 가운데 한 판 */
+html[data-mode="fold"] .app>.dock{left:0;right:0;margin-inline:auto;width:min(560px,calc(100% - 24px))}
+/* 태블릿·PC — 오른쪽 아래 «안내 칸 | 주 단추» (옆 칸에 안내, 두 줄까지) */
+html[data-mode="tab"] .app>.dock,html[data-mode="pc"] .app>.dock{left:auto;right:20px;bottom:20px;width:min(680px,calc(100% - 232px - 40px));grid-template-columns:minmax(0,1fr) minmax(260px,auto);align-items:center;gap:var(--sp-3) 20px;padding:12px 12px 12px 20px}
+html[data-mode="tab"] .app>.dock{width:min(640px,calc(100% - 92px - 40px))}
+html[data-mode="tab"] .app>.dock .nx,html[data-mode="pc"] .app>.dock .nx{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"p a" "t a";justify-items:start;gap:6px 12px;padding:0;font-size:14px}
+html[data-mode="tab"] .app>.dock .pill,html[data-mode="pc"] .app>.dock .pill{grid-area:p}
+html[data-mode="tab"] .app>.dock .nx .tx,html[data-mode="pc"] .app>.dock .nx .tx{grid-area:t;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+html[data-mode="tab"] .app>.dock .nx .ar,html[data-mode="pc"] .app>.dock .nx .ar{grid-area:a;margin:0;transform:rotate(-90deg)}
+html[data-mode="tab"] .app>.dock .nx .ar svg,html[data-mode="pc"] .app>.dock .nx .ar svg{animation:nudge 1.2s ease-in-out 3}
+html[data-mode="tab"] .app>.dock .nx .ar,html[data-mode="pc"] .app>.dock .nx .ar{animation:none}
+html[data-nudge="off"] .app>.dock{grid-template-columns:minmax(0,1fr)}
+html[data-nudge="off"] .app>.dock .nx .ar svg{animation:none}
+/* 주 단추가 dock 에 있으면 본문 안 진한 단추는 보조로 낮춘다(기능은 그대로, 색만) — 꼭 진해야 하면 .keep */
+.app:has(>.dock:not([hidden])) .main .btn.pri:not(.keep){color:var(--acc2);background:linear-gradient(180deg,var(--card0),var(--card1));box-shadow:var(--edge),var(--hl),var(--e1)}
+.app:has(>.dock:not([hidden])) .main .btn.pri:not(.keep)::after{display:none}
+.app:has(>.dock:not([hidden])) .main .btn.pri:not(.keep) .ic-d{fill:var(--goldL,#B99B63);opacity:.38}
+/* 보이되 조용하게 — 이름표 + 한 줄 효과가 달린 작은 기능 카드·칩 */
+.ql{display:flex;align-items:center;gap:var(--sp-2);margin:var(--sp-1) 2px 0;font-size:12.5px;font-weight:700;color:var(--ink3);letter-spacing:.02em}
+.ql::after{content:"";flex:1;height:1px;background:var(--line2)}
+.qg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap-tile)}
+html[data-mode="tab"] .app .qg,html[data-mode="pc"] .app .qg{grid-template-columns:repeat(auto-fill,minmax(188px,1fr))}
+.qf{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;min-width:0;min-height:56px;padding:var(--pad-tile);border-radius:14px;text-align:left;color:var(--ink);
+  background:color-mix(in srgb,var(--card1) 86%,transparent);box-shadow:inset 0 0 0 1px var(--line);transition:background-color .2s,box-shadow .2s,transform var(--t-up) var(--e-up)}
+.qf:hover{background:var(--card0);box-shadow:inset 0 0 0 1px var(--line2),var(--e1)}
+.qf:active{transform:translateY(1px) scale(.985);transition-duration:var(--t-down)}
+.qf>span{min-width:0}
+.qf .ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--accSoft);color:var(--acc2);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+.qf .ic svg{width:16px;height:16px}
+.qf b{display:block;font-size:13.5px;font-weight:700;line-height:1.3}
+.qf small{display:block;margin-top:2px;font-size:12px;line-height:1.35;color:var(--ink3)}
+.qf .v{font-family:var(--fn);font-variant-numeric:tabular-nums;color:var(--acc2);font-weight:700}
+.qcs{display:flex;flex-wrap:wrap;gap:6px}
+.qcs>[class~=chip]{position:static;display:inline-flex;align-items:center;gap:5px;min-height:32px;max-width:100%;padding:0 11px;border-radius:999px;font-size:12.5px;font-weight:600;line-height:1;color:var(--ink2);background:var(--card0);box-shadow:inset 0 0 0 1px var(--line2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qcs>[class~=chip]::after{content:none}
+.qcs>[class~=chip] svg{flex:none;width:13px;height:13px;color:var(--acc)}
+.qcs>[class~=chip].on{background:var(--accSoft);color:var(--acc2);box-shadow:inset 0 0 0 1px rgba(31,102,118,.35)}
+/* 햇빛 아래(고대비) — 현장 야외 */
+.app.sun>.dock{background:#fff;box-shadow:0 0 0 2px #000}
+.app.sun .dock .pri{background:var(--acc2);box-shadow:0 0 0 2px #000}
+.app.sun .dock .nx{font-weight:700}
+.app.sun .qf{background:#fff;box-shadow:inset 0 0 0 1.5px var(--line2)}
+.app.sun .qcs>[class~=chip]{box-shadow:inset 0 0 0 1.5px var(--line2)}
+/* 한 줄 내비 — 폴드 펼침도 다섯 칸 한 판(3|2 두 쟁반 → 하나), 아이콘·글 가로 */
+html[data-mode="fold"] .app .tabs{left:0;right:0;margin-inline:auto;width:min(520px,calc(100% - 24px));grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:6px;
+  background:linear-gradient(180deg,#E9E3D8,#F5F1EA 60%,#F8F5EF);box-shadow:inset 0 2px 4px rgba(60,46,28,.18),inset 0 -1px 0 #fff,0 0 0 1px rgba(60,46,28,.14),0 1px 0 rgba(255,255,255,.9),0 22px 32px -20px rgba(60,46,28,.55)}
+html[data-mode="fold"] .app .tabs .tg{display:contents}
+html[data-mode="fold"] .app .tabs button{grid-auto-flow:column;justify-content:center;gap:6px;min-height:52px;font-size:13px}
+html[data-mode="fold"] .app .tabs button svg{width:20px;height:20px}
+html[data-mode="fold"] .app .tabs button .dot{top:4px;right:6px}
+@media (prefers-reduced-motion:reduce){
+  .app>.dock,.dock .nx .ar,.dock .nx .ar svg{animation:none}
+  .glow:is(.pri,.btn,.sbt,.qf,.rl,.tm-btn),.tabs button.glow{animation:none;outline-color:rgba(42,130,149,.45);outline-offset:3px}
+  .dock .pri,.dock .sbt,.qf{transition:none}
+}
 @media print{
   /* 68회차 미르 ⑧ 복명서 가구별 결과 표 — 좁은 칸(가구·읍면·결과)이 «공검/면»처럼 꺾여 2쪽으로 넘던 것 → 한 줄로 1쪽 */
   [class~=doc-hh] th:nth-child(-n+3),[class~=doc-hh] td:nth-child(-n+3){white-space:nowrap;width:1%}
-  .app{height:auto;overflow:visible}.tabs,.rail,.hbar,.actbar,.toast,.ov,.ky{display:none!important}
+  .app{height:auto;overflow:visible}.tabs,.rail,.hbar,.actbar,.dock,.toast,.ov,.ky{display:none!important}
   .main{display:block}.col{overflow:visible;padding:0}
   .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
   .card::before,.card::after{display:none}

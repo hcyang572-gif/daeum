@@ -3,7 +3,7 @@
    이 파일이 맡는 것(탭 내용은 app/app.js 가 그린다):
    ① 탭 링크 html(nav) — 기존 화면 주소(#today·#plan·#route·#home·#check·#talk·#record·#docs·#perf)를 탭 묶음으로 잇는다
    ② 묶음 안 작은 칸(방문: 계획|동선 · 보고: 문서|실적·사후관리) — 옛 4탭에서 닿던 화면을 하나도 잃지 않게
-   ③ 하단 고정 행동줄 — 화면이 [data-dock] 을 붙인 주 행동 단추를 탭바 바로 위 같은 자리로 옮긴다(이벤트는 그대로 따라감)
+   ③ 주 단추 자리(.dock, 74회차) — 화면이 [data-dock] 을 붙인 주 단추 하나·보조 하나를 .app 바로 아래 «다음 할 일 + 주 단추» 칸으로 옮긴다(이벤트는 그대로 따라감)
    ④ 화면 전환 — transform·opacity 만 280ms, 탭 방향대로 밀림 · 260ms 안 이중 탭 무시 · 움직임 줄이기면 끔
    ⑤ 시간 걸리는 작업 진행 표시 busy(promise, 문구) — 0.3초 넘을 때만 위쪽 진행 막대
    ⛔ 넣지 않는 것: 주민 화면 · 신고 접수 · .ics · 다크 화면.                                                              */
@@ -61,7 +61,7 @@
   }
   function railHTML(view, hid, I, o) {
     var k = tabOf(view), x = hid ? ":" + hid : "";
-    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z73" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
+    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z74" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
       TABS.map(function (t, i) {
         return '<button type="button" class="rl pr' + (i === k ? " on" : "") + '" data-go="' + go(t, x) + '" data-tab="' + t[0] + '"' + (i === k ? ' aria-current="page"' : "") + ">" + ((I || {})[IK[t[0]]] || svg(t[0])) + "<span>" + t[1] + "<small>" + DESC[t[0]] + "</small></span>" + dotOf(t, o) + "</button>";
       }).join("") + ((o && o.foot) || "");
@@ -73,11 +73,82 @@
     return '<nav class="subseg subtabs" aria-label="' + t[1] + ' 안 화면">' + s.map(function (q) { return '<button type="button" class="pr' + (q[2] === view ? " on" : "") + '" data-go="' + q[1] + (q[3] ? x : "") + '"' + (q[2] === view ? ' aria-current="page"' : "") + ">" + q[0] + "</button>"; }).join("") + "</nav>";
   }
 
+  // ── 74회차 «다음 할 일» — 쓰는 도중의 상태를 보고 정한다(처음 한 번 안내가 아님) ──
+  //   s = { listN 명단 가구 수, confirmed 방문 계획 확정, planned 남은 가구 수, hid 다음 가구, area 그 읍면, inField 현장·기록 화면에서 방문 중, view 지금 화면, pending 만들 문서 수 }
+  //   돌려줌 = { k 안내 열쇠(같으면 다시 빛내지 않음), step 표 이름, tx 한 줄, tab 가리키는 탭, at 주 단추가 바로 그 일인 화면들 }
+  function nextStep(s) {
+    s = s || {};
+    if (!s.listN) return { k: "list", step: "불러오기", tx: "발굴 명단을 불러오면 방문 순서가 바로 짜입니다", tab: "today", at: ["today"] };
+    if (!s.confirmed) return { k: "plan", step: "동선 짜기", tx: "순서를 손보고 «방문 계획 확정»을 누르세요", tab: "visit", at: ["plan"] };
+    if (s.planned > 0 && s.inField) return { k: "rec:" + (s.hid || ""), step: "상황 고르기 기록", tx: s.view === "record" ? "상황을 고르면 문장이 써집니다 · «기록 저장»" : "상담이 끝나면 상황을 골라 기록합니다", tab: "rec", at: ["home", "check", "talk", "record"] };
+    if (s.planned > 0) return { k: "go:" + (s.hid || ""), step: "방문", tx: "다음 가구 " + (s.area ? s.area + " " : "") + (s.hid || "") + " · 집 앞에 도착하면 누르세요", tab: "field", at: ["today", "route"] };
+    if (s.pending > 0) return { k: "doc", step: "복명서 만들기", tx: "방문 기록이 끝났습니다 · 복명서를 만들어 받으세요", tab: "rep", at: ["docs"] };
+    return { k: "done", step: "실적 보기", tx: "오늘 할 일을 다 했습니다 · 실적을 확인하세요", tab: "rep", at: ["perf"] };
+  }
+  /** 같은 안내를 계속 반복하지 않게 — 열쇠가 바뀐 첫 번째만 빛남·화살표를 돌린다(이 기기 localStorage, 막히면 이 창 메모리) */
+  var seenMem = null, SEEN = "daeum.s12.nudgeSeen";
+  function fresh(k, store) {
+    var st = store || (typeof localStorage !== "undefined" ? localStorage : null), was = seenMem;
+    try { if (st) was = st.getItem(SEEN); } catch (e) { /* 저장 막힘 */ }
+    if (was === k) return false;
+    seenMem = k; try { if (st) st.setItem(SEEN, k); } catch (e) { /* 저장 막힘 */ }
+    return true;
+  }
+  var ARW = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  var DWN = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
+  /** 옮겨 온 단추를 시안 모양으로 — 주(.pri.glow: <span><b>이름</b><small>설명</small></span><span class="go">) · 보조(.sbt: 아이콘 + 짧은 이름) */
+  function asPri(el, glow) {
+    var sm = el.querySelector(":scope > small"); if (sm) el.removeChild(sm);
+    var lbl = el.getAttribute("data-dock-lbl"), sub = el.getAttribute("data-dock-sub");
+    Array.prototype.slice.call(el.children).forEach(function (n) { if (/^svg$/i.test(n.tagName)) el.removeChild(n); });
+    var b = doc.createElement("b");
+    if (lbl) b.textContent = lbl; else { while (el.firstChild) b.appendChild(el.firstChild); }
+    el.textContent = "";
+    var tx = doc.createElement("span"); tx.appendChild(b);
+    if (sub) { var s2 = doc.createElement("small"); s2.textContent = sub; tx.appendChild(s2); } else if (sm) tx.appendChild(sm);
+    var go = doc.createElement("span"); go.className = "go"; go.setAttribute("aria-hidden", "true"); go.innerHTML = ARW;
+    el.appendChild(tx); el.appendChild(go);
+    el.className = "pri" + (glow ? " glow" : "");
+    return el;
+  }
+  function asSbt(el) {
+    var sm = el.querySelector(":scope > small"), lbl = el.getAttribute("data-dock-lbl");
+    var ic = el.querySelector(":scope > svg");
+    if (sm && !el.getAttribute("title")) el.setAttribute("title", (el.textContent || "").replace(/\s+/g, " ").trim());
+    if (!lbl) { if (sm) el.removeChild(sm); lbl = (el.textContent || "").replace(/\s+/g, " ").trim(); }
+    el.textContent = "";
+    if (ic) el.appendChild(ic); else { var t = doc.createElement("span"); t.innerHTML = ARW; if (t.firstChild) el.appendChild(t.firstChild); }
+    el.appendChild(doc.createTextNode(lbl));
+    el.className = "sbt";
+    return el;
+  }
+  function dockEl(pri, sec, opt) {
+    var nx = opt.nx || null, dk = doc.createElement("div");
+    dk.className = "dock"; dk.setAttribute("role", "group"); dk.setAttribute("aria-label", "이 화면의 주 단추");
+    if (nx && nx.tx) {
+      var n = doc.createElement("div"); n.className = "nx"; n.setAttribute("role", "status");
+      n.innerHTML = '<span class="pill">다음 할 일</span><span class="tx"></span><span class="ar" aria-hidden="true">' + DWN + "</span>";
+      n.querySelector(".tx").textContent = nx.tx;
+      if (!opt.glow) { var ar = n.querySelector(".ar"); ar.style.animation = "none"; } // 이미 본 안내 — 화살표도 가만히
+      dk.appendChild(n);
+    }
+    var row = doc.createElement("div"); row.className = "row";
+    if (sec) row.appendChild(asSbt(sec));
+    row.appendChild(asPri(pri, !!opt.glow));
+    dk.appendChild(row);
+    return dk;
+  }
+  /** 다음 할 일이 다른 탭에 있으면 그 탭 단추(아래 탭·레일)를 살짝 빛낸다 */
+  function glowTab(app, key) {
+    if (!key) return;
+    Array.prototype.forEach.call(app.querySelectorAll('.tabs button[data-tab="' + key + '"], .rail .rl[data-tab="' + key + '"]'), function (b) { b.classList.add("glow"); });
+  }
+
   // ── 브라우저에서만 ──
   var doc = root.document, RM = root.matchMedia ? root.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
   var lastTab = null, lastTap = 0;
   /** 그린 뒤 한 번 부른다: 작은 칸 끼우기 · 행동줄 옮기기 · 전환 움직임 */
-  function after(app, view, hid) {
+  function after(app, view, hid, opt) {
     if (!app) return;
     var main = app.querySelector("main"), col0 = app.querySelector("main > .col") || main; // S12-x 66회차: <main class="main"> 안 칸(.col) 2~3개 — 작은 칸은 첫 칸 맨 위
     // ② 작은 칸
@@ -86,17 +157,18 @@
       var tmp = doc.createElement("div"); tmp.innerHTML = st;
       col0.insertBefore(tmp.firstChild, col0.firstChild);
     }
-    // ③ 행동줄
+    // ③ 주 단추 자리(.dock, 74회차) — 화면이 [data-dock="1"](주)·[data-dock="2"](보조 하나)를 붙여 두면 .app 바로 아래 .dock 으로 옮긴다(옛 .actbar 자리).
+    //   노드를 «옮기기»만 하므로 화면 함수가 걸어 둔 이벤트는 그대로 따라간다. opt.nx = nextStep() 결과(다음 할 일 한 줄), opt.glow = 주 단추를 빛낼지.
     var old = app.querySelector(":scope > .actbar"); if (old) old.remove();
+    var oldD = app.querySelector(":scope > .dock"); if (oldD) oldD.remove();
     var items = Array.prototype.slice.call(app.querySelectorAll("[data-dock]"));
-    doc.body.classList.toggle("has-dock", items.length > 0);
-    app.classList.toggle("hasact", items.length > 0); // S12-x 65회차: 시안 v3 — 행동줄이 있으면 칸 아래 여백(app/v3_live.css ①)
-    if (items.length) {
-      items.sort(function (a, b) { return (+b.getAttribute("data-dock") || 1) - (+a.getAttribute("data-dock") || 1); }); // 2(보조) 왼쪽 → 1(주) 오른쪽
-      var bar = doc.createElement("div"); bar.className = "actbar" + (items.length > 1 ? " two" : ""); bar.setAttribute("role", "group"); bar.setAttribute("aria-label", "다음 단계");
-      items.slice(0, 2).forEach(function (el) { bar.appendChild(el); });
-      app.appendChild(bar);
-    }
+    var pri = items.filter(function (el) { return el.getAttribute("data-dock") !== "2"; })[0] || null;
+    var sec = items.filter(function (el) { return el.getAttribute("data-dock") === "2"; })[0] || null;
+    if (!pri && sec) { pri = sec; sec = null; }
+    doc.body.classList.toggle("has-dock", !!pri);
+    app.classList.toggle("hasact", !!pri);
+    if (pri) app.appendChild(dockEl(pri, sec, opt || {}));
+    glowTab(app, opt && opt.tabGlow);
     // ④ 전환(탭이 바뀔 때만)
     var k = tabOf(view);
     if (lastTab !== null && k !== lastTab && !RM.matches) {
@@ -134,7 +206,7 @@
       lastTap = t;
     }, true);
   }
-  var api = { TABS: TABS, SUB: SUB, tabOf: tabOf, links: links, tabsHTML: tabsHTML, railHTML: railHTML, subtabs: subtabs, after: after, busy: busy };
+  var api = { TABS: TABS, SUB: SUB, tabOf: tabOf, links: links, tabsHTML: tabsHTML, railHTML: railHTML, subtabs: subtabs, after: after, busy: busy, nextStep: nextStep, fresh: fresh };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DaeumShell = api;
 })(typeof window !== "undefined" ? window : globalThis);

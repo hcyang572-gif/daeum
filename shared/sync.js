@@ -14,10 +14,7 @@
   var LIB = new URL("vendor/supabase-js-2.45.4.min.js", (root.document && root.document.currentScript || {}).src || (root.location && root.location.href) || "http://localhost/shared/").href;
   var GUARD = /gicjzrxgktpovnphtjhi\.supabase\.co$/; // 닿음 전용 프로젝트만 허용
   var S = { mode: "local", why: "login", user: null, at: null, client: null, ch: null, subs: [], gen: 0, conUser: null, flushing: null, pullAgain: false, pulling: null };
-  // 73회차 🔐: 가입 확인 메일 링크로 돌아오면 주소 끝(#access_token=…&type=signup 또는 #error=…)에 세션이 실려 온다.
-  //   앱(app.js)이 곧바로 주소를 #today 로 바꿔 라이브러리가 읽기 전에 사라졌다 → 이 파일이 실릴 때(app.js 보다 먼저) 받아 두고 init 에서 직접 세션으로 넣는다
-  var AUTH_HASH = ""; try { var h0 = String(root.location && root.location.hash || ""); if (/access_token=|error_description=|error_code=/.test(h0)) AUTH_HASH = h0.replace(/^#/, ""); } catch (e) { /* 주소 없음(시험) */ }
-  function hashArgs() { var o = {}; AUTH_HASH.split("&").forEach(function (kv) { var i = kv.indexOf("="); if (i > 0) { try { o[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, " ")); } catch (e) { o[kv.slice(0, i)] = kv.slice(i + 1); } } }); return o; }
+  // 74회차 ⓪-1: 이메일 가입·확인 메일 복귀 처리(73회차 #access_token 받기) 제거 — 시연 로그인만
   var SESSION_WAIT = C.syncSessionWaitMs || 6000; // 세션 읽기가 이보다 오래 걸리면 저장된 세션으로 바로 붙는다(잠금 경합 대비)
 
   /* 실기기(11-03) 교훈: supabase-js 기본 인증 잠금(navigator.locks)은 «같은 주소의 모든 탭»이 나눠 쓴다.
@@ -230,8 +227,6 @@
   // ── 바깥에서 부르는 것 ──
   var api = {
     keys: K,
-    /** 73회차 🔐: 확인 메일에서 돌아온 결과 — welcome = "signup" 등(가입 완료·로그인됨), authErr = {code,text}(링크 만료 등) */
-    authReturn: function () { return { welcome: S.welcome || "", err: S.authErr || null }; },
     state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email, demo: api.isDemoUser(S.user) } : null, at: S.at, pending: queue().length, enabled: enabled(), fails: S.fails || 0, lastErr: S.lastErr || "" }; },
     on: function (f) { S.subs.push(f); },
     /** 68회차 S12-z4 팀 연동(shared/team_sync.js)이 같은 연결·같은 로그인으로 서버 함수·팀 채널을 쓰게 — 로그인 전이면 null */
@@ -259,16 +254,7 @@
       return client().then(function (c) {
         // 세션 읽기가 늦으면(다른 탭 잠금 등) 저장된 세션으로 먼저 붙고, 읽기가 끝나면 그 값으로 맞춘다
         var slow = new Promise(function (ok) { setTimeout(function () { ok({ slow: true }); }, SESSION_WAIT); });
-        var ha = AUTH_HASH ? hashArgs() : {}; AUTH_HASH = "";
-        if (ha.error || ha.error_code) { S.authErr = { code: ha.error_code || ha.error || "", text: ha.error_description || "" }; later(function () { emit("auth-error"); }); }
-        var real = ha.access_token && ha.refresh_token
-          ? Promise.resolve(c.auth.setSession({ access_token: ha.access_token, refresh_token: ha.refresh_token })).then(function (r) { // 확인 메일에서 돌아옴 → 바로 로그인 상태
-            var u = r && r.data && r.data.session ? r.data.session.user : null;
-            if (u) { S.welcome = ha.type || "signup"; later(function () { emit("welcome"); }); }
-            if (u) return { user: u };
-            return c.auth.getSession().then(function (r2) { return { user: r2 && r2.data && r2.data.session ? r2.data.session.user : null }; });
-          })
-          : c.auth.getSession().then(function (r) { var u = r && r.data && r.data.session ? r.data.session.user : null; return { user: u }; });
+        var real = c.auth.getSession().then(function (r) { var u = r && r.data && r.data.session ? r.data.session.user : null; return { user: u }; });
         real.then(function (x) { if ((x.user && x.user.id) !== S.conUser) setUser(x.user); }, function () {});
         return Promise.race([real, slow]);
       }).then(function (r) {
@@ -276,7 +262,6 @@
       }).catch(function () { mode("local", "lib"); });
     },
     signIn: function (email, pw) { return client().then(function (c) { return c.auth.signInWithPassword({ email: email, password: pw }); }).then(function (r) { if (r.error) throw r.error; return r; }); },
-    signUp: function (email, pw) { return client().then(function (c) { var base = location.href.indexOf('/daeum/') > -1 ? location.href.split('/daeum/')[0] + '/daeum/' : location.origin + '/'; return c.auth.signUp({ email: email, password: pw, options: { emailRedirectTo: base } }); /* 72회차: 확인 메일이 Site URL(github.io 뿌리=앱 모음 랜딩)로 가던 것 → 닿음으로 */ }).then(function (r) { if (r.error) throw r.error; return r; }); },
     /** S12-v U24(1-5): o.wipe 이면 서버 로그아웃 뒤 이 기기의 닿음 저장분(daeum.* — 방문 기록·계획·명단 메타·보낼 줄 등)과 sessionStorage 를 지운다.
      *  서버에 못 닿아도(끊김) 이 기기 정리는 한다. 시연 데이터는 다음에 열 때 demo_seed.js 가 다시 깐다(daeum.demo.seededFor 도 지워지므로) */
     signOut: function (o) {

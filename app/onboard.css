@@ -322,8 +322,8 @@ dialog.dob::backdrop{background:transparent}
 @media (prefers-reduced-motion:reduce){.dob .o-syncart circle{display:none}}
 .dob.o-m-phone.dob-acct .o-acct-scroll{min-height:0}
 
-/* ═════ 73회차 🩵 미르 — 로그인 세 갈래(시안 _design/S12-73_주단추_로그인_시안 ① 폰 3장)를 실제 창으로 ═════
-   시안 class 이름 그대로(파로 마크업과 맞춤). 앱 쪽 .demo·.row·.pri·.fs·.brand 와 이름이 겹치므로 전부 form.lg73(파로 5e57089) 안으로만 건다. 시안 .toast → .lgtoast.
+/* ═════ 73회차 🩵 미르 — 로그인 창(74회차 ⓪-1: 이메일 가입·로그인 갈래 제거, 시연 1·2·3만 · 시안 _design/S12-73_주단추_로그인_시안 ① 폰 3장)를 실제 창으로 ═════
+   시안 class 이름 그대로(파로 마크업과 맞춤). 앱 쪽 .demo·.row·.pri·.fs·.brand 와 이름이 겹치므로 전부 form.lg73(파로 5e57089) 안으로만 건다.
    시안 목업(340px 액자)의 10.5px 글은 실제 화면에서 12px 이상으로 올렸다. */
 .dob .lg73 .brand{display:grid;justify-items:center;gap:6px;padding:6px 0 2px;text-align:center}
 .dob .lg73 .brand .mk{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;
@@ -349,60 +349,29 @@ dialog.dob::backdrop{background:transparent}
 .dob .lg73 .wk small{display:block;font-size:12px;opacity:.8;line-height:1.35}
 .dob .lg73 .wk svg{width:16px;height:16px}
 .dob .lg73 .wk:focus-visible{outline:2px solid #8FD9E4;outline-offset:2px}
-.dob .lg73 .drules{display:grid;gap:4px;margin-top:11px;font-size:12px;line-height:1.45;color:#CFE3E6}
-.dob .lg73 .drules span{display:flex;gap:6px;align-items:flex-start}
-.dob .lg73 .drules svg{flex:none;width:12px;height:12px;margin-top:3px;color:#8FD9E4}
-/* 두 갈래 문 */
-.dob .lg73 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.dob .lg73 .door{border-radius:18px;padding:13px 12px;min-height:44px;background:var(--card0);box-shadow:var(--e1),inset 0 1px 0 #fff;display:grid;gap:3px;align-content:start;border:1px solid var(--line);text-align:left;color:var(--ink)}
-.dob .lg73 .door .ic{width:32px;height:32px;border-radius:10px;background:var(--accSoft);color:var(--acc2);display:grid;place-items:center;margin-bottom:3px}
-.dob .lg73 .door .ic svg{width:16px;height:16px}
-.dob .lg73 .door b{font-size:15px}
-.dob .lg73 .door small{font-size:12px;color:var(--ink3);line-height:1.4}
-.dob .lg73 .door.sel,.dob .lg73 .door[aria-pressed="true"],.dob .lg73 .door[aria-current="true"]{box-shadow:0 0 0 2px var(--acc),var(--e1)}
+.dob .lg73 .alt{margin:10px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;font-size:12.5px;color:#BFD9DD}   /* 74회차 ⓪-1b 동료 계정 링크 — 보이되 조용하게 */
+.dob .lg73 .alt .lk{min-width:32px;min-height:32px;padding:0 6px;border-radius:9px;color:#E7F3F4;font:700 13.5px var(--fn);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(231,243,244,.45)}
+.dob .lg73 .alt .lk:hover{background:rgba(255,255,255,.10)}
+.dob .lg73 .alt .lk:focus-visible{outline:2px solid #8FD9E4;outline-offset:1px}
+.dob .lg73 .alt>span{opacity:.55}
+.dob .lg73 .alt small{flex-basis:100%;margin-top:4px;font-size:12px;line-height:1.5;color:#A9C7CC}
+.dob .lg73 .alt small b{color:#E7F3F4;font-weight:700}
+.dob .lg73 .demo.sw{padding:12px 14px;border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 16px -12px rgba(15,42,49,.7)}   /* 로그인 뒤 «시연 바꾸기»는 한 단계 낮게 */
+.dob .lg73 .demo.sw h4{font-size:16px}
+.dob .lg73 .demo.sw .sub{display:none}
 .dob .lg73 .local{margin:0;font-size:12px;color:var(--ink3);text-align:center}
-/* 처음이에요 · 이미 있어요 */
-.dob .lg73 .back{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:13px;color:var(--ink2);justify-self:start;align-self:start}
-.dob .lg73 .back svg{width:16px;height:16px;transform:scaleX(-1)}
 .dob .lg73 .ttl{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .dob .lg73 .ttl h3{margin:0;font-size:20px;font-weight:800;letter-spacing:-.03em}
 .dob .lg73 .ttl span{font-size:12.5px;color:var(--ink3)}
 .dob .lg73 .flat{background:var(--card0);border-radius:16px;padding:12px;border:1px solid var(--line);display:grid;gap:10px}
-.dob .lg73 .fld{display:grid;gap:4px;font-size:12.5px;color:var(--ink2);font-weight:700}
-.dob .lg73 .in{display:flex;align-items:center;gap:8px;min-height:48px;border-radius:14px;background:#fff;border:1px solid var(--line2);padding:0 6px 0 12px;color:var(--ink3);font-weight:400;font-size:15px}
-.dob .lg73 .in:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--accSoft)}
-.dob .lg73 .in>svg{flex:none;width:15px;height:15px}
-.dob .lg73 .in input{flex:1;min-width:0;height:46px;border:0;background:none;font:inherit;font-size:16px;color:var(--ink);outline:0}  /* 16px: 아이폰 확대 방지 */
-.dob .lg73 .in .eye{margin-left:auto;flex:none;min-width:44px;min-height:44px;display:grid;place-items:center;color:var(--ink3)}
-.dob .lg73 .flow{display:grid;gap:0}
-.dob .lg73 .fs{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;position:relative;padding-bottom:11px}
-.dob .lg73 .fs:not(:last-child)::before{content:"";position:absolute;left:11.5px;top:26px;bottom:2px;width:1px;background:var(--line2)}
-.dob .lg73 .fs i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--accSoft);color:var(--acc2);font:700 12px var(--fn);display:grid;place-items:center}
-.dob .lg73 .fs b{font-size:13.5px;display:block;line-height:1.4}
-.dob .lg73 .fs small{font-size:12px;color:var(--ink3);display:block;line-height:1.4}
-/* 메일 미리보기(시안) · 영어 기본 메일 안내(조용한 안내 상자) — 한국어 메일은 보류(4e72a24), 영어 기본 메일 그대로 */
-.dob .lg73 .mail{border-radius:14px;background:#fff;border:1px solid var(--line2);padding:11px 12px;display:grid;gap:5px;font-size:12.5px;line-height:1.5}
-.dob .lg73 .mail .from{color:var(--ink3);font-size:12px}
-.dob .lg73 .mail .subj{font-weight:700;font-size:13.5px}
-.dob .lg73 .mail .mb{justify-self:start;background:var(--acc);color:#fff;border-radius:10px;padding:6px 12px;font-weight:700;font-size:12.5px}
-.dob .lg73 .mailnote,.dob .lg73 .mail-en{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:start;margin:0;padding:10px 12px;border-radius:14px;
-  background:var(--card1);border:1px dashed var(--line2);font-size:12.5px;line-height:1.55;color:var(--ink2)}
-.dob .lg73 .mailnote>svg,.dob .lg73 .mail-en>svg{width:16px;height:16px;margin-top:2px;color:var(--acc)}
-.dob .lg73 .mailnote>:only-child,.dob .lg73 .mail-en>:only-child{grid-column:1/-1}
-.dob .lg73 .mailnote b,.dob .lg73 .mail-en b{color:var(--ink);font-weight:700}
-.dob .lg73 .mailnote code,.dob .lg73 .mail-en code{font:600 12px var(--fn);background:#fff;border:1px solid var(--line);border-radius:6px;padding:0 5px;white-space:nowrap}
-/* 가입 완료 알림 · 로그아웃 자리 */
-.dob .lg73 .lgtoast{position:static;transform:none;border-radius:14px;background:#1B2328;color:#F2F5F6;font-size:13px;line-height:1.45;padding:10px 12px;display:flex;gap:8px;align-items:center;box-shadow:var(--e2)}
-.dob .lg73 .lgtoast svg{flex:none;width:16px;height:16px;color:#8FD9E4}
-.dob .lg73 .ql{font-size:12px;color:var(--ink3);font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:8px;margin-top:2px}
-.dob .lg73 .ql::after{content:"";flex:1;height:1px;background:var(--line2)}
+/* 로그인 뒤 — 내 계정 · 로그아웃(시연 바꾸기) */
 .dob .lg73 .acct{display:grid;gap:8px}
 .dob .lg73 .acct .me{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:center}
 .dob .lg73 .acct .me b{display:block;font-size:14px;overflow-wrap:anywhere}
 .dob .lg73 .acct .av{width:36px;height:36px;border-radius:50%;background:var(--accSoft);color:var(--acc2);display:grid;place-items:center;font-weight:800;text-transform:uppercase}
 .dob .lg73 .acct small{font-size:12px;color:var(--ink3);line-height:1.45}
 .dob .lg73 .outb{min-height:44px;border-radius:12px;border:1px solid rgba(184,71,58,.4);color:#B8473A;background:var(--card0);font-size:14px;font-weight:700;text-align:center}
-/* 아래 주 단추(가입하기·로그인) */
+/* 아래 주 단추(닫기) */
 .dob .lg73 .dock{position:sticky;bottom:0;padding:18px 0 calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(242,239,233,0),#F2EFE9 34%);display:grid;gap:7px}
 .dob .lg73 .row{display:flex;gap:8px}
 .dob .lg73 .pri{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 36px;align-items:center;gap:8px;min-height:58px;padding:8px 9px 8px 16px;border-radius:18px;border:0;color:var(--onAcc);text-align:left;position:relative;
@@ -412,27 +381,20 @@ dialog.dob::backdrop{background:transparent}
 .dob .lg73 .pri:disabled{opacity:.55;cursor:default}
 .dob .lg73 .pri b{display:block;font-size:16px;font-weight:800;line-height:1.25}
 .dob .lg73 .pri small{display:block;font-size:12px;opacity:.85;line-height:1.3}
-.dob .lg73 .pri .go{width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.16);display:grid;place-items:center}
-.dob .lg73 .pri .go svg{width:18px;height:18px}
 .dob .lg73 .pri:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
-@media (max-width:359px){.dob .lg73 .two{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.dob .lg73 .wk,.dob .lg73 .pri{transition:none}.dob .lg73 .wk:active,.dob .lg73 .pri:active{transform:none}}
 /* 파로 마크업(5e57089) 맞춤 — 판 안 세로 흐름·숨김 갈래·시연 상태 줄 */
 .dob .lg73 .o-acct-scroll{padding:22px 18px 0;gap:0}
 .dob.o-m-pc .lg73.o-acct{width:min(560px,calc(100vw - 32px))}
 .dob.o-m-pc .lg73 .o-acct-scroll{flex-direction:column;overflow:auto;padding:30px 32px 0}
 .dob .lg73 .lg-v{display:grid;gap:12px;align-content:start}
-.dob .lg73 .lg-v[hidden],.dob .lg73 [data-t-up][hidden],.dob .lg73 [data-t-in][hidden]{display:none!important}
+.dob .lg73 .lg-v[hidden]{display:none!important}
 .dob .lg73 .lg-v>.ttl{padding-right:48px}   /* 오른쪽 위 닫기(×)와 겹치지 않게 */
 .dob .lg73 .lg-v[data-v="home"]>.brand{padding-top:8px}
 .dob .lg73 .local{display:flex;justify-content:center;align-items:center;gap:6px}
 .dob .lg73 .local svg{flex:none;width:14px;height:14px;color:var(--acc)}
 .dob .lg73 .demo #aDemoMsg,.dob .lg73 #aDemoMsg{display:block;margin:8px 0 0;min-height:0;font-size:12.5px;font-weight:700;color:#E7CF9E}
 .dob .lg73 #aDemoMsg:empty{display:none}
-.dob .lg73 .door{cursor:pointer;transition:transform .18s var(--e-out),box-shadow .18s var(--e-out)}
-.dob .lg73 .door:hover{box-shadow:0 0 0 1px rgba(31,102,118,.35),var(--e1)}
-.dob .lg73 .door:active{transform:scale(.985)}
-.dob .lg73 .eye svg{width:16px;height:16px}
 .dob .lg73 .acct-pp{margin:0;font-size:12.5px;color:var(--ink3)}
 .dob .lg73 .o-foot{padding:12px 0 calc(14px + env(safe-area-inset-bottom,0px))}
 .dob .lg73 .dock+.o-foot,.dob .lg73 .lg-v+.o-foot{border-top:1px solid var(--line)}
