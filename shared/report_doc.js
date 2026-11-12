@@ -410,7 +410,7 @@
   var TWW = 48190; // 본문 폭(hwpx.js 의 TW 와 같음)
 
   // 파일 이름 = 날짜_종류(예 20261102_주간보고서.hwpx) — 11-02 지시
-  function fname(m, ext) { return String(m.made).replace(/-/g, "") + "_" + (m.kind === "monthly" ? "월간" : "주간") + "보고서" + (m.scope ? "_" + m.scope : "") + "." + ext; }
+  function fname(m, ext) { return String(m.made).slice(0, 10) + "_전체_" + (m.kind === "monthly" ? "월간" : "주간") + "보고서" + (m.scope ? "_" + String(m.scope).replace(/\s+/g, "") : "") + "." + ext; } // S12-z 이름 규칙
   var api = { paceSvg: paceSvg, build: build, html: html, text: text, trend: trend, areaPoints: areaPoints, dot: dot, encode: encode, decode: decode, encodeSync: encodeSync, decodeSync: decodeSync, SYM: SYM, xlsxSpec: xlsxSpec, hwpxDoc: hwpxDoc, fname: fname, cases: cases, pii: pii, sources: sources, trendAbove: trendAbove };
   F.reportDoc = api;
 

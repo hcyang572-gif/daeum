@@ -41,7 +41,7 @@
      .schedule(links, outcomes, followups, now) → [{key:"<linkId>:m1", linkId, householdId, label, area, services, step, stepLabel, base, date, state:"done"|"overdue"|"today"|"soon"|"later", doneAt, overdueDays}]
         (followups 저장소·키는 features.js F.followUp 과 같다 — 어느 쪽에서 표시해도 함께 바뀜)
      .month(items, "YYYY-MM", {promises}) → { ym, weeks:[[{date, inMonth, items:[…], promises:[…], red:bool}]×7] }
-     .today(items, now) → { today:[…], overdue:[…], line:"오늘 재확인 2집 · 기한 지남 1집" }
+     .today(items, now) → { today:[…], overdue:[…], line:"오늘 재확인 2가구 · 기한 지남 1가구" }
    [C1 집 앞 30초 요약] F.homeCard
      .NOTE_TAGS = ["개가 있음","귀가 어두우심","오후에만 계심",…] · 저장 키 F.store «homeNotes» {hid:[꼬리표]}
      .build(hid, {household, attempts, records, notes, promises, tips, now}) → { hid, title, area, lastVisit:{date, how, point}|null,
@@ -291,7 +291,8 @@
       var keys = Object.keys(ORGS);
       return keys.filter(function (k) { return score[k]; }).sort(function (a, b) { return score[b] - score[a] || keys.indexOf(a) - keys.indexOf(b); });
     },
-    fileName: function (orgKey, now) { return "연계의뢰서_" + ORGS[orgKey].org.replace(/[^가-힣A-Za-z0-9]/g, "") + "_" + U.ymd(now || new Date()).replace(/-/g, "") + ".hwpx"; },
+    // S12-z 저장 이름 «YYYY-MM-DD_가구번호(가명)_문서종류.hwpx»(가구를 모르면 «전체») — 기관 이름은 괄호 앞만
+    fileName: function (orgKey, now, hid) { return U.ymd(now || new Date()) + "_" + (String(hid || "").replace(/[^A-Za-z0-9가-힣-]/g, "") || "전체") + "_연계의뢰서_" + ORGS[orgKey].org.split("(")[0].replace(/[^가-힣A-Za-z0-9]/g, "") + ".hwpx"; },
     /** rec = 확정 기록 {text:"[행복이음…]\n주요 욕구: …", area, label, at} → DaeumHwpx.build 입력 */
     build: function (rec, orgKey, ctx) {
       ctx = ctx || {}; var o = ORGS[orgKey]; if (!o) throw new Error("기관 종류: " + Object.keys(ORGS).join("·"));
@@ -358,7 +359,7 @@
     },
     today: function (items, now) {
       var t = (items || []).filter(function (x) { return x.state === "today"; }), od = (items || []).filter(function (x) { return x.state === "overdue"; });
-      return { today: t, overdue: od, line: "오늘 재확인 " + uniq(t.map(function (x) { return x.householdId; })).length + "집 · 기한 지남 " + uniq(od.map(function (x) { return x.householdId; })).length + "집" };
+      return { today: t, overdue: od, line: "오늘 재확인 " + uniq(t.map(function (x) { return x.householdId; })).length + "가구 · 기한 지남 " + uniq(od.map(function (x) { return x.householdId; })).length + "가구" };
     },
     mark: function (followups, key, at) { return F.followUp.mark(followups, key, at); }
   };
@@ -469,7 +470,7 @@
     plan: function (n, until, perDay, ctx) {
       ctx = ctx || {}; perDay = Math.max(1, +perDay || 5); n = Math.max(0, +n || 0);
       var today = U.startOfDay(ctx.today || new Date());
-      if (!until) return { set: false, n: n, perDay: perDay, days: [], left: 0, need: Math.ceil(n / perDay), spare: 0, over: false, line: "기한을 정하면 하루 몇 집인지 알려 드립니다." };
+      if (!until) return { set: false, n: n, perDay: perDay, days: [], left: 0, need: Math.ceil(n / perDay), spare: 0, over: false, line: "기한을 정하면 하루 몇 가구인지 알려 드립니다." };
       var end = U.startOfDay(until), days = [], d = new Date(today), guard = 0;
       while (d <= end && guard++ < 400) { if (!U.isOff(d)) days.push(U.ymd(d)); d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1); }
       var todayKey = U.ymd(today), visitDays = days.filter(function (k) { return k !== todayKey; });
@@ -481,8 +482,8 @@
         return { date: k, kind: k === todayKey ? "today" : i >= 0 ? "go" : k === U.ymd(end) ? "end" : "spare", day: i >= 0 ? i + 1 : null, end: k === U.ymd(end) };
       });
       return { set: true, n: n, perDay: perDay, until: U.ymd(end), days: cells, left: days.length, need: need, spare: spare, over: over, perDayNeed: perDayNeed, go: go,
-        line: over ? "기한까지 근무일 " + visitDays.length + "일 — 하루 " + perDayNeed + "집씩 봐야 합니다(상한 " + perDay + "집). 기한을 늦추거나 하루 상한을 올려 주세요."
-          : "근무일 " + days.length + "일 남음 · 하루 " + perDay + "집 기준 " + need + "일 방문 · 여유 " + spare + "일(부재 다시 방문용)" };
+        line: over ? "기한까지 근무일 " + visitDays.length + "일 — 하루 " + perDayNeed + "가구씩 봐야 합니다(상한 " + perDay + "가구). 기한을 늦추거나 하루 상한을 올려 주세요."
+          : "근무일 " + days.length + "일 남음 · 하루 " + perDay + "가구 기준 " + need + "일 방문 · 여유 " + spare + "일(부재 다시 방문용)" };
     },
     split: function (ranked, perDay) {
       perDay = Math.max(1, +perDay || 5);

@@ -50,13 +50,19 @@
   }
   var XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
     XLSX_SRI = "sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==";
+  // 67회차: 같은 출처 사본 먼저(행정망·전파 약한 곳에서 CDN이 막혀 .xlsx 를 못 읽던 것 — 에뮬 오프라인 실측), 안 되면 CDN. 둘 다 같은 SRI
+  //   상대 경로는 «이 스크립트» 기준(첫 화면 / 와 사무 화면 /officer/ 가 달라서) — shared/vendor/README.md 와 같은 방식
+  var XLSX_LOCAL = (function () { try { return new URL("../shared/vendor/xlsx-0.18.5.full.min.js", (doc && doc.currentScript && doc.currentScript.src) || root.location.href).href; } catch (e) { return ""; } })();
   function loadXLSX() {
     if (root.XLSX) return Promise.resolve(root.XLSX);
-    return new Promise(function (ok, no) {
-      var s = doc.createElement("script"); s.src = XLSX_URL; s.integrity = XLSX_SRI; s.crossOrigin = "anonymous"; s.referrerPolicy = "no-referrer";
-      s.onload = function () { root.XLSX ? ok(root.XLSX) : no(new Error("xlsx")); }; s.onerror = function () { no(new Error("xlsx")); };
-      doc.head.appendChild(s);
-    });
+    function one(src) {
+      return new Promise(function (ok, no) {
+        var s = doc.createElement("script"); s.src = src; s.integrity = XLSX_SRI; s.crossOrigin = "anonymous"; s.referrerPolicy = "no-referrer";
+        s.onload = function () { root.XLSX ? ok(root.XLSX) : no(new Error("xlsx")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("xlsx")); };
+        doc.head.appendChild(s);
+      });
+    }
+    return (XLSX_LOCAL ? one(XLSX_LOCAL) : Promise.reject()).catch(function () { return one(XLSX_URL); });
   }
   function readFile(f) {
     var isX = /\.xlsx?$/i.test(f.name);
@@ -70,9 +76,11 @@
           ok(parseCSV(t)); return;
         }
         loadXLSX().then(function (X) {
-          var wb = X.read(new Uint8Array(r.result), { type: "array" }), ws = wb.Sheets[wb.SheetNames[0]];
-          ok(X.utils.sheet_to_json(ws, { header: 1, defval: "", raw: false }));
-        }, no);
+          try { // 67회차: 깨진·암호 걸린 파일이면 X.read 가 던진다 — 잡지 않으면 «읽는 중»에서 멈추고 안내도 없었다
+            var wb = X.read(new Uint8Array(r.result), { type: "array" }), ws = wb.SheetNames.length ? wb.Sheets[wb.SheetNames[0]] : null;
+            ok(ws ? X.utils.sheet_to_json(ws, { header: 1, defval: "", raw: false }) : []);
+          } catch (e) { no(new Error("broken")); }
+        }, function () { no(new Error("lib")); });
       };
       if (isX) r.readAsArrayBuffer(f); else r.readAsText(f, "utf-8");
     });
@@ -93,6 +101,7 @@
   var MAX = 2000;
   function importRows(rows, households) {
     var hd = mapCols(rows || []);
+    if (!(rows || []).some(function (r) { return (r || []).some(function (x) { return String(x == null ? "" : x).trim(); }); })) return { ok: false, err: "blank" }; // 67회차: 아무것도 없는 파일
     if (hd.i < 0 || (hd.m.id == null && hd.m.addr == null)) return { ok: false, err: "cols" };
     var head = rows[hd.i], body = rows.slice(hd.i + 1).filter(function (r) { return r.some(function (x) { return String(x).trim(); }); });
     var benCol = []; head.forEach(function (h, j) { if (BEN.indexOf(String(h).trim()) >= 0) benCol.push(j); });
@@ -100,12 +109,12 @@
     if (hd.m.prio != null) body = body.map(function (r, i) { return { r: r, i: i, p: parseFloat(cell(r, "prio")) }; })
       .sort(function (a, b) { var x = isFinite(a.p) ? a.p : 1e9, y = isFinite(b.p) ? b.p : 1e9; return x - y || a.i - b.i; }).map(function (x) { return x.r; });
     var by = {}, ix = {}; (households || []).forEach(function (h) { by[h.id] = h; var n = +String(h.id).split("-")[1]; if (n) ix[h.area + "|" + n] = h.id; });
-    var ids = [], miss = 0, seen = {}, meta = {};
+    var ids = [], miss = 0, dup = 0, seen = {}, meta = {};
     body.forEach(function (r) {
       var id = cell(r, "id").toUpperCase();
       if (!(id && by[id]) && hd.m.addr != null) id = ix[addrKey(cell(r, "addr"))] || "";
       if (!id || !by[id]) { miss++; return; }
-      if (seen[id]) return; seen[id] = 1; ids.push(id);
+      if (seen[id]) { dup++; return; } seen[id] = 1; ids.push(id); // 67회차: 같은 가구 두 줄 이상 = 첫 줄(발굴 순위가 앞선 줄)만, 건수는 알린다
       var ben = benCol.filter(function (j) { return yes(r[j]); }).map(function (j) { return String(head[j]).trim(); });
       meta[id] = { prio: cell(r, "prio"), cnt: +cell(r, "cnt") || 0, proc: cell(r, "proc"), lonely: yes(cell(r, "lonely")), child: yes(cell(r, "child")),
         ben: ben, hasBen: benCol.length > 0, aiReq: cell(r, "aiReq"), aiRes: cell(r, "aiRes"), vars: cell(r, "sig"), ym: cell(r, "ym").slice(0, 7) };
@@ -115,7 +124,7 @@
     var ys = Object.keys(meta).map(function (k) { return meta[k].ym; }).filter(Boolean).sort();
     if (!body.length) return { ok: false, err: "empty", cols: cols, total: head.filter(function (h) { return String(h).trim(); }).length };
     if (!ids.length) return { ok: false, err: "nomatch", n: body.length };
-    return { ok: true, meta: meta, ids: ids.slice(0, MAX), cut: ids.length > MAX, cols: cols, skipped: skipped, miss: miss, n: body.length,
+    return { ok: true, meta: meta, ids: ids.slice(0, MAX), cut: ids.length > MAX, cols: cols, skipped: skipped, miss: miss, dup: dup, n: body.length,
       total: head.filter(function (h) { return String(h).trim(); }).length, benCols: benCol.length, ym: ys.length ? ys[ys.length - 1] : "" };
   }
 

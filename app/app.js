@@ -9,7 +9,7 @@
 (function () {
   "use strict";
   var F = window.DaeumFeatures, P = window.DaeumPriority, RP = window.DaeumRoutePlan, SY = window.DaeumSync, OH = window.DaeumOldHouse, NT = window.DaeumNotify;
-  var SH = window.DaeumShell || { links: function () { return ""; }, after: function () {}, busy: function (p) { return p; } }, IM = window.DaeumImport, CH = window.DaeumChips; // S12-i1 셸·명단 불러오기·예시 칩
+  var SH = window.DaeumShell || { links: function () { return ""; }, tabsHTML: function () { return ""; }, railHTML: function () { return ""; }, tabOf: function () { return 0; }, TABS: [], after: function () {}, busy: function (p) { return p; } }, IM = window.DaeumImport, CH = window.DaeumChips; // S12-i1 셸·명단 불러오기·예시 칩
   var U = F.util;
   var D = window.__DAEUM_HOUSEHOLDS__ || { households: [], meta: { office: { x: 0, y: 0 } }, indicators: [] };
   var AL = window.__DAEUM_ALERTS__ || null, RCP = window.__DAEUM_RECIPIENTS__ || null, RES = window.__DAEUM_RESOURCES__ || null;
@@ -21,6 +21,7 @@
   var W = "일월화수목금토";
   var RM_ = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var app = document.getElementById("app");
+  const I = Object.assign({}, DaeumIcons.I); // S12-x 65회차: 시안 v3 아이콘(shared/icons_s12x.js — index.html 이 먼저 불러옴) · 머리 단추·탭·레일·가구별 기록
   // 정의서 §7 가정값(조정 가능한 가정 — 화면 숫자의 근거 꼬리표에 그대로 적는다)
   var A = { missRate: 0.3, safetyMin: 40, retryGap: 2 };
   var LS_META = "daeum.s11.importMeta", LS_DL = "daeum.officer.deadline", LS_REC = "daeum.s12.rec", LS_SAFE = "daeum.s12.safety", LS_DOCS = "daeum.s12.docs", LS_FILL = "daeum.s12.fill", LS_SDEMO = "daeum.s12.safeDemo", LS_DOUT = "daeum.officer.dayOut", LS_DMOVE = "daeum.officer.dayMove", LS_SMIN = "daeum.s12.safeMin", LS_SDAY = "daeum.s12.safeDay"; // S12-i5 예상 시간 칩·하루 요약
@@ -35,6 +36,8 @@
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* 저장 불가 */ } }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function ymd(d) { return U.ymd(d); }
+  /** S12-z 저장 이름 «YYYY-MM-DD_가구번호(가명)_문서종류.확장자»(여러 가구 = «전체») — 규칙 정본은 shared/xlsx.js docName, 부품을 아직 안 불렀을 때(인쇄 제목)도 같게 */
+  function fnm(d, hid, kind, ext) { var X = window.DaeumXlsx; if (X && X.docName) return X.docName(d, hid, kind, ext); d = d ? new Date(d) : new Date(); return ymd(isNaN(d) ? new Date() : d) + "_" + (String(hid || "").replace(/\s+/g, "") || "전체") + "_" + String(kind || "문서").replace(/[\\/:*?"<>|\s]+/g, "") + (ext ? "." + ext : ""); }
   function md(d) { d = typeof d === "string" && d.length === 10 ? new Date(d + "T00:00:00") : new Date(d); return (d.getMonth() + 1) + "월 " + d.getDate() + "일(" + W.charAt(d.getDay()) + ")"; }
   function mdDot(d) { d = typeof d === "string" && d.length === 10 ? new Date(d + "T00:00:00") : new Date(d); return (d.getMonth() + 1) + ". " + d.getDate() + ".(" + W.charAt(d.getDay()) + ")"; }
   function hm(d) { d = new Date(d); return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
@@ -125,6 +128,11 @@
     return out;
   }
   function lastLog(hid) { return logs().filter(function (l) { return l.household_no === hid; }).sort(function (a, b) { return a.at < b.at ? 1 : -1; })[0] || null; }
+  /** 68회차 ⑫ 오늘 끝 카드의 하루 요약 — 만남·부재·거절 가구 수(복명서와 같은 셈, 화면 오감 없이 바로) */
+  function daySumNums(ids) {
+    var n = { done: 0, absent: 0, refused: 0 }; (ids || []).forEach(function (id) { var st = statusOf(id); if (n[st] != null) n[st]++; });
+    return '<div class="dsum" aria-label="오늘 방문 결과"><span><b>' + n.done + "</b>만남·상담</span><span class=\"ab\"><b>" + n.absent + "</b>부재</span><span><b>" + n.refused + "</b>거절</span></div>";
+  }
   function statusOf(hid) {
     var p = plan(), r = p && p.rows.filter(function (x) { return x.household_no === hid; })[0], L = lastLog(hid);
     if (L && (!p || !p.ranked_at || L.at > p.ranked_at)) return L.result === "met" ? "done" : L.result === "absent" ? "absent" : L.result === "refuse" ? "refused" : (r ? r.status : "planned");
@@ -176,15 +184,57 @@
     else if (m === "connecting") { txt = "연결 중"; off = true; }
     else if (m === "offline") { txt = s.why === "stuck" ? "보내기 막힘 · 계정 창에서 확인" : "끊김 · 이 기기에 임시 저장"; off = true; } // S12-v U1: 맨 앞 보내기가 3번 넘게 실패
     else { off = true; txt = s.why === "no-table" ? "이 기기에 저장 · 서버 준비 전" : "이 기기에 저장 · 로그인하면 연동"; }
-    return '<button class="sync' + (off ? " off" : "") + '" data-act="account" title="같은 공무원 계정으로 로그인한 PC와 폰이 같은 계획·기록을 봅니다"><i></i>' + esc(txt) + (s.pending ? " · 보낼 것 " + s.pending : "") + "</button>";
+    return { cls: off ? (m === "offline" ? "out" : "off") : "", txt: txt + (s.pending ? " · 보낼 것 " + s.pending : "") };
   }
-  function brand() { return '<a class="word" href="#today" aria-label="' + NAME + ' 오늘로"><i aria-hidden="true"></i><span><b class="bn"><span>복지 사각지대</span> <span>현장 업무 도우미</span></b><small>' + SUB + "</small></span></a>"; }
-  function top(on, dayHtml) {
-    // 🩵 미르 40: PC=좌측 메뉴열 · 폰=하단 탭바(같은 nav 하나를 CSS로 옮김). 아이콘은 선 그림(이모지 아님)
-    // S12-i1: 탭 5(오늘·방문·현장·기록·보고) — app/shell.js 가 그린다. PC=좌측 메뉴열 · 폰=하단 탭바 · 폴드=두 손 나눔 3|2
-    return '<header class="top"><div class="top-in">' + brand() + '<nav class="seg well tabs tabs5" aria-label="메뉴">' + SH.links(on === "field" ? cur : on, curArg) + "</nav>" + sideSteps() +
-      '<div class="day">' + (dayHtml || "") + "</div>" + syncChip() + '<a class="hlp' + (on === "help" ? " on" : "") + '" href="#help">사용 방법</a></div></header>';
+  // S12-x 65회차: 머리 = 시안 v3 topHTML 그대로(표장+연동 점 · PC/태블릿은 연동 글자 · 방패(동료 안부)·눈(화면 가림)·?(사용 방법)·…(더 보기))
+  //   폰에서 오늘 밖 탭은 표장 옆 글자가 «탭 이름 / 설명»(시안). 옛 머리(.top-in·탭 nav·7단계 옆줄·날짜 칸)는 걷어냄 — 탭·레일은 render 가 셸에 한 번만.
+  function top() { return ""; } // 화면 함수들이 부르던 옛 머리 자리(빈 문자열) — 새 머리는 render() 의 topHTML()
+  function topHTML() {
+    var si = syncChip(), md_ = document.documentElement.getAttribute("data-mode") || "phone", wide = md_ === "pc" || md_ === "tab";
+    var k = SH.tabOf ? SH.tabOf(cur) : 0, T = SH.TABS && SH.TABS[k], D_ = { visit: "순서·동선", field: "집 앞·확인·상담", rec: "고르면 문장", rep: "문서·실적" };
+    var sf = lsGet(LS_SAFE, null), sk;
+    if (sf && sf.hid) { var mn = elMin(sf.at), pl = sf.min || A.safetyMin, over = mn >= pl; sk = '<button class="ky pr ' + (over ? "safe-warn" : "safe-on") + '" data-act="safety" aria-label="안전 모드 켜짐 · 가구 ' + esc(sf.hid) + '">' + I.shield + '<span class="num">' + (over ? "확인" : Math.max(0, pl - mn) + "분") + "</span></button>"; }
+    else sk = '<button class="ky pr" data-act="safety" aria-label="동료 안부 설명">' + I.shield + "</button>";
+    var veil = document.body.classList.contains("fd-veil");
+    var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12y70" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+      (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
+      sk + '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eye + "</button>" +
+      '<button class="ky pr" data-go="#help" aria-label="사용 방법">' + I.help + (wide ? "<span>사용 방법</span>" : "") + "</button>" +
+      '<button class="ky pr" data-act="more" aria-label="더 보기">' + I.more + "</button>";
   }
+  // 머리 «…» 더 보기 — 시안 v3 moreSheet 그대로(.ov > .scrim + .sheet > .list > .li) · 항목은 라이브에 있는 기능만
+  //   폰 = 아래에서 올라오는 시트 · 폴드·태블릿·PC = 가운데 창(v3.css). 바깥(scrim)·«닫기»·Esc 로 닫힘. 다시 그리기(실시간) 뒤에도 열린 채 유지(render 끝).
+  var OV = { el: null, on: false };
+  function sheetClose() { OV.on = false; if (OV.el) { OV.el.classList.remove("on"); OV.el.innerHTML = ""; if (OV.el.parentNode) OV.el.parentNode.removeChild(OV.el); } }
+  function sheetOpen(html, label) {
+    if (!OV.el) {
+      OV.el = document.createElement("div"); OV.el.className = "ov"; OV.el.id = "ov";
+      OV.el.addEventListener("click", function (e) { var t = e.target.closest ? e.target.closest("[data-ov]") : null; if (!t) return; var k = t.getAttribute("data-ov"); sheetClose(); if (k === "account") accountPanel(); else if (k === "team") { if (window.DaeumTeamUI) window.DaeumTeamUI.open(); } else if (k === "ob") { if (window.DaeumOnboard) window.DaeumOnboard.open(); } else if (k === "pick") { if (cur === "today") { var f = document.getElementById("listFile"); if (f) f.click(); } else { pickNext = true; location.hash = "#today"; } } });
+      document.addEventListener("keydown", function (e) { if (OV.on && e.key === "Escape") sheetClose(); });
+    }
+    OV.el.innerHTML = '<div class="scrim" data-ov="x"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label || "") + '"><div class="grab"></div>' + html + "</div>";
+    OV.el.classList.add("on"); OV.on = true; app.appendChild(OV.el);
+    var f0 = OV.el.querySelector(".li"); if (f0) try { f0.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
+  }
+  function morePanel() {
+    var si = syncChip(), sf = lsGet(LS_SAFE, null);
+    var li = function (tag, attr, ic, b, sm) { return "<" + tag + ' class="li pr" ' + attr + ">" + ic + "<span><b>" + b + "</b><small>" + sm + "</small></span></" + tag + ">"; };
+    sheetOpen("<h3>더 보기</h3><div class=\"list\">" +
+      li("a", 'href="#help" data-ov="go"', I.help, "사용 방법", "닿음이 맡는 구간 · 처음 3단계 · 동료 안부") +
+      li("button", 'type="button" data-ov="account"', I.user, "계정 · 연동", esc(si.txt)) +
+      li("button", 'type="button" data-ov="pick"', I.upload || I.db, "발굴대상자 명단 불러오기", "행복이음에서 받은 한국사회보장정보원 조회 서식 엑셀") +
+      li("a", 'href="shared/data.html"', I.db, "쓰는 데이터와 출처", "한국사회보장정보원 공공데이터 · 공공 보조") +
+      li("a", 'href="shared/ai_check.html"', I.check, "AI 문장 점검", "규칙 문장과 AI 요약 견주기") +
+      li("a", 'href="' + (sf && sf.hid ? "#check:" + esc(sf.hid) : "#help") + '" data-ov="go"', I.shield, "동료 안부", sf && sf.hid ? "안전 모드 켜짐 · 가구 " + esc(sf.hid) : "들어가기 → 예상 시간 → 1차 동료 → 2차 팀장") +
+      (window.DaeumTeamUI ? li("button", 'type="button" data-ov="team"', I.user, "우리 팀" + (teamN() ? ' <em class="li-n">' + teamN() + "</em>" : ""), esc(window.DaeumTeamUI.label ? window.DaeumTeamUI.label() : "1차 동료·팀장 짝 지정 · 팀 현황")) : "") +
+      (window.DaeumOnboard ? li("button", 'type="button" data-ov="ob"', I.help, "처음 안내 다시 보기", "명단 → 동선 → 현장 → 기록 → 보고 · 그림 다섯 장") : "") + // S12-z3 추천안(가): 자동은 처음 한 번, 다시 보기는 여기 // 69회차: 떠 있던 «팀» 단추 → 메뉴(PC 레일·폰 머리 모두 같은 «더 보기»)
+      li("button", 'type="button" data-fd-lock="1" data-ov="lock"', I.lock, "지금 잠그기", "자리 비우면 3분 뒤 자동 잠금 · 가구번호만 표시") +
+      li("a", 'href="?demo=reset#today"', I.sync || I.db, "시연 데이터 처음 상태로", "가상 48가구 · 지난 기록") +
+      '</div><button type="button" class="btn ghost pr" data-ov="x">닫기</button>', "더 보기");
+  }
+  // 방패: 안전 모드가 켜져 있으면 그 집 현장 확인(안전 띠·«괜찮아요»가 있는 곳)으로, 꺼져 있으면 사용 방법(동료 안부 설명)
+  function safetyKey() { var sf = lsGet(LS_SAFE, null); location.hash = sf && sf.hid ? "#check:" + sf.hid : "#help"; }
 
   // ═════ P0 오늘 ═════
   // S12-v U40(F6): [단계, 근거 데이터(번호 없이 — 번호는 «활용 데이터» 화면에만), 탭] · 탭 이름을 단계 앞에 작게 붙여 «현장» 탭과 «요약» 단계가 따로 노는 혼란을 막는다
@@ -201,11 +251,19 @@
     if (sf && sf.hid === hid) return 3;
     return confirmed ? 2 : 1;
   }
+  // S12-x 66회차: 오늘 = 시안 v3 scrToday 구조 — 첫 칸(제목 .ph · 지금 할 일 · 맡는 구간 · 발굴 명단 · 이어지는 화면) | 둘째 칸(오늘 방문 시간줄 .tl) | 셋째 칸(주소 정리 · 남은 기한 · 가상 데이터 꼬리)
+  function todayHead(now) { return '<div class="ph"><h2>오늘 할 일</h2><span>' + esc(md(now)) + "</span></div>"; }
+  function demoTail() { return '<div class="demo"><span class="samp">가상 데이터</span><span>가구 번호·나이·사유·메모는 모두 시연용 가상 · 실제 개인정보 없음</span><a class="pr" href="#help">사용 방법</a><a class="pr" href="shared/data.html">활용 데이터</a><a class="pr" href="?demo=reset#today">시연 처음 상태로</a></div>'; }
+  function linksRow(hid0) {
+    var L = [["#plan", "방문 계획", "일차·순서 바꾸기", I.today], ["#route" + (hid0 ? ":" + hid0 : ""), "동선·길안내", "네이버 지도", I.route], ["#perf", "실적·사후관리", "재방문·약속", I.report]];
+    return '<section class="card flat"><h3>이어지는 화면</h3><div class="links">' + L.map(function (l) { return '<a class="li pr" href="' + l[0] + '">' + (l[3] || "") + "<span><b>" + l[1] + "</b><small>" + l[2] + "</small></span></a>"; }).join("") +
+      '<a class="li pr" href="#today" data-pick="1">' + (I.upload || "") + "<span><b>명단 불러오기</b><small>엑셀 파일</small></span></a></div></section>";
+  }
   function today() {
     var c = dayCtx(), now = new Date();
     var dm = docModel(), pend = dm.pending;
-    if (!c) return top("today", "<strong>" + md(now) + "</strong>가상 데이터") + '<main class="wrap">' + listCard() + '<div class="emptyc blk"><b>방문 계획이 아직 없습니다</b>방문 계획 화면에서 한국사회보장정보원 명단을 불러오면 이 화면이 채워집니다.<br><br><a class="cta" href="#today" data-pick="1"><b>명단 불러오기</b><small>행복이음 내려받기 서식</small></a></div></main>';
-    var first = c.planned[0] || null, area = BY[c.d.ids[0]] ? BY[c.d.ids[0]].area : "";
+    if (!c) return '<main class="wrap">' + todayHead(now) + '<section class="card emp"><span class="eic">' + (I.today || "") + '</span><b>방문 계획이 아직 없습니다</b><span class="why">방문 계획 화면에서 한국사회보장정보원 명단을 불러오면 이 화면이 채워집니다.</span><a class="btn pri" href="#today" data-pick="1">' + (I.upload || "") + "명단 불러오기</a></section>" + listCard() + "</main>";
+    var first = c.planned[0] || null;
     var whenLbl = c.isToday ? "오늘" : (c.d.date ? md(c.d.date) : "다음 방문일");
     var rb = rankBy(), p = plan(), mt = meta();
     var rows = c.d.ids.map(function (id, i) {
@@ -213,52 +271,49 @@
       var lr = pr && pr.list_rank != null ? pr.list_rank : r ? r.listRank : m.prio || "—";
       var why = r && r.line ? r.line.replace(/^.*?번째( · )?/, "") : "";
       var bits = [why, m.aiRes ? "AI초기상담 " + m.aiRes : ""].filter(Boolean);
-      var n = stepsOf(id, c.d.confirmed), st = statusOf(id);
-      var bar = '<div class="bar well" aria-label="7단계 중 ' + n + '단계">' + [0, 1, 2, 3, 4, 5, 6].map(function (k) { return "<i" + (k < n ? ' class="on"' : k === n && st === "planned" && id === first ? ' class="now"' : "") + "></i>"; }).join("") + "</div>";
-      var stLbl = st === "done" ? " · 만남" : st === "absent" ? " · 부재" : st === "refused" ? " · 거절" : "";
-      // S12-v U12(B7): 부재 가구는 집 앞 요약으로 다시 들어감 · U16(F4): 끝난 가구 줄 아래 «기록 고치기»
-      var fix = st !== "planned" ? '<a class="r-fix" href="#record:' + id + '" data-fix="' + id + '">기록 고치기 · ' + id + "</a>" : "";
-      return '<a class="r" href="' + (st === "planned" || st === "absent" ? "#home:" + id : "#docs") + '"><span class="t">' + esc(c.d.s.rows[i] ? c.d.s.rows[i].arrive : "") + '</span><span class="h"><b>' + id + "</b><small>" + esc(h.area + " · " + ageLine(h) + stLbl) + '</small></span><span class="w">한국사회보장정보원 <b>' + esc(lr) + "순위</b> → <b>" + (i + 1) + "번째</b>" + (bits.length ? " · " + esc(clip(bits.join(" · "), 46)) : "") + "</span>" + bar + "</a>" + fix;
+      var st = statusOf(id), tm = esc(c.d.s.rows[i] ? c.d.s.rows[i].arrive : "");
+      var sub = "한국사회보장정보원 " + lr + "순위 → " + (i + 1) + "번째" + (bits.length ? " · " + clip(bits.join(" · "), 46) : "");
+      var nm = '<span class="nm"><b>' + esc(h.area + " · " + id) + "</b><small>" + esc(ageLine(h) + " · " + sub) + "</small></span>";
+      // S12-v U12(B7): 부재 가구는 집 앞 요약으로 다시 들어감 · U16(F4): 끝난 가구 줄에 «기록 고치기»
+      if (st === "done" || st === "refused") return '<div class="tli done"><span class="tm num">' + tm + '</span><span class="pin">' + (i + 1) + "</span>" + nm.replace("<small>", "<small>" + (st === "done" ? "만남" : "거절") + " · 기록 저장됨 · ") + '<button type="button" class="evb pr" data-fix="' + id + '" aria-label="기록 고치기 · ' + id + '">기록 고치기</button></div>';
+      return '<a class="tli pr' + (id === first ? " cur" : "") + '" href="#home:' + id + '"><span class="tm num">' + tm + '</span><span class="pin">' + (i + 1) + "</span>" + (st === "absent" ? nm.replace("<small>", "<small>부재 · ") : nm) + '<span class="st">' + (id === first ? "다음" : st === "absent" ? "다시" : "") + "</span></a>";
     }).join("");
     var dl = deadline(), dp = dl.until ? F.deadline.plan(0, dl.until, dl.perDay || 5) : null;
-    var remain = listIds().filter(function (id) { var s = statusOf(id); return s !== "done" && s !== "refused"; }).length;
+    var remain = listIds().filter(function (id) { var s = statusOf(id); return s !== "done" && s !== "refused"; }).length, total = listIds().length || 1;
     var visitDays = dp && dp.set ? dp.days.filter(function (x) { return x.kind !== "today"; }).length : 0;
     var cap = Math.floor(visitDays * (dl.perDay || 5) * (1 - A.missRate)), over = Math.max(0, remain - cap);
-    var dead = dp && dp.set ? '<div class="dead blk"><div class="k">기한 점검 · ' + esc(roundYm()) + ' 명단</div><div class="n">' + dp.left + '<small> 근무일 남음</small></div><p>' + esc(dl.until.slice(5).replace("-", ".")) + "까지 · 남은 가구 <b>" + remain + "</b> · 이대로면 기한을 넘길 가구 <b>" + over + "</b><br>하루 " + (dl.perDay || 5) + "집 · 만나지 못할 비율 " + Math.round(A.missRate * 100) + "%(가정 · 조정 가능)</p></div>" : "";
-    var fan = '<div class="fan" id="fan"><div class="d">상담일지 초안<i class="ai"></i><i></i><i></i></div><div class="d">출장 결과 보고(복명서)<i></i><i class="ai"></i><i></i></div><div class="d">서비스 연계 의뢰서<i></i><i></i><i class="ai"></i></div><div class="d">주간 추진 실적<i></i><i></i><i></i></div></div><a class="fan-done" href="#docs"><b>' + pend + "</b>건 완성 대기</a>";
+    var dead = dp && dp.set ? '<section class="card dead"><h3>' + esc(roundYm()) + " 명단 남은 기한<span>근무일 기준 · " + esc(dl.until.slice(5).replace("-", ".")) + "까지</span></h3>" +
+      '<div class="stat3"><div><b class="num">' + dp.left + '</b><small>남은 근무일</small></div><div><b class="num">' + remain + '</b><small>남은 가구</small></div><div><b class="num ac">' + over + "</b><small>기한 넘길 가구</small></div></div>" +
+      '<div class="bar"><i style="--w:' + Math.round((total - remain) / total * 100) + '%"></i></div><span class="why">하루 ' + (dl.perDay || 5) + "가구 · 만나지 못할 비율 " + Math.round(A.missRate * 100) + "%(가정 · 조정 가능)</span></section>" : "";
     var hid0 = first || c.d.ids[0];
-    if (howOpen === null) { howOpen = !lsGet(LS_HOW, false); lsSet(LS_HOW, 1); } // 이 페이지를 연 동안은 펼침/접힘을 그대로(다시 그려도 갑자기 접히지 않게)
-    var rail = '<div class="rail" id="rail"><div class="track"><i></i></div>' + STN.map(function (s, i) { return '<a class="st' + (i === 6 ? " last" : "") + '" href="' + stationHref(i, hid0) + '"><span class="c">' + (i + 1) + '</span><span class="l">' + stLbl(i) + '</span><span class="p">' + s[1].replace(/·/g, "·|").replace(/ (\d{6,})$/, " |$1").split("|").map(function (x) { return '<span class="pp">' + x + "</span>"; }).join("<wbr>") + "</span></a>"; }).join("") + "</div>";
-    var html = top("today", "<strong>" + md(now) + "</strong>" + esc(area) + " 맞춤형복지 담당 · 가상") + '<main class="wrap">' +
-      '<div class="hero"><div><h1>오늘 할 일</h1><p>한국사회보장정보원 명단을 받은 날부터 방문·기록·보고까지 같은 내용을 두 번 쓰지 않습니다.</p></div>' +
-      '<a class="cta" data-dock="1" href="' + (first ? "#home:" + first : "#docs") + '"><b>' + (first ? (c.isToday ? "오늘 일 시작" : whenLbl + " 방문 준비") : "문서 만들기") + "</b><small>방문 " + c.planned.length + "곳 · 문서 " + pend + "건 대기</small></a></div>" +
-      '<div class="board"><div class="rows blk"><div class="rows-h"><span>' + esc(whenLbl) + " 방문 · " + c.d.ids.length + "곳" + (c.d.confirmed ? " · 확정" : " · 자동 배정안") + '</span><span>출발 상주시청 · ' + esc(c.d.s.end || "") + " 복귀</span></div>" + rows + "</div>" +
-      '<div class="side">' + (FD ? FD.addrCard() : "") + listCard() + dead + '<div class="links blk"><h3>이어지는 화면</h3><a href="#plan">방문 계획<span>일차·순서 바꾸기</span></a><a href="#route' + (hid0 ? ":" + hid0 : "") + '">동선·길안내<span>네이버 지도</span></a><a href="#perf">실적·사후관리<span>재방문·약속</span></a><a href="#today" data-pick="1">명단 불러오기<span>엑셀 파일</span></a></div></div></div>' +
-      '<details class="howto blk" id="howto"' + (howOpen ? " open" : "") + '><summary><b>닿음이 하는 일</b><small>데이터 → 기능 → 목표 · 처음 한 번 펼친 뒤 접힘</small></summary>' + // S12-v U40(F2): 설명 그림은 업무 뒤로, 처음 한 번만 펼침
-      '<div data-scope-map="card"></div>' + // S12-n 닿음이 맡는 구간(접는 카드 · 한 번 본 뒤 접힘)
-      '<section class="scene well" id="scene" aria-label="데이터 → 기능 → 목표"><canvas id="cv" aria-hidden="true"></canvas>' +
-      '<div class="col"><h2><em>데이터</em><i class="src-ico" aria-hidden="true"></i>한국사회보장정보원</h2><div class="chips">' +
-      '<div class="chip blk" data-feeds="0,2,3,6"><b>발굴대상자 명단</b><small>행복이음 내려받기 서식</small></div>' +
-      '<div class="chip blk" data-feeds="2,3,4,5"><b>복지서비스 OpenAPI</b><small>15090532 · 15108347</small></div>' +
-      '<div class="chip blk" data-feeds="1,4"><b>자원정보서비스 · 연계처</b><small>15001839 연동 · 상주 ' + (RES ? RES.facilities.length + "곳 " + RES.total + "건" : "—") + "</small></div>" +
-      '<div class="chip blk" data-feeds="6"><b>수급권자 현황</b><small>15062448</small></div></div></div>' +
-      '<div class="col"><h2><em>기능</em>하루 7단계가 앞 결과를 이어 받음</h2>' + rail + "</div>" +
-      '<div class="col"><h2><em>목표</em>두 번 쓰지 않는 보고서</h2>' + fan + "</div></section></details>" +
-      '<p class="foot"><span class="demo-tag">가상 데이터</span><span>가구 번호·나이·사유·메모는 모두 시연용 가상 · 실제 개인정보 없음</span><a href="#help">사용 방법</a><a href="shared/data.html">활용 데이터</a><a href="?demo=reset#today">시연 처음 상태로</a></p></main>';
-    return html;
+    // S12-x #72(호창님 11-12 결정): 오늘 탭 머리 = «오늘 할 일 + 날짜» → 지금 할 일 → 구간 그림(접는 카드 · 첫 실행만 펼침). 소개 문장·데이터→기능→목표 그림은 뺀다.
+    var fi = first ? c.d.ids.indexOf(first) : -1, fh = first ? BY[first] : null, fr = first ? rb[first] : null;
+    var fwhy = fr && fr.line ? clip(fr.line.replace(/^.*?번째( · )?/, ""), 40) : (fh ? indText(fh).slice(0, 2).join(" · ") : "");
+    var next = first ? '<section class="card next" aria-label="지금 할 일"><div class="ch"><span class="k">지금 할 일 · ' + (fi + 1) + "번째 가구" + (c.isToday ? "" : " · " + esc(whenLbl)) + '</span><span class="mini" aria-hidden="true"><i></i><i></i><i></i>' + (I.home2 || "") + "</span></div>" +
+        '<div class="hh"><span class="no">' + (fi + 1) + '</span><span class="t"><b>' + esc(fh.area + " " + first) + "</b><small>" + esc(ageLine(fh) + (fwhy ? " · " + fwhy : "")) + '</small></span><span class="when"><b class="num">' + esc(arriveOf(c, first) || "—") + "</b><small>도착 예정</small></span></div>" +
+        '<div class="tags">' + indText(fh).slice(0, 3).map(function (t) { return '<span class="tag">' + esc(t) + "</span>"; }).join("") + "</div>" +
+        '<div class="row2"><a class="btn" href="#route:' + first + '">' + (I.nav || "") + '길 안내</a><a class="btn pri" data-dock="1" href="#home:' + first + '">' + (I.door || "") + (c.isToday ? "도착했어요" : esc(whenLbl) + " 방문 준비") + "</a></div></section>"
+      : '<section class="card next" aria-label="지금 할 일"><span class="k">' + esc(whenLbl) + ' 방문 끝</span><div class="hh"><span class="no donechk">' + (I.check || "✓") + '</span><span class="t"><b>' + c.d.ids.length + "곳 모두 기록했습니다</b><small>보고 탭에 문서 " + pend + '건이 채워져 있습니다</small></span></div>' + daySumNums(c.d.ids) + '<div class="row2"><a class="btn pri" data-dock="1" href="#docs">' + (I.report || "") + "보고서 열기</a></div></section>";
+    var si = syncChip();
+    return '<main class="wrap">' + todayHead(now) + next +
+      '<div data-scope-map="card"></div>' + // S12-n 닿음이 맡는 구간(접는 카드 · 첫 실행만 펼침)
+      listCard() + linksRow(hid0) + C2 +
+      '<section class="card"><h3>' + esc(whenLbl) + " 방문 " + c.d.ids.length + "곳" + (c.d.confirmed ? " · 확정" : " · 자동 배정안") + "<span>출발 상주시청 · " + esc(c.d.s.end || "") + ' 복귀</span></h3><div class="tl">' + rows + "</div>" +
+      '<div class="srcs"><span class="sync ' + si.cls + '"><i></i>' + esc(si.txt) + "</span></div></section>" + C3 +
+      (FD ? FD.addrCard() : "") + dead + demoTail() + "</main>";
   }
   // S12-i1: «발굴 명단» 카드 — 기본 탑재(가상 48가구) + 같은 서식 파일 불러오기(이 기기 안에서만 읽음, 서버 전송 0)
   var listMsg = null;
-  function listCard() {
+  function listCard() { // S12-x 66회차: 시안 v3 listCard 마크업(.card.ft · .xl · .towns.sm) — 기능(파일 고르기·결과 문구·가상 명단 파일)은 그대로
     var ids = listIds(), m = meta(), imp = lsGet("daeum.s11.import", null) || {}, ar = {}, un = 0, pv = 0;
     ids.forEach(function (id) { var a = BY[id].area; ar[a] = (ar[a] || 0) + 1; var x = m[id] || {}; if (!/처리\s*완료|완료/.test(x.proc || "")) un++; if (x.lonely || x.child) pv++; });
     var top3 = Object.keys(ar).sort(function (a, b) { return ar[b] - ar[a]; }), mx = top3.length ? ar[top3[0]] : 1;
-    return '<section class="lcard blk" aria-label="발굴 명단"><div class="lc-h"><b>발굴 명단</b><small>' + esc(roundYm()) + " · " + (imp.demo ? "기본 탑재(가상)" : "불러옴") + "</small></div>" +
-      '<div class="lc-n"><span><b class="num">' + ids.length + "</b>가구</span><span>미처리 <b class=\"num\">" + un + "</b></span><span>우선방문 <b class=\"num\">" + pv + "</b></span></div>" +
-      '<ul class="lc-ar">' + top3.slice(0, 5).map(function (a) { return "<li><span>" + esc(a) + '</span><i style="--w:' + Math.round(ar[a] / mx * 100) + '%"></i><b class="num">' + ar[a] + "</b></li>"; }).join("") + "</ul>" +
-      '<label class="sbtn lc-up"><input type="file" id="listFile" accept=".xlsx,.xls,.csv" hidden>명단 불러오기<small>행복이음 «발굴대상자 조회» 엑셀</small></label>' +
-      (listMsg ? '<p class="lc-msg' + (listMsg.ok ? "" : " bad") + '" role="status">' + listMsg.text + "</p>" : "") +
-      '<p class="lc-src">' + esc(imp.name || "가상 명단") + ' · 성명·주민등록번호·전화는 읽지 않음 · <a href="data/demo_list_full.xlsx" download>가상 명단 파일</a></p></section>';
+    return '<section class="card ft lcard" aria-label="발굴 명단"><div class="ch"><h3>발굴 명단</h3><span class="samp">' + (imp.demo ? "기본 탑재(가상)" : "불러옴") + "</span></div>" +
+      '<div class="xl"><span class="xlic" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span style="min-width:0;flex:1"><b>' + esc(roundYm()) + " · " + ids.length + "가구 · " + top3.length + "개 읍면</b><small>미처리 " + un + " · 우선방문 " + pv + "가구</small></span></div>" +
+      '<div class="towns sm">' + top3.slice(0, 5).map(function (a) { return "<div><span>" + esc(a) + '</span><i style="--w:' + Math.round(ar[a] / mx * 100) + '%"></i><b class="num">' + ar[a] + "</b></div>"; }).join("") + "</div>" +
+      '<label class="btn sm ghost lc-up">' + (I.upload || "") + '<input type="file" id="listFile" accept=".xlsx,.xls,.csv" hidden>명단 불러오기 · 행복이음 «발굴대상자 조회» 엑셀</label>' +
+      (listMsg ? '<p class="why lc-msg' + (listMsg.ok ? "" : " bad") + '" role="status">' + listMsg.text + "</p>" : "") +
+      '<span class="why">' + esc(imp.name || "가상 명단") + ' · 성명·주민등록번호·전화는 읽지 않음 · <a href="data/demo_list_full.xlsx" download>가상 명단 파일</a></span></section>';
   }
   function bindList() {
     var f = document.getElementById("listFile"); if (!f || !IM) return;
@@ -267,75 +322,36 @@
       if (file.size > 5 * 1024 * 1024) { listMsg = { ok: false, text: "파일이 너무 큽니다(5MB까지)." }; render(); return; }
       SH.busy(IM.readFile(file), "명단을 읽는 중… (이 기기 안에서만)").then(function (rows) {
         var r = IM.importRows(rows, D.households);
-        if (!r.ok) { listMsg = { ok: false, text: r.err === "cols" ? "가구를 가리키는 열(«소재행정동»·«(행복이음)주소» 또는 «관리번호»)을 찾지 못했습니다." : r.err === "empty" ? "가구 줄이 없는 빈 서식입니다." : "명단의 가구를 지도에서 찾지 못했습니다(" + r.n + "줄)." }; render(); return; }
+        if (!r.ok) { listMsg = { ok: false, text: r.err === "blank" ? "빈 파일입니다 — 행복이음 «발굴대상자 조회»에서 내려받은 엑셀을 골라 주세요." : r.err === "cols" ? "가구를 가리키는 열(«소재행정동»·«(행복이음)주소» 또는 «관리번호»)을 찾지 못했습니다." : r.err === "empty" ? "가구 줄이 없는 빈 서식입니다." : "명단의 가구를 지도에서 찾지 못했습니다(" + r.n + "줄)." }; render(); return; }
         IM.commit(r, file.name, { get: lsGet, set: lsSet }, F);
         if (FD) FD.scanImport(rows, D.households, file.name); // S12-i3 ① 도로명주소 정리(주소 글은 저장하지 않음)
-        listMsg = { ok: true, text: "<b>" + esc(file.name) + "</b> · " + r.ids.length + "가구를 실었습니다" + (r.miss ? " · 못 찾은 줄 " + r.miss : "") + " · 서버 전송 0" };
+        listMsg = { ok: true, text: "<b>" + esc(file.name) + "</b> · " + r.ids.length + "가구를 실었습니다" + (r.dup ? " · 같은 가구 " + r.dup + "줄은 한 번만" : "") + (r.miss ? " · 못 찾은 줄 " + r.miss : "") + (r.cut ? " · " + IM.MAX + "가구까지만" : "") + " · 서버 전송 0 · 지난 방문 기록은 그대로 · " + '<a href="#plan">방문 계획 보기</a>' }; // 67회차: 불러온 뒤 바로 다음 단계
         render();
-      }, function () { listMsg = { ok: false, text: "파일을 읽지 못했습니다 — CSV로 저장해 다시 불러와 주세요." }; render(); });
+      }, function (er) { listMsg = { ok: false, text: er && er.message === "lib" ? "엑셀 읽기 부품을 받지 못했습니다 — 연결을 확인하거나 CSV로 저장해 불러와 주세요." : "파일을 읽지 못했습니다(손상·암호 걸린 파일) — 엑셀에서 다시 저장하거나 CSV로 저장해 불러와 주세요." }; render(); });
     });
   }
-  var played = false, howOpen = null;
   function bindToday() {
     bindList();
     if (pickNext) { pickNext = false; var lf = document.getElementById("listFile"); if (lf) try { lf.click(); } catch (e) { /* 손으로 누르면 됨 */ } }
-    var rail = document.getElementById("rail"), fan = document.getElementById("fan");
-    if (!rail) return;
-    var sts = rail.querySelectorAll(".st");
-    function finish() { rail.classList.add("go"); sts.forEach(function (s) { s.classList.add("on"); }); if (fan) fan.classList.add("done"); }
-    var fold = document.getElementById("howto");
-    if (fold) fold.addEventListener("toggle", function () { howOpen = fold.open; });
-    if (fold && !fold.open) { finish(); if (!RM_) fold.addEventListener("toggle", function () { if (fold.open) particles(sts); }, { once: true }); return; }
-    if (played || RM_) { finish(); return; }
-    played = true;
-    setTimeout(function () { rail.classList.add("go"); }, 300);
-    sts.forEach(function (s, i) { setTimeout(function () { s.classList.add("on"); }, 420 + i * 230); });
-    setTimeout(function () { if (fan) fan.classList.add("done"); }, 420 + 7 * 230 + 150);
-    particles(sts);
-  }
-  /** 첫 화면 3초: 왼쪽 데이터 칩에서 입자가 흘러 정거장에 꽂힌다(한 번 재생 후 정지) */
-  function particles(sts) {
-    var sc = document.getElementById("scene"), cv = document.getElementById("cv"); if (!sc || !cv || !cv.getContext) return;
-    var R = sc.getBoundingClientRect(), k = Math.min(2, window.devicePixelRatio || 1);
-    cv.width = Math.round(R.width * k); cv.height = Math.round(R.height * k);
-    var g = cv.getContext("2d"); g.setTransform(k, 0, 0, k, 0, 0);
-    var dots = [];
-    sc.querySelectorAll(".chip").forEach(function (ch, ci) {
-      var a = ch.getBoundingClientRect(), x0 = a.right - R.left, y0 = a.top + a.height / 2 - R.top;
-      (ch.dataset.feeds || "").split(",").forEach(function (si, j) {
-        if (si === "") return; var s = sts[+si]; if (!s) return; var c = s.querySelector(".c").getBoundingClientRect();
-        for (var n = 0; n < 3; n++) dots.push({ x0: x0, y0: y0, x1: c.left + c.width / 2 - R.left, y1: c.top + c.height / 2 - R.top, t0: 120 + ci * 120 + j * 160 + n * 90 + (+si) * 60, d: 900 });
-      });
-    });
-    var t0 = performance.now(), end = Math.max.apply(null, dots.map(function (d) { return d.t0 + d.d; })) + 200;
-    function frame(t) {
-      var e = t - t0; g.clearRect(0, 0, R.width, R.height);
-      dots.forEach(function (d) {
-        var u = (e - d.t0) / d.d; if (u < 0 || u > 1) return;
-        var s = u * u * (3 - 2 * u), mx = (d.x0 + d.x1) / 2, my = Math.min(d.y0, d.y1) - 40;
-        var x = (1 - s) * (1 - s) * d.x0 + 2 * (1 - s) * s * mx + s * s * d.x1, y = (1 - s) * (1 - s) * d.y0 + 2 * (1 - s) * s * my + s * s * d.y1;
-        g.beginPath(); g.arc(x, y, 3.2, 0, 7); g.fillStyle = "rgba(12,135,103," + (0.35 + 0.65 * (1 - u)) + ")"; g.fill();
-      });
-      if (e < end) requestAnimationFrame(frame); else g.clearRect(0, 0, R.width, R.height);
-    }
-    requestAnimationFrame(frame);
   }
 
   // ═════ M2 집 앞 요약(③) ═════
-  function phBrand() { return '<div class="ph-brand"><a href="#today" class="ph-home">' + NAME + "<small>" + SUB + '</small></a><span class="sp">' + syncChip() + '</span><a class="hlp q" href="#help" aria-label="사용 방법">?</a></div>'; }
+  function phBrand() { return ""; } // S12-x 65회차: 폰 현장 화면 머리도 셸 머리(topHTML) 하나로 — 옛 .ph-brand 걷어냄
+  // S12-x 66회차(미르 넘김 ①): 옛 7단계 띠(nav.mini.well)는 머리 아래 고정 띠(.hbar)와 겹쳐 뺐다 → 시안 v3 현장 단계 줄 .steps(집 앞·확인·상담 3칸)
+  //   now = 2(집 앞)·3(확인)·4(상담) — 옛 7단계 번호 그대로 받는다. 기록(5)·동선(1)은 단계 줄 없음(시안).
   function mini(now, hid) {
-    return '<nav class="mini well" aria-label="7단계">' + STN.map(function (s, i) { var cls = i < now ? "on" : i === now ? "now" : ""; return '<a class="' + cls + '" href="' + stationHref(i, hid) + '"' + (i === now ? ' aria-current="step"' : "") + ">" + stLbl(i) + "</a>"; }).join("") + "</nav>";
+    if (now < 2 || now > 4) return "";
+    return '<div class="steps" role="tablist" aria-label="현장 단계">' + [["#home:", "집 앞"], ["#check:", "확인"], ["#talk:", "상담"]].map(function (x, i) {
+      var k = i + 2; return '<button type="button" role="tab" class="pr' + (k === now ? " on" : k < now ? " dn" : "") + '" data-go="' + x[0] + hid + '" aria-selected="' + (k === now) + '"><i>' + (k < now ? "✓" : i + 1) + "</i>" + x[1] + "</button>";
+    }).join("") + "</div>";
   }
-  function bnav(on, hid) {
-    // S12-i1: 현장 화면도 PC 화면과 같은 탭 5(집 앞·확인·상담 이동은 화면 위 7단계 줄(mini)이 맡는다)
-    return '<div class="bnav"><nav class="tabs tabs5" aria-label="메뉴">' + SH.links(on, hid) + "</nav></div>";
-  }
+  function bnav() { return ""; } // S12-x 65회차: 아래 탭은 셸(.tabs) 하나 — 현장 화면 옛 탭 줄 걷어냄
   function pickHid(want) {
     var c = dayCtx(); if (!c) return null;
     if (want && BY[want]) { var d = dayOfHid(c.ds, want); if (d) c.d = d; return { c: c, hid: want }; }
     return { c: c, hid: c.planned[0] || c.d.ids[c.d.ids.length - 1] };
   }
-  function phEmpty() { return '<main class="ph">' + phBrand() + '<div class="emptyc blk"><b>방문 계획이 없습니다</b>사무실 PC에서 방문 계획을 확정하면 같은 계정의 폰에 바로 나타납니다.</div></main>' + bnav("home", null); }
+  function phEmpty() { return '<main class="phx">' + phBrand() + '<div class="emptyc blk"><b>방문 계획이 없습니다</b>사무실 PC에서 방문 계획을 확정하면 같은 계정의 폰에 바로 나타납니다.</div></main>' + bnav("home", null); }
   function home(want) {
     var k = pickHid(want); if (!k) return phEmpty();
     var c = k.c, hid = k.hid, h = BY[hid], m = meta()[hid] || {}, r = rankBy()[hid], att = attempts(), w = weather();
@@ -364,20 +380,21 @@
     if (vt.best && vt.absences.length) lines.push({ lb: "다음엔 이 시간대", t: vt.best.label + "(" + vt.best.hours + ") — 비어 있던 시간을 피함", plug: ["현장 기록"] });
     var sign = notes.length + (L && L.tags ? L.tags.filter(isField).length : 0);
     var prev = c.d.ids[i - 1], next = c.d.ids[i + 1];
-    return '<main class="ph">' + phBrand() + mini(2, hid) +
-      '<section class="idc blk" aria-label="가구"><span class="num">' + hid + '</span><span class="who">' + esc(h.area + " · " + ageLine(h) + " 사심 · 발굴 " + (+m.cnt || 1) + "회째") + '</span><span class="rk well">한국사회보장정보원<br>발굴 순위<b>' + esc(lr) + "</b></span>" +
-      '<span class="eta">' + (eta ? "도착 예정 <b>" + esc(eta) + "</b> · " : "") + c.d.ids.length + "곳 중 <b>" + (i + 1) + "번째</b>" + (c.isToday ? "" : " · " + (c.d.date ? md(c.d.date) : "")) + "</span></section>" +
-      '<ul class="stops blk">' + lines.slice(0, 5).map(function (x, n) { return '<li class="' + (x.warn ? "warn" : "") + '"><i>' + (x.warn ? "!" : n + 1) + '</i><div><span class="lb">' + esc(x.lb) + "</span>" + esc(x.t) + (x.plug.length ? "<br>" + x.plug.map(function (p) { return '<span class="plug">' + esc(p) + "</span>"; }).join("") : "") + "</div></li>"; }).join("") + "</ul>" +
-      '<section class="basis well" aria-label="판단 근거 카드"><div class="ttl"><span>판단 근거 카드</span><span>점수 없음 · 판단은 담당자</span></div><div><b>' + reasons.length + "</b>명단 사유</div><div><b>" + (+m.cnt || 1) + "</b>발굴 횟수</div><div><b>" + (sign || 0) + "</b>현장 징후" + (sign ? "" : "<small>집 안에서 채움</small>") + "</div>" +
-      "<p>현장 징후는 집 안에서 «기록»의 체크로 채웁니다. 명단 사유 밖 징후는 보고서에 따로 셉니다.</p></section>" +
+    // S12-x 66회차: 시안 v3 scrField(brief) — 첫 칸(단계 줄 · 가구 카드 · 도착 전 요약 + 부재) | 둘째 칸(예상 시간 · 들어가기 · 판단 근거 · 연계처 · 현장 보조)
+    return '<main class="phx">' + mini(2, hid) +
+      '<section class="card next idc" aria-label="가구"><div class="hh"><span class="no">' + (i + 1) + '</span><span class="t"><b>' + esc(h.area + " " + hid) + "</b><small>" + esc(ageLine(h) + " 사심 · 발굴 " + (+m.cnt || 1) + "회째 · 한국사회보장정보원 발굴 순위 " + lr) + '</small></span><span class="when"><b class="num">' + esc(eta || "—") + "</b><small>" + (c.isToday ? "도착 예정" : esc(c.d.date ? md(c.d.date) : "예정")) + "</small></span></div>" +
+      '<div class="tags">' + reasons.slice(0, 4).map(function (t) { return '<span class="tag">' + esc(t) + "</span>"; }).join("") + (m.lonely ? '<span class="tag w">고독사 우선방문</span>' : "") + "</div>" +
+      '<div class="row2 hhnav">' + (prev ? '<a class="evb pr" href="#home:' + prev + '">‹ 앞 가구</a>' : '<span class="evb pr" aria-disabled="true">‹ 앞 가구</span>') + '<span class="why">' + (i + 1) + " / " + c.d.ids.length + "</span>" + (next ? '<a class="evb pr" href="#home:' + next + '">다음 가구 ›</a>' : '<span class="evb pr" aria-disabled="true">다음 가구 ›</span>') + "</div></section>" +
+      '<section class="card ft stops" aria-label="도착 전 요약"><div class="ch"><h3>도착 전 요약</h3><span class="samp">' + Math.min(5, lines.length) + '줄</span></div><div class="brief">' + lines.slice(0, 5).map(function (x, n) { return '<div class="bl' + (x.warn ? " w" : "") + '"><span class="ic' + (x.warn ? "" : " n") + '">' + (x.warn ? (I.warn || "!") : n + 1) + "</span><p>" + esc(x.t) + "<small>" + esc(x.lb) + "</small>" + (x.plug.length ? '<span class="srcs">' + x.plug.map(function (p) { return '<span class="plug">' + esc(p) + "</span>"; }).join("") + "</span>" : "") + "</p></div>"; }).join("") + "</div>" +
+      '<div class="cact"><button class="btn sm ghost noans" type="button" data-act="noans">' + (I.away || "") + "응답 없음(부재) · 문 앞 확인으로</button></div></section>" + // S12-v U4(F3): 초인종 → 응답 없음 → 문 앞 확인 → 확정
+      '<section class="card basis" aria-label="판단 근거 카드"><div class="ch"><h3>판단 근거</h3><span class="samp">점수 없음</span></div><div class="evt"><div><dt>명단 사유</dt><dd>' + reasons.length + "가지</dd></div><div><dt>발굴 횟수</dt><dd>" + (+m.cnt || 1) + "회</dd></div><div><dt>현장 징후</dt><dd>" + (sign || 0) + "건" + (sign ? "" : " · 집 안에서 채움") + "</dd></div></div>" +
+      '<span class="why">현장 징후는 집 안에서 «확인» 체크로 채웁니다. 명단 사유 밖 징후는 보고서에 따로 셉니다. 판단은 담당자가 합니다.</span></section>' + C2 + // 68회차 ⑮ 판단 근거를 첫 칸으로(폴드·PC 첫 칸이 짧아 칸 균형 기울던 것)
+      minChips() + // S12-i5 ① 예상 시간 칩(탭 한 번)
+      (safeOn(hid) ? '<button class="btn safe" type="button" data-act="enter" data-dock="1">' + (I.shield || "") + '안전 모드 켜져 있음 · 계속 <small>' + elMin(safeOn(hid).at) + "분째 · 예정 " + (safeOn(hid).min || A.safetyMin) + "분</small></button>" // S12-v U3: 이미 켜진 집은 새로 켜지 않고 이어 간다
+        : '<button class="btn safe" type="button" data-act="enter" data-dock="1">' + (I.shield || "") + '들어가기 <small>안전 모드 <span data-sminv>' + minPick() + "</span>분</small></button>") +
       (window.DaeumLink ? window.DaeumLink.html(h) : "") + // S12-m 치매·마음건강·돌봄 한 줄 + 같은 읍면동 연계처(app/linkcard.js)
       (FD ? FD.homeExtra(hid) : "") + // S12-i3 ①주소 확인 필요 ⑤2인 방문 ⑦추가 발굴 가구(작게)
-      minChips() + // S12-i5 ① 예상 시간 칩(탭 한 번)
-      (safeOn(hid) ? '<button class="big" type="button" data-act="enter" data-dock="1">안전 모드 켜져 있음 · 계속 <small>' + elMin(safeOn(hid).at) + "분째 · 예정 " + (safeOn(hid).min || A.safetyMin) + "분</small></button>" // S12-v U3: 이미 켜진 집은 새로 켜지 않고 이어 간다
-        : '<button class="big" type="button" data-act="enter" data-dock="1">들어가기 <small>안전 모드 <span data-sminv>' + minPick() + "</span>분</small></button>") +
-      '<button class="sbtn noans" type="button" data-act="noans">응답 없음(부재) <small>안전 모드 없이 문 앞 확인으로</small></button>' + // S12-v U4(F3): 초인종 → 응답 없음 → 문 앞 확인 → 확정
-      '<div class="subnav">' + (prev ? '<a href="#home:' + prev + '">← 앞 집 ' + prev + "</a>" : "<span></span>") + '<a href="#route:' + hid + '">동선·길안내</a>' + (next ? '<a href="#home:' + next + '">다음 집 ' + next + " →</a>" : "<span></span>") + "</div>" +
-      "</main>" + bnav("home", hid);
+      '<a class="btn sm ghost" href="#route:' + hid + '">' + (I.route || "") + "동선·길안내</a></main>";
   }
   function bindHome(want) {
     var k = pickHid(want); if (!k) return;
@@ -412,9 +429,29 @@
   }
   function live() { return SY.state().mode === "live"; }
   /** S12-v U3(F1): 동료·팀장 이름은 시연용 가상 — 이름 뒤에 «시연·가상» 꼬리표(모양은 CSS .sim-tag). 입력은 이미 esc 된 글 */
-  function simTag(h) { if (!SX || !SX.WHO) return h; [SX.WHO.peer, SX.WHO.lead].forEach(function (n) { h = h.split(esc(n)).join(esc(n) + '<span class="sim-tag">시연·가상</span>'); }); return h; }
-  /** 알림이 실제로 어디까지 가는지 정직하게 — 연동 중이면 같은 계정 다른 화면, 아니면 아무 데도 안 감 */
-  function reachLine() { return live() ? "실제로는 같은 계정으로 로그인한 다른 화면에 뜹니다(도입 때 같은 팀 계정으로)" : "연동 꺼짐 — 다른 사람에게 가지 않습니다 · 동료에게 직접 전화하세요"; }
+  //   69회차(⚙️ 파로): 꼬리표는 «가상»일 때만 — 팀에서 수락된 짝이 실제 팀원(sim 아님)이면 붙이지 않는다. 짝이 없으면 기본 이름(시연용 가상)이라 붙인다.
+  function simTag(h) {
+    if (!SX || !SX.WHO) return h; var T = tm();
+    var isSim = function (l) { return !T || !l || l.state !== "accepted" || !!l.sim; };
+    [[SX.WHO.peer, T ? T.peer() : null], [SX.WHO.lead, T ? T.lead() : null]].forEach(function (x) { if (isSim(x[1])) h = h.split(esc(x[0])).join(esc(x[0]) + '<span class="sim-tag">시연·가상</span>'); });
+    return h;
+  }
+  /** 팀 연동(shared/team_sync.js — app.js 뒤에 적재되므로 그때그때 찾는다) */
+  function tm() { var w = typeof window !== "undefined" ? window : null; return w && w.DaeumTeam || null; }
+  function teamLive() { var T = tm(); return !!(T && T.live && T.live()); }
+  /** «직접 전화» 받는 사람 — 팀에서 수락된 1차 동료 이름(예: «박주무관에게»), 없으면 «동료에게» */
+  function peerWho() { var T = tm(), n = T && T.peerName ? T.peerName() : ""; return n ? n + "에게" : "동료에게"; }
+  /** 알림이 실제로 어디까지 가는지 정직하게 — 팀 연동 중이면 1차 동료·팀장 화면, 아니면 다른 사람에게 안 감(같은 계정 다른 화면은 내 화면일 뿐) */
+  function reachLine() {
+    if (teamLive()) return "1차 동료·팀장 화면에 뜹니다";
+    return (live() ? "팀 연동 꺼짐 — 같은 계정 내 다른 화면에만 뜹니다" : "연동 꺼짐 — 다른 사람에게 가지 않습니다") + " · " + peerWho() + " 직접 전화하세요";
+  }
+  /** 팀 알림·짝 요청 건수 — «더 보기» 단추 점(data-badge)과 «우리 팀» 항목 알약(.li-n) */
+  function teamN() { var T = tm(); if (!T) return 0; try { return (T.alerts ? T.alerts().length : 0) + (T.incoming ? T.incoming().length : 0); } catch (e) { return 0; } }
+  function moreDot() { if (typeof document === "undefined") return; var n = teamN(); document.querySelectorAll('[data-act="more"]').forEach(function (b) { if (n) b.setAttribute("data-badge", String(n)); else b.removeAttribute("data-badge"); b.classList.toggle("has-dot", !!n); }); }
+  function reachTo() { return teamLive() ? "1차 동료·팀장 화면" : live() ? "같은 계정 내 다른 화면(팀 연동 꺼짐)" : "이 기기에만(연동 꺼짐)"; }
+  // 팀 짝·연동이 바뀌면(수락·연동 켜짐/꺼짐) 안전 모드 띠 문구·전화 단추·꼬리표를 다시 그린다 — team_sync.js 가 뒤에 적재되므로 한 박자 뒤에 붙인다
+  if (typeof window !== "undefined") setTimeout(function () { var T = tm(); if (T && T.on) T.on(function (w) { if ((w === "board" || w === "error") && lsGet(LS_SAFE, null)) render(); else moreDot(); }); moreDot(); }, 0);
   function safePush(sf, state) { if (!SY.safety) return; SY.safety.send({ id: sf.id || "SF-" + sf.hid, hid: sf.hid, area: (BY[sf.hid] || {}).area || "", at: sf.at, min: sf.min, state: state, by: devName(), help: sf.help || 0, hok: sf.hok || 0, hat: sf.hat || "", fin: sf.fin || "" }); dayNote(); }
   // ── S12-i5 동료 안부 고도화: ①예상 시간 칩 ②1차 동료 → 2차 팀장 ③조용한 도움 요청 ④무사 종료 ⑤하루 요약 ──
   function minPick() { return SX ? SX.pick(lsGet(LS_SMIN, A.safetyMin)) : A.safetyMin; }
@@ -445,9 +482,9 @@
   }
   function safeTools(sf) {
     var on = (sf.help || 0) > (sf.hok || 0);
-    var to = live() ? "같은 계정 다른 화면" : "이 기기에만(연동 꺼짐)";
+    var to = reachTo();
     return '<span class="sf-t"><button type="button" class="sf-q' + (on ? " on" : "") + '" data-act="safehelp" aria-label="' + (on ? "도움 요청을 보냈습니다 · " + to + "에 떠 있습니다" : "조용한 도움 요청 · 누르면 " + to + "에 가구 번호·읍면이 갑니다") + '"><i></i></button>' +
-      (live() ? "" : '<a class="sf-call" href="tel:">전화</a>') + // 연동 꺼짐이면 알림이 아무 데도 안 가니 전화 앱을 바로 연다
+      (teamLive() ? "" : '<a class="sf-call" href="tel:" aria-label="' + esc(peerWho()) + ' 직접 전화">' + esc(peerWho().replace(/에게$/, "")) + "에게 전화</a>") + // 팀 연동 꺼짐이면 동료가 모르니 전화 앱을 바로 연다(69회차: 1차 동료 이름)
 
       '<button type="button" class="sf-end" data-act="safeend">무사히 끝남</button></span>';
   }
@@ -455,19 +492,22 @@
     var sf = lsGet(LS_SAFE, null); if (!sf || sf.hid !== hid) return "";
     var el = elMin(sf.at), lim = sf.min || A.safetyMin, st = SX ? SX.stage(sf) : { lv: el >= lim ? 1 : 0, line: lim + "분이 지나면 괜찮은지 묻습니다" };
     // S12-v U3(F1): «사무실 화면에도 알림»은 연동 중일 때만 — 로그인 안 한 폰에 거짓 안심 문구를 띄우지 않는다
-    return el >= lim ? '<div class="safe well late lv' + st.lv + '" role="alert"><i></i><span><b>' + lim + "분 지났습니다 · 괜찮으세요?</b><small>" + simTag(esc(st.line)) + " · " + esc(reachLine()) + "</small></span><button type=\"button\" data-act=\"safeok\">안부 확인 완료 · 20분 더</button>" + safeTools(sf) + "</div>"
-      : '<div class="safe well"><i></i><span>안전 모드 <b>' + el + "분째</b> · " + simTag(esc(st.line)) + (live() ? "" : " · " + esc(reachLine())) + "</span>" + safeTools(sf) + "</div>";
+    // S12-x 66회차: 시안 v3 safePanel — 동료 안부 카드(.card.buddy.ft) 안에 경과 고리(.ring) + 글(.tx) + 단추(괜찮아요·도움 요청·무사히 끝남). 문구·동작 이름은 그대로
+    var R = 56, CC = 2 * Math.PI * R, pp = Math.min(1, el / Math.max(1, lim)), late = el >= lim;
+    var ring = '<div class="ring"><svg viewBox="0 0 132 132" aria-hidden="true"><circle cx="66" cy="66" r="' + R + '" fill="none" stroke="var(--track)" stroke-width="11"/><circle cx="66" cy="66" r="' + R + '" fill="none" stroke="' + (late ? "var(--sos0)" : "#2E8270") + '" stroke-width="11" stroke-linecap="round" stroke-dasharray="' + CC.toFixed(1) + '" stroke-dashoffset="' + (CC * (1 - pp)).toFixed(1) + '"/></svg><div class="c"><b class="num">' + el + "</b><small>/ " + lim + "분</small></div></div>";
+    return late ? '<section class="card buddy ft sfb late lv' + st.lv + '" role="alert"><div class="safep">' + ring + '<div class="tx"><b>' + lim + "분 지났습니다 · 괜찮으세요?</b><small>" + simTag(esc(st.line)) + " · " + esc(reachLine()) + "</small><div class=\"row2\"><button type=\"button\" class=\"btn sm safe\" data-act=\"safeok\">안부 확인 완료 · 20분 더</button></div>" + safeTools(sf) + "</div></div></section>"
+      : '<section class="card buddy ft sfb"><div class="safep">' + ring + '<div class="tx"><b>안전 모드 · ' + el + "분째</b><small>" + simTag(esc(st.line)) + (teamLive() ? "" : " · " + esc(reachLine())) + "</small>" + safeTools(sf) + "</div></div></section>";
   }
-  function bindSafe() { var ok = app.querySelector('[data-act="safeok"]'); if (ok) ok.addEventListener("click", function () { var sf = lsGet(LS_SAFE, null); if (sf) { sf.min = Math.max(sf.min || A.safetyMin, elMin(sf.at)) + 20; lsSet(LS_SAFE, sf); safePush(sf, "ok"); toast(live() ? "안부 확인 완료 · 같은 계정 다른 화면 알림도 해제" : "안부 확인 완료"); } render(); });
+  function bindSafe() { var ok = app.querySelector('[data-act="safeok"]'); if (ok) ok.addEventListener("click", function () { var sf = lsGet(LS_SAFE, null); if (sf) { sf.min = Math.max(sf.min || A.safetyMin, elMin(sf.at)) + 20; lsSet(LS_SAFE, sf); safePush(sf, "ok"); toast(teamLive() ? "안부 확인 완료 · 1차 동료·팀장 화면 알림도 해제" : live() ? "안부 확인 완료 · 같은 계정 다른 화면 알림도 해제" : "안부 확인 완료"); } render(); });
     var hp = app.querySelector('[data-act="safehelp"]'); if (hp) hp.addEventListener("click", function () { // ③ 조용한 도움 요청 — 소리·큰 알림 없이 한 번에
       var sf = lsGet(LS_SAFE, null); if (!sf) return; sf.help = (sf.help || 0) + 1; sf.hat = new Date().toISOString(); lsSet(LS_SAFE, sf);
       var a = SY.safety ? SY.safety.list()[sf.id] : null; safePush(sf, a && a.state === "ok" ? "ok" : "on");
       try { if (navigator.vibrate) navigator.vibrate([12, 70, 12]); } catch (e) { /* 무시 */ }
-      hp.classList.add("on"); hp.setAttribute("aria-label", live() ? "도움 요청을 보냈습니다 · 같은 계정 다른 화면에 떠 있습니다" : "연동 꺼짐 — 도움 요청이 다른 사람에게 가지 않습니다 · 직접 전화하세요");
-      if (!live()) toast("연동 꺼짐 — 도움 요청이 다른 사람에게 가지 않습니다 · 직접 전화하세요");
+      hp.classList.add("on"); hp.setAttribute("aria-label", teamLive() ? "도움 요청을 보냈습니다 · 1차 동료·팀장 화면에 떠 있습니다" : "팀 연동 꺼짐 — 도움 요청이 동료에게 가지 않습니다 · " + peerWho() + " 직접 전화하세요");
+      if (!teamLive()) toast("팀 연동 꺼짐 — 도움 요청이 동료에게 가지 않습니다 · " + peerWho() + " 직접 전화하세요");
     });
     var en = app.querySelector('[data-act="safeend"]'); if (en) en.addEventListener("click", function () { // ④ 무사 종료 — 타이머 정리 + 동료 화면에 «무사히 끝남»
-      vib(); var sf = lsGet(LS_SAFE, null); if (sf) { sf.fin = "safe"; safePush(sf, "end"); try { localStorage.removeItem(LS_SAFE); } catch (e) { /* 무시 */ } toast(live() ? "무사히 끝났습니다 · 같은 계정 다른 화면 알림도 정리했습니다" : "무사히 끝났습니다"); } render();
+      vib(); var sf = lsGet(LS_SAFE, null); if (sf) { sf.fin = "safe"; safePush(sf, "end"); try { localStorage.removeItem(LS_SAFE); } catch (e) { /* 무시 */ } toast(teamLive() ? "무사히 끝났습니다 · 1차 동료·팀장 화면 알림도 정리했습니다" : live() ? "무사히 끝났습니다 · 같은 계정 다른 화면 알림도 정리했습니다" : "무사히 끝났습니다"); } render();
     });
   }
   /** 다른 화면에서 «안부 확인 완료»·확정이 오면 이 기기 안전 모드도 맞춘다 */
@@ -539,7 +579,7 @@
   var CHECK_BASE = ["live", "명단 주소에 실제로 사는지", "실거주 확인 필요"];
   var CHECK_ABSENT = [["mailbox", "우편함·문 앞에 쌓인 것", "우편물 쌓임", "고립"], ["light", "불빛·인기척", "인기척 없음", "고립"], ["nbr", "이웃에게 최근 모습 묻기", "이웃이 최근 못 봄", "고립"], ["tong", "통·이장에게 근황 묻기", "통·이장 확인 필요", "고립"], ["meter", "계량기·보일러 연통 돌아가는지", "난방 안 됨", "주거"]];
   function isField(t) { if (FIELD_SIGNS.indexOf(t) >= 0) return true; var all = [CHECK_BASE].concat(CHECK_ABSENT); Object.keys(CHECKS).forEach(function (k) { all = all.concat(CHECKS[k]); }); return all.some(function (c) { return c[2] === t; }); }
-  var TYPE_COL = { "주거": "#2F6FB1", "생계": "#B7791F", "건강": "#C62F3A", "고립": "#6B5BA8", "돌봄": "#0B8465", "공통": "#586273" };
+  var TYPE_COL = { "주거": "#2F6FB1", "생계": "#B7791F", "건강": "#A63D31", "고립": "#6B5BA8", "돌봄": "#2E8270", "공통": "#47535B" };
   function checkList(h, absent) {
     if (absent) return CHECK_ABSENT.map(function (c) { return { k: c[0], q: c[1], sign: c[2], type: c[3] }; });
     var out = [{ k: CHECK_BASE[0], q: CHECK_BASE[1], sign: CHECK_BASE[2], type: "공통" }], ts = typesFor(h);
@@ -558,18 +598,21 @@
       return '<li class="ck-row' + (st ? " " + st : "") + '" style="--tc:' + TYPE_COL[c.type] + '"><span class="ck-n">' + (st === "ok" ? "✓" : st === "bad" ? "!" : i + 1) + '</span><div class="ck-q"><b>' + esc(c.q) + '</b><small><em>' + esc(c.type) + "</em>" + (c.why ? " 명단 위기정보에서 골라 둠" : absent ? " 부재 때 확인" : " 기본 확인") + (st === "bad" ? " · 징후 «" + esc(c.sign) + "»로 기록" : "") + "</small></div>" +
         '<div class="ck-b" role="group" aria-label="' + esc(c.q) + '"><button type="button" data-ck="' + c.k + '" data-v="ok" aria-pressed="' + (st === "ok") + '">괜찮음</button><button type="button" class="bad" data-ck="' + c.k + '" data-v="bad" aria-pressed="' + (st === "bad") + '">문제 있음</button></div></li>';
     }).join("");
-    var crit = absent ? "" : '<div class="crit well"><b>소득·재산 기준은 여기서 판정하지 않습니다</b>선정기준 원문(한국사회보장정보원 복지서비스)은 «상담» 화면에 요약해 두었습니다 · 판정은 담당 확인</div>';
-    return '<main class="ph">' + phBrand() + mini(3, hid) + safeBanner(hid) +
-      '<section class="ck-head blk"><div><span class="num">' + hid + '</span><span class="who">' + esc(h.area + " · " + ageLine(h)) + '</span></div><svg class="ck-ring" viewBox="0 0 56 56" role="img" aria-label="확인 ' + doneN + "/" + L.length + '"><circle cx="28" cy="28" r="22" fill="none" stroke="#E1E5EB" stroke-width="7"/><circle cx="28" cy="28" r="22" fill="none" stroke="var(--go)" stroke-width="7" stroke-linecap="round" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" transform="rotate(-90 28 28)"/><text x="28" y="33" text-anchor="middle" font-size="15" font-weight="900" fill="#111A27">' + doneN + "/" + L.length + "</text></svg></section>" +
-      '<div class="switch well" role="radiogroup" aria-label="어디서 확인하나요"><button type="button" role="radio" data-place="met" aria-checked="' + !absent + '">집 안에서</button><button type="button" role="radio" data-place="absent" aria-checked="' + absent + '">문 앞(부재)</button></div>' +
-      '<ul class="cks blk">' + rows + "</ul>" +
+    var crit = absent ? "" : '<span class="why crit"><b>소득·재산 기준은 여기서 판정하지 않습니다</b> — 선정기준 원문(한국사회보장정보원 복지서비스)은 «상담» 화면에 요약해 두었습니다 · 판정은 담당 확인</span>';
+    // S12-x 66회차: 시안 v3 scrField(check) — 첫 칸(단계 줄 · 안전 모드 · 가구 카드 · 집 안/문 앞) | 둘째 칸(현장 확인 목록 · 판단 근거 막대 · 상담으로)
+    return '<main class="phx">' + mini(3, hid) + safeBanner(hid) +
+      '<section class="card next ck-head"><div class="hh"><span class="no">' + (k.c.d.ids.indexOf(hid) + 1) + '</span><span class="t"><b>' + esc(h.area + " " + hid) + "</b><small>" + esc(ageLine(h)) + " · 확인 " + doneN + "/" + L.length + '</small></span><svg class="ck-ring" viewBox="0 0 56 56" role="img" aria-label="확인 ' + doneN + "/" + L.length + '"><circle cx="28" cy="28" r="22" fill="none" stroke="#E1E5EB" stroke-width="7"/><circle cx="28" cy="28" r="22" fill="none" stroke="var(--go)" stroke-width="7" stroke-linecap="round" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" transform="rotate(-90 28 28)"/><text x="28" y="33" text-anchor="middle" font-size="15" font-weight="900" fill="#11181C">' + doneN + "/" + L.length + "</text></svg></div></section>" +
+      '<div class="subseg" role="radiogroup" aria-label="어디서 확인하나요"><button type="button" role="radio" class="pr' + (absent ? "" : " on") + '" data-place="met" aria-checked="' + !absent + '">집 안 · 만남</button><button type="button" role="radio" class="pr' + (absent ? " on" : "") + '" data-place="absent" aria-checked="' + absent + '">문 앞 · 못 만남</button></div>' + C2 +
+      '<section class="card"><h3>현장 확인<span class="num">' + doneN + "/" + L.length + '</span></h3><ul class="cks">' + rows + "</ul>" +
       // S12-v U18(F7): 누르지 않은 줄만 «괜찮음»으로 채움 · 다시 누르면 채운 줄만 비움
       (L.length && (doneN < L.length || (o.allOk || []).length) ? '<button type="button" class="sbtn ck-all" data-act="ckall" aria-pressed="' + !!(o.allOk || []).length + '">' + ((o.allOk || []).length ? "모두 괜찮음 취소" : "나머지 모두 괜찮음 · " + (L.length - doneN) + "줄") + "</button>" : "") +
+      '<div class="meter" aria-hidden="true"><i class="m3" style="width:' + (L.length ? badN / L.length * 100 : 0).toFixed(1) + '%"></i><i class="m-ok" style="width:' + (L.length ? (doneN - badN) / L.length * 100 : 0).toFixed(1) + '%"></i></div><div class="mlg"><span>문제 있음 <b>' + badN + "</b></span><span>괜찮음 <b>" + (doneN - badN) + "</b></span><span>안 봄 <b>" + (L.length - doneN) + "</b></span></div>" + crit + "</section>" +
+      C2 + // 68회차 ⑮ 폴드·PC: 현장 확인 목록 | 부재 정리·판단 근거·다음 단추 두 칸(한 칸에 다 몰려 기울던 것)
       (absent && FD ? FD.awayPanel(hid) : "") + // S12-i3 ② 간접 확인·부재 메모·쪽지·문자·다음 방문
-      '<section class="vs well" aria-label="판단 근거 카드"><div><b>' + reasons.length + '</b><span>명단 사유</span><i style="width:' + Math.min(100, reasons.length * 20) + '%"></i></div><div class="nw"><b>' + badN + '</b><span>현장에서 더 본 징후</span><i style="width:' + Math.min(100, badN * 20) + '%"></i></div><p>점수 없음 · 판단은 담당자 · 현장 징후는 기록과 보고서에 그대로 들어갑니다</p></section>' + crit +
-      (absent ? '<button class="big dark" type="button" data-act="absave" data-dock="1">부재로 기록 저장 <small>' + esc(FD && FD.nextOf(hid) ? FD.nextOf(hid).line : "다음 시도 시간대 자동") + "</small></button>" // S12-v U4(F3): 기록 화면을 건너뛰고 바로 확정
-        : '<a class="big" data-dock="1" href="#talk:' + hid + '">상담 시작 <small>질문 ' + Math.min(5, questionsFor(hid, o).length) + "개 · 서비스 " + svcFor(h, badTypes(hid, o)).length + "개 준비됨</small></a>") +
-      '<div class="subnav"><a href="#home:' + hid + '">← 집 앞 요약</a>' + (absent ? '<a href="#record:' + hid + '">기록 화면에서 더 쓰기</a>' : "<span>체크는 기록 화면에 미리 채워집니다</span>") + "</div></main>" + bnav("check", hid);
+      '<section class="card vs" aria-label="판단 근거 카드"><div class="ch"><h3>판단 근거</h3><span class="samp">점수 없음</span></div><div class="evt"><div><dt>명단 사유</dt><dd>' + reasons.length + '가지</dd></div><div><dt>현장에서 더 본 징후</dt><dd>' + badN + '건</dd></div></div><span class="why">판단은 담당자 · 현장 징후는 기록과 보고서에 그대로 들어갑니다</span></section>' +
+      (absent ? '<button class="btn pri" type="button" data-act="absave" data-dock="1">' + (I.away || "") + '부재로 기록 저장 <small>' + esc(FD && FD.nextOf(hid) ? FD.nextOf(hid).line : "다음 시도 시간대 자동") + "</small></button>" // S12-v U4(F3): 기록 화면을 건너뛰고 바로 확정
+        : '<a class="btn pri" data-dock="1" href="#talk:' + hid + '">' + (I.talk || "") + '상담 시작 <small>질문 ' + Math.min(5, questionsFor(hid, o).length) + "개 · 서비스 " + svcFor(h, badTypes(hid, o)).length + "개 준비됨</small></a>") +
+      (absent ? '<a class="btn sm ghost" href="#record:' + hid + '">기록 화면에서 더 쓰기</a>' : '<span class="why">체크는 기록 화면에 미리 채워집니다</span>') + "</main>";
   }
   function bindCheck(want) {
     var k = pickHid(want); if (!k) return;
@@ -625,18 +668,19 @@
       var x = loaded ? SVDB[s[0]] : null, on = !!(o.svcs || {})[s[0]];
       var body = x ? '<dl><dt>지원 대상</dt><dd>' + esc(clip(plain(x.target), 110)) + "</dd><dt>지원 내용</dt><dd>" + esc(clip(plain(x.support), 90)) + "</dd><dt>신청</dt><dd>" + esc(clip(plain(x.apply), 70)) + "</dd><dt>문의</dt><dd>" + esc(clip(plain(x.contact), 40)) + "</dd></dl>"
         : loaded ? '<p class="mute">원문 자료에 이 서비스가 없습니다 · 복지로에서 확인</p>' : '<p class="mute">' + (svFail ? "연결되면 원문 요약을 다시 불러옵니다" : "원문 요약 불러오는 중…") + "</p>";
-      return '<article class="svc' + (on ? " on" : "") + '"><header><b>' + esc(s[1]) + '</b><span class="plug">' + s[2] + '</span></header>' + body +
-        '<button type="button" class="svc-t" data-svc="' + s[0] + '" aria-pressed="' + on + '">' + (on ? "✓ 연계 후보로 넣음" : "연계 후보로 넣기") + "</button></article>";
+      // S12-x 66회차(미르 넘김 ③): 옛 article.svc → 시안 v3 .svc 카드(.h 머리 · dl · 고르기) — 고르는 단추(data-svc)는 그대로
+      return '<div class="svc' + (on ? " on" : "") + '"><div class="h"><span><span class="tag">' + esc(s[2]) + "</span><br><b>" + esc(s[1]) + '</b></span><span class="pick" aria-hidden="true">' + (I.check || "✓") + "</span></div>" + body +
+        '<button type="button" class="evb svc-t" data-svc="' + s[0] + '" aria-pressed="' + on + '">' + (on ? "✓ 연계 후보로 넣음" : "연계 후보로 넣기") + "</button></div>";
     }).join("");
-    return '<main class="ph">' + phBrand() + mini(4, hid) + safeBanner(hid) +
-      '<div class="idc blk" style="padding:10px 14px"><span class="num" style="font-size:26px">' + hid + '</span><span class="who">' + esc(h.area + " · " + ageLine(h)) + " · 상담 중</span></div>" +
-      '<section class="qwrap" aria-label="질문 순서 카드"><div class="qh"><span>질문 순서</span><span>현장 확인에서 고른 것부터</span></div><div class="deck">' + deck + "</div>" + dots +
-      (qi < Q.length ? '<div class="qbtn"><button type="button" class="sbtn" data-act="qskip">넘기기</button><button type="button" class="sbtn go" data-act="qok">물어봤어요 →</button></div>' : "") + "</section>" +
-      '<section aria-label="받을 수 있는 서비스"><div class="qh"><span>받을 수 있는 서비스 · 원문 요약</span><span>선정 결정 아님</span></div><div class="svcs">' + cards + "</div>" +
-      '<p class="srcline">출처: <i class="src-ico" aria-hidden="true"></i>한국사회보장정보원 중앙부처복지서비스(15090532)·지자체복지서비스(15108347) 공공데이터 2026-11-02 수집본 · 판정은 담당 공무원</p></section>' +
+    // S12-x 66회차: 시안 v3 scrField(consult) — 첫 칸(단계 줄 · 안전 모드 · 질문 순서) | 둘째 칸(받을 수 있는 서비스 · 의뢰 사유 · 기록으로)
+    return '<main class="phx">' + mini(4, hid) + safeBanner(hid) +
+      '<section class="card qwrap" aria-label="질문 순서 카드"><h3>질문 순서<span>' + esc(h.area + " " + hid) + " · 현장 확인에서 고른 것부터</span></h3><div class=\"deck\">" + deck + "</div>" + dots +
+      (qi < Q.length ? '<div class="row2"><button type="button" class="btn sm ghost" data-act="qskip">넘기기</button><button type="button" class="btn sm pri" data-act="qok">물어봤어요 ›</button></div>' : "") + "</section>" + C2 +
+      '<section class="card" aria-label="받을 수 있는 서비스"><h3>받을 수 있는 서비스<span>고른 것 ' + Object.keys(o.svcs || {}).filter(function (x) { return o.svcs[x]; }).length + '개 → 의뢰서로</span></h3><div class="list svcs">' + cards + "</div>" +
+      '<span class="why srcline">서비스 원문 요약입니다. 선정 결정이 아닙니다 · 출처: <i class="src-ico" aria-hidden="true"></i>한국사회보장정보원 중앙부처복지서비스(15090532)·지자체복지서비스(15108347) 공공데이터 2026-11-02 수집본 · 판정은 담당 공무원</span></section>' +
       (FD ? FD.referWhy(hid) : "") + // S12-i3 연계 의뢰 사유(예시 칩 + 직접 입력)
-      '<a class="big" data-dock="1" href="#record:' + hid + '">상담 끝 · 기록하기 <small>고른 것 ' + Object.keys(o.svcs || {}).filter(function (x) { return o.svcs[x]; }).length + "개 미리 채움</small></a>" +
-      '<div class="subnav"><a href="#check:' + hid + '">← 현장 확인</a><span>질문·서비스는 상담일지에 그대로</span></div></main>' + bnav("talk", hid);
+      '<a class="btn pri" data-dock="1" href="#record:' + hid + '">' + (I.record || "") + '상담 끝 · 기록하기 <small>고른 것 ' + Object.keys(o.svcs || {}).filter(function (x) { return o.svcs[x]; }).length + "개 미리 채움</small></a>" +
+      '<span class="why">질문·서비스는 상담일지에 그대로 들어갑니다</span></main>';
   }
   function bindTalk(want) {
     var k = pickHid(want); if (!k) return;
@@ -700,7 +744,7 @@
   }
   function recDraftSec(hid, o, ctx) {
     var c = o.cmp, L = RC.lines(c, ctx), dr = recDraft(hid, o), nx = RC.nextOf(c.next, ctx.now), act = RC.vals(c, "act"), said = tidy(o.memo || "");
-    return '<section class="draft blk" aria-live="polite" data-rc="draft"><div class="ttl">상담일지 초안<span>자동 정리 · 담당자 확인 전</span></div>' +
+    return '<section class="card draft" aria-live="polite" data-rc="draft"><h3>상담일지 초안<span>자동 정리 · 담당자 확인 전</span></h3>' +
       "<p><b>상황</b><span>" + (L.length ? esc(L.filter(function (l) { return !/^(대응|다음 확인):/.test(l); }).slice(0, 4).join(" ")) : '<span class="empty">상황을 고르면 채워짐</span>') + "</span></p>" +
       "<p><b>말씀</b><span>" + (said ? markWords(clip(said, 120)) : "—") + "</span></p>" +
       "<p><b>연계</b><span>" + (act.length ? esc(act.join(", ")) : '<span class="empty">대응을 고르면 채워짐</span>') + '</span></p><p><b>다음</b><span class="rule">' + esc(nx ? nx.text : dr.next) + "</span></p>" +
@@ -712,7 +756,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12v61"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12y70"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -735,14 +779,14 @@
   }
   function recAISec(hid, o) {
     var a = o.ai, busy = aiBusy[hid], hint = '<small class="dnote">보내기 전에 이름·주소·연락처를 가립니다 · «씨·어르신» 없이 쓴 이름은 다 못 가릴 수 있으니 이름은 쓰지 마세요</small>';
-    if (busy) return '<section class="draft blk rc-ai" aria-live="polite"><div class="ttl">AI 요약 · 연계 추천<span>묻는 중…</span></div>' + hint + "</section>";
-    if (a && a.src === "ai") return '<section class="draft blk rc-ai" aria-live="polite"><div class="ttl">AI 요약 · 연계 추천<span>' + (a.use ? "기록에 넣음" : "담당자 확인 전") + "</span></div>" +
+    if (busy) return '<section class="card draft rc-ai" aria-live="polite"><h3>AI 요약 · 연계 추천<span>묻는 중…</span></h3>' + hint + "</section>";
+    if (a && a.src === "ai") return '<section class="card draft rc-ai" aria-live="polite"><h3>AI 요약 · 연계 추천<span>' + (a.use ? "기록에 넣음" : "담당자 확인 전") + "</span></h3>" +
       "<p><b>요약</b><span>" + esc(a.summary || "—") + "</span></p>" + (a.picks && a.picks.length ? "<p><b>추천</b><span>" + a.picks.map(function (p) { return "<b>" + esc(p.name) + "</b>" + (p.why ? " — " + esc(p.why) : ""); }).join("<br>") + "</span></p>" : "") +
-      '<div class="qbtn"><button type="button" class="sbtn" data-act="aiask">다시 묻기</button><button type="button" class="sbtn go" data-act="aiuse" aria-pressed="' + !!a.use + '">' + (a.use ? "✓ 기록에 넣음" : "기록에 넣기") + "</button></div>" +
+      '<div class="row2"><button type="button" class="btn sm ghost" data-act="aiask">다시 묻기</button><button type="button" class="btn sm" data-act="aiuse" aria-pressed="' + !!a.use + '">' + (a.use ? "✓ 기록에 넣음" : "기록에 넣기") + "</button></div>" +
       '<small class="dnote">출처: 한국사회보장정보원 복지서비스 목록(15090532·15108347) 안에서만 고름 · 판정은 담당 공무원</small></section>';
-    return '<section class="draft blk rc-ai"><div class="ttl">AI 요약 · 연계 추천<span>누를 때만</span></div>' +
+    return '<section class="card draft rc-ai"><h3>AI 요약 · 연계 추천<span>누를 때만</span></h3>' +
       (a && a.src === "rule" ? '<p class="mute">AI에 연결되지 않아 위 «자동 정리» 문장을 그대로 씁니다.</p>' : "") +
-      '<button type="button" class="sbtn go" data-act="aiask">' + (a ? "다시 묻기" : "AI에게 요약·추천 받기") + "</button>" + hint + "</section>";
+      '<button type="button" class="btn sm ghost" data-act="aiask">' + (I.talk || "") + (a ? "다시 묻기" : "AI에게 요약·추천 받기") + "</button>" + hint + "</section>";
   }
   function recPaper(hid, o, ctx) {
     var h = BY[hid], c = o.cmp, nx = RC.nextOf(c.next, ctx.now), L = RC.lines(c, ctx).filter(function (l) { return !/^(대응|다음 확인):/.test(l) && !/^본인이|^의사 확인/.test(l); });
@@ -759,13 +803,13 @@
       o.cmp = RC.sync(o.cmp, ctx);
       met = RC.composerHtml(o.cmp, ctx, recFold) +
         RC.subHtml({ sr: !!SR, ex: RC.exHtml({ id: "memo", set: "memo", grp: exGrp.memo, pri: RC.vals(o.cmp, "cri"), value: o.memo || "", label: "글로 쓰기 · 예시로 채우기", rows: 3 }) }) +
-        recDraftSec(hid, o, ctx) + recAISec(hid, o) + recPaper(hid, o, ctx);
+        C2 + recDraftSec(hid, o, ctx) + recAISec(hid, o) + recPaper(hid, o, ctx); // S12-x 66회차: 둘째 칸 = 초안 확인(시안 «오른손 · 초안 확인»)
     }
     var att = attempts().filter(function (t) { return t.householdId === hid && /no_answer|absent/.test(t.result); }).sort(function (a, b) { return a.at < b.at ? -1 : 1; });
     var n = att.length + 1, vt = F.visitTime.profile(attempts(), hid, { neighborLog: neighborLog() });
     var fd = FD ? FD.get(hid) : {}, fnx = FD ? FD.nextOf(hid) : null, awayV = FD ? fd.away || "" : o.away || "";
     var a3 = n >= 3 ? F.visitTime.afterThree(attempts().concat([{ householdId: hid, channel: "visit", result: "no_answer", at: now.toISOString() }]), hid, { area: h.area, neighborLog: neighborLog() }) : null;
-    var absent = '<section class="absent blk"><b class="h">이번이 ' + (n >= 3 ? "세 번째 이상" : n === 2 ? "두 번째" : "첫") + " 부재입니다</b>" +
+    var absent = '<section class="card absent"><b class="h">이번이 ' + (n >= 3 ? "세 번째 이상" : n === 2 ? "두 번째" : "첫") + " 부재입니다</b>" +
       '<div class="tries">' + att.slice(-2).map(function (t) { return "<span>" + esc(mdDot(t.at) + " " + hm(t.at)) + " 부재</span>"; }).join("") + "<span>지금 " + hm(now) + " 부재</span></div>" +
       (fnx ? (fnx.close ? "<b>" + esc(fnx.line) + "</b>" : "다음 시도: <b>" + esc(fnx.line) + "</b>") + " · 저장하면 실적 › 할 일에 «다시 방문»으로 남깁니다." // S12-v U12(B7) · U4(F10): 현장 확인과 같은 계산(FD.nextOf)
         : "다음 시도: <b>" + esc(md(U.addWorkdays(now, A.retryGap))) + (vt.best ? " " + esc(vt.best.label + "(" + vt.best.hours + ")") : "") + "</b> · 근무일 " + A.retryGap + "일 뒤(가정) · 저장하면 실적 › 할 일에 «다시 방문»으로 남깁니다.") +
@@ -773,17 +817,18 @@
       '<div class="grp" style="margin-top:10px;font-size:11px;font-weight:800;color:var(--mute)">문 앞에서 본 것</div><div class="tok">' + uniq(chosenSigns(o).concat(["우편물 쌓임", "불 꺼져 있음", "이웃이 최근 봄", "인기척 없음"])).map(function (s) { return '<button type="button" data-sign="' + s + '" aria-pressed="' + !!o.signs[s] + '">' + s + "</button>"; }).join("") + "</div>" +
       (fd.indirect ? '<p class="rc-indirect">간접 확인: ' + esc(fd.indirect) + ' <a href="#check:' + hid + '">고치기</a></p>' : "") +
       '<div class="rc-awayex">' + RC.exHtml({ id: "memo", set: "away", grp: exGrp.away, value: awayV, label: "부재 메모 · 예시로 채우기(문 앞 확인과 같은 칸)", rows: 2 }) + "</div></section>";
-    var refuse = '<section class="absent blk"><b class="h">지금은 필요 없다고 하셨습니다</b>근무일 5일 뒤(' + esc(md(U.addWorkdays(now, 5))) + ') 다시 권하도록 할 일에 넣습니다.<div style="margin-top:8px">' + (CH ? CH.html({ id: "refuseWhy", label: "거절 사유", hint: "예시를 누르거나 직접 쓰기", examples: REFUSE_EX, value: o.refuse || "", placeholder: "거절 사유 한 줄", maxlength: 60 })
+    var refuse = '<section class="card absent"><b class="h">지금은 필요 없다고 하셨습니다</b>근무일 5일 뒤(' + esc(md(U.addWorkdays(now, 5))) + ') 다시 권하도록 할 일에 넣습니다.<div style="margin-top:8px">' + (CH ? CH.html({ id: "refuseWhy", label: "거절 사유", hint: "예시를 누르거나 직접 쓰기", examples: REFUSE_EX, value: o.refuse || "", placeholder: "거절 사유 한 줄", maxlength: 60 })
       : '<label class="sr" for="refuseWhy">거절 사유</label><input class="in1" id="refuseWhy" maxlength="60" placeholder="거절 사유 한 줄(예: 자녀가 도와준다고 하심)" value="' + esc(o.refuse || "") + '">') + "</div></section>";
-    var nextLbl = nextId ? "다음 집 " + nextId + (arriveOf(c, nextId) ? " · " + arriveOf(c, nextId) : "") : "오늘 방문 끝 → 문서함";
+    var nextLbl = nextId ? "다음 가구 " + nextId + (arriveOf(c, nextId) ? " · " + arriveOf(c, nextId) : "") : "오늘 방문 끝 → 문서함";
     var fixNote = fixHid === hid ? '<p class="rc-indirect" role="status">이미 저장한 기록을 고칩니다 · 다시 저장하면 앞 기록을 대신합니다</p>' : ""; // S12-v U16(F4)
-    return '<main class="ph rc-main">' + phBrand() + mini(5, hid) + safe + fixNote +
-      '<div class="idc blk" style="padding:10px 14px"><span class="num" style="font-size:26px">' + hid + '</span><span class="who">' + esc(h.area + " · " + ageLine(h)) + " · 만난 결과</span></div>" +
-      '<div class="switch well" role="radiogroup" aria-label="만난 결과">' + [["met", "만남"], ["absent", "부재"], ["refuse", "거절"]].map(function (x) { return '<button type="button" role="radio" data-res="' + x[0] + '" aria-checked="' + (o.res === x[0]) + '">' + x[1] + "</button>"; }).join("") + "</div>" +
-      (o.res === "met" ? met : o.res === "absent" ? absent : refuse) +
-      '<button class="big dark" type="button" data-act="save" data-dock="1">기록 저장 <small>' + esc(nextLbl) + "</small></button>" +
-      '<div class="subnav"><a href="#home:' + hid + '">← 집 앞 요약</a><span>' + (SY.state().mode === "live" ? "저장하면 사무실 PC에 바로" : "저장하면 이 기기에 남습니다") + "</span></div>" +
-      "</main>" + bnav("record", hid);
+    // S12-x 66회차: 시안 v3 scrRecord — 가구 카드(.card.next) · 결과 한 번 누르기(.res 3칸) · 상황 고르기 | 둘째 칸 초안·AI·상담일지 종이
+    var si = c.d.ids.indexOf(hid);
+    return '<main class="phx rc-main">' + safe + fixNote +
+      '<section class="card next idc"><div class="hh"><span class="no">' + (si + 1) + '</span><span class="t"><b>' + esc(h.area + " " + hid) + "</b><small>" + esc(ageLine(h)) + " · 방금 상담 · 안전 모드 " + (safeOn(hid) ? "켜짐" : "꺼짐") + "</small></span></div></section>" +
+      '<section class="card"><h3>결과 한 번 누르기</h3><div class="res" role="radiogroup" aria-label="만난 결과">' + [["met", "만났어요", I.met], ["absent", "부재", I.away], ["refuse", "거절", I.no]].map(function (x) { return '<button type="button" role="radio" class="pr' + (o.res === x[0] ? " on" : "") + '" data-res="' + x[0] + '" aria-checked="' + (o.res === x[0]) + '">' + (x[2] || "") + x[1] + "</button>"; }).join("") + "</div></section>" +
+      (o.res === "met" ? met : o.res === "absent" ? absent : refuse) + (o.res === "met" ? "" : C2) +
+      '<button class="btn pri" type="button" data-act="save" data-dock="1">' + (I.check || "") + "기록 저장 <small>" + esc(nextLbl) + "</small></button>" +
+      '<span class="why">' + (SY.state().mode === "live" ? "저장하면 사무실 PC에 바로 갑니다" : "저장하면 이 기기에 남습니다") + "</span></main>";
   }
   var micRec = null, micT = null;
   function bindRecord(want) {
@@ -843,17 +888,34 @@
     var tags = uniq((cm ? RC.vals(cm, "cri") : []).concat(sit).concat(act.length ? act : dr.sv.map(function (s) { return s[1]; })).concat(F.askGuide.detect(memo))).slice(0, 12);
     // S12-v U16(F4): «기록 고치기»로 연 집이면 앞 기록(과 그때 만든 약속)을 빼고 새로 넣는다 · 되살릴 수 있게 초안·현장 메모를 남겨 둔다
     var LA = lsGet(LS_LAST, {}) || {};
-    if (fixHid === hid) { var pv = lastLog(hid), ps = LA[hid]; if (pv && SY.removeLog) SY.removeLog(pv.id); if (ps && ps.pr) dropPromises(ps.pr); }
+    var fixAt = null; // S12-x: 고친 기록은 방문 일시를 그대로 두고(차수 유지) 고친 시각만 따로 남긴다
+    if (fixHid === hid) { var pv = lastLog(hid), ps = LA[hid]; if (pv) fixAt = pv.at; if (pv && SY.removeLog) SY.removeLog(pv.id); if (ps && ps.pr) dropPromises(ps.pr); }
     fixHid = null;
     var snap = { rec: JSON.parse(JSON.stringify(o)), fd: { away: fdv.away || "", indirect: fdv.indirect || "", refwhy: fdv.refwhy || "" }, pr: found.map(function (x) { return x.id; }) };
-    SY.addLog({ household_no: hid, result: res, memo: memo, tags: tags, promises: found });
+    SY.addLog({ household_no: hid, at: fixAt || undefined, result: res, memo: memo, tags: tags, promises: found });
     var lg = lastLog(hid); snap.lid = lg ? lg.id : null; LA[hid] = snap; lsSet(LS_LAST, LA);
+    if (fixAt && lg) { var HE = lsGet(LS_HEDIT, {}) || {}; HE[lg.id] = now.toISOString(); lsSet(LS_HEDIT, HE); }
     var all = lsGet(LS_REC, {}) || {}; delete all[hid]; lsSet(LS_REC, all);
     if (FD) ["away", "indirect", "refwhy"].forEach(function (x) { FD.set(hid, x, ""); }); // 기록에 실었으니 다음 방문에 옛 메모가 다시 채워지지 않게
     var sf = lsGet(LS_SAFE, null); if (sf && sf.hid === hid) { sf.fin = sf.fin || "rec"; safePush(sf, "end"); try { localStorage.removeItem(LS_SAFE); } catch (e) { /* 무시 */ } }
     var nx2 = c.d.ids.filter(function (id) { return id !== hid && statusOf(id) === "planned"; })[0];
     toastAct("기록을 저장했습니다 · " + (SY.state().mode === "live" ? "사무실 PC 문서함에 반영됨" : "이 기기에 저장"), "되돌리기", function () { reopenRec(hid, true); }, 5000);
-    location.hash = nx2 ? "#route:" + nx2 : "#docs";
+    flowNext = { from: hid, to: nx2 || null, ids: c.d.ids.slice(), dest: nx2 ? "#route:" + nx2 : "#today" }; // S12-x «다음 할 일»: 저장한 자리 다음 화면 맨 위에 주 단추 하나
+    location.hash = flowNext.dest;
+  }
+  // ── S12-x 업무 흐름(호창님 11-12 «일하는 흐름에 맞춰 자연스럽게») — 오늘 → 순서·동선 → 집 앞 → 들어가기 → 상담 끝 → 기록 → 저장 → 문서/다음 가구 → 하루 요약 ──
+  var flowNext = null;
+  function nextStepCard() {
+    var f = flowNext; if (!f) return "";
+    if (location.hash !== f.dest) { flowNext = null; return ""; }
+    if (f.to && BY[f.to]) {
+      var c = dayCtx(), t = c ? arriveOf(c, f.to) : "";
+      return '<section class="card next nextstep" role="status" aria-label="다음 할 일"><span class="k">기록 저장됨 · ' + esc(f.from) + '</span><b>다음 가구 ' + esc(f.to) + " · " + esc(BY[f.to].area) + (t ? " · " + esc(t) + " 도착 예정" : "") + '</b><div class="row2"><a class="btn sm ghost" href="#docs">문서 만들기</a></div></section>'; // 68회차 ⑪: 집 앞으로 가는 주 단추는 동선 화면 «도착했어요» 하나(같은 곳 주 단추 둘 → 하나)
+    }
+    // 68회차 ⑫: 마지막 가구 → 바로 «오늘». 오늘 칸이 이 날을 보이면 끝 카드(방문 끝·하루 요약·보고서 열기)가 바로 아래라 한 줄만, 다른 날로 넘어갔으면 이 카드가 요약을 대신 보인다
+    var dc = dayCtx(), same = dc && dc.d.ids.join() === (f.ids || []).join();
+    if (same) return '<p class="nextstep-k" role="status">기록 저장됨 · ' + esc(f.from) + " · 오늘 마지막 가구</p>";
+    return '<section class="card next nextstep" role="status" aria-label="하루 요약"><span class="k">기록 저장됨 · ' + esc(f.from) + '</span><b>이날 방문을 모두 마쳤습니다</b>' + daySumNums(f.ids) + '<div class="row2"><a class="btn pri" href="#docs">' + (I.report || "") + "보고서 열기</a></div></section>";
   }
   // ── S12-v U16(F4) 되돌리기 5초 · 기록 고치기 ──
   var LS_LAST = "daeum.s12.recLast", fixHid = null;
@@ -897,28 +959,28 @@
     o.days.filter(function (d) { return d.focus; }).forEach(function (d) {
       var pl = line(d.ids);
       g += '<polyline points="' + pl + '" fill="none" stroke="#fff" stroke-width="11" stroke-linejoin="round" stroke-linecap="round" filter="url(#' + o.id + 'sh)"/>' +
-        '<polyline class="rt" pathLength="1" points="' + pl + '" fill="none" stroke="#0B8465" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>';
+        '<polyline class="rt" pathLength="1" points="' + pl + '" fill="none" stroke="#2E8270" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>';
       d.ids.forEach(function (id, i) {
         var p = BY[id], dn = done.indexOf(id) >= 0, nx = id === o.next, r = nx ? 17 : 13;
         g += '<g filter="url(#' + o.id + 'sh)"><title>' + (i + 1) + "번째 " + id + " · " + esc(p.area) + "</title>" +
-          '<circle cx="' + X(p) + '" cy="' + Y(p) + '" r="' + r + '" fill="' + (nx ? "#C94E1A" : dn ? "#D7F0E8" : "#fff") + '" stroke="' + (nx ? "#A93C10" : dn ? "#0B8465" : "#1C2839") + '" stroke-width="3.5"/>' +
-          '<text x="' + X(p) + '" y="' + (+Y(p) + (nx ? 6 : 4.5)).toFixed(1) + '" text-anchor="middle" font-size="' + (nx ? 16 : 13) + '" font-weight="900" fill="' + (nx ? "#fff" : dn ? "#075B45" : "#111A27") + '">' + (dn ? "✓" : i + 1) + "</text></g>";
-        if (nx || o.labels) g += '<text x="' + X(p) + '" y="' + (+Y(p) - r - 6).toFixed(1) + '" text-anchor="middle" font-size="11.5" font-weight="800" fill="#111A27" paint-order="stroke" stroke="#fff" stroke-width="4" font-family="IBM Plex Mono,monospace">' + id + "</text>";
+          '<circle cx="' + X(p) + '" cy="' + Y(p) + '" r="' + r + '" fill="' + (nx ? "#1F6676" : dn ? "#DDEDE8" : "#fff") + '" stroke="' + (nx ? "#174F5B" : dn ? "#2E8270" : "#1B2328") + '" stroke-width="3.5"/>' +
+          '<text x="' + X(p) + '" y="' + (+Y(p) + (nx ? 6 : 4.5)).toFixed(1) + '" text-anchor="middle" font-size="' + (nx ? 16 : 13) + '" font-weight="900" fill="' + (nx ? "#fff" : dn ? "#1B4D42" : "#11181C") + '">' + (dn ? "✓" : i + 1) + "</text></g>";
+        if (nx || o.labels) g += '<text x="' + X(p) + '" y="' + (+Y(p) - r - 6).toFixed(1) + '" text-anchor="middle" font-size="11.5" font-weight="800" fill="#11181C" paint-order="stroke" stroke="#fff" stroke-width="4" font-family="IBM Plex Mono,monospace">' + id + "</text>";
       });
     });
-    g += '<g filter="url(#' + o.id + 'sh)"><rect x="' + (+X(off) - 15) + '" y="' + (+Y(off) - 15) + '" width="30" height="30" rx="8" fill="#1C2839"/><text x="' + X(off) + '" y="' + (+Y(off) + 5) + '" text-anchor="middle" font-size="14" font-weight="900" fill="#fff">시</text></g>' +
-      '<text x="' + X(off) + '" y="' + (+Y(off) + 30) + '" text-anchor="middle" font-size="11" font-weight="800" fill="#586273" paint-order="stroke" stroke="#fff" stroke-width="4">상주시청</text>';
-    var km = k >= 60 ? 1 : k >= 25 ? 2 : 5, bar = '<g transform="translate(' + 18 + "," + (H0 - 20) + ')"><rect width="' + (km * k).toFixed(1) + '" height="6" rx="3" fill="#1C2839"/><text y="-6" font-size="11" font-weight="800" fill="#586273">' + km + "km</text></g>" +
-      '<g transform="translate(' + (W0 - 30) + ',26)"><path d="M0 -14 L7 6 L0 2 L-7 6 Z" fill="#1C2839"/><text y="20" text-anchor="middle" font-size="10.5" font-weight="800" fill="#586273">북</text></g>';
+    g += '<g filter="url(#' + o.id + 'sh)"><rect x="' + (+X(off) - 15) + '" y="' + (+Y(off) - 15) + '" width="30" height="30" rx="8" fill="#1B2328"/><text x="' + X(off) + '" y="' + (+Y(off) + 5) + '" text-anchor="middle" font-size="14" font-weight="900" fill="#fff">시</text></g>' +
+      '<text x="' + X(off) + '" y="' + (+Y(off) + 30) + '" text-anchor="middle" font-size="11" font-weight="800" fill="#47535B" paint-order="stroke" stroke="#fff" stroke-width="4">상주시청</text>';
+    var km = k >= 60 ? 1 : k >= 25 ? 2 : 5, bar = '<g transform="translate(' + 18 + "," + (H0 - 20) + ')"><rect width="' + (km * k).toFixed(1) + '" height="6" rx="3" fill="#1B2328"/><text y="-6" font-size="11" font-weight="800" fill="#47535B">' + km + "km</text></g>" +
+      '<g transform="translate(' + (W0 - 30) + ',26)"><path d="M0 -14 L7 6 L0 2 L-7 6 Z" fill="#1B2328"/><text y="20" text-anchor="middle" font-size="10.5" font-weight="800" fill="#47535B">북</text></g>';
     return '<svg class="mp" viewBox="0 0 ' + W0 + " " + H0 + '" role="img" aria-label="' + esc(o.label || "방문 순서 지도") + '"><defs><radialGradient id="' + o.id + 'bg" cx="40%" cy="35%" r="80%"><stop offset="0" stop-color="#F7F9FA"/><stop offset="1" stop-color="#DDE3E9"/></radialGradient>' +
-      '<filter id="' + o.id + 'sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2.5" stdDeviation="2" flood-color="#111A27" flood-opacity=".3"/></filter></defs>' +
+      '<filter id="' + o.id + 'sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2.5" stdDeviation="2" flood-color="#11181C" flood-opacity=".3"/></filter></defs>' +
       '<rect width="' + W0 + '" height="' + H0 + '" rx="18" fill="url(#' + o.id + 'bg)"/>' + g + bar + "</svg>";
   }
 
   // ═════ P1 방문 계획(①) — 한국사회보장정보원 순위 + 동선으로 일차를 나누고 순서를 정해 확정 ═════
   var planDay = null;
   function at(date, hhmm) { var d = new Date((date || ymd(new Date())) + "T00:00:00"), m = /^(\d+):(\d+)$/.exec(hhmm || "09:30"); d.setHours(+m[1], +m[2], 0, 0); return d.toISOString(); }
-  function stTag(st) { return st === "done" ? '<span class="tg ok">만남</span>' : st === "absent" ? '<span class="tg ab">부재</span>' : st === "refused" ? '<span class="tg rf">거절</span>' : ""; }
+  function stTag(st) { return st === "done" ? '<span class="stg ok">만남</span>' : st === "absent" ? '<span class="stg ab">부재</span>' : st === "refused" ? '<span class="stg rf">거절</span>' : ""; }
   function planView() {
     var ds = days(), dl = deadline(), p = plan();
     if (!ds.length) return top("plan", "<strong>방문 계획</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>명단이 아직 없습니다</b>한국사회보장정보원 발굴대상자 명단(행복이음 내려받기)을 불러오면 일차가 자동으로 나뉩니다.<br><br><a class="cta" href="#today" data-pick="1"><b>명단 불러오기</b><small>엑셀 파일</small></a></div></main>';
@@ -946,21 +1008,21 @@
       (D4.out && D4.out.length ? '<div class="oh">이 일차에서 뺀 가구 <b>' + D4.out.length + "</b></div><ul>" + D4.out.map(function (id) { var h = BY[id]; return '<li><b>' + id + "</b><span>" + esc(h.area + " · " + ageLine(h)) + '</span><button type="button" class="sbtn" data-back="' + id + '">되살리기</button></li>'; }).join("") + "</ul>" : "") + "</li>";
     tl += '<li class="tp"><span class="t">' + (D4.s.back ? D4.s.back.arrive : D4.s.end) + '</span><span class="ax"><b class="o">시</b></span><span class="c">복귀 · 이동 ' + D4.s.travelMin + "분 · 상담 " + D4.s.consultMin + "분</span></li>" + outL;
     var dp = dl.until ? F.deadline.plan(listIds().filter(function (id) { var s = statusOf(id); return s !== "done" && s !== "refused"; }).length, dl.until, dl.perDay || 5) : null;
-    var per = [3, 4, 5, 6, 7, 8].map(function (n) { return '<option value="' + n + '"' + (n === (dl.perDay || 5) ? " selected" : "") + ">하루 " + n + "집</option>"; }).join("");
+    var per = [3, 4, 5, 6, 7, 8].map(function (n) { return '<option value="' + n + '"' + (n === (dl.perDay || 5) ? " selected" : "") + ">하루 " + n + "가구</option>"; }).join("");
     var sync = SY.state();
     var conf = p ? '<div class="conf ok"><b>확정됨</b><span>' + (sync.mode === "live" ? "같은 계정 폰에 나타나 있습니다" : "로그인하면 같은 계정 폰에도 나타납니다") + '</span><a class="sbtn" href="#route' + (D4.ids[0] ? ":" + (D4.ids.filter(function (id) { return statusOf(id) === "planned"; })[0] || D4.ids[0]) : "") + '">폰 동선 화면 보기</a></div>'
-      : '<button type="button" class="cta wide" data-act="confirm" data-dock="1"><b>방문 계획 확정</b><small>' + ds.length + "일차 " + total + "가구 · 확정하면 같은 계정 폰에 바로</small></button>";
+      : '<button type="button" class="btn pri" data-act="confirm" data-dock="1">' + (I.check || "") + '방문 계획 확정 <small>' + ds.length + "일차 " + total + "가구 · 확정하면 같은 계정 폰에 바로</small></button>";
     return top("plan", "<strong>" + esc(roundYm()) + " 명단</strong>" + total + "가구 · 가상") + '<main class="wrap">' +
       '<div class="dhead"><h1><span>' + ds.length + "일</span>이면 명단을 다 봅니다</h1><p>한국사회보장정보원 발굴 순위를 그대로 따르되, 같은 날 묶인 집은 시청에서 가까운 순서로 이었습니다. 가구를 빼거나 되살리고, 순서를 바꾸면 도착 시각·거리·최적화 비교가 다시 계산되고 같은 계정 폰에도 바로 반영됩니다.</p></div>" +
       '<div class="dcards" role="group" aria-label="일차">' + cards + "</div>" +
       (ow.over ? '<p class="warnline">' + esc(ow.why.join(" · ")) + " — 한 집을 다음 일차로 미뤄 보세요.</p>" : "") +
-      '<div class="pgrid"><ol class="tline blk" aria-label="' + D4.n + '일차 순서">' + tl + "</ol>" +
-      '<div class="pside"><div class="mapw blk"><div class="rt-map rt-plan" id="pmmap"><div class="rt-svg">' + mapSvg({ id: "pm", days: ds.map(function (d) { return { ids: d.ids, focus: d.n === planDay }; }), done: listIds().filter(function (id) { return statusOf(id) !== "planned"; }), labels: true, h: 380, label: D4.n + "일차 방문 순서 지도" }) + '</div><div class="rt-nmap" aria-label="네이버 지도 — ' + D4.n + '일차 방문 순서"><div class="rt-nbox"></div></div></div>' +
+      '<ol class="tline blk" aria-label="' + D4.n + '일차 순서">' + tl + "</ol>" + C2 + // S12-x 66회차: 첫 칸 = 일차·순서 | 둘째 칸 = 지도·최적화 비교·확정·기한
+      '<div class="mapw blk"><div class="rt-map rt-plan" id="pmmap"><div class="rt-svg">' + mapSvg({ id: "pm", days: ds.map(function (d) { return { ids: d.ids, focus: d.n === planDay }; }), done: listIds().filter(function (id) { return statusOf(id) !== "planned"; }), labels: true, h: 380, label: D4.n + "일차 방문 순서 지도" }) + '</div><div class="rt-nmap" aria-label="네이버 지도 — ' + D4.n + '일차 방문 순서"><div class="rt-nbox"></div></div></div>' +
       '<div class="mlg"><span><i class="a"></i>' + D4.n + '일차</span><span class="rt-lg-b"><i class="b"></i>다른 일차</span><span class="rt-lg-t">직선 거리 근사 · 네이버 지도를 불러오는 중</span></div></div>' +
       '<div id="pmopt">' + rtOptHtml(rtCmp(rtListOrder(D4.ids), D4.ids)) + "</div>" + conf +
       '<div class="dlset blk"><div class="k">기한 점검</div><div class="dlrow"><label>명단 기한<input type="date" id="dlUntil" value="' + esc(dl.until || "") + '"></label><label>하루 방문<select id="dlPer">' + per + "</select></label></div>" +
-      (dp && dp.set ? '<div class="dln"><b>' + dp.left + "</b> 근무일 남음 · " + (dp.over ? '<em class="bad">이대로면 넘김</em>' : '<em class="ok">여유 ' + dp.spare + "일</em>") + "</div><p>" + esc(dp.line) + "</p>" : "<p>기한을 넣으면 하루 몇 집씩 봐야 하는지 계산합니다.</p>") + "</div></div></div>" +
-      '<p class="foot"><span class="demo-tag">가상 데이터</span><span>가구 번호·읍면만 표시 · 이동 시간은 직선 거리 근사(«약») · 순서 근거 = 한국사회보장정보원 발굴 순위 + 거리</span><a href="#today" data-pick="1">명단 불러오기(엑셀)</a></p></main>';
+      (dp && dp.set ? '<div class="dln"><b>' + dp.left + "</b> 근무일 남음 · " + (dp.over ? '<em class="bad">이대로면 넘김</em>' : '<em class="ok">여유 ' + dp.spare + "일</em>") + "</div><p>" + esc(dp.line) + "</p>" : "<p>기한을 넣으면 하루 몇 가구씩 봐야 하는지 계산합니다.</p>") + "</div>" +
+      '<p class="demo"><span class="samp">가상 데이터</span><span>가구 번호·읍면만 표시 · 이동 시간은 직선 거리 근사(«약») · 순서 근거 = 한국사회보장정보원 발굴 순위 + 거리</span><a href="#today" data-pick="1">명단 불러오기(엑셀)</a></p></main>';
   }
   function bindPlan() {
     var ds = days(); if (!ds.length) return;
@@ -986,7 +1048,7 @@
     var u = document.getElementById("dlUntil"), pd = document.getElementById("dlPer");
     function setDl() { lsSet(LS_DL, { until: u.value || null, perDay: +pd.value || 5 }); render(); }
     if (u) u.addEventListener("change", setDl); if (pd) pd.addEventListener("change", setDl);
-    if (D4) rtMapBind("pmmap", "pmopt", D4.ids, null, "#0B8465", ds.filter(function (d) { return d.n !== planDay; }).map(function (d) { return d.ids; }));
+    if (D4) rtMapBind("pmmap", "pmopt", D4.ids, null, "#2E8270", ds.filter(function (d) { return d.n !== planDay; }).map(function (d) { return d.ids; }));
   }
   /** 한 일차의 순서(ids)와 뺀 가구(outIds, 생략하면 그대로)를 저장. 확정 계획이면 visit_plan 행을 바꿔 끼워 같은 계정 폰에 실시간 반영 */
   function reorder(D4, ids, outIds) {
@@ -1118,7 +1180,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12s"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12y70"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -1153,24 +1215,25 @@
     var done = c.d.ids.filter(function (id) { return statusOf(id) !== "planned"; }), left = c.d.ids.filter(function (id) { return statusOf(id) === "planned"; });
     var vt = F.visitTime.profile(attempts(), hid, { neighborLog: neighborLog() }), segs = Math.ceil(left.length / 6);
     var stops = c.d.ids.map(function (id, j) { var st = statusOf(id); return '<a class="rs' + (st !== "planned" ? " dn" : "") + (id === hid ? " nx" : "") + '" href="#route:' + id + '"><i>' + (st !== "planned" ? "✓" : j + 1) + '</i><b>' + id + "</b><span>" + esc(BY[id].area) + stTag(st) + '</span><em>' + esc((c.d.s.rows[j] || {}).arrive || "") + "</em></a>"; }).join("");
-    return '<main class="ph">' + phBrand() + mini(1, hid) +
+    // S12-x 66회차: 시안 v3 scrVisit — 첫 칸(지도·최적화 비교·다음 가구·길안내) | 둘째 칸(방문 순서 목록·지나는 길 연계처)
+    return '<main class="phx">' +
       '<div class="mapw blk ph-map rt-map" id="rtmap"><div class="rt-svg">' + mapSvg({ id: "rm", days: [{ ids: c.d.ids, focus: true }], done: done, next: hid, h: 360, label: "오늘 동선 지도" }) + '</div><div class="rt-nmap" aria-label="네이버 지도 — 오늘 방문 순서"><div class="rt-nbox"></div></div>' +
-      '<div class="mtop"><span>' + (c.isToday ? "오늘" : c.d.date ? md(c.d.date) : c.d.n + "일차") + " · " + c.d.ids.length + "집</span><span>" + yak(c.d.s) + c.d.s.km + "km · " + c.d.s.end + " 복귀</span></div></div>" +
+      '<div class="mtop"><span>' + (c.isToday ? "오늘" : c.d.date ? md(c.d.date) : c.d.n + "일차") + " · " + c.d.ids.length + "가구</span><span>" + yak(c.d.s) + c.d.s.km + "km · " + c.d.s.end + " 복귀</span></div></div>" +
       '<div id="rtopt">' + rtOptHtml(rtCmp(rtListOrder(c.d.ids), c.d.ids)) + "</div>" +
-      '<section class="nextc blk"><span class="pin">' + (i + 1) + '</span><div><b>다음 집 ' + hid + "</b><small>" + esc(h.area + " · " + ageLine(h)) + (vt.best && vt.absences.length ? " · " + esc(vt.absences[0].label) + " 부재 " + vt.absences.length + "번 → " + esc(vt.best.label) : "") + '</small></div><span class="eta">' + esc(row.arrive || "") + "<small>" + (row.km != null ? row.km + "km · " + row.travelMin + "분" : "") + "</small></span>" +
-      '<div class="dprog" style="grid-template-columns:repeat(' + c.d.ids.length + ',1fr)">' + c.d.ids.map(function (id) { return '<i class="' + (id === hid ? "n" : statusOf(id) !== "planned" ? "d" : "") + '"></i>'; }).join("") + '</div><div class="dprog-l"><span>' + done.length + "집 끝</span><span>남은 " + left.length + "집</span></div></section>" +
-      '<button type="button" class="big nav" data-act="nav" data-dock="2" title="네이버 지도 길안내 — 폰은 지도 앱, PC는 새 창으로 열림"><span>네이버 지도로 길안내</span><small>남은 ' + Math.min(6, left.length || c.d.ids.length) + "곳 경유</small></button>" +
+      '<section class="nextc blk"><span class="pin">' + (i + 1) + '</span><div><b>다음 가구 ' + hid + "</b><small>" + esc(h.area + " · " + ageLine(h)) + (vt.best && vt.absences.length ? " · " + esc(vt.absences[0].label) + " 부재 " + vt.absences.length + "번 → " + esc(vt.best.label) : "") + '</small></div><span class="eta">' + esc(row.arrive || "") + "<small>" + (row.km != null ? row.km + "km · " + row.travelMin + "분" : "") + "</small></span>" +
+      '<div class="dprog" style="grid-template-columns:repeat(' + c.d.ids.length + ',1fr)">' + c.d.ids.map(function (id) { return '<i class="' + (id === hid ? "n" : statusOf(id) !== "planned" ? "d" : "") + '"></i>'; }).join("") + '</div><div class="dprog-l"><span>' + done.length + "가구 끝</span><span>남은 " + left.length + "가구</span></div></section>" +
+      '<button type="button" class="btn nav" data-act="nav" data-dock="2" title="네이버 지도 길안내 — 폰은 지도 앱, PC는 새 창으로 열림"><span>네이버 지도로 길안내</span><small>남은 ' + Math.min(6, left.length || c.d.ids.length) + "곳 경유</small></button>" +
       (segs > 1 ? '<div class="segs">' + Array.apply(null, { length: segs }).map(function (_, kk) { return '<button type="button" class="sbtn" data-seg="' + kk + '">' + (kk * 6 + 1) + "~" + Math.min(left.length, kk * 6 + 6) + "번째</button>"; }).join("") + "</div>" : "") +
       '<p class="navnote">이름·주소 대신 «방문 1·2…»만 넘깁니다 · 네이버 지도 앱이 없으면 웹 길찾기로 <button type="button" class="sbtn shr" data-act="share" data-sday="' + c.d.n + '">' + (c.isToday ? "오늘" : "이날") + ' 일정 공유<small> 가구번호·읍면·시각만</small></button></p>' +
-      '<div class="rlist blk">' + stops + "</div>" + resBlock(c.d.ids) +
-      '<a class="big dark" data-dock="1" href="#home:' + hid + '">도착했어요 <small>집 앞 요약 보기</small></a></main>' + bnav("route", hid);
+      C2 + '<div class="rlist blk">' + stops + "</div>" + resBlock(c.d.ids) +
+      '<a class="btn pri" data-dock="1" href="#home:' + hid + '">' + (I.door || "") + "도착했어요 <small>집 앞 요약 보기</small></a></main>";
   }
   function bindRoute(want) {
     var k = pickHid(want); if (!k) return;
     var c = k.c, left = c.d.ids.filter(function (id) { return statusOf(id) === "planned"; });
     var nb = app.querySelector('[data-act="nav"]'); if (nb) nb.addEventListener("click", function () { vib(); launch(left.length ? left : c.d.ids, 0); });
     app.querySelectorAll("[data-seg]").forEach(function (b) { b.addEventListener("click", function () { launch(left, +b.dataset.seg); }); });
-    rtMapBind("rtmap", "rtopt", c.d.ids, k.hid, "#0B8465");
+    rtMapBind("rtmap", "rtopt", c.d.ids, k.hid, "#2E8270");
     bindShare(days());
   }
   var rtAsked = {}, rtRO = null;
@@ -1188,7 +1251,7 @@
       var mt = wrap.querySelector(".mtop span:last-child"); if (mt && r.road) mt.textContent = (Math.round(r.a.km * 10) / 10).toFixed(1) + "km · 이동 " + Math.round(r.a.min) + "분(도로)";
       if (!RM || !document.body.contains(box)) return;
       var off = RP.toLatLng(OFFICE), ra = RM.cacheGet(RP.cacheKey(rtStops(ids), true));
-      var ok = RM.draw({ box: box, office: { lat: off.lat, lng: off.lng, name: "상주시청", short: "시청" }, stops: stops(), path: ra ? ra.path : null, ret: true, color: color || "#0B8465",
+      var ok = RM.draw({ box: box, office: { lat: off.lat, lng: off.lng, name: "상주시청", short: "시청" }, stops: stops(), path: ra ? ra.path : null, ret: true, color: color || "#2E8270",
         ghosts: (ghosts || []).map(function (g) { return g.map(function (id) { return RP.toLatLng(BY[id]); }); }), onDrawn: NB ? NB.onDrawn : null }); // 41 남은 점: 다른 일차 흐린 점선 · S12-s 겹층
       if (!ok) return;
       var shown = function () { wrap.classList.add("has-naver"); var lb = wrap.parentNode.querySelector(".rt-lg-b"); if (lb) lb.hidden = !(ghosts && ghosts.length); };
@@ -1220,7 +1283,7 @@
     if (!ids.length) return top("perf", "<strong>실적</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>현장 기록이 들어오면 채워집니다</b>방문 계획을 확정하고 폰에서 «기록 저장»을 누르면 이 화면에 바로 쌓입니다.</div></main>';
     var S = { done: 0, absent: 0, refused: 0, planned: 0 }; ids.forEach(function (id) { S[statusOf(id)] = (S[statusOf(id)] || 0) + 1; });
     var total = ids.length, seen = S.done + S.absent + S.refused, C = 2 * Math.PI * 70, acc = 0;
-    var arcs = [["done", "#0B8465"], ["absent", "#C94E1A"], ["refused", "#8A9396"]].map(function (a) { var v = S[a[0]] / total, s = '<circle cx="90" cy="90" r="70" fill="none" stroke="' + a[1] + '" stroke-width="22" stroke-dasharray="' + (C * v).toFixed(1) + " " + C.toFixed(1) + '" stroke-dashoffset="' + (-C * acc).toFixed(1) + '" transform="rotate(-90 90 90)"/>'; acc += v; return v ? s : ""; }).join("");
+    var arcs = [["done", "#2E8270"], ["absent", "#C2862C"], ["refused", "#8A9396"]].map(function (a) { var v = S[a[0]] / total, s = '<circle cx="90" cy="90" r="70" fill="none" stroke="' + a[1] + '" stroke-width="22" stroke-dasharray="' + (C * v).toFixed(1) + " " + C.toFixed(1) + '" stroke-dashoffset="' + (-C * acc).toFixed(1) + '" transform="rotate(-90 90 90)"/>'; acc += v; return v ? s : ""; }).join("");
     var ar = {}; ids.forEach(function (id) { var a = BY[id].area, st = statusOf(id); ar[a] = ar[a] || { done: 0, absent: 0, refused: 0, planned: 0, n: 0 }; ar[a][st]++; ar[a].n++; });
     var areas = Object.keys(ar).sort(function (a, b) { return ar[b].n - ar[a].n; }), mx = Math.max.apply(null, areas.map(function (a) { return ar[a].n; }));
     var abar = areas.map(function (a) { var x = ar[a]; return '<div class="ab-r"><span class="ab-n">' + esc(a) + '</span><span class="ab-b" style="width:' + (x.n / mx * 100).toFixed(0) + '%">' + ["done", "absent", "refused", "planned"].map(function (k) { return x[k] ? '<i class="' + k + '" style="flex:' + x[k] + '"></i>' : ""; }).join("") + '</span><span class="ab-v">' + x.done + "/" + x.n + "</span></div>"; }).join("");
@@ -1237,7 +1300,7 @@
     var tl = todo.slice(0, 9).map(function (x) { return '<li class="' + (x.done ? "dn" : "") + (x.late ? " late" : "") + '"><button type="button" class="ckb' + (x.done ? " on" : "") + '" data-todo="' + esc(x.id) + '" data-k="' + x.k + '" aria-label="끝냄 표시"' + (x.k === "v" ? " disabled" : "") + '></button><span class="kd k-' + x.k + '">' + KC[x.k] + "</span><div><b>" + esc(x.t) + "</b><small>" + esc(x.s) + '</small></div><span class="due">' + (x.done ? "끝" : x.late ? U.daysBetween(x.due, now) + "일 지남" : x.due === today ? "오늘" : esc(x.due.slice(5).replace("-", "."))) + "</span></li>"; }).join("");
     // 이번 주 근무일 띠
     var wd = [0, 1, 2, 3, 4].map(function (i) { var d = ymd(new Date(wk.from.getTime() + i * 864e5)); var ev = [];
-      ds.forEach(function (x) { if (x.date === d) ev.push(["v", x.n + "일차 " + x.ids.length + "집"]); });
+      ds.forEach(function (x) { if (x.date === d) ev.push(["v", x.n + "일차 " + x.ids.length + "가구"]); });
       prs.forEach(function (p) { if (!p.done && p.due === d) ev.push(["p", p.householdId + " 약속"]); });
       ac.forEach(function (x) { if (x.date === d && x.state !== "done") ev.push(["f", x.householdId + " 확인"]); });
       if (dl.until === d) ev.push(["d", "명단 기한"]);
@@ -1246,18 +1309,18 @@
     var LG = logs(), wks = [5, 4, 3, 2, 1, 0].map(function (k) { var f = new Date(wk.from.getTime() - k * 7 * 864e5), t = new Date(f.getTime() + 7 * 864e5); var o = { f: f, met: 0, absent: 0, refuse: 0, n: 0 };
       LG.forEach(function (l) { var x = new Date(l.at); if (x >= f && x < t && o[l.result] != null) { o[l.result]++; o.n++; } }); return o; });
     var wmx = Math.max(1, Math.max.apply(null, wks.map(function (w) { return w.n; }))), wsum = wks.reduce(function (a, w) { return a + w.n; }, 0), wmet = wks.reduce(function (a, w) { return a + w.met; }, 0);
-    var wbars = wks.map(function (w, i) { return '<div class="wb' + (i === 5 ? " now" : "") + '"><span class="wv">' + w.n + '</span><span class="wcol" style="height:' + (w.n / wmx * 100).toFixed(0) + '%">' + [["refuse", "#8A9396"], ["absent", "#C94E1A"], ["met", "#0B8465"]].map(function (r) { return w[r[0]] ? '<i style="flex:' + w[r[0]] + ";background:" + r[1] + '"></i>' : ""; }).join("") + '</span><b>' + (i === 5 ? "이번 주" : (w.f.getMonth() + 1) + "." + w.f.getDate()) + "</b></div>"; }).join("");
+    var wbars = wks.map(function (w, i) { return '<div class="wb' + (i === 5 ? " now" : "") + '"><span class="wv">' + w.n + '</span><span class="wcol" style="height:' + (w.n / wmx * 100).toFixed(0) + '%">' + [["refuse", "#8A9396"], ["absent", "#C2862C"], ["met", "#2E8270"]].map(function (r) { return w[r[0]] ? '<i style="flex:' + w[r[0]] + ";background:" + r[1] + '"></i>' : ""; }).join("") + '</span><b>' + (i === 5 ? "이번 주" : (w.f.getMonth() + 1) + "." + w.f.getDate()) + "</b></div>"; }).join("");
     var concl = "명단 " + total + "가구 중 " + seen + "가구를 찾아갔고 " + S.done + "가구와 상담했습니다" + (S.absent ? " · 부재 " + S.absent + "가구는 다시 갑니다" : "") + ".";
     return top("perf", "<strong>" + esc(roundYm()) + " 명단 실적</strong>가상 데이터") + '<main class="wrap">' +
       '<div class="dhead"><h1>' + esc(concl) + '</h1><p>숫자는 현장 기록을 규칙으로 센 것입니다(손 집계 없음) · 주간 실적 보고서는 «문서함»에서 두 번 눌러 받습니다.</p></div>' +
-      '<div class="pfgrid"><section class="ringc blk"><svg viewBox="0 0 180 180" class="ring" role="img" aria-label="진도 ' + seen + "/" + total + '"><circle cx="90" cy="90" r="70" fill="none" stroke="#E1E5EB" stroke-width="22"/>' + arcs + '<text x="90" y="88" text-anchor="middle" font-size="34" font-weight="900" fill="#111A27">' + Math.round(seen / total * 100) + '%</text><text x="90" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#586273">' + seen + "/" + total + " 가구</text></svg>" +
-      '<ul class="rlg"><li><i style="background:#0B8465"></i>만남·상담<b>' + S.done + '</b></li><li><i style="background:#C94E1A"></i>부재 · 다시 감<b>' + S.absent + '</b></li><li><i style="background:#8A9396"></i>거절<b>' + S.refused + '</b></li><li><i style="background:#E1E5EB"></i>방문 전<b>' + S.planned + "</b></li></ul>" +
+      '<section class="ringc blk"><svg viewBox="0 0 180 180" class="pfring" role="img" aria-label="진도 ' + seen + "/" + total + '"><circle cx="90" cy="90" r="70" fill="none" stroke="#E1E5EB" stroke-width="22"/>' + arcs + '<text x="90" y="88" text-anchor="middle" font-size="34" font-weight="900" fill="#11181C">' + Math.round(seen / total * 100) + '%</text><text x="90" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#47535B">' + seen + "/" + total + " 가구</text></svg>" +
+      '<ul class="rlg"><li><i style="background:#2E8270"></i>만남·상담<b>' + S.done + '</b></li><li><i style="background:#C2862C"></i>부재 · 다시 감<b>' + S.absent + '</b></li><li><i style="background:#8A9396"></i>거절<b>' + S.refused + '</b></li><li><i style="background:#E1E5EB"></i>방문 전<b>' + S.planned + "</b></li></ul>" +
       '<div class="fsig well"><b>' + field + '</b>가구에서 명단 사유 밖 징후를 현장에서 더 봄<small>현장 확인 «문제 있음» 기준 · 보고서에 따로 셉니다</small></div></section>' +
       '<section class="areac blk"><h2>읍면별 진도</h2>' + abar + '<div class="mlg"><span><i class="a"></i>만남</span><span><i class="c"></i>부재</span><span><i class="d"></i>거절</span><span><i class="e"></i>방문 전</span></div></section>' +
-      '<section class="todoc blk"><h2>이번 주 할 일 <small>' + todo.filter(function (x) { return !x.done; }).length + "건 남음</small></h2>" + (tl ? '<ul class="todo2">' + tl + "</ul>" : '<p class="mute">이번 주는 다시 볼 집이 없습니다.</p>') + "</section></div>" +
+      C2 + '<section class="todoc blk"><h2>이번 주 할 일 <small>' + todo.filter(function (x) { return !x.done; }).length + "건 남음</small></h2>" + (tl ? '<ul class="todo2">' + tl + "</ul>" : '<p class="mute">이번 주는 다시 볼 집이 없습니다.</p>') + "</section>" +
       '<section class="week blk" aria-label="이번 주"><h2>이번 주 근무일</h2><div class="wds">' + wd + "</div></section>" +
-      '<section class="wtrend blk" aria-label="주별 방문 기록"><h2>주별 방문 기록 <small>지난 6주 ' + wsum + "건 · 상담 " + wmet + '건</small></h2><div class="wbars">' + wbars + '</div><div class="mlg"><span><i class="a"></i>만남·상담</span><span><i class="c"></i>부재</span><span><i class="d"></i>거절</span></div></section>' +
-      '<p class="foot"><span class="demo-tag">가상 데이터</span><span>다음 차수 명단이 오면 «명단 불러오기»에서 이번 차수와 자동으로 견줍니다</span><a href="#today" data-pick="1">명단 불러오기</a></p></main>';
+      C3 + '<section class="wtrend blk" aria-label="주별 방문 기록"><h2>주별 방문 기록 <small>지난 6주 ' + wsum + "건 · 상담 " + wmet + '건</small></h2><div class="wbars">' + wbars + '</div><div class="mlg"><span><i class="a"></i>만남·상담</span><span><i class="c"></i>부재</span><span><i class="d"></i>거절</span></div></section>' +
+      '<p class="demo"><span class="samp">가상 데이터</span><span>다음 차수 명단이 오면 «명단 불러오기»에서 이번 차수와 자동으로 견줍니다</span><a href="#today" data-pick="1">명단 불러오기</a></p></main>';
   }
   function bindPerf() {
     app.querySelectorAll("[data-todo]").forEach(function (b) { b.addEventListener("click", function () {
@@ -1389,30 +1452,141 @@
       '<table class="doc-t dhist-t"><caption class="sr">주별 방문한 날과 문서 건수</caption><thead><tr><th>주</th><th>방문한 날</th><th>복명서</th><th>상담일지</th><th>연계 의뢰서</th><th>안내 문자</th><th>주간 실적</th><th>합계</th></tr></thead><tbody>' + rows + "</tbody></table>" +
       '<p class="srcline">날짜를 누르면 그날 문서를 다시 보고 받을 수 있습니다 · 건수는 방문 기록을 규칙으로 센 것(만남 = 상담일지 1 · 연계 후보가 있는 만남 = 의뢰서 1 · 부재·연계 = 안내 문자 1)</p></section>';
   }
+  // ═════ S12-x 가구별 기록·문서(호창님 11-12 «가구마다 잘 저장 · 열어 보고 편집» · «목록화·찾기·편집·활용») — 규칙은 app/hrec.js ═════
+  //   65회차(⚙️ 파로): 마크업·동작 이름 = 시안 v3 hrecList·hrecView 그대로(hf·hsort·hpick·hopen·hedit·hsave·hre·hbulk) — 데이터는 실제 방문 기록(app/hrec.js).
+  //   첫 화면엔 검색칸 + «걸러 보기» 단추 + 목록만. 걸러 보기 칩은 단추를 눌러야 펼쳐진다. 폰 = 목록↔한 가구(닫기) · 폴드·PC = 목록 아래 한 가구.
+  var HRX = window.DaeumHrec, LS_HEDIT = "daeum.s12x.recEdit", LS_HDOC = "daeum.s12x.hdoc";
+  var HR = { f: { q: "", res: "", per: "", doc: "" }, sort: "mod", sel: {}, open: null, edit: null, fo: false };
+  function hrGroups() { return HRX ? HRX.group(logs(), BY, lsGet(LS_HEDIT, {}) || {}) : []; }
+  function hrList() { return HRX ? HRX.sort(HRX.filter(hrGroups(), { q: HR.f.q, res: HR.f.res, period: HR.f.per === "t" ? "today" : HR.f.per === "w" ? "week" : "", doc: HR.f.doc }), HR.sort === "no" ? "hid" : "recent") : []; }
+  function hrNsel() { return Object.keys(HR.sel).filter(function (k) { return HR.sel[k]; }).length; }
+  function hrPhone() { return (document.documentElement.getAttribute("data-mode") || "phone") === "phone"; }
+  function hrTag(g, docs) { return docs.some(function (d) { return d.stale; }) ? '<span class="stale">다시 만들기</span>' : '<span class="tag ' + HRX.RK[g.res] + '">' + HRX.RES[g.res] + "</span>"; }
+  function hrecList() {
+    var R = hrList(), f = HR.f, n = hrNsel(), nf = ["res", "per", "doc"].filter(function (g) { return f[g]; }).length, de = lsGet(LS_HDOC, {}) || {}, all = hrGroups();
+    function chip(g, v, l) { return '<button type="button" class="hchip pr" data-act="hf" data-g="' + g + '" data-k="' + v + '" aria-pressed="' + (f[g] === v) + '">' + l + "</button>"; }
+    return '<section class="card hrec-list"><h3>가구별 기록<span>' + all.length + "가구 · 방문 " + all.reduce(function (a, g) { return a + g.visits.length; }, 0) + "번</span></h3>" +
+      '<div class="hrec-tools"><div class="hrec-sbar"><label class="hrec-search">' + I.search + '<input id="hq" type="search" value="' + esc(f.q) + '" placeholder="가구번호·읍면·날짜(11.12)·메모" aria-label="가구별 기록 찾기"></label>' +
+      '<button type="button" class="hrec-ftog pr" data-act="hfo" aria-expanded="' + HR.fo + '">' + I.filter + "걸러 보기" + (nf ? '<span class="n">' + nf + "</span>" : "") + "</button></div>" +
+      (HR.fo ? '<div class="hrec-fpanel"><div class="hrec-filter" role="group" aria-label="결과"><span class="fk">결과</span>' + ["met", "absent", "refuse"].map(function (v) { return chip("res", v, HRX.RES[v]); }).join("") + "</div>" +
+        '<div class="hrec-filter" role="group" aria-label="기간"><span class="fk">기간</span>' + chip("per", "t", "오늘") + chip("per", "w", "이번 주") + "</div>" +
+        '<div class="hrec-filter" role="group" aria-label="문서 종류"><span class="fk">문서</span>' + HRX.DOCK.map(function (d) { return chip("doc", d.k, d.nm); }).join("") + "</div>" +
+        '<div class="hrec-sort"><span>' + R.length + '가구 <button type="button" class="lnk pr" data-act="hall">보이는 가구 모두 고르기</button></span><span class="seg2" role="group" aria-label="정렬">' + [["mod", "최근 수정 순"], ["no", "가구번호 순"]].map(function (x) { return '<button type="button" class="pr" data-act="hsort" data-k="' + x[0] + '" aria-pressed="' + (HR.sort === x[0]) + '">' + x[1] + "</button>"; }).join("") + "</span></div></div>" : "") + "</div>" +
+      '<div class="hrec-rows">' + (R.length ? R.map(function (g) {
+        return '<div class="hrec-line"><button type="button" class="hrec-pick pr" data-act="hpick" data-k="' + g.hid + '" aria-pressed="' + !!HR.sel[g.hid] + '" aria-label="' + g.hid + ' 고르기"><i>' + I.check + "</i></button>" +
+          '<button type="button" class="hrec-row pr' + (HR.open === g.hid ? " on" : "") + '" data-act="hopen" data-k="' + g.hid + '" aria-expanded="' + (HR.open === g.hid) + '"><span class="hrec-no">' + g.hid + '</span><span class="hrec-mid"><b>' + esc(g.area) + "</b><small>방문 " + HRX.md(g.last.at) + (g.visits.length > 1 ? " · " + g.visits.length + "차" : "") + "</small></span>" + hrTag(g, HRX.docsOf(g, de)) + '<span class="hrec-mod">고침 <b>' + HRX.when(g.touched) + "</b></span></button></div>";
+      }).join("") : '<div class="hrec-empty">맞는 가구가 없습니다 — 찾는 말이나 걸러 보기를 바꿔 보세요.</div>') + "</div>" +
+      (n ? '<div class="hrec-bulk" role="status"><span>' + n + '가구 골랐습니다</span><button type="button" class="btn sm pri pr" data-act="hbulk">' + I.down + '한 번에 내려받기</button><button type="button" class="btn sm ghost pr" data-act="hselx" aria-label="고르기 풀기">' + I.x + "</button></div>" : "") +
+      '<p class="srcline">기록과 직접 고친 문서 본문은 같은 계정 PC·폰에 실시간 연동 · 가구 번호·읍면만(성명·주소·연락처 없음) · 가상 데이터</p></section>';
+  }
+  function hrAuto(g) { var v = g.last; return (HRX.md(v.at) + " " + (v.res === "absent" ? "방문했으나 만나지 못함." : v.res === "refuse" ? "방문했으나 상담을 원하지 않음." : "방문하여 대상자를 만남.") + " " + (v.tags.length ? v.tags.join("·") + " 상황을 확인함." : "")).trim(); }
+  function hrecOne() {
+    var g = hrGroups().filter(function (x) { return x.hid === HR.open; })[0]; if (!g) return "";
+    var v = g.last, de = lsGet(LS_HDOC, {}) || {}, docs = HRX.docsOf(g, de);
+    var hist = g.visits.slice().reverse().map(function (x) { return '<li><span class="r">' + x.n + '차</span><i class="d"></i><span><b>' + HRX.md(x.at) + " " + HRX.hm(x.at) + "</b><small>" + HRX.RES[x.res] + " — " + esc(x.memo || "기록 없음") + (x.edited ? " · 고친 시각 " + HRX.when(x.edited) : "") + "</small></span></li>"; }).join("");
+    var dl = docs.map(function (d) {
+      var key = g.hid + "|" + d.k, ed = HR.edit === key;
+      return '<div class="hdoc' + (d.stale ? " stale" : "") + '"><span class="di h">HWP</span><span class="nm"><b>' + d.nm + (d.stale ? '<span class="stale">다시 만들기</span>' : "") + "</b><small>" + (d.stale ? "기록이 바뀌었습니다" : d.edited ? "본문 고침 " + HRX.when(d.edited) : "기록과 같음") + "</small></span>" +
+        (ed ? '<textarea class="hrec-memo" id="hrDocTxt" rows="7" aria-label="' + d.nm + ' 본문 고치기">' + esc(d.text) + '</textarea><div class="acts"><button type="button" class="pr" data-act="hcancel">취소</button><button type="button" class="pr" data-act="hsave" data-k="' + key + '">' + I.check + "저장</button></div>"
+          : '<div class="acts">' + (d.stale ? '<button type="button" class="re pr" data-act="hre" data-k="' + key + '">' + I.sync + "다시 만들기</button>" : "") +
+            '<button type="button" class="pr" data-act="hdoc" data-k="hwpx" data-d="' + key + '">' + I.down + 'hwpx</button><button type="button" class="pr" data-act="hdoc" data-k="인쇄" data-d="' + key + '">' + I.print + '인쇄</button><button type="button" class="pr" data-act="hdoc" data-k="복사" data-d="' + key + '">' + I.copy + '복사</button><button type="button" class="pr" data-act="hdoc" data-k="보내기" data-d="' + key + '">' + I.send + '보내기</button><button type="button" class="pr" data-act="hdoc" data-k="고치기" data-d="' + key + '">' + I.pen + "본문</button></div>") + "</div>";
+    }).join("");
+    return '<section class="card hrec-view" aria-label="' + g.hid + ' 기록">' +
+      '<div class="hrec-head">' + (hrPhone() ? '<button type="button" class="evb pr" data-act="hclose" aria-label="목록으로">' + I.x + "</button>" : "") + '<span class="hrec-no">' + g.hid + '</span><span class="t"><b>' + esc(g.area) + "</b><small>방문 " + HRX.md(v.at) + " · 고침 " + HRX.when(g.touched) + "</small></span>" + hrTag(g, docs) + "</div>" +
+      '<div class="hrec-sec"><h4>차수별 기록</h4><ol class="hrec-hist">' + hist + "</ol></div>" +
+      '<div class="hrec-sec"><h4>상황</h4><div class="hrec-sit">' + (v.tags.length ? v.tags.map(function (z) { return '<button type="button" class="hchip pr" aria-pressed="true" tabindex="-1">' + esc(z) + "</button>"; }).join("") : '<p class="hrec-memo">고른 상황 없음</p>') + "</div></div>" +
+      '<div class="hrec-sec"><h4>자동 문장</h4><p class="hrec-auto"><span class="ai">' + esc(hrAuto(g)) + "</span></p></div>" +
+      '<div class="hrec-sec"><h4>메모</h4><p class="hrec-memo">' + esc(v.memo) + "</p></div>" +
+      '<div class="hrec-acts"><button type="button" class="btn ghost pr" data-act="hedit" data-k="' + g.hid + '">' + I.pen + "고치기</button></div>" + // 마지막 기록 고치기 = 오늘 탭 «기록 고치기»와 같은 편집 화면(reopenRec)
+      '<div class="hrec-sec"><h4>만든 문서들</h4><div class="hrec-docs">' + dl + "</div></div></section>";
+  }
+  function hrBody() { return HR.open && hrPhone() ? hrecOne() : hrecList() + (HR.open ? hrecOne() : ""); }
+  function hrecView() { return HRX ? '<div class="hrec" id="hrec" aria-label="가구별 기록·문서">' + hrBody() + "</div>" : ""; }
+  function hrDoc(key) { var p = key.split("|"), g = hrGroups().filter(function (x) { return x.hid === p[0]; })[0]; return g ? HRX.docsOf(g, lsGet(LS_HDOC, {}) || {}).filter(function (d) { return d.k === p[1]; })[0] : null; }
+  function hrHwpx(hids) {
+    var gs = hrGroups().filter(function (g) { return hids.indexOf(g.hid) >= 0; }); if (!gs.length) return;
+    // S12-z: 한 가구 = «마지막 방문일_가구번호_가구별기록.hwpx» · 여러 가구 = ZIP 하나(안에 «날짜/YYYY-MM-DD/»·«가구별/가구번호/» 폴더 — 브라우저는 폴더를 못 만들어 ZIP이 폴더 역할)
+    needLibs().then(function () {
+      var n = new Date(), made = n.getFullYear() + ". " + (n.getMonth() + 1) + ". " + n.getDate() + ".", de = lsGet(LS_HDOC, {}) || {}, W = window.DaeumHwpx, X = window.DaeumXlsx;
+      if (gs.length === 1) return W.download(HRX.hwpxDoc(gs, de, made), fnm(gs[0].last.at, gs[0].hid, "가구별기록", "hwpx"));
+      return X.save(X.zip(HRX.zipFiles(gs, function (g) { return W.build(HRX.hwpxDoc([g], de, made)); }, fnm)), fnm(n, gs.length + "가구", "가구별기록", "zip"), "application/zip");
+    }).then(function () { toast(gs.length > 1 ? "ZIP을 받았습니다 · 가구 " + gs.length + "곳(날짜별·가구별 폴더)" : "hwpx를 받았습니다 · 가구 " + gs[0].hid); }, function () { toast("문서 부품을 불러오지 못했습니다 — 전파가 돌아오면 다시 눌러 주세요"); });
+  }
+  function hrPrint(d, hid) { // S12-z: 인쇄 창 제목(= PDF 저장 이름)도 «방문일_가구번호_문서종류»
+    var f = document.createElement("iframe"); f.setAttribute("aria-hidden", "true"); f.setAttribute("tabindex", "-1"); f.style.cssText = "position:fixed;width:0;height:0;border:0;right:0;bottom:0";
+    document.body.appendChild(f);
+    var w = f.contentWindow, dc = w.document; dc.open(); var g0 = hrGroups().filter(function (x) { return x.hid === hid; })[0]; dc.write('<!doctype html><meta charset="utf-8"><title>' + esc(fnm(g0 ? g0.last.at : new Date(), hid, d.nm)) + '</title><style>body{font:14px/1.7 "Noto Sans KR",sans-serif;margin:20mm}pre{white-space:pre-wrap;font:inherit}</style><pre>' + esc(d.text) + "</pre>"); dc.close();
+    setTimeout(function () { try { w.focus(); w.print(); } catch (e) { /* 인쇄 막힘 */ } setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 1000); }, 50);
+  }
+  function bindHrec() {
+    var box = app.querySelector("#hrec"); if (!box) return;
+    function redraw() { box.innerHTML = hrBody(); }
+    box.addEventListener("input", function (e) {
+      if (e.target.id !== "hq") return;
+      HR.f.q = e.target.value; redraw(); var q = box.querySelector("#hq"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } // 시안: 쓰는 중에도 칸 유지
+    });
+    box.addEventListener("click", function (e) {
+      var t = e.target && e.target.closest ? e.target.closest("[data-act]") : null; if (!t || !box.contains(t)) return;
+      var k = t.dataset.k, f = HR.f;
+      switch (t.dataset.act) {
+        case "hfo": HR.fo = !HR.fo; break;
+        case "hf": { var g = t.dataset.g; f[g] = f[g] === k ? "" : k; break; }
+        case "hsort": HR.sort = k; break;
+        case "hall": hrList().forEach(function (x) { HR.sel[x.hid] = true; }); break;
+        case "hpick": HR.sel[k] = !HR.sel[k]; break;
+        case "hselx": HR.sel = {}; break;
+        case "hbulk": hrHwpx(Object.keys(HR.sel).filter(function (z) { return HR.sel[z]; })); return;
+        case "hopen": HR.open = HR.open === k ? null : k; HR.edit = null; break;
+        case "hclose": HR.open = null; HR.edit = null; break;
+        case "hedit": reopenRec(k, false); return; // 오늘 탭 «기록 고치기»와 같은 편집 화면 · 고쳐도 방문 일시 유지·고친 시각 남김
+        case "hcancel": HR.edit = null; break;
+        case "hsave": {
+          var ta = box.querySelector("#hrDocTxt"), gg = hrGroups().filter(function (x) { return x.hid === k.split("|")[0]; })[0]; if (!ta || !gg) return;
+          // S12-y(70회차): 본문 고침도 같은 계정 PC·폰 실시간 연동(sync.js saveDoc → doc_edit) · 연동이 없으면 이 기기 저장
+          var kp = k.split("|"); HR.edit = null;
+          if (SY.saveDoc) SY.saveDoc(kp[0], kp[1], ta.value, gg.last.id); else { var all = lsGet(LS_HDOC, {}) || {}; all[k] = { text: ta.value.slice(0, 4000), at: new Date().toISOString(), base: gg.last.id }; lsSet(LS_HDOC, all); }
+          redraw(); toast(SY.state().mode === "live" ? "문서 본문을 저장했습니다 · 같은 계정 PC·폰에 반영" : "문서 본문을 이 기기에 저장했습니다 · 연결되면 같은 계정에 보냅니다"); return;
+        }
+        case "hre": { var kq = k.split("|"); if (SY.dropDoc) SY.dropDoc(kq[0], kq[1]); else { var a2 = lsGet(LS_HDOC, {}) || {}; delete a2[k]; lsSet(LS_HDOC, a2); } redraw(); toast("바뀐 기록으로 다시 만들었습니다"); return; }
+        case "hdoc": {
+          var key = t.dataset.d, d = hrDoc(key); if (!d) return;
+          if (k === "hwpx") hrHwpx([key.split("|")[0]]);
+          else if (k === "인쇄") hrPrint(d, key.split("|")[0]);
+          else if (k === "복사") copy(d.text);
+          else if (k === "고치기") { HR.edit = key; redraw(); var tx = box.querySelector("#hrDocTxt"); if (tx) tx.focus(); }
+          else if (SY.state().mode === "live") toast("같은 계정 PC·폰에 이미 반영됐습니다(기록 실시간 연동)"); else { toast("로그인하면 같은 계정 PC·폰에 바로 반영됩니다"); accountPanel(); }
+          return;
+        }
+        default: return;
+      }
+      redraw();
+    });
+  }
   function docsView() {
     var M = docModel(), now = new Date();
-    if (!M.dd) return top("docs", "<strong>문서함</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>아직 방문 기록이 없습니다</b>폰에서 «기록 저장»을 누르면 이 화면이 바로 채워집니다.</div></main>';
+    if (!M.dd) return top("docs", "<strong>문서함</strong>가상 데이터") + '<main class="wrap"><div class="emptyc blk"><b>아직 방문 기록이 없습니다</b>폰에서 «기록 저장»을 누르면 이 화면이 바로 채워집니다.</div>' + hrecView() + "</main>";
     if (!docDay) docDay = M.dd.n;
     var D0 = DOCS.filter(function (d) { return d.k === docSel; })[0];
     var list = DOCS.map(function (d) {
       var q = d.k === "d5" || d.k === "d6" ? M.pend[d.k] : M.pend[d.k], tot = M.cnt[d.k];
       var made = tot > 0 && q === 0;
-      return '<button type="button" class="row' + (d.k === docSel ? " sel" : "") + (made ? " made" : "") + '" data-doc="' + d.k + '"><span class="q' + (q ? "" : " z") + '">' + q + '</span><span class="nm"><b>' + d.nm + "</b><small>" + esc(d.sub) + (tot ? " · " + tot + "건" : " · 해당 없음") + '</small></span><span class="meter" aria-hidden="true">' + d.meter.map(function (x) { var q = MET_SRC[x[0]]; return '<i class="' + x[0] + " pat-" + q + '" data-src="' + q + '" data-pat="' + q + '" style="flex:' + x[1] + '"></i>'; }).join("") + '</span><span class="go">' + (made ? "받음 ✓" : d.k === docSel ? "만드는 중" : "만들기") + "</span></button>";
+      return '<button type="button" class="row' + (d.k === docSel ? " sel" : "") + (made ? " made" : "") + '" data-doc="' + d.k + '"><span class="q' + (q ? "" : " z") + '">' + q + '</span><span class="nm"><b>' + d.nm + "</b><small>" + esc(d.sub) + (tot ? " · " + tot + "건" : " · 해당 없음") + '</small></span><span class="dmeter" aria-hidden="true">' + d.meter.map(function (x) { var q = MET_SRC[x[0]]; return '<i class="' + x[0] + " pat-" + q + '" data-src="' + q + '" data-pat="' + q + '" style="flex:' + x[1] + '"></i>'; }).join("") + '</span><span class="go">' + (made ? "받음 ✓" : d.k === docSel ? "만드는 중" : "만들기") + "</span></button>";
     }).join("");
     var pv = docPreview(M, docSel);
     var dayLbl = (M.dd.date ? md(M.dd.date) : M.dd.n + "일차") + " 방문 " + M.cases.filter(function (x) { return x.st !== "planned"; }).length + "곳";
     return top("docs", "<strong>" + esc(dayLbl) + "</strong>가상 데이터") + '<main class="wrap">' +
       '<div class="dhead"><h1>' + (M.past ? "그날 받은 문서 <span>" + Object.keys(M.cnt).reduce(function (a, k) { return a + (DOC_OPT[k] || k === "d6" ? 0 : M.cnt[k]); }, 0) + "</span>건" : "만들 문서 <span>" + M.pending + "</span>건") + '</h1><p>막대 색 = 칸을 채운 곳 · <b style="color:#5D6B80">남색</b> 한국사회보장정보원 명단·API · 회색 규칙 숫자 · 노랑 자동 문장(확인) · 빨강 빈칸(입력 필요)</p></div>' +
       (M.rd.filter(function (d) { return !d.past; }).length > 1 || M.past ? dayPick(M) : "") +
-      '<div class="dgrid"><div class="dep blk"><div class="hd"><span>대기</span><span>문서</span><span>채워진 칸</span><span></span></div>' + list + "</div>" +
-      '<section class="prev blk" id="docPrev" tabindex="-1" aria-label="' + esc(D0.nm) + ' 미리보기">' + pv + "</section></div>" + docHist(M) + (FD ? FD.reportCards() : "") + // S12-i3 ⑥남은 가구 막대 ③인계 카드
-      '<p class="foot"><span class="demo-tag">가상 데이터</span><span>개인정보 4칸(성명·주민등록번호·연락처·주소) 미기재 · 가구 번호·읍면만 · 상담일지 입력·전자서명은 행복이음에서</span></p></main>';
+      // S12-x 66회차: 시안 v3 scrReport — 첫 칸(문서 목록) | 둘째 칸(미리보기) | 셋째 칸(이력·가구별 기록·남은 가구·인계 카드)
+      '<div class="dep blk"><div class="hd"><span>대기</span><span>문서</span><span>채워진 칸</span><span></span></div>' + list + "</div>" + C2 +
+      '<section class="prev blk" id="docPrev" tabindex="-1" aria-label="' + esc(D0.nm) + ' 미리보기">' + pv + "</section>" + C3 + docHist(M) + hrecView() + (FD ? FD.reportCards() : "") + // S12-x 가구별 기록·문서 · S12-i3 ⑥남은 가구 막대 ③인계 카드
+      '<p class="demo"><span class="samp">가상 데이터</span><span>개인정보 4칸(성명·주민등록번호·연락처·주소) 미기재 · 가구 번호·읍면만 · 상담일지 입력·전자서명은 행복이음에서</span></p></main>';
   }
-  function flowBtns(k, ready, label2, label3) {
+  function flowBtns(k, ready, label2, label3, why) { // why: «받기»가 꺼진 이유 한 줄(68회차 ⑭ — 꺼진 단추 바로 아래)
     var m1 = !!made1[k + ":" + (docHid || "")], on = m1 && ready ? "" : " disabled";
     return '<div class="flow2"><button type="button" class="' + (m1 ? "d1" : "d2") + '" data-act="make">' + (m1 ? "1 만들기 ✓" : "1 만들기") + "</button><em>→</em>" +
       '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get"' + on + ">2 " + label2 + "</button>" +
-      (label3 ? '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get" data-alt="1"' + on + ">2 " + label3 + "</button>" : "") + "</div>";
+      (label3 ? '<button type="button" class="' + (m1 ? "d2" : "") + '" data-act="get" data-alt="1"' + on + ">2 " + label3 + "</button>" : "") + (m1 && !ready && why ? '<span class="fwhy" role="note">' + esc(why) + "</span>" : "") + "</div>";
   }
   /** D1 상담일지 초안 — 미리보기·복사·보관 hwpx 가 같은 값을 쓰게 한 곳에서 만든다(규칙 «자동 정리») */
   function d1Draft(x) {
@@ -1519,7 +1693,7 @@
   var SRC_LB = { data: "남색 = 한국사회보장정보원 명단·API", rule: "회색 = 규칙으로 센 숫자", ai: "노랑 = 자동 정리 문장(담당자 확인)", empty: "빨강 = 손으로 채울 칸" };
   function swatch(src) { return '<i class="sw pat-' + src + '" data-src="' + src + '" data-pat="' + src + '" style="background:' + SRC_CLS[src] + '"></i>'; }
   function srcSw(list) { return '<div class="legend dl-sw">' + (list || ["data", "rule", "ai", "empty"]).map(function (k) { return '<span data-src="' + k + '">' + swatch(k) + esc(SRC_LB[k]) + "</span>"; }).join("") + "</div>"; }
-  var SER = { met: ["만남·상담", "#0B8465"], absent: ["부재", "#C94E1A"], refuse: ["거절", "#8A9396"], visit: ["방문한 곳", "#5D6B80"] };
+  var SER = { met: ["만남·상담", "#2E8270"], absent: ["부재", "#C2862C"], refuse: ["거절", "#8A9396"], visit: ["방문한 곳", "#5D6B80"] };
   function serSw(keys) { return '<div class="legend dl-sw dl-ser">' + keys.map(function (k) { return '<span data-series="' + k + '"><i class="sw pat-' + k + '" data-series="' + k + '" data-pat="' + k + '" style="background:' + SER[k][1] + '"></i>' + esc(SER[k][0]) + "</span>"; }).join("") + "</div>"; }
   /** «읽는 법» 작은 상자 — rows: [[이름, 뜻]] · sw: 색 범례 html */
   function legendBox(rows, sw, cls) {
@@ -1561,7 +1735,7 @@
       docHid = "";
       var fs = d2Fields(M), empties = fs.filter(function (f) { return f.src === "empty"; }).length;
       var hh = '<table class="doc-t doc-hh pg-keep"><caption>가구별 결과</caption><thead><tr><th>가구</th><th>읍면</th><th>결과</th><th>요지</th></tr></thead><tbody>' + M.cases.map(function (c) { return "<tr><td>" + c.id + "</td><td>" + esc(c.h.area) + '</td><td data-src="rule"><span class="rule">' + (ST_LBL[c.st] || "방문 전") + '</span></td><td data-src="ai">' + (c.st === "done" ? "<mark>" + esc(clip(c.memo, 46)) + "</mark>" : c.st === "absent" ? "다시 방문" : c.st === "refused" ? "근무일 5일 뒤 다시 권유" : "") + "</td></tr>"; }).join("") + "</tbody></table>";
-      return ctl(flowBtns("d2", !empties, "hwpx 받기")) + sheet("d2", "복명서", bas, legendBox([["결과", "그날 확정한 방문 결과를 센 가구 수(만남·부재·거절)"], ["명단 사유 밖 징후", "현장 확인에서 «문제 있음»을 고른 가구 수"], ["기준", "방문일 하루 · 출장 시각은 첫 기록~마지막 기록"], ["출처", "가구 = 한국사회보장정보원 발굴대상자 명단 · 나머지 = 현장 기록"]], serSw(["met", "absent", "refuse"]) + srcSw()),
+      return ctl(flowBtns("d2", !empties, "hwpx 받기", null, empties ? fs.filter(function (f) { return f.src === "empty"; }).map(function (f) { return "«" + f.k + "»"; }).join("·") + " 칸이 비어 받기가 꺼져 있습니다" : "")) + sheet("d2", "복명서", bas, legendBox([["결과", "그날 확정한 방문 결과를 센 가구 수(만남·부재·거절)"], ["명단 사유 밖 징후", "현장 확인에서 «문제 있음»을 고른 가구 수"], ["기준", "방문일 하루 · 출장 시각은 첫 기록~마지막 기록"], ["출처", "가구 = 한국사회보장정보원 발굴대상자 명단 · 나머지 = 현장 기록"]], serSw(["met", "absent", "refuse"]) + srcSw()),
         stackFig("그날 방문 결과", [["met", M.met.length], ["absent", M.ab.length], ["refuse", M.cases.filter(function (x) { return x.st === "refused"; }).length]]) + paper("복명서", "상주시청 · " + area + " 맞춤형복지팀 · " + mdDot(now) + " 작성", fs) + hh +
         '<p class="srcline only-screen">빈칸이 0이 되면 받기가 켜집니다 · 칸 이름은 시군 서식에 맞춰 바꿀 수 있는 가정(정의서 §7)</p>');
     }
@@ -1668,7 +1842,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12e40")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12e40"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12y70")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12y70"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -1678,52 +1852,52 @@
   });
   function getDoc(M, k, alt) {
     var now = M.past && M.dd.date ? new Date(M.dd.date + "T17:30:00") : new Date(), area = BY[M.dd.ids[0]].area, made = now.getFullYear() + ". " + (now.getMonth() + 1) + ". " + now.getDate() + ".", office = "상주시청 · " + area + " 맞춤형복지팀";
-    var stamp = ymd(now).replace(/-/g, "");
     if (k === "d1" && !alt) { var x = M.cases.filter(function (c) { return c.id === docHid; })[0]; copy(d1Draft(x).text); markDone(M, k, x.id); render(); return; }
     if (k === "d4") { var z = M.cases.filter(function (c) { return c.id === docHid; })[0]; var vt = F.visitTime.profile(attempts(), z.id, {}); copy(NT.alimtalk(z.st === "absent" ? "absent" : "link", { area: z.h.area, date: z.at ? ymd(z.at) : null, time: z.at ? hm(z.at) : null, nextDate: ymd(U.addWorkdays(now, A.retryGap)), nextSlot: vt.best && /오전/.test(vt.best.label) ? "오전" : "오후" }).copy); markDone(M, k, z.id); render(); return; }
+    var vday = M.dd.date ? M.dd.date + "T12:00:00" : now; // S12-z: 파일 이름 날짜 = 방문한 날(가구 문서는 그 가구 방문 시각) · 실적·차수 결과는 만든 날
     SH.busy(needLibs().then(function () {
       var W2 = window.DaeumHwpx, TW = W2 && W2.TW || 0;
       if (k === "d1") {
         var x1 = M.cases.filter(function (c) { return c.id === docHid; })[0];
-        return W2.download(d1Hwpx(x1, d1Draft(x1), made, office, TW), "상담일지초안_" + x1.id + "_" + stamp + ".hwpx").then(function () { markDone(M, k, x1.id); });
+        return W2.download(d1Hwpx(x1, d1Draft(x1), made, office, TW), fnm(x1.at || vday, x1.id, "상담일지초안", "hwpx")).then(function () { markDone(M, k, x1.id); });
       }
       if (k === "d2") {
         var fs = d2Fields(M);
         return W2.download({ title: "복명서", subtitle: "복지사각지대 발굴대상자 현장 확인 출장", made: made, office: office,
           blocks: [{ t: "ch", text: "Ⅰ. 출장 개요" }, { t: "tbl", title: "<표 1> 출장 결과", head: ["항목", "내용"], widths: TW ? [Math.round(TW * .2), TW - Math.round(TW * .2)] : undefined, rows: fs.map(function (f) { return [f.k, f.v]; }) },
             { t: "ch", text: "Ⅱ. 가구별 결과" }].concat(M.cases.map(function (c) { return { t: "li", lv: 1, text: c.id + "(" + c.h.area + ") — " + (c.st === "done" ? "만남: " + clip(c.memo, 80) : c.st === "absent" ? "부재 · 재방문 예정" : c.st === "refused" ? "거절 · 근무일 5일 뒤 다시 권유" : "방문 전") }; }))
-            .concat([{ t: "p", kind: "note", text: "※ 가구 칸 = 한국사회보장정보원 발굴대상자 명단 · 개인정보 4칸 미기재 · 시연용 가상 가구 · 담당자 확인 후 확정  끝." }]) }, "복명서_" + stamp + ".hwpx").then(function () { markDone(M, k, "day"); });
+            .concat([{ t: "p", kind: "note", text: "※ 가구 칸 = 한국사회보장정보원 발굴대상자 명단 · 개인정보 4칸 미기재 · 시연용 가상 가구 · 담당자 확인 후 확정  끝." }]) }, fnm(vday, null, "복명서", "hwpx")).then(function () { markDone(M, k, "day"); });
       }
       if (k === "d3") {
         var y = M.cases.filter(function (c) { return c.id === docHid; })[0];
         var rec = { text: F.askGuide.draft({ label: "가구 " + y.id, area: y.h.area, at: y.at, method: "방문 상담", needs: F.askGuide.detect(y.memo), summary: memoNoWhy(y.memo), guide: F.askGuide.check(y.memo, null, {}) }).text, area: y.h.area, label: "가구 " + y.id, at: y.at, why: refWhyOf(y.id, y.memo) };
-        return W2.download(F.referral.build(rec, docOrg, { office: y.h.area + " 맞춤형복지팀" }), F.referral.fileName(docOrg)).then(function () { markDone(M, k, y.id); });
+        return W2.download(F.referral.build(rec, docOrg, { office: y.h.area + " 맞춤형복지팀" }), F.referral.fileName(docOrg, y.at || vday, y.id)).then(function () { markDone(M, k, y.id); });
       }
       if (k === "d5") {
         var w = periodModel(docPer);
-        return W2.download(d5Hwpx(w, made, office, TW), (w.per === "mo" ? "월간실적_" : "주간실적_") + stamp + ".hwpx").then(function () { markDone(M, k, w.per); });
+        return W2.download(d5Hwpx(w, made, office, TW), fnm(now, null, w.per === "mo" ? "월간실적" : "주간실적", "hwpx")).then(function () { markDone(M, k, w.per); });
       }
       if (k === "d7") {
         var x7 = M.cases.filter(function (c) { return c.id === docHid; })[0];
-        return W2.download(d7Hwpx(x7, d7Fields(M, x7, now), made, office, TW), "인계카드_" + x7.id + "_" + stamp + ".hwpx").then(function () { markDone(M, k, x7.id); });
+        return W2.download(d7Hwpx(x7, d7Fields(M, x7, now), made, office, TW), fnm(x7.at || vday, x7.id, "인계카드", "hwpx")).then(function () { markDone(M, k, x7.id); });
       }
       if (k === "d8") {
         var x8 = M.cases.filter(function (c) { return c.id === docHid; })[0];
-        return W2.download(d8Hwpx(d8Model(x8, now), made), "큰글씨안내문_" + x8.id + "_" + stamp + ".hwpx").then(function () { markDone(M, k, x8.id); });
+        return W2.download(d8Hwpx(d8Model(x8, now), made), fnm(x8.at || vday, x8.id, "큰글씨안내문", "hwpx")).then(function () { markDone(M, k, x8.id); });
       }
       if (k === "d6") {
         var R = roundRows();
         return window.DaeumXlsx.download({ title: "차수 처리 결과 명단", subtitle: roundYm() + " 명단", made: made + " " + hm(now), office: office, conclusion: "명단 " + R.length + "가구 중 " + R.filter(function (r) { return r[4] === "만남"; }).length + "가구 상담", note: "※ 시연용 가상 자료 · 개인정보 4칸 없음",
           sheets: [{ name: "처리 결과", title: "<표 1> 차수 처리 결과", unit: "단위: 가구", columns: [{ key: "a", h: "가구", type: "text", w: 10 }, { key: "b", h: "읍면", type: "text", w: 10 }, { key: "c", h: "발굴 순위", type: "text", w: 9 }, { key: "d", h: "방문일", type: "text", w: 12 }, { key: "e", h: "결과", type: "text", w: 9 }, { key: "f", h: "연계", type: "text", w: 22 }, { key: "g", h: "다음 확인", type: "text", w: 28 }], rows: R, total: false, src: "※ 출처: 한국사회보장정보원 발굴대상자 조회 서식(가상) + 닿음 현장 기록" }],
-          sources: [{ kind: "가상", org: "닿음", name: "시연용 가상 가구", date: ymd(now), use: "명단·방문 결과" }], footer: "닿음" }, "차수결과_" + roundYm() + "_" + stamp + ".xlsx").then(function () { markDone(M, k, "round"); });
+          sources: [{ kind: "가상", org: "닿음", name: "시연용 가상 가구", date: ymd(now), use: "명단·방문 결과" }], footer: "닿음" }, fnm(now, null, "차수결과_" + roundYm() + "차수", "xlsx")).then(function () { markDone(M, k, "round"); });
       }
     }), "문서를 만드는 중…").then(function () { toast("내려받았습니다"); render(); }, function () { toast(libFail || navigator.onLine === false ? "연결이 끊겨 파일을 만들지 못했습니다 — 연결되면 다시 불러옵니다" : "파일을 만들지 못했습니다 — 다시 눌러 주세요"); });
   }
   /** S12-e 43: 지금 미리보기 한 장을 A4로 — 창 제목을 문서 이름으로 바꿔 PDF 저장 이름이 «복명서_20261103»처럼 나오게 */
   function printDoc() {
     var a = app.querySelector(".print-doc"); if (!a) return;
-    var old = document.title, M = docModel(), d = M.dd && M.dd.date ? M.dd.date.replace(/-/g, "") : ymd(new Date()).replace(/-/g, "");
-    document.title = (a.dataset.docName || "문서").replace(/\s+/g, "") + (docHid ? "_" + docHid : "") + "_" + d;
+    var old = document.title, M = docModel();
+    document.title = fnm(M.dd && M.dd.date ? M.dd.date + "T12:00:00" : new Date(), docHid, a.dataset.docName || "문서"); // S12-z: PDF 저장 이름도 같은 규칙
     document.body.classList.add("printing-doc");
     var back = function () { document.title = old; document.body.classList.remove("printing-doc"); window.removeEventListener("afterprint", back); };
     window.addEventListener("afterprint", back);
@@ -1736,10 +1910,12 @@
     var r = pv.getBoundingClientRect(), vh = window.innerHeight || 800;
     pv.focus({ preventScroll: true });
     if (r.top >= 0 && r.top < vh * 0.5) return;
-    var y = window.pageYOffset + r.top - 12;
-    window.scrollTo(RM_ ? { top: y } : { top: y, behavior: "smooth" });
+    var col = app.querySelector(".col"); if (!col) return; // S12-x 65회차: 스크롤 칸 = 셸 .col(옛 window)
+    var y = col.scrollTop + r.top - col.getBoundingClientRect().top - 12;
+    col.scrollTo(RM_ ? { top: y } : { top: y, behavior: "smooth" });
   }
   function bindDocs() {
+    bindHrec();
     if (FD) FD.bindReport(app);
     var M = docModel(); if (!M.dd) return;
     app.querySelectorAll("[data-doc]").forEach(function (b) { b.addEventListener("click", function () { docSel = b.dataset.doc; docHid = null; render(); toPrev(); }); });
@@ -1755,15 +1931,15 @@
 
   // ═════ 사용 방법 — 하루 7단계를 그림 한 줄씩(S12-d 2부-3). 옛 흐름 ①~⑨ 안내(shared/guide.js)는 옛 공무원 화면 전용으로 남김 ═════
   var ICO = {
-    pc: '<rect x="8" y="12" width="48" height="32" rx="5" fill="#1C2839"/><rect x="12" y="16" width="40" height="24" rx="2" fill="#E1E5EB"/><rect x="24" y="46" width="16" height="4" rx="2" fill="#1C2839"/><rect x="18" y="50" width="28" height="4" rx="2" fill="#C3C9D3"/>',
-    ph: '<rect x="20" y="6" width="24" height="52" rx="6" fill="#1C2839"/><rect x="23" y="12" width="18" height="38" rx="2" fill="#E1E5EB"/><circle cx="32" cy="54" r="2" fill="#E1E5EB"/>',
-    s1: '<rect x="14" y="20" width="20" height="5" rx="2.5" fill="#0B8465"/><rect x="14" y="28" width="24" height="5" rx="2.5" fill="#586273"/><rect x="14" y="36" width="16" height="5" rx="2.5" fill="#586273"/>',
-    s2: '<path d="M26 44 L30 30 L38 34 L37 20" fill="none" stroke="#0B8465" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="37" cy="20" r="3.5" fill="#C94E1A"/>',
-    s3: '<rect x="25" y="17" width="14" height="3" rx="1.5" fill="#111A27"/><rect x="25" y="23" width="12" height="3" rx="1.5" fill="#586273"/><rect x="25" y="29" width="14" height="3" rx="1.5" fill="#C62F3A"/><rect x="25" y="35" width="10" height="3" rx="1.5" fill="#586273"/>',
-    s4: '<path d="M26 20 l2 2 4-4M26 29 l2 2 4-4" stroke="#0B8465" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="26" y="37" width="6" height="6" rx="1.5" fill="#C94E1A"/><rect x="34" y="19" width="5" height="2.5" rx="1" fill="#586273"/><rect x="34" y="28" width="5" height="2.5" rx="1" fill="#586273"/><rect x="34" y="39" width="5" height="2.5" rx="1" fill="#586273"/>',
-    s5: '<rect x="24" y="17" width="16" height="10" rx="3" fill="#2F6FB1"/><rect x="24" y="31" width="16" height="10" rx="3" fill="#fff" stroke="#586273" stroke-width="1.5"/><path d="M27 41 l-2 4 5-4" fill="#fff" stroke="#586273" stroke-width="1.2"/>',
-    s6: '<rect x="28.5" y="17" width="7" height="13" rx="3.5" fill="#C94E1A"/><path d="M26 27a6 6 0 0 0 12 0M32 33v5" stroke="#111A27" stroke-width="2" fill="none" stroke-linecap="round"/>',
-    s7: '<rect x="18" y="18" width="20" height="26" rx="2" fill="#fff" stroke="#586273" stroke-width="1.5" transform="rotate(-8 28 31)"/><rect x="26" y="16" width="20" height="26" rx="2" fill="#fff" stroke="#111A27" stroke-width="1.5"/><rect x="29" y="21" width="12" height="2.5" rx="1" fill="#F2C230"/><rect x="29" y="26" width="14" height="2.5" rx="1" fill="#8A9396"/><rect x="29" y="31" width="9" height="2.5" rx="1" fill="#D0343F"/>'
+    pc: '<rect x="8" y="12" width="48" height="32" rx="5" fill="#1B2328"/><rect x="12" y="16" width="40" height="24" rx="2" fill="#E1E5EB"/><rect x="24" y="46" width="16" height="4" rx="2" fill="#1B2328"/><rect x="18" y="50" width="28" height="4" rx="2" fill="#C3C9D3"/>',
+    ph: '<rect x="20" y="6" width="24" height="52" rx="6" fill="#1B2328"/><rect x="23" y="12" width="18" height="38" rx="2" fill="#E1E5EB"/><circle cx="32" cy="54" r="2" fill="#E1E5EB"/>',
+    s1: '<rect x="14" y="20" width="20" height="5" rx="2.5" fill="#2E8270"/><rect x="14" y="28" width="24" height="5" rx="2.5" fill="#47535B"/><rect x="14" y="36" width="16" height="5" rx="2.5" fill="#47535B"/>',
+    s2: '<path d="M26 44 L30 30 L38 34 L37 20" fill="none" stroke="#2E8270" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="37" cy="20" r="3.5" fill="#1F6676"/>',
+    s3: '<rect x="25" y="17" width="14" height="3" rx="1.5" fill="#11181C"/><rect x="25" y="23" width="12" height="3" rx="1.5" fill="#47535B"/><rect x="25" y="29" width="14" height="3" rx="1.5" fill="#A63D31"/><rect x="25" y="35" width="10" height="3" rx="1.5" fill="#47535B"/>',
+    s4: '<path d="M26 20 l2 2 4-4M26 29 l2 2 4-4" stroke="#2E8270" stroke-width="2.2" fill="none" stroke-linecap="round"/><rect x="26" y="37" width="6" height="6" rx="1.5" fill="#1F6676"/><rect x="34" y="19" width="5" height="2.5" rx="1" fill="#47535B"/><rect x="34" y="28" width="5" height="2.5" rx="1" fill="#47535B"/><rect x="34" y="39" width="5" height="2.5" rx="1" fill="#47535B"/>',
+    s5: '<rect x="24" y="17" width="16" height="10" rx="3" fill="#2F6FB1"/><rect x="24" y="31" width="16" height="10" rx="3" fill="#fff" stroke="#47535B" stroke-width="1.5"/><path d="M27 41 l-2 4 5-4" fill="#fff" stroke="#47535B" stroke-width="1.2"/>',
+    s6: '<rect x="28.5" y="17" width="7" height="13" rx="3.5" fill="#1F6676"/><path d="M26 27a6 6 0 0 0 12 0M32 33v5" stroke="#11181C" stroke-width="2" fill="none" stroke-linecap="round"/>',
+    s7: '<rect x="18" y="18" width="20" height="26" rx="2" fill="#fff" stroke="#47535B" stroke-width="1.5" transform="rotate(-8 28 31)"/><rect x="26" y="16" width="20" height="26" rx="2" fill="#fff" stroke="#11181C" stroke-width="1.5"/><rect x="29" y="21" width="12" height="2.5" rx="1" fill="#F2C230"/><rect x="29" y="26" width="14" height="2.5" rx="1" fill="#8A9396"/><rect x="29" y="31" width="9" height="2.5" rx="1" fill="#D0343F"/>'
   };
   function ico(dev, k) { return '<svg viewBox="0 0 64 64" aria-hidden="true">' + ICO[dev] + (k ? '<g transform="' + (dev === "ph" ? "translate(0,2)" : "translate(0,-2)") + '">' + ICO[k] + "</g>" : "") + "</svg>"; }
   var HELP = [
@@ -1782,26 +1958,42 @@
     return top("help", "<strong>사용 방법</strong>처음 한 번 읽기") + '<main class="wrap">' + '<div data-scope-map="full"></div>' + // S12-n 닿음이 맡는 구간(큰 그림)
       '<div class="dhead"><h1>앞에서 누른 것이 <span>다음 화면에</span> 채워집니다</h1><p>PC에서 계획하고, 폰은 «다음» 단추만 따라가고, 저녁에 PC에서 문서를 받습니다. 같은 내용을 두 번 쓰지 않습니다.</p></div>' +
       '<ol class="once" aria-label="처음 한 번만"><li><b>1</b><span><em>같은 계정</em>으로 사무실 PC와 폰에서 로그인<small>오른쪽 위 연동 단추 · 코드·QR 없음</small></span></li><li><b>2</b><span>PC «방문 계획»에서 <em>확정</em><small>폰에 바로 나타납니다</small></span></li><li><b>3</b><span>폰은 화면 아래 <em>큰 단추</em>만 따라가기<small>동선 → 집 앞 → 확인 → 상담 → 기록</small></span></li></ol>' +
-      '<div class="hlane"><span class="l-pc">' + ico("pc") + "사무실 PC</span><span class=\"l-ph\">" + ico("ph") + '현장 폰</span></div>' +
-      '<ol class="hsteps">' + steps + "</ol>" +
+      C2 + '<div class="hlane"><span class="l-pc">' + ico("pc") + "사무실 PC</span><span class=\"l-ph\">" + ico("ph") + '현장 폰</span></div>' +
+      '<ol class="hsteps">' + steps + "</ol>" + C3 + // S12-x 66회차: 첫 칸 큰 그림·처음 한 번 | 둘째 칸 단계 | 셋째 칸 색·하지 않는 것
       '<section class="hleg blk"><h2>문서 미리보기의 색</h2>' + LEG + '<p>남색 칸은 한국사회보장정보원 명단·공공데이터에서, 회색은 규칙으로 센 숫자, 노랑은 자동으로 다듬은 문장(확인 필요), 빨강은 직접 넣어야 하는 빈칸입니다. 빨강이 0이 되어야 «받기»가 켜집니다.</p></section>' +
-      '<section class="hnot well"><b>이 도우미가 하지 않는 것</b><span>지원 대상 판정 · 위험 점수 매기기 · 성명·주민등록번호·연락처·주소 받기 · 행복이음 입력 대신하기(입력·전자서명은 행복이음에서)</span></section>' +
-      '<p class="foot"><span class="demo-tag">가상 데이터</span><span>화면의 가구는 모두 시연용 가상입니다</span><a href="shared/data.html">활용 데이터</a><a href="?demo=reset#today">시연 처음 상태로</a></p></main>';
+      '<section class="card flat hnot"><b>이 도우미가 하지 않는 것</b><span>지원 대상 판정 · 위험 점수 매기기 · 성명·주민등록번호·연락처·주소 받기 · 행복이음 입력 대신하기(입력·전자서명은 행복이음에서)</span></section>' +
+      '<p class="demo"><span class="samp">가상 데이터</span><span>화면의 가구는 모두 시연용 가상입니다</span><a href="shared/data.html">활용 데이터</a><a href="?demo=reset#today">시연 처음 상태로</a></p></main>';
   }
 
   // ── 계정·연동 창(같은 계정 로그인 → PC·폰 실시간. 코드·QR 넘김 없음) ──
   function accountPanel() {
     var s = SY.state(), why = { stuck: "서버로 보내기가 계속 실패합니다(" + (s.lastErr || "응답 오류") + ") — 기록은 이 기기에 남아 있습니다. 로그아웃 뒤 다시 로그인해 보세요.", login: "로그인 전 — 이 기기에만 저장합니다.", "no-table": "연동 서버가 아직 준비되지 않아 이 기기에만 저장합니다.", off: "연동이 꺼져 있습니다.", lib: "연동 부품을 받지 못했습니다.", error: "서버 응답 오류 — 이 기기에 저장 중.", socket: "실시간 연결이 끊겨 이 기기에 임시 저장 중입니다.", send: "보내기 실패 — 다시 붙으면 자동으로 보냅니다." };
-    var d = document.createElement("dialog"); d.className = "acct";
-    d.innerHTML = '<form method="dialog" class="acct-in"><h3>PC와 폰 실시간 연동</h3><p>같은 공무원 계정으로 PC와 폰에서 로그인하면 방문 계획과 현장 기록이 서로 바로 나타납니다. 서버에는 가구 번호·순서·상태·가린 메모만 갑니다.</p>' +
-      "<p>" + syncChip() + " " + esc(s.mode === "live" ? "실시간 연동 중" : why[s.why] || "") + "</p>" +
-      (s.user ? "<p>로그인: <b>" + esc(s.user.email) + "</b></p>" + wipeBox(s) + '<div class="acct-b"><button class="sbtn" type="button" data-act="out">로그아웃</button><button class="sbtn pri" value="close">닫기</button></div>' + delBox(s)
-        : demoBox() + '<label>전자우편<input type="email" id="aEmail" autocomplete="username" required></label><label>비밀번호<input type="password" id="aPw" autocomplete="current-password" minlength="8" required></label>' + PP + '<p id="aMsg" role="status"></p><div class="acct-b"><button class="sbtn" type="button" data-act="up">처음이면 가입</button><button class="sbtn pri" type="button" data-act="in">로그인</button></div>') +
-      '<p>시연 데이터: 모든 가구·메모는 가상입니다 · <a href="?demo=reset#today">시연 처음 상태로</a> · <a href="shared/data.html">활용 데이터</a></p><button class="acct-x" value="close" aria-label="닫기">×</button></form>';
+    // S12-z3(69회차 ⚙️ 파로): 미르 시안 2판 — 폰 = 아래에서 올라오는 판(위아래) · PC = 가운데 창(좌우 두 판). 문구·id(aEmail·aPw·aMsg·aWipe·aDelMsg)·data-act 는 그대로
+    var OBD = window.DaeumOnboard || null, IC2 = (OBD && OBD.IC) || {}, ic = function (k) { return IC2[k] || ""; };
+    var d = document.createElement("dialog"); d.className = "dob dob-acct " + (window.innerWidth >= 1024 ? "o-m-pc" : "o-m-phone"); d.setAttribute("aria-label", "PC와 폰 실시간 연동");
+    var st = '<p class="o-acct-st">' + (function (c) { return '<span class="sync ' + c.cls + '"><i></i>' + esc(c.txt) + "</span>"; })(syncChip()) + " " + esc(s.mode === "live" ? "실시간 연동 중" : why[s.why] || "") + "</p>";
+    var foot = '<p class="o-foot"><span class="o-samp">가상 데이터</span>모든 가구·메모는 가상입니다 <a href="?demo=reset#today">시연 처음 상태로</a> <a href="shared/data.html">활용 데이터</a></p>';
+    d.innerHTML = '<form method="dialog" class="o-acct"><button class="o-acct-x" value="close" aria-label="닫기">' + (ic("x") || "×") + '</button><div class="o-acct-scroll">' +
+      '<div class="o-acct-deep"><div class="o-hd"><h3>' + (s.user ? "실시간<br>연동 중" : "PC와 폰,<br>한 계정으로 이어서") + '</h3><p class="o-s">같은 공무원 계정으로 PC와 폰에서 로그인하면 방문 계획과 현장 기록이 서로 바로 나타납니다.</p></div>' + (OBD ? OBD.syncArt("acct") : "") +
+        (s.user ? '<ul class="o-demo-rules"><li>' + ic("shield") + "서버에는 가구 번호·순서·상태·가린 메모만</li></ul>" : demoBox(ic)) + "</div>" +
+      '<div class="o-acct-form">' + (s.user
+        ? '<h3 class="o-form-h">내 계정<small>로그아웃해도 이 기기에서 계속 쓸 수 있습니다.</small></h3>' + st +
+          '<div class="o-me"><span class="o-avatar">' + esc(String(s.user.email || "?").charAt(0)) + '</span><span style="min-width:0"><b>' + esc(s.user.email) + "</b><small>" + (s.mode === "live" ? '<i class="o-live"></i>실시간 연동 중' : esc(why[s.why] || "")) + "</small></span></div>" +
+          wipeBox(s) + '<div class="o-row2"><button class="o-btn o-sec" type="button" data-act="out">로그아웃</button><button class="o-btn o-pri" value="close">닫기</button></div>' + delBox(s)
+        : '<p class="o-or">또는 내 계정으로</p><h3 class="o-form-h">내 계정으로<small>서버에는 가구 번호·순서·상태·가린 메모만 갑니다.</small></h3>' + st +
+          '<label class="o-fld" for="aEmail">전자우편<span class="o-in">' + ic("mail") + '<input type="email" id="aEmail" autocomplete="username" placeholder="name@korea.kr" required></span></label>' +
+          '<label class="o-fld" for="aPw">비밀번호<span class="o-in">' + ic("lock") + '<input type="password" id="aPw" autocomplete="current-password" minlength="8" placeholder="8자 이상" required><button class="o-eye" type="button" aria-label="비밀번호 보기" data-act="eye">' + ic("eye") + "</button></span></label>" +
+          '<p class="o-msg" id="aMsg" role="status"></p><div class="o-row2"><button class="o-btn o-sec" type="button" data-act="up">처음이면 가입</button><button class="o-btn o-pri" type="button" data-act="in">로그인</button></div>' + PP +
+          '<p class="o-local">' + ic("device") + "로그인하지 않아도 모든 기능을 이 기기 안에서 그대로 쓸 수 있습니다.</p>" +
+          (OBD && OBD.OPT.browseBtn ? '<button class="o-btn o-sec o-browse" type="button" data-act="browse">시연 데이터로 둘러보기</button>' : "")) + // 🟥 추천안(나) — 끄려면 DaeumOnboard.OPT.browseBtn
+        foot + "</div></div></form>";
     document.body.appendChild(d); d.showModal();
     d.addEventListener("close", function () { d.remove(); });
-    function go(fn) { var e = d.querySelector("#aEmail").value.trim(), p = d.querySelector("#aPw").value, m = d.querySelector("#aMsg"); if (!e || p.length < 8) { m.textContent = "전자우편과 8자 이상 비밀번호를 넣어 주세요."; return; } m.textContent = "확인 중…";
-      fn(e, p).then(function (r) { if (fn === SY.signUp && !(r.data && r.data.session)) { m.textContent = "가입 확인 메일을 보냈습니다. 메일의 확인 단추를 누른 뒤 로그인해 주세요."; return; } d.close(); render(); }, function (er) { m.textContent = "실패: " + (er && er.message ? er.message : "다시 시도해 주세요"); }); }
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); }); // 판 바깥(어두운 곳)을 누르면 닫힘
+    var be = d.querySelector('[data-act="eye"]'); if (be) be.addEventListener("click", function () { var p = d.querySelector("#aPw"), sh = p.type === "password"; p.type = sh ? "text" : "password"; be.setAttribute("aria-label", sh ? "비밀번호 가리기" : "비밀번호 보기"); });
+    var bb = d.querySelector('[data-act="browse"]'); if (bb) bb.addEventListener("click", function () { d.close(); if (location.hash !== "#today") location.hash = "#today"; toast("시연 데이터로 둘러봅니다 · 가상 48가구 · 로그인 없이 이 기기에서"); });
+    function go(fn) { var e = d.querySelector("#aEmail").value.trim(), p = d.querySelector("#aPw").value, m = d.querySelector("#aMsg"); if (!e || p.length < 8) { m.textContent = "전자우편과 8자 이상 비밀번호를 넣어 주세요."; return; } if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { m.textContent = "전자우편 모양이 아닙니다 — 예: name@korea.kr"; return; } m.textContent = "확인 중…";
+      fn(e, p).then(function (r) { if (fn === SY.signUp && !(r.data && r.data.session)) { m.textContent = "가입 확인 메일을 보냈습니다. 메일의 확인 단추를 누른 뒤 로그인해 주세요."; return; } d.close(); render(); }, function (er) { m.textContent = authMsg(er); }); }
     var bi = d.querySelector('[data-act="in"]'), bu = d.querySelector('[data-act="up"]'), bo = d.querySelector('[data-act="out"]');
     if (bi) bi.addEventListener("click", function () { go(SY.signIn); });
     if (bu) bu.addEventListener("click", function () { go(SY.signUp); });
@@ -1809,7 +2001,7 @@
     [].forEach.call(d.querySelectorAll("[data-demo]"), function (b) { b.addEventListener("click", function () {
       var n = b.getAttribute("data-demo"), m = d.querySelector("#aMsg"); m.textContent = "시연 계정 " + n + "로 들어가는 중…";
       SY.signIn(DEMO_MAIL(n), DEMO_PW).then(function () { d.close(); render(); toast("시연 계정 " + n + " · 다른 기기에서도 «시연 " + n + "»을 누르면 서로 바로 보입니다"); },
-        function (er) { m.textContent = "시연 계정에 들어가지 못했습니다 — " + (er && er.message ? er.message : "잠시 뒤 다시") + " · 로그인 없이도 모든 기능을 이 기기에서 쓸 수 있습니다"; });
+        function (er) { m.textContent = "시연 계정에 들어가지 못했습니다 — " + authMsg(er) + " · 로그인 없이도 모든 기능을 이 기기에서 쓸 수 있습니다"; });
     }); });
     if (bo) bo.addEventListener("click", function () { var w = d.querySelector("#aWipe"), wipe = !!(w && w.checked); SY.signOut({ wipe: wipe }).then(function () { d.close(); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); } else render(); }); });
     var bd = d.querySelector('[data-act="del"]');
@@ -1817,10 +2009,23 @@
   }
   /* 62회차 «계정 지우기»(처리 안내 3번과 실제 기능 맞춤) — 접는 상자 안에 두고, 누르면 확인 한 번 뒤 서버 함수 daeum_delete_me 로 본인 기록·계정을 지운다.
      시연 계정(심사1~3)은 단추 대신 안내만(서버도 거절). PC·폰 같은 창 · 클래스는 기존 acct-pp·sbtn 재사용 */
+  /** 67회차 S12-z2: Supabase 인증 오류(영문)를 한국어 안내로 — 없는 계정·틀린 비밀번호는 보안상 같은 문구(서버도 구분하지 않음) */
+  function authMsg(er) {
+    var t = String((er && (er.code || "")) + " " + (er && er.message || "")), st = er && er.status;
+    if (/invalid_credentials|Invalid login credentials/i.test(t)) return "전자우편이나 비밀번호가 맞지 않습니다 — 처음이면 «처음이면 가입»을 눌러 주세요.";
+    if (/email_not_confirmed|not confirmed/i.test(t)) return "가입 확인 메일의 단추를 먼저 눌러 주세요(메일이 없으면 스팸함도 확인).";
+    if (st === 429 || /rate limit|too many|over_request_rate_limit|over_email_send_rate_limit/i.test(t)) return "잠깐 사이 시도가 많았습니다 — 몇 분 뒤 다시 해 주세요(로그인 없이도 이 기기에서 모두 쓸 수 있습니다).";
+    if (/already registered|user_already_exists/i.test(t)) return "이미 가입된 전자우편입니다 — «로그인»을 눌러 주세요.";
+    if (/weak_password|Password should/i.test(t)) return "비밀번호가 너무 쉽습니다 — 8자 이상, 글자·숫자를 섞어 주세요.";
+    if (/email_address_invalid|invalid email|validate email/i.test(t)) return "쓸 수 없는 전자우편입니다 — 다른 주소로 해 주세요.";
+    if (/signup.*disabled|signups not allowed/i.test(t)) return "지금은 새 가입을 받지 않습니다 — «시연 계정»으로 체험해 주세요.";
+    if (/Failed to fetch|NetworkError|network/i.test(t) || navigator.onLine === false) return "연결이 끊겼습니다 — 연결되면 다시 해 주세요.";
+    return "다시 시도해 주세요" + (er && er.message ? "(" + String(er.message).slice(0, 60) + ")" : "") + ".";
+  }
   function delBox(s) {
-    if (s.user && s.user.demo) return '<p class="acct-pp">시연 계정은 지울 수 없습니다 — 매일 새벽 처음 상태로 돌아갑니다.</p>';
-    return '<details class="acct-pp"><summary>계정 지우기</summary><p>이 계정과 서버에 있는 방문 계획·결과를 모두 지웁니다. 되돌릴 수 없습니다. 이 기기 기록도 함께 지웁니다.</p>' +
-      '<p><button class="sbtn" type="button" data-act="del">계정과 서버 기록 지우기</button></p><p id="aDelMsg" role="status"></p></details>';
+    if (s.user && s.user.demo) return '<p class="o-local">시연 계정은 지울 수 없습니다 — 매일 새벽 처음 상태로 돌아갑니다.</p>';
+    return '<details class="o-del"><summary>계정 지우기</summary><div class="o-b"><p>이 계정과 서버에 있는 방문 계획·결과를 모두 지웁니다. 되돌릴 수 없습니다. 이 기기 기록도 함께 지웁니다.</p>' +
+      '<p><button class="o-btn o-danger" type="button" data-act="del">계정과 서버 기록 지우기</button></p><p class="o-msg" id="aDelMsg" role="status"></p></div></details>';
   }
   function delAccount(d, b, after) {
     var m = d.querySelector("#aDelMsg"), s = SY.state(), extra = s.pending ? " 아직 서버로 못 보낸 기록 " + s.pending + "건도 함께 사라집니다." : "";
@@ -1833,10 +2038,11 @@
      화면 코드에 있으므로 사실상 공개 — 방어선은 서버 쪽 매일 03:30 원복(비밀번호·이메일) + 계정당 행 상한. 실제 개인정보를 넣지 말라는 안내를 같이 띄운다 */
   var DEMO_PW = "daeum-judge-2026";
   function DEMO_MAIL(n) { return "daeum.judge" + n + "@example.com"; }
-  function demoBox() {
-    return '<section class="acct-demo" aria-label="시연 계정"><b>시연 계정으로 바로 체험</b><small>가입·메일 확인 없이 들어갑니다 · PC와 폰에서 <em>같은 번호</em>를 누르면 실시간 연동이 보입니다 · 매일 새벽 처음 상태로 · 실제 개인정보는 넣지 마세요</small>' +
-      '<div class="acct-demo-b">' + [1, 2, 3].map(function (n) { return '<button class="sbtn" type="button" data-demo="' + n + '">시연 ' + n + "</button>"; }).join("") + "</div></section>" +
-      '<p class="acct-or"><span>또는 내 계정으로</span></p>';
+  function demoBox(ic) {
+    ic = ic || function () { return ""; };
+    return '<section class="o-demo" aria-label="시연 계정"><div class="o-demo-h"><b>시연 계정으로 바로 체험</b><small>가입·메일 확인 없이</small></div>' +
+      '<div class="o-keys">' + [1, 2, 3].map(function (n) { return '<button class="o-key" type="button" data-demo="' + n + '" aria-label="시연 ' + n + '"><span class="o-n">' + n + "</span><small>시연 " + n + "</small></button>"; }).join("") + "</div>" +
+      '<ul class="o-demo-rules"><li>' + ic("device") + "PC와 폰에서 같은 번호</li><li>" + ic("moon") + '매일 새벽 처음 상태로</li><li class="o-w">실제 개인정보는 넣지 마세요</li></ul></section>';
   }
   /* S12-v U25 처리 안내 4줄(11-12 호창님 «추천대로» 확정 문안) — 법률 분류어 없이 무엇이 어디로 가는지만 */
   var PP = '<details class="acct-pp"><summary>개인정보는 이렇게 다룹니다</summary><ol>' +
@@ -1847,7 +2053,7 @@
     "</ol><p><b>지우는 방법</b> 로그인한 뒤 연동 표시 단추(«PC·폰 실시간 연동»)를 누르면 나오는 이 창 맨 아래 «계정 지우기»에서 계정과 서버 기록을 함께 지웁니다.</p><p>로그인하지 않아도 모든 기능을 이 기기 안에서 그대로 쓸 수 있습니다.</p></details>";
   /** S12-v U24(1-5) 로그아웃 때 «이 기기 기록도 지우기»(권장 · 기본 켬) — 안 보낸 기록이 있으면 먼저 알린다 */
   function wipeBox(s) {
-    return '<label class="acct-wipe"><input type="checkbox" id="aWipe" checked> 이 기기 기록도 지우기(권장 · 공용 PC·폰)</label>' + (s.pending ? '<p class="acct-warn" role="alert">아직 서버로 못 보낸 기록 ' + s.pending + "건도 함께 지워집니다 — 연결된 뒤 로그아웃하면 남습니다.</p>" : "");
+    return '<label class="o-wipe" for="aWipe"><input type="checkbox" id="aWipe" checked><span>이 기기 기록도 지우기(권장 · 공용 PC·폰)<small>로그아웃할 때 이 기기 안 기록을 함께 지웁니다.</small></span></label>' + (s.pending ? '<p class="o-acct-warn" role="alert">아직 서버로 못 보낸 기록 ' + s.pending + "건도 함께 지워집니다 — 연결된 뒤 로그아웃하면 남습니다.</p>" : "");
   }
   function copy(t) { (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("복사했습니다"); }, function () { window.prompt("복사해 주세요", t); }); }
   var toastT = null;
@@ -1865,11 +2071,6 @@
     talk: [["상담일지 초안", "욕구 칸 — 물어본 질문"], ["서비스 연계 의뢰서", "연계 후보 서비스"]],
     record: [["상담일지 초안", "상황·욕구·연계·다음"], ["출장 결과 보고(복명서)", "만남·부재·거절"], ["차수 처리 결과 명단", "방문 4열"]]
   };
-  function sideSteps() {
-    var k = pickHid(curArg), hid = k ? k.hid : null, now = FSTEP[cur];
-    return '<nav class="fsteps" aria-label="현장 7단계"><h3>현장 7단계' + (hid ? "<small>가구 " + esc(hid) + "</small>" : "") + "</h3>" +
-      STN.map(function (s, i) { return '<a href="' + stationHref(i, hid) + '"' + (i === now ? ' class="on" aria-current="step"' : "") + "><i>" + (i + 1) + "</i><b>" + stLbl(i) + "</b><small>" + FSUB[i] + "</small></a>"; }).join("") + "</nav>";
-  }
   function stepVals(c, hid) {
     var h = BY[hid], o = recOf(hid), i = c.d.ids.indexOf(hid), row = c.d.s.rows[i] || {}, st = statusOf(hid), m = meta()[hid] || {}, r = rankBy()[hid];
     var p = plan(), pr = p && p.rows.filter(function (x) { return x.household_no === hid; })[0];
@@ -1890,27 +2091,26 @@
     V.passed = [1, 1, 1, 0, 0, 0, 0]; // 순서·동선·요약은 «본 것»이 곧 끝(기록할 값 없음) — 지나치면 초록
     return V;
   }
+  // S12-x 66회차: PC·태블릿 현장 «진도» 칸 — 시안 v3 대조표 15번(PC 현장 = 레일 + 3단 주/상세/진도). 옛 .desk 틀(머리 진행판 + 옆 칸)은 걷어내고
+  //   7단계 진행판·오늘 방문·이 단계 기록이 들어가는 문서를 셋째 칸(<!--c3-->) 카드 3장으로. 폰은 부르지 않는다(위 고정 띠 .hbar 와 단계 줄 .steps 로 충분).
   function desk(s, want, html) {
     var k = pickHid(want); if (!k) return html;
-    var c = k.c, hid = k.hid, h = BY[hid], now = FSTEP[s], V = stepVals(c, hid), st = statusOf(hid), dm = docModel();
-    var head = '<section class="dk-head blk" aria-label="현장 7단계 진행판"><div class="dk-t"><span class="dk-k">현장 7단계 · 가구 <b>' + esc(hid) + "</b> · " + esc(h.area + " · " + ageLine(h)) + "</span><h1><em>" + (now + 1) + "</em>" + esc(FSUB[now]) + "</h1></div>" +
-      '<div class="dk-nav">' + '<a class="sbtn" href="' + stationHref(now - 1, hid) + '">← ' + stTxt(now - 1) + "</a>" + '<a class="sbtn go" href="' + stationHref(now + 1, hid) + '">' + stTxt(now + 1) + " →</a></div>" +
-      '<ol class="dk-steps" style="--p:' + (now / 6).toFixed(3) + '">' + STN.map(function (x, i) {
+    var c = k.c, hid = k.hid, h = BY[hid], now = FSTEP[s], V = stepVals(c, hid), dm = docModel();
+    var prog = '<section class="card dk-prog" aria-label="현장 7단계 진행판"><h3>현장 7단계 · ' + esc(hid) + "<span>" + esc(h.area + " · " + ageLine(h)) + "</span></h3>" +
+      '<ol class="dk-steps">' + STN.map(function (x, i) {
         var cls = i === now ? "now" : V.state[i] || (V.passed[i] && i < now ? "dn" : "");
         return '<li class="' + cls + '"><a href="' + stationHref(i, hid) + '"' + (i === now ? ' aria-current="step"' : "") + "><i>" + (i + 1) + "</i><b>" + stLbl(i) + "</b><span>" + esc(V[i][0]) + "</span><small>" + esc(V[i][1]) + "</small></a></li>";
-      }).join("") + "</ol></section>";
+      }).join("") + "</ol>" +
+      '<div class="row2"><a class="btn sm ghost" href="' + stationHref(now - 1, hid) + '">‹ ' + stTxt(now - 1) + '</a><a class="btn sm ghost" href="' + stationHref(now + 1, hid) + '">' + stTxt(now + 1) + " ›</a></div></section>";
     var dayL = c.d.ids.map(function (id, j) {
-      var ss = statusOf(id), tg = ss === "done" ? '<span class="tg ok">만남</span>' : ss === "absent" ? '<span class="tg ab">부재</span>' : ss === "refused" ? '<span class="tg rf">거절</span>' : "";
-      return '<li class="' + (id === hid ? "cur" : "") + (ss !== "planned" ? " dn" : "") + '"><a href="#' + s + ":" + id + '"><span class="t">' + esc((c.d.s.rows[j] || {}).arrive || "") + "</span><i>" + (ss !== "planned" ? "✓" : j + 1) + "</i><b>" + esc(id) + "</b><small>" + esc(BY[id].area) + "</small>" + tg + "</a></li>";
+      var ss = statusOf(id);
+      return '<a class="tli' + (id === hid ? " cur" : "") + (ss !== "planned" ? " done" : "") + '" href="#' + s + ":" + id + '"><span class="tm num">' + esc((c.d.s.rows[j] || {}).arrive || "") + '</span><span class="pin">' + (j + 1) + '</span><span class="nm"><b>' + esc(BY[id].area + " · " + id) + "</b><small>" + (ss === "done" ? "만남" : ss === "absent" ? "부재" : ss === "refused" ? "거절" : "예정") + '</small></span><span class="st">' + (id === hid ? "지금" : "") + "</span></a>";
     }).join("");
-    var feed = (FFEED[s] || []).map(function (f) { return "<li><b>" + esc(f[0]) + "</b><span>" + esc(f[1]) + "</span></li>"; }).join("");
-    var aside = '<aside class="dk-aside" aria-label="오늘 방문과 문서">' +
-      '<section class="dk-day blk"><h3>' + (c.isToday ? "오늘" : c.d.date ? md(c.d.date) : c.d.n + "일차") + " 방문 " + c.d.ids.length + "곳<small>" + esc(c.d.s.km + "km 약 · " + (c.d.s.end || "") + " 복귀") + "</small></h3><ol>" + dayL + "</ol></section>" +
-      '<section class="dk-feed well"><h3>이 단계 기록이 들어가는 문서</h3><ul>' + feed + '</ul><a class="dk-docs" href="#docs">문서함 열기<b>' + dm.pending + "건 대기</b></a></section>" +
-      '<p class="dk-src"><span>근거 데이터</span>' + esc(STN[now][1]) + " · 가상 가구</p></aside>";
-    var i0 = html.indexOf('<main class="ph">'), i1 = html.indexOf("</main>", i0);
-    if (i0 < 0 || i1 < 0) return html;
-    return html.slice(0, i0) + '<div class="desk">' + head + '<div class="dk-body">' + html.slice(i0, i1 + 7) + aside + "</div></div>" + html.slice(i1 + 7);
+    var day = '<section class="card dk-day"><h3>' + (c.isToday ? "오늘" : c.d.date ? md(c.d.date) : c.d.n + "일차") + " 방문 " + c.d.ids.length + "곳<span>" + esc(c.d.s.km + "km 약 · " + (c.d.s.end || "") + " 복귀") + '</span></h3><div class="tl">' + dayL + "</div></section>";
+    var feed = '<section class="card flat dk-feed"><h3>이 단계 기록이 들어가는 문서</h3><ul>' + (FFEED[s] || []).map(function (f) { return "<li><b>" + esc(f[0]) + "</b><span>" + esc(f[1]) + "</span></li>"; }).join("") +
+      '</ul><a class="btn sm" href="#docs">문서함 열기 · ' + dm.pending + '건 대기</a><p class="dk-src"><span>근거 데이터</span>' + esc(STN[now][1]) + " · 가상 가구</p></section>";
+    var i1 = html.lastIndexOf("</main>"); if (i1 < 0) return html;
+    return html.slice(0, i1) + C3 + prog + day + feed + html.slice(i1);
   }
 
   // ── 길잡이(해시) ──
@@ -1919,32 +2119,93 @@
   function parse() { var m = /^#(today|plan|route|perf|help|home|check|talk|record|docs)(?::([A-Z]{1,3}-\d{1,5}))?$/.exec(location.hash || ""); return m ? { s: m[1], h: m[2] || null } : null; }
   // S12-n «닿음이 맡는 구간» — 큰 그림(오늘·사용 방법) + 화면 머리 아래 작은 위치 띠(지금 단계만 켜짐)
   var SM = window.DaeumScopeMap;
-  var SCOPE_OF = { plan: "plan", route: "route", home: "visit", check: "visit", talk: "visit", record: "record", docs: "link", perf: "link" }; // 명단·계획=방문 계획 · 동선 · 집 앞·방문 중=현장 방문 · 기록 · 문서·실적(연계·보고)=연계
+  var SCOPE_OF = { today: "plan", plan: "plan", route: "route", home: "visit", check: "visit", talk: "visit", record: "record", docs: "link", perf: "link" }; // 명단·계획=방문 계획 · 동선 · 집 앞·방문 중=현장 방문 · 기록 · 문서·실적(연계·보고) · S12-x: 오늘=방문 계획(v3 miniKey)
   function scopeKey(s) { var k = SCOPE_OF[s] || null; if (k === "visit" && s !== "home" && lsGet(LS_SAFE, null)) k = "safety"; return k; } // 안전 모드 켜짐 = 동료 안부
-  function scopeMount() {
-    if (!SM) return;
-    SM.mountAll(app);
-    var k = scopeKey(cur), mn = app.querySelector("main");
-    if (!k || !mn) return;
-    var slot = document.createElement("div"); slot.className = "dsm-mini-slot"; mn.insertBefore(slot, mn.firstChild); SM.mini(slot, k);
+  // S12-x(64회차 · 호창님 11-12 «날씨와 방문계획-동선-.. 바는 모든 화면에 고정, 가능한 작게»):
+  //   머리 바로 아래 한 요소 .hbar = 날씨 한 줄(.wx#dwx, app/weather.js 가 채움) + 구간 위치 띠(.dsm-mini). 한 번만 만들고 화면이 바뀌면 자리만 옮기고 띠 표시만 갱신.
+  //   고정 위치·높이는 CSS(🩵 미르). 65회차: 셸 .hdw 안 머리(.top) 바로 뒤 — 스크롤 칸(.col) 밖이라 모든 화면에서 고정.
+  var HBAR = null;
+  function hbarEl() {
+    if (HBAR) return HBAR;
+    HBAR = document.createElement("div"); HBAR.className = "hbar";
+    var wx = document.getElementById("dwx");
+    if (!wx) { wx = document.createElement("div"); wx.id = "dwx"; wx.className = "wx"; wx.setAttribute("role", "status"); wx.setAttribute("aria-label", "오늘 날씨"); wx.hidden = true; }
+    var sc = document.createElement("div"); sc.className = "hbar-scope";
+    HBAR.appendChild(wx); HBAR.appendChild(sc);
+    return HBAR;
   }
+  function hbarPlace() {
+    var hb = hbarEl(), hd = app.querySelector(".hdw > .top"), mn = app.querySelector("main");
+    if (hd) hd.parentNode.insertBefore(hb, hd.nextSibling); // S12-x 65회차: 셸 .hdw 안(스크롤 칸 밖) — 모든 화면 1개
+    else if (mn) mn.insertBefore(hb, mn.firstChild);
+    else app.insertBefore(hb, app.firstChild);
+    var k = scopeKey(cur), sc = hb.querySelector(".hbar-scope");
+    if (SM) SM.mini(sc, k); else sc.innerHTML = "";
+  }
+  function scopeMount() { if (SM) SM.mountAll(app); } // 큰 그림(오늘 접는 카드·사용 방법)만 — 작은 위치 띠는 .hbar 하나로
+  // S12-x 66회차: 시안 v3 render() 의 칸 나누기 그대로 — 화면 함수는 <main> 안을 «<!--c2-->»(둘째 칸)·«<!--c3-->»(셋째 칸) 표지로 나눠 둔다.
+  //   폰 = [a+b+c] · 폴드·태블릿 = [a, b+c] · PC = 셋째 칸이 있으면 [a, b, c] 아니면 [a, b]. 칸마다 따로 스크롤(.col).
+  var C2 = "<!--c2-->", C3 = "<!--c3-->";
+  function modeNow() { return document.documentElement.getAttribute("data-mode") || "phone"; }
+  function colsOf(html) {
+    var i0 = html.search(/<main[^>]*>/), i1 = html.lastIndexOf("</main>");
+    var mc = i0 >= 0 ? (/class="([^"]*)"/.exec(html.slice(i0, html.indexOf(">", i0))) || [, ""])[1].replace(/(wrap|phx)/g, "").trim() : ""; // 화면 고유 클래스(rc-main 등 — 변수 담음)는 바깥 <main> 으로
+    var inner = i0 >= 0 && i1 > i0 ? html.slice(html.indexOf(">", i0) + 1, i1) : html;
+    var p3 = inner.indexOf(C3), ab = p3 >= 0 ? inner.slice(0, p3) : inner, c = p3 >= 0 ? inner.slice(p3 + C3.length) : "";
+    var p2 = ab.indexOf(C2), a = p2 >= 0 ? ab.slice(0, p2) : ab, b = p2 >= 0 ? ab.slice(p2 + C2.length) : "";
+    var m = modeNow(), cols = m === "phone" ? [a + b + c] : m === "pc" ? (c.trim() ? [a, b, c] : [a, b]) : [a, b + c];
+    cols = cols.filter(function (x, i) { return i === 0 || x.trim(); });
+    var gt = m === "pc" && cols.length === 3 ? ' style="grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,.82fr)"' : "";
+    return '<main class="main' + (mc ? " " + mc : "") + '" data-cols="' + cols.length + '"' + gt + ">" + cols.map(function (x) { return '<div class="col">' + x + "</div>"; }).join("") + "</main>";
+  }
+  // 시안 v3 placeAct 그대로 — 폰은 CSS 자리(아래 탭 위), 폴드·태블릿·PC는 행동줄을 둘째 칸(없으면 첫 칸) 위 폭에 맞춘다
+  function placeAct() {
+    var AB = app.querySelector(":scope > .actbar"); if (!AB) return;
+    if (modeNow() === "phone") { AB.style.left = ""; AB.style.width = ""; return; }
+    var M = app.querySelector(".main"), cs = app.querySelectorAll(".main > .col"), c = cs[1] || cs[0]; if (!M || !c) return;
+    AB.style.left = (M.offsetLeft + c.offsetLeft + 16) + "px"; AB.style.width = Math.max(200, c.clientWidth - 32) + "px";
+  }
+  var paT = 0; window.addEventListener("resize", function () { clearTimeout(paT); paT = setTimeout(placeAct, 120); }, { passive: true });
   function render() {
     var a = parse(); if (!a) { location.replace("#today"); return; }
     var chg = a.s !== cur || a.h !== curArg; cur = a.s; curArg = a.h;
     var VIEW = { today: today, plan: planView, route: routeView, perf: perfView, help: helpView, home: home, check: checkView, talk: talkView, record: record, docs: docsView };
-    var html = VIEW[cur](curArg), bar = alertBar();
-    if (bar) { var pb = phBrand(); html = html.indexOf(pb) >= 0 ? html.replace(pb, pb + bar) : html.replace(/<main class="wrap">/, '<main class="wrap">' + bar); }
-    if (FSTEP[cur] >= 1 && FSTEP[cur] <= 5) { var kk = pickHid(curArg), ar = kk ? BY[kk.hid].area : ""; html = top("field", "<strong>" + md(new Date()) + "</strong>" + esc(ar) + " 현장 · 가상") + desk(cur, curArg, html); } // 41 PC 현장 책상(폰에서는 CSS로 숨김)
+    var html = VIEW[cur](curArg), bar = alertBar(), nxs = nextStepCard();
+    var MO = /<main class="(wrap|phx)[^"]*">/; // S12-x 65회차: 다음 할 일 → 그 위에 동료 안부 띠(내용 칸 맨 앞)
+    if (nxs) { var mi = html.search(MO); if (mi >= 0) { var me = html.indexOf(">", mi) + 1; html = html.slice(0, me) + nxs + html.slice(me); } }
+    if (bar) { var mi2 = html.search(MO); if (mi2 >= 0) { var me2 = html.indexOf(">", mi2) + 1; html = html.slice(0, me2) + bar + html.slice(me2); } }
+    if (FSTEP[cur] >= 1 && FSTEP[cur] <= 5 && /^(tab|pc)$/.test(modeNow())) html = desk(cur, curArg, html); // 41 PC·태블릿 현장 «진도» 칸(폰·폴드는 안 붙임)
     document.body.dataset.s = cur;
-    app.innerHTML = html;
+    var keepY = !chg ? Array.prototype.map.call(app.querySelectorAll(".main > .col"), function (c) { return c.scrollTop; }) : []; // 같은 화면 다시 그리기(실시간·안전 모드 시계)면 칸마다 읽던 자리 유지
+    if (HBAR && HBAR.parentNode) HBAR.parentNode.removeChild(HBAR); // 날씨 값이 지워지지 않게 띠는 떼어 두었다가 다시 붙인다
+    var PWA = window.__daeumPwa || (window.__daeumPwa = document.getElementById("pwa-install")); if (PWA && PWA.parentNode) PWA.parentNode.removeChild(PWA); // 70회차: 설치 띠는 «오늘» 첫 칸 맨 위에만(다른 화면엔 안 붙임)
+    // S12-x 65회차 새 셸 = 시안 v3 바깥 틀 그대로: .app > 레일(PC·태블릿) · .hdw(머리 .top + 고정 띠 .hbar — 스크롤 칸 밖) · .main > .col(스크롤 칸) · 아래 탭(폰·폴드)
+    //   66회차: 내용 = 시안처럼 칸 2~3개(colsOf) — 폰 한 칸 · 폴드·태블릿 두 칸 · PC 세 칸(셋째 칸이 비면 두 칸). <main class="main"> 하나 안에 .col 들.
+    var dn = 0; try { dn = docModel().pending || 0; } catch (e) { dn = 0; } // 보고 탭 점 = 만들 문서 대기 건수(시안 docN)
+    var si = syncChip(), foot = '<div class="rfoot"><button class="sync pcs pr ' + si.cls + '" data-act="account" style="justify-content:flex-start;padding:0"><i></i>' + esc(si.txt) + '</button><button class="rl pr" data-act="more" style="min-height:44px;font-size:13px">' + I.more + "<span>더 보기</span></button></div>";
+    app.innerHTML = '<nav class="rail" aria-label="주 메뉴">' + SH.railHTML(cur, curArg, I, { dot: dn, foot: foot }) + '</nav>' +
+      '<div class="hdw"><header class="top">' + topHTML() + "</header></div>" +
+      colsOf(html) +
+      '<nav class="tabs" aria-label="주 메뉴">' + SH.tabsHTML(cur, curArg, I, { dot: dn }) + "</nav>";
+    var cs = app.querySelectorAll(".main > .col"), col = cs[cs.length - 1] || null;
+    if (PWA && cur === "today" && cs[0]) cs[0].insertBefore(PWA, cs[0].firstChild);
     document.title = TITLES[cur] + " · " + NAME + " — " + SUB;
     ({ today: bindToday, plan: bindPlan, route: bindRoute, perf: bindPerf, help: function () {}, home: bindHome, check: bindCheck, talk: bindTalk, record: bindRecord, docs: bindDocs })[cur](curArg);
     app.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); });
-    bindAlerts(); safeSig = sigNow();
+    app.querySelectorAll('[data-act="more"]').forEach(function (b) { b.addEventListener("click", morePanel); });
+    app.querySelectorAll('[data-act="safety"]').forEach(function (b) { b.addEventListener("click", safetyKey); });
+    bindAlerts(); safeSig = sigNow(); moreDot();
     SH.after(app, cur, curArg); // S12-i1: 작은 칸·하단 행동줄·전환
+    placeAct();
     scopeMount();
-    if (chg) window.scrollTo(0, 0);
+    hbarPlace();
+    Array.prototype.forEach.call(cs, function (c, i) { c.scrollTop = keepY[i] || 0; }); // 화면이 바뀌면 맨 위 · 같은 화면이면 칸마다 읽던 자리
+    if (OV.on) app.appendChild(OV.el); // 더 보기 시트가 열려 있으면 다시 붙인다(실시간 다시 그리기)
   }
+  // 폭(폰·폴드·태블릿·PC)이 바뀌면 머리 글자(PC 연동 글자·폰 탭 이름)만 다시 그린다 — app/s12x_bg.js 가 html[data-mode] 와 함께 알림
+  window.addEventListener("daeum:mode", function () { var ae = document.activeElement; if (!micRec && !(ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName))) { render(); return; } var t = app.querySelector(".hdw > .top"); if (t) { t.innerHTML = topHTML(); t.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); }); t.querySelectorAll('[data-act="more"]').forEach(function (b) { b.addEventListener("click", morePanel); }); t.querySelectorAll('[data-act="safety"]').forEach(function (b) { b.addEventListener("click", safetyKey); }); } });
+  // 탭·레일·머리 «사용 방법» = <button data-go="#화면"> (시안처럼 단추) → 주소(#)로 길잡이
+  app.addEventListener("click", function (e) { var g = e.target && e.target.closest ? e.target.closest("[data-go]") : null; if (!g || !app.contains(g)) return; e.preventDefault(); var h = g.getAttribute("data-go"); if (location.hash !== h) location.hash = h; else render(); });
   window.addEventListener("hashchange", function () { if (micRec) micRec.stop(); var a = parse(); if (fixHid && !(a && a.h === fixHid && /^(record|check|talk)$/.test(a.s))) fixHid = null; render(); });
   // S12-v U17(F5) «명단 불러오기» 링크 → 오늘 화면 파일 고르기 · U16(F4) «기록 고치기»
   var pickNext = false;
@@ -1956,7 +2217,7 @@
   });
   SY.on(function (what) {
     var ae = document.activeElement;
-    if (ae && (ae.id === "memo" || ae.id === "refuseWhy" || ae.hasAttribute && ae.hasAttribute("data-fill"))) return; // 쓰는 중에는 다시 그리지 않는다
+    if (ae && (ae.id === "memo" || ae.id === "refuseWhy" || /^h(r|q)/.test(ae.id) || ae.hasAttribute && ae.hasAttribute("data-fill"))) return; // 쓰는 중에는 다시 그리지 않는다
     if (micRec) return;
     if (what === "safety-ask") { resendOwn(); return; }
     if (what === "safety") { safeAdopt(); dayNote(); }
@@ -1969,7 +2230,7 @@
   function resendOwn() { var sf = lsGet(LS_SAFE, null); if (sf && ownTab(sf) && SY.safety) { var a = SY.safety.list()[sf.id]; safePush(sf, a && a.state === "ok" ? "ok" : "on"); } }
   setInterval(function () {
     if (++safeTick % 3 === 0 && SY.state().mode === "live") resendOwn();
-    var ae = document.activeElement, typing = micRec || (ae && (ae.id === "memo" || ae.id === "refuseWhy" || ae.hasAttribute && ae.hasAttribute("data-fill")));
+    var ae = document.activeElement, typing = micRec || (ae && (ae.id === "memo" || ae.id === "refuseWhy" || /^h(r|q)/.test(ae.id) || ae.hasAttribute && ae.hasAttribute("data-fill")));
     if (sigNow() !== safeSig && !typing) { render(); return; }
     var all = SY.safety ? SY.safety.list() : {};
     app.querySelectorAll("[data-sfid]").forEach(function (el) { var a = all[el.dataset.sfid], n = el.querySelector("[data-sfel]"); if (a && n) n.textContent = elMin(a.at); });
@@ -1979,4 +2240,5 @@
   window.DaeumApp = { days: days, statusOf: statusOf, docModel: docModel, render: render };
   render();
   SY.init();
+  if (window.DaeumOnboard) { window.DaeumOnboard.hook({ login: accountPanel, start: function () { if (location.hash !== "#today") location.hash = "#today"; } }); window.DaeumOnboard.maybeAuto(); } // S12-z3
 })();

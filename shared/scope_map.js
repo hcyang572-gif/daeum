@@ -178,7 +178,7 @@
     plantDefs();
     opt = opt || {};
     if (opt.card) {
-      if (cardOpen === null) cardOpen = lsGet(LS_SEEN) !== "1";
+      if (cardOpen === null) { cardOpen = lsGet(LS_SEEN) !== "1"; if (cardOpen) lsSet(LS_SEEN, "1"); } // 68회차 ⑬: 처음 한 번만 펼침 — 펼쳐 본 다음 방문부터는 접힘(닫기를 안 눌러도)
       el.innerHTML = '<details class="dsm-card"' + (cardOpen ? " open" : "") + '><summary><span class="dsm-sum-ic">' + obj("visit", "dsm-sum-art") + '</span><span class="dsm-sum-t"><b>닿음이 맡는 구간</b><small>발굴 업무 전 과정 중 어디인지</small></span><span class="dsm-sum-go" aria-hidden="true"></span></summary><section class="dsm" aria-label="닿음이 맡는 구간"></section></details>';
       var d = el.querySelector("details"), sec = el.querySelector(".dsm");
       var fill = function () { if (!sec.firstChild) { sec.innerHTML = fullHtml(); wire(sec); } watch(sec); };
@@ -201,8 +201,9 @@
     var gk = group || "app", last = gk in miniLast ? miniLast[gk] : -1;
     var idx = -1; STEPS.forEach(function (x, i) { if (x.k === key) idx = i; });
     var dots = STEPS.map(function (x, i) {
-      var on = i === idx, tag = x.h && !on ? "a" : "span";
-      return "<" + tag + ' class="dsm-md' + (on ? " on" : "") + (i < idx ? " past" : "") + '"' + (tag === "a" ? ' href="' + x.h + '"' : "") + (on ? ' aria-current="step"' : "") + ' title="' + esc(x.t) + '" aria-label="' + (i + 1) + "단계 " + esc(x.t) + '"></' + tag + ">";
+      // S12-x(64회차): 점마다 누르면 그 단계 화면으로 가는 단추(지금 단계도 눌러 맨 위로) · 접근성 이름 «n단계 이름 — 화면으로 가기»
+      var on = i === idx, tag = x.h ? "a" : "span";
+      return "<" + tag + ' class="dsm-md' + (on ? " on" : "") + (i < idx ? " past" : "") + '"' + (tag === "a" ? ' href="' + x.h + '"' : "") + (on ? ' aria-current="step"' : "") + ' title="' + esc(x.t) + '" aria-label="' + (i + 1) + "단계 " + esc(x.t) + (tag === "a" ? " — 화면으로 가기" : "") + '"></' + tag + ">";
     }).join("");
     var cur = idx >= 0 ? STEPS[idx] : null;
     el.innerHTML = '<nav class="dsm-mini' + (idx < 0 ? " none" : "") + '" aria-label="발굴 업무 중 지금 위치: ' + (cur ? esc(cur.t) : "닿음 구간") + '">' +

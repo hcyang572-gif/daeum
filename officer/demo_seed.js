@@ -182,7 +182,7 @@
     F.store.set("afterThree", { __seed: TAG, "Q-032": { tong: wd(0, 9, 10) } });
   }
   if (F.homeCard) {
-    // C1 주의 꼬리표(오늘 방문 집 위주)
+    // C1 주의 꼬리표(오늘 방문 가구 위주)
     F.store.set("homeNotes", { __seed: TAG, "P-013": ["개가 있음", "귀가 어두우심"], "A-009": ["오후에만 계심"], "Q-033": ["거동 불편"], "P-033": ["문 두드리기보다 전화 먼저"], "B-015": ["보호자 동석 원함"] });
   }
   if (F.promises) {
@@ -196,7 +196,7 @@
       pr(4, "Q-017", "노인맞춤돌봄 제공 시작했는지 알아봐 드리기", "check", U.ymd(U.subWorkdays(now, 2)), cd(12, 10, 0)),
       pr(5, "A-009", "주거급여 서류 목록 큰 글씨로 드리기", "doc", today, wd(1, 16, 0))]));
   }
-  // B2 사후관리 1·3·6개월 — 오늘 재확인 1집(LD-4), 6개월 차례 1집(LD-5, 1·3개월은 했음). 결정 확인된 연계만 더해 «연계 누락» 숫자는 그대로
+  // B2 사후관리 1·3·6개월 — 오늘 재확인 1가구(LD-4), 6개월 차례 1가구(LD-5, 1·3개월은 했음). 결정 확인된 연계만 더해 «연계 누락» 숫자는 그대로
   F.store.set("links", (F.store.get("links", []) || []).concat([
     link(4, "A-056", cd(37, 10, 0), ["노인맞춤돌봄서비스"]),
     link(5, "B-059", cd(190, 14, 0), ["기초연금", "에너지바우처"])]));
@@ -206,8 +206,8 @@
   fu2["LD-5:m1"] = cd(140, 11, 0); fu2["LD-5:m3"] = cd(80, 11, 0);
   F.store.set("outcomes", oc2); F.store.set("followups", fu2);
 
-  // ⑧ S11-k: 방문 계획(visit_plan 모양)과 방문 결과(visit_log 모양) — 계획은 2근무일 전 오후에 확정, 1일차 = 지난 근무일(5집 모두 다녀옴),
-  //    2일차 = 다음 근무일(4집 남음). 담당자가 직접 확정한 계획(seed 표시 없음)은 덮지 않는다. 메모는 모두 가상 문장(이름·주소·연락처 없음).
+  // ⑧ S11-k: 방문 계획(visit_plan 모양)과 방문 결과(visit_log 모양) — 계획은 2근무일 전 오후에 확정, 1일차 = 지난 근무일(5가구 모두 다녀옴),
+  //    2일차 = 다음 근무일(4가구 남음). 담당자가 직접 확정한 계획(seed 표시 없음)은 덮지 않는다. 메모는 모두 가상 문장(이름·주소·연락처 없음).
   var PLAN_KEY = "daeum.visit.plan", LOG_KEY = "daeum.visit.log";
   var d0 = U.subWorkdays(now, 2), d1 = U.subWorkdays(now, 1), d2 = U.addWorkdays(d1, 1);
   function at(d, hh, mm) { var x = new Date(d); x.setHours(hh, mm || 0, 0, 0); return x.toISOString(); }

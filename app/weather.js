@@ -1,7 +1,7 @@
 /* 닿음 오늘 날씨 띠(S12-t, ⚙️ 파로 2026-11-12) — 화면 위쪽 한 줄: 기온·하늘·강수·특보 + 출처 «기상청».
    기준 위치: 오늘 방문 가구의 읍면동(없으면 상주시청). 자료: 기상청 초단기실황·초단기예보(data.go.kr 15084084)·기상특보.
    ⛔ 키는 화면에 없다 — 서버 함수 daeum-weather(Supabase daeum)가 대신 부른다. 받아오기 실패·키 없음이면 띠를 숨긴다(오류 문구 0).
-   폭염·한파·호우·대설 때만 «방문 안전» 한 줄을 붙인다 — 안전 모드(동료 안부) 기능은 건드리지 않고 문구로만 안내한다.
+   S12-x(64회차): 한 줄만 — 지명·기온·하늘·특보 배지·출처. «방문 안전» 둘째 줄은 없앰(safety() 값은 남겨 다른 화면이 쓸 수 있게).
    PC·폰 같은 기능(폭만 다르게 줄바꿈). 시험: node app/weather.test.js */
 (function (root) {
   "use strict";
@@ -56,15 +56,12 @@
     };
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  /** S12-x(64회차 · 호창님 11-12 «1줄·얇게»): 한 줄 «함창 3.5℃ 맑음 [특보 배지] 기상청» — 방문 안전 둘째 줄은 없앰(safe 값은 데이터로만 남김) */
+  function short(p) { p = String(p || ""); return p.length > 2 ? p.replace(/(읍|면|동)$/, "") : p; }
   function html(v) {
-    var bits = ['<b class="dwx-t">' + v.temp + "℃</b>"];
-    if (v.sky) bits.push("<span>" + esc(v.sky) + "</span>");
-    if (v.rain) bits.push("<span>" + esc(v.rain) + "</span>");
-    if (v.warn) bits.push('<span class="dwx-w">' + esc(v.warn) + "</span>");
-    else if (v.pre) bits.push('<span class="dwx-p">' + esc(v.pre) + "</span>");
-    return '<div class="dwx-row"><span class="dwx-pl">' + esc(v.place) + " 지금</span>" + bits.join('<i class="dwx-d" aria-hidden="true">·</i>') +
-      '<span class="dwx-src"><i class="src-ico" aria-hidden="true"></i>기상청' + (v.time ? " " + v.time : "") + "</span></div>" +
-      (v.safe ? '<div class="dwx-safe" data-k="' + v.safe.k + '"><b>방문 안전</b> ' + esc(v.safe.line) + "</div>" : "");
+    var warn = v.warn ? '<span class="al">' + esc(v.warn) + "</span>" : v.pre ? '<span class="al pre">' + esc(v.pre) + "</span>" : "";
+    return '<span class="wx-t"><span class="wx-pl">' + esc(short(v.place)) + '</span> <b class="num">' + v.temp + "℃</b>" + (v.sky ? " " + esc(v.sky) : "") + "</span>" + warn +
+      '<span class="src-tag"><i class="src-ico" aria-hidden="true"></i>기상청' + (v.time ? " " + v.time : "") + "</span>";
   }
   /** S12-v U15(B10): 받은 실제 특보(기상청)만 화면 «주의» 줄·방문 순위의 원천으로 — 없으면 null(시연용 가짜 특보는 쓰지 않음) */
   function alertOf(w) {
@@ -96,8 +93,9 @@
   }
   function show(v) {
     if (!v) { hide(); return; }
+    if (!band || !band.isConnected) band = document.getElementById("dwx"); // S12-x: 자리는 app.js 의 머리 아래 띠(.hbar) 안 — 없을 때만 #app 앞에 만든다
     if (!band) {
-      band = document.createElement("div"); band.id = "dwx"; band.className = "dwx"; band.setAttribute("role", "status"); band.setAttribute("aria-label", "오늘 날씨");
+      band = document.createElement("div"); band.id = "dwx"; band.className = "wx"; band.setAttribute("role", "status"); band.setAttribute("aria-label", "오늘 날씨");
       var app = document.getElementById("app"); if (!app || !app.parentNode) return;
       app.parentNode.insertBefore(band, app);
     }

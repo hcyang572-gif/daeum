@@ -7,7 +7,9 @@
 (function (root) {
   "use strict";
   var C = root.DAEUM_CONFIG || {}, F = root.DaeumFeatures || {};
-  var K = { plan: "daeum.visit.plan", log: "daeum.visit.log", queue: "daeum.visit.queue", safe: "daeum.s12.safeAlerts" };
+  var K = { plan: "daeum.visit.plan", log: "daeum.visit.log", queue: "daeum.visit.queue", safe: "daeum.s12.safeAlerts", doc: "daeum.s12x.hdoc" };
+  // S12-y(70회차): doc = 가구별 문서 본문 직접 고침 { "가구번호|문서종류": { text, at, base, sv } } — 서버 표 doc_edit(본인 행만). sv = 서버에서 받은 것
+  var DOCK = /^(log|bok|ref|sms)$/;
   // S12-v U30(5-5): 같은 출처 사본(shared/vendor) — 이 파일 주소 기준으로 풀어 사무 화면(officer/)에서도 같은 파일을 가리킨다
   var LIB = new URL("vendor/supabase-js-2.45.4.min.js", (root.document && root.document.currentScript || {}).src || (root.location && root.location.href) || "http://localhost/shared/").href;
   var GUARD = /gicjzrxgktpovnphtjhi\.supabase\.co$/; // 닿음 전용 프로젝트만 허용
@@ -38,6 +40,22 @@
   /* 38b ③ 안전 모드 알림 — 테이블 없이 같은 채널의 broadcast(«safety»)로만 주고받는다(서버에 남지 않음).
      같은 브라우저의 다른 창은 localStorage(storage 이벤트)로 받는다 → 로그인 전 시연에서도 두 창이 이어진다.
      싣는 것: 알림 id·가구 관리 번호·읍면·시작 시각·예정 분·상태(on/ok/end)·rev · (S12-i5) 도움 요청 횟수·확인 횟수·끝난 방식 뿐. 성명·주소·연락처 없음. */
+  function docs() { return get(K.doc, {}) || {}; }
+  function docPending(key) { return queue().some(function (op) { return (op.t === "doc" || op.t === "undoc") && op.key === key; }); }
+  function docOp(key, e) { var p = key.split("|"); return { t: "doc", key: key, row: { household_no: p[0], kind: p[1], body: e.text, base: String(e.base || ""), updated_at: e.at } }; }
+  /** 서버 doc_edit 행 → 이 기기 사본. 서버가 기준이되 아직 못 보낸 것은 이 기기 것을 지키고, 한 번도 안 올린 옛 기기 사본(sv 없음)은 올린다 */
+  function docsMerge(rows, fresh) {
+    var cur = docs(), out = {}, srv = {}, up = 0;
+    (rows || []).forEach(function (x) { if (!x || !fresh(x.updated_at)) return; var k = x.household_no + "|" + x.kind; srv[k] = 1; out[k] = { text: String(x.body || ""), at: x.updated_at, base: x.base || "", sv: 1 }; });
+    Object.keys(srv).forEach(function (k) { if (docPending(k)) { if (cur[k]) out[k] = cur[k]; else delete out[k]; } }); // 못 보낸 고침·지움이 서버 옛 값보다 먼저
+    Object.keys(cur).forEach(function (k) {
+      if (srv[k] || !cur[k]) return;
+      if (docPending(k)) out[k] = cur[k];
+      else if (!cur[k].sv) { out[k] = cur[k]; enqueue(docOp(k, cur[k])); up = 1; } // 옛 판(이 기기에만 저장)에서 고친 본문 — 지우지 않고 올린다 · sv 인데 서버에 없음 = 다른 기기에서 «다시 만들기»
+    });
+    set(K.doc, out);
+    if (up && S.mode === "live") later(function () { flush(); });
+  }
   function safeAll() { return get(K.safe, {}) || {}; }
   function safeMerge(a) {
     if (!a || !a.id || !a.hid) return false;
@@ -113,7 +131,9 @@
   function pull1() {
     var c = S.client; if (!c || !S.user) return Promise.resolve();
     var since = new Date(Date.now() - 200 * 864e5).toISOString();
-    return Promise.all([c.from("visit_plan").select("*"), c.from("visit_log").select("*").gte("at", since).order("at")]).then(function (r) {
+    // S12-y: 문서 본문 표(doc_edit)는 따로 받는다 — 표가 아직 없거나(SQL 적용 전) 막혀도 계획·기록 연동은 그대로(그땐 본문만 이 기기 저장)
+    var dq = S.noDoc ? Promise.resolve(null) : Promise.resolve(c.from("doc_edit").select("*")).then(function (x) { return x; }, function (e) { return { error: e }; });
+    return Promise.all([c.from("visit_plan").select("*"), c.from("visit_log").select("*").gte("at", since).order("at"), dq]).then(function (r) {
       var e = r[0].error || r[1].error;
       if (e) { mode("local", /does not exist|42P01|schema cache|PGRST205/.test((e.code || "") + " " + (e.message || "")) ? "no-table" : "error"); throw e; }
       // 45 미르(호창님 11-03 «언제든 심사자가 시연해도»): 시연 모드에선 서버 행도 «오늘 고친 것»만 받는다 — 어제 누가 처리·삭제한 계획·기록은
@@ -131,6 +151,8 @@
       (r[1].data || []).forEach(function (x) { ids[x.id] = 1; });
       var merged = local.filter(function (x) { return !ids[x.id]; }).concat((r[1].data || []).map(function (x) { return { id: x.id, household_no: x.household_no, at: x.at, result: x.result, memo: x.memo, tags: x.tags || [], promises: x.promises || [] }; }));
       set(K.log, merged.sort(function (a, b) { return a.at < b.at ? -1 : 1; }));
+      if (r[2] && r[2].error) { if (/does not exist|42P01|schema cache|PGRST205/.test((r[2].error.code || "") + " " + (r[2].error.message || ""))) S.noDoc = true; }
+      else if (r[2]) docsMerge(r[2].data, fresh);
       S.at = new Date(); emit("data");
     });
   }
@@ -152,10 +174,14 @@
       return keep.length ? d.not("household_no", "in", "(" + keep.join(",") + ")") : d; });
     else if (op.t === "log") job = c.from("visit_log").insert(op.row);
     else if (op.t === "unlog") job = c.from("visit_log").delete().eq("id", op.id); // S12-v U16(F4) 되돌리기·고치기
+    else if ((op.t === "doc" || op.t === "undoc") && S.noDoc) job = Promise.resolve({}); // 서버 표 없음 — 이 기기 사본만(보낸 것으로 치고 대기열을 막지 않는다)
+    else if (op.t === "doc") job = c.from("doc_edit").upsert([Object.assign({ owner_id: S.user.id }, op.row)], { onConflict: "owner_id,household_no,kind" });
+    else if (op.t === "undoc") job = c.from("doc_edit").delete().eq("household_no", op.key.split("|")[0]).eq("kind", op.key.split("|")[1]);
     else if (op.t === "status") job = c.from("visit_plan").update({ status: op.status, updated_at: new Date().toISOString() }).eq("round_ym", op.round_ym).eq("household_no", op.household_no);
     else job = Promise.resolve({});
     return job.then(function (r) {
       // 이미 들어간 기록(같은 id, 23505)은 보낸 것으로 친다 — 끊겼다 다시 보낼 때 생긴다
+      if (r && r.error && (op.t === "doc" || op.t === "undoc") && /does not exist|42P01|schema cache|PGRST205/.test((r.error.code || "") + " " + (r.error.message || ""))) { S.noDoc = true; r = {}; }
       if (r && r.error && !(op.t === "log" && r.error.code === "23505")) throw r.error;
       var rest = queue(); rest.shift(); set(K.queue, rest); S.at = new Date(); S.fails = 0; emit("sent");
       return flush1();
@@ -178,6 +204,8 @@
         .on("postgres_changes", { event: "*", schema: "public", table: "visit_plan", filter: "owner_id=eq." + uid0 }, function () { later(pull); })
         .on("postgres_changes", { event: "*", schema: "public", table: "visit_log", filter: "owner_id=eq." + uid0 }, function () { later(pull); })
         .on("broadcast", { event: "safety" }, function (m) { var pl = m && m.payload; if (pl && pl.ask) later(function () { emit("safety-ask"); }); else if (safeMerge(pl)) later(function () { emit("safety"); }); });
+      // S12-y: 문서 본문 표는 있을 때만 구독(없는 표를 구독하면 채널 전체가 오류로 떨어진다)
+      if (!S.noDoc) ch = ch.on("postgres_changes", { event: "*", schema: "public", table: "doc_edit", filter: "owner_id=eq." + uid0 }, function () { later(pull); });
       S.ch = ch;
       ch.subscribe(function (st) {
         if (g !== S.gen) return;
@@ -192,7 +220,25 @@
     keys: K,
     state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email, demo: api.isDemoUser(S.user) } : null, at: S.at, pending: queue().length, enabled: enabled(), fails: S.fails || 0, lastErr: S.lastErr || "" }; },
     on: function (f) { S.subs.push(f); },
-    plan: plan, logs: logs,
+    /** 68회차 S12-z4 팀 연동(shared/team_sync.js)이 같은 연결·같은 로그인으로 서버 함수·팀 채널을 쓰게 — 로그인 전이면 null */
+    live: function () { return S.client && S.user && S.mode === "live" ? { client: S.client, uid: S.user.id } : null; },
+    plan: plan, logs: logs, docs: docs,
+    /** S12-y 문서 본문 직접 고침 저장 — 이 기기에 먼저 두고, 로그인·연결이면 같은 계정 PC·폰에 실시간(doc_edit). 끊김·로그인 전이면 쌓아 뒀다 보낸다.
+     *  base = 고칠 때의 마지막 기록 id(기록이 바뀌면 «다시 만들기»). 본문도 메모처럼 가린 뒤에만(이름·연락처 등) */
+    saveDoc: function (hid, kind, text, base) {
+      var key = hid + "|" + kind, e = { text: mask(text || "").slice(0, 4000), at: new Date().toISOString(), base: String(base || "").slice(0, 64) };
+      var all = docs(); all[key] = e; set(K.doc, all);
+      if (!/^[A-Z]{1,3}-\d{1,5}$/.test(String(hid)) || !DOCK.test(String(kind))) { emit("data"); return Promise.resolve(e); } // 서버 칸 규칙 밖(가구번호 모양 등) — 이 기기에만
+      set(K.queue, queue().filter(function (op) { return !((op.t === "doc" || op.t === "undoc") && op.key === key); })); enqueue(docOp(key, e));
+      emit("data"); return flush().then(function () { return e; });
+    },
+    /** S12-y «다시 만들기» — 고친 본문을 버리고 기록 그대로로(같은 계정 다른 기기에서도) */
+    dropDoc: function (hid, kind) {
+      var key = hid + "|" + kind, all = docs(), had = all[key]; delete all[key]; set(K.doc, all);
+      set(K.queue, queue().filter(function (op) { return !((op.t === "doc" || op.t === "undoc") && op.key === key); }));
+      if (had && had.sv) enqueue({ t: "undoc", key: key }); // 한 번도 안 올린 것은 서버에 지울 것이 없다
+      emit("data"); return flush().then(function () { return true; });
+    },
     safety: { list: safeAll, send: safeSend },
     init: function () {
       if (!enabled()) { mode("local", "off"); return Promise.resolve(); }
@@ -213,7 +259,8 @@
     signOut: function (o) {
       o = o || {};
       var done = function () { setUser(null); if (o.wipe) api.wipeDevice(); };
-      return client().then(function (c) { return c.auth.signOut(); }).then(done, function (e) { done(); if (!o.wipe) throw e; });
+      // 67회차 S12-z2: 이 기기만 로그아웃(scope local). 기본값(global)은 같은 계정의 다른 기기(PC↔폰, 같은 시연 번호를 쓰는 다른 심사위원)까지 모두 끊었다
+      return client().then(function (c) { return c.auth.signOut({ scope: "local" }); }).then(done, function (e) { done(); if (!o.wipe) throw e; });
     },
     /** 62회차 «계정 지우기»: 서버 함수 daeum_delete_me(본인 JWT → 본인 방문 계획·결과 행 + auth 사용자 삭제, 시연 계정 거절)를 부른 뒤
      *  이 기기의 세션·닿음 저장분도 지운다. 서버가 거절하면(시연 계정·끊김) 아무것도 지우지 않고 오류를 그대로 던진다 */

@@ -8,6 +8,7 @@
 | SUIT Variable 2.0.5 | 닿음 랜딩 apps/daeum/(`APP-LANDING/daeum/_work/template.html`, jsDelivr) | SIL OFL 1.1(상업 이용 가능) | https://github.com/sun-typeface/SUIT |
 | Noto Sans KR · Space Grotesk | `_design/S12-h_전면재설계/index.html`(시안, Google Fonts) | SIL OFL 1.1(상업 이용 가능) | https://fonts.google.com/specimen/Noto+Sans+KR · https://fonts.google.com/specimen/Space+Grotesk |
 | supabase-js 2.45.4 | `shared/vendor/supabase-js-2.45.4.min.js`(같은 출처로 내려받아 둠, `shared/sync.js`가 읽음 · S12-v U30) | MIT License | https://github.com/supabase/supabase-js · 해시는 `shared/vendor/README.md` |
+| SheetJS(xlsx) 0.18.5 | `shared/vendor/xlsx-0.18.5.full.min.js`(명단 엑셀 읽기, `officer/import_list.js`가 먼저 읽고 안 되면 cdnjs · 67회차) | Apache License 2.0 | https://github.com/SheetJS/sheetjs · 해시는 `shared/vendor/README.md` |
 | «딩동» 알림음 | `officer/s11d2.js` | 직접 합성(Web Audio) | 외부 음원 없음 |
 | 아이콘 | 전 화면 | 직접 그린 SVG | 외부 아이콘 없음 |
 | 데이터 출처 아이콘 `data-source.svg` | `shared/icons/data-source.svg`·`shared/datasrc.css`(`.src-ico`) | **자체 제작 SVG**(2026-11-12, 미르) — 겹친 명단 시트 모양, 특정 기관 CI·로고와 무관 | 외부 소스 없음 · 기관 로고 대신 «아이콘+기관명 글자»로 표기(케르⚖️ CI 반려, `01_리서치/S12-i_선결조건.md`) |

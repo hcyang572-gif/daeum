@@ -58,14 +58,14 @@ main.ph > .subtabs { margin: 0; align-self: flex-start; }
 
 /* ── 화면 전환: transform·opacity 만, 탭 방향으로 280ms ── */
 @keyframes shIn { from { opacity: 0; transform: translate3d(var(--sh-dx, 24px), 0, 0); } to { opacity: 1; transform: none; } }
-.sh-in { animation: shIn .28s cubic-bezier(.2,.8,.2,1) both; }
+.sh-in { animation: shIn .2s cubic-bezier(.2,.8,.2,1) both; }
 body.sh-moving::before { animation-play-state: paused !important; } /* 전환 중 배경 정지 */
 
 /* ── 시간 걸리는 작업 진행 표시(0.3초 넘을 때만) ── */
 .sh-busy { position: fixed; z-index: 70; left: 0; right: 0; top: 0; height: 0; pointer-events: none; opacity: 0; transition: opacity .2s; }
 .sh-busy.on { opacity: 1; }
-.sh-busy i { position: absolute; left: 0; right: 0; top: 0; height: 3px; overflow: hidden; background: rgba(201,78,26,.15); }
-.sh-busy i::after { content: ""; position: absolute; top: 0; bottom: 0; width: 38%; background: linear-gradient(90deg, rgba(201,78,26,0), var(--now), rgba(201,78,26,0)); animation: shBar 1.1s cubic-bezier(.4,0,.2,1) infinite; }
+.sh-busy i { position: absolute; left: 0; right: 0; top: 0; height: 3px; overflow: hidden; background: rgba(31,102,118,.15); }
+.sh-busy i::after { content: ""; position: absolute; top: 0; bottom: 0; width: 38%; background: linear-gradient(90deg, rgba(31,102,118,0), var(--now), rgba(31,102,118,0)); animation: shBar 1.1s cubic-bezier(.4,0,.2,1) infinite; }
 .sh-busy span { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); white-space: nowrap; padding: 7px 14px; border-radius: 999px; font-size: var(--fs-1); font-weight: 600; color: #fff; background: var(--rail); box-shadow: 0 10px 22px -10px rgba(17,26,39,.7); }
 @keyframes shBar { from { transform: translateX(-100%); } to { transform: translateX(280%); } }
 
@@ -84,7 +84,7 @@ body.sh-moving::before { animation-play-state: paused !important; } /* 전환 �
 .lc-ar b { text-align: right; font-weight: 800; }
 .lc-up { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 52px; cursor: pointer; text-align: center; }
 .lc-up small { font-size: var(--fs-1); font-weight: 600; color: var(--mute); }
-.lc-msg { margin: 8px 0 0; font-size: var(--fs-1); padding: 8px 10px; border-radius: 10px; background: rgba(11,132,101,.08); }
+.lc-msg { margin: 8px 0 0; font-size: var(--fs-1); padding: 8px 10px; border-radius: 10px; background: rgba(46,130,112,.08); }
 .lc-msg.bad { background: var(--risk-soft); color: var(--risk); }
 .lc-src { margin: 8px 0 0; font-size: var(--fs-1); color: var(--mute); }
 

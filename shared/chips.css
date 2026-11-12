@@ -1,12 +1,12 @@
 /* 닿음 공통 부품 «사례별 예시 칩 + 직접 입력»(shared/chips.js) — S12-i1 ⚙️ 파로 2026-11-12 · 라이트 기준
    칩은 장갑 낀 손가락도 닿게 높이 44px, 고른 칩은 돌출(흰 윗면), 나머지는 각인(쟁반). */
 .chipin { display: grid; gap: 8px; }
-.chipin-l { font-size: var(--fs-1, 13px); font-weight: 800; color: var(--ink, #121A27); display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
-.chipin-l small { font-size: var(--fs-1, 13px); font-weight: 600; color: var(--mute, #59606E); }
+.chipin-l { font-size: var(--fs-1, 13px); font-weight: 800; color: var(--ink, #11181C); display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.chipin-l small { font-size: var(--fs-1, 13px); font-weight: 600; color: var(--mute, #47535B); }
 .chipin-ex { display: flex; flex-wrap: wrap; gap: 6px; }
-.chipin-c { min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--r-chip, 999px); font: inherit; font-size: var(--fs-2, 14px); font-weight: 600; cursor: pointer; color: var(--mute, #59606E);
+.chipin-c { min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--r-chip, 999px); font: inherit; font-size: var(--fs-2, 14px); font-weight: 600; cursor: pointer; color: var(--mute, #47535B);
   background: var(--well, #E3E0D9); box-shadow: inset 0 2px 3px rgba(33,30,46,.12), inset 0 -1px 0 rgba(255,255,255,.7); transition: background-color .2s, color .2s, box-shadow .2s, transform .07s; }
 .chipin-c:active { transform: translateY(1px); }
-.chipin-c[aria-pressed="true"] { color: var(--ink, #121A27); background: linear-gradient(180deg, #fff, #FAF8F4);
-  box-shadow: inset 0 1px 0 #fff, 0 0 0 1.5px var(--now, #C94E1A), 0 2px 0 var(--edge, #CDC7BC); }
+.chipin-c[aria-pressed="true"] { color: var(--ink, #11181C); background: linear-gradient(180deg, #fff, #FAF8F4);
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 1.5px var(--now, #1F6676), 0 2px 0 var(--edge, #CDC7BC); }
 .chipin-i { width: 100%; min-height: 48px; font-size: 16px; } /* S12-v U37: 16px 아래면 아이폰이 입력 때 확대 */

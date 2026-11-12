@@ -343,5 +343,12 @@
   /** 파일 이름에 못 쓰는 글자 정리 + 날짜 */
   function fileName(base, ext, d) { d = d || new Date(); var p = function (n) { return (n < 10 ? "0" : "") + n; }; return String(base || "닿음").replace(/[\\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim() + "_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "." + ext; }
 
-  return { build: build, download: download, save: save, zip: zip, col: col, crc32: crc32, fileName: fileName, HEAD: HEAD, serial: serial };
+  /** S12-z(11-12 호창님 «폴더별로 날짜, 가구별 검색»): 내려받는 모든 파일 이름 = «YYYY-MM-DD_가구번호(가명)_문서종류.확장자».
+      여러 가구를 한데 담은 문서는 가구 자리에 «전체». 정렬 = 날짜순, 탐색기 검색 = 가구번호. ext 를 비우면 확장자 없이(인쇄 PDF 이름용) */
+  function docName(d, hid, kind, ext) {
+    d = d ? new Date(d) : new Date(); if (isNaN(d)) d = new Date();
+    var p = function (n) { return (n < 10 ? "0" : "") + n; }, c = function (s) { return String(s || "").replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, "").trim(); };
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "_" + (c(hid) || "전체") + "_" + (c(kind) || "문서") + (ext ? "." + ext : "");
+  }
+  return { build: build, download: download, save: save, zip: zip, col: col, crc32: crc32, fileName: fileName, docName: docName, HEAD: HEAD, serial: serial };
 });

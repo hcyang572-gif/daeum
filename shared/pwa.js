@@ -15,6 +15,10 @@
 
   var box = document.getElementById("pwa-install");
   if (!box || standalone) return;
+  // 70회차: 닫기(×) → 7일 동안 띄우지 않는다
+  var HIDE = "daeum-pwa-hide", hid = 0; try { hid = Number(localStorage.getItem(HIDE)) || 0; } catch (e) {}
+  if (Date.now() - hid < 7 * 864e5) { box.remove(); window.__daeumPwa = null; return; }
+  var xb = box.querySelector("[data-pwa=x]"); if (xb) xb.addEventListener("click", function () { try { localStorage.setItem(HIDE, String(Date.now())); } catch (e) {} box.hidden = true; if (box.parentNode) box.parentNode.removeChild(box); window.__daeumPwa = null; });
   var btn = box.querySelector("[data-pwa=btn]"), ios = box.querySelector("[data-pwa=ios]");
   var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   var deferred = null;

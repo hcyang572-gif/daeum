@@ -3,7 +3,7 @@
    움직임 = B안 유리 계기: 렌즈(광택 도자기 구슬)가 선을 따라 미끄러지며 지나간 단계가 하나씩 또렷해짐 — 약 3초 한 번.
    렌즈는 흐림 효과에 기대지 않는다(흰 테·그림자·광택으로 캡처·PDF에서도 보임). 움직임 줄이기 설정이면 완성 정지 그림. */
 .dsm, .dsm-mini, .dsm-card {
-  --dsm-go: var(--go-glaze, #0B6B52); --dsm-ink: var(--ink, #1C2420); --dsm-mute: #62635D; --dsm-grey: #A19D94; --dsm-hair: #C9C4B9;
+  --dsm-go: var(--go-glaze, #1F5F52); --dsm-ink: var(--ink, #1C2420); --dsm-mute: #62635D; --dsm-grey: #A19D94; --dsm-hair: #C9C4B9;
   --dsm-ease: cubic-bezier(.22,.8,.24,1);
 }
 .dsm { container-type: inline-size; position: relative; color: var(--dsm-ink); }
@@ -53,7 +53,7 @@
 .dsm-o .m-b { fill: url(#dsm-cB); } .dsm-o .m-s { fill: url(#dsm-cS); } .dsm-o .m-t { fill: url(#dsm-cT); }
 .dsm-o .m-a { fill: url(#dsm-cA); } .dsm-o .m-ad { fill: url(#dsm-cAD); } .dsm-o .m-l { fill: #D9D4CA; }
 .dsm-o .m-ra { fill: none; stroke: url(#dsm-cA); stroke-width: 7; } .dsm-o .m-rb { fill: none; stroke: url(#dsm-cB2); stroke-width: 7; }
-.dsm-o .m-dash { fill: none; stroke: var(--dsm-go, #0B6B52); stroke-width: 2; stroke-linecap: round; stroke-dasharray: .1 5; }
+.dsm-o .m-dash { fill: none; stroke: var(--dsm-go, #1F5F52); stroke-width: 2; stroke-linecap: round; stroke-dasharray: .1 5; }
 .dsm-o .m-hl { fill: #fff; opacity: .55; }
 
 /* 선 · 닿음 구간 초록 선 · 렌즈 */

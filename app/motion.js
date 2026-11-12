@@ -15,7 +15,7 @@
 
   // [선택자, 꼬리표] — «켜진 상태»를 나타내는 것만
   var WATCH = [
-    ['.switch button[aria-checked="true"]', "m-just"],
+    ['.res button[aria-checked="true"]', "m-just"], ['.subseg button[aria-checked="true"]', "m-just"], // 66회차: 옛 .switch → 시안 .res·.subseg
     ['.ck-b button[aria-pressed="true"]', "m-just"],
     [".svc.on", "m-ring"],
     ['.svc-t[aria-pressed="true"]', "m-just"],
@@ -31,7 +31,7 @@
     [".tline .stop.dn .ax b", "m-just"],
     [".sfa[role=\"alert\"]", "m-alert"]
   ];
-  var COUNT = ".dead .n, .fsig b, .rlg b, .dcard .dn, .basis b, .vs b, .idc .rk b";
+  var COUNT = ".dead .stat3 b, .fsig b, .rlg b, .dcard .dn, .sfb .ring .c b"; // 66회차: 시안 마크업 숫자 칸
 
   function screenOf() { return (location.hash || "#today").replace(/^#/, ""); }
   function idOf(el) {

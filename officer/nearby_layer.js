@@ -87,7 +87,7 @@
     function tg(k, lb, n) { return '<button type="button" class="nb-tg ' + k + '" data-nb="' + k + '" aria-pressed="' + (on[k] ? "true" : "false") + '">' + ico(k) + "<span>" + lb + "</span><b>" + n + "</b></button>"; }
     var rows = !m ? "" : (on.link ? m.link.map(function (x) { x.layer = "link"; return item(x); }).join("") : "") + (on.senior ? m.senior.map(function (x) { x.layer = "senior"; return item(x); }).join("") : "");
     return '<div class="nb-bar" role="group" aria-label="지도 주변 정보 켜고 끄기"><span class="nb-eye">주변 정보</span>' +
-      tg("hh", "방문 가구", nHh) + tg("link", "연계처", nL) + tg("senior", "경로당", nS) + "</div>" +
+      tg("hh", "방문 가구", nHh) + tg("link", "연계처", nL) + tg("senior", "경로당", nS) + '<span class="na">AED — 활용 승인 뒤 같은 층에 추가</span></div>' + // S12-x #97: 연계처·경로당·특보만 · AED는 승인 뒤(회색 한 줄) · 119·무더위쉼터 없음
       (m ? '<details class="nb-list"><summary><span>가까운 순 목록</span><small>' + (on.link ? "연계처 " + nL + "곳" : "") + (on.link && on.senior ? " · " : "") + (on.senior ? "경로당 " + nS + "곳(같은 동네 " + m.seniorTotal + "곳 중 집마다 가까운 " + SENIOR_PER_HH + "곳)" : "") + (!on.link && !on.senior ? "켜진 층 없음" : "") + "</small></summary>" +
         (rows ? '<ul class="nb-ul">' + rows + "</ul>" : '<p class="nb-none">위 단추로 연계처·경로당을 켜면 여기에 가까운 순으로 나옵니다.</p>') +
         '<p class="srcline nb-foot">거리: 방문 가구에서 직선거리 «약»(도로 거리 아님) · 위치: ' + esc(m.geoSrc || "자료 원본 좌표") + " · 자료: " + esc(m.fetched) + " 수집 정적 스냅샷 · 경로당은 2018년 명단이라 문을 닫았거나 옮겼을 수 있어 방문 전 확인 · 가구 위치는 가상(시연용) · 연계 여부는 담당 공무원 판단</p></details>" :

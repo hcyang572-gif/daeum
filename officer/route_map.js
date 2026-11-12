@@ -49,7 +49,7 @@
   // 화면 픽셀로 GAP 안에 모인 표지를 한 무리로 묶어, 무리 가운데를 중심으로 고르게 벌려 놓는다.
   // 실제 집 자리에는 작은 점을 남기고 지시선으로 번호와 잇는다. 확대·이동이 끝날 때마다(idle) 다시 계산한다.
   function stopHtml(s, dx, dy, pop) {
-    var cls = "nm-stop" + (s.req ? " req" : "") + (s.cls ? " " + s.cls : "") + (pop ? " pop" : ""); // s.cls: 현장 폰 동선(dn 끝난 집·nx 다음 집)
+    var cls = "nm-stop" + (s.req ? " req" : "") + (s.cls ? " " + s.cls : "") + (pop ? " pop" : ""); // s.cls: 현장 폰 동선(dn 끝난 가구·nx 다음 가구)
     if (!dx && !dy) return '<div class="nm-spot" aria-hidden="true"><div class="' + cls + '"' + (pop ? ' style="animation-delay:' + (180 + s.no * 90) + 'ms"' : "") + '>' + s.no + "</div></div>";
     var len = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dy, dx) * 180 / Math.PI;
     return '<div class="nm-spot spread" aria-hidden="true"><i class="nm-lead" style="width:' + len.toFixed(1) + "px;transform:rotate(" + ang.toFixed(1) + 'deg)"></i><i class="nm-dot"></i>' +
@@ -160,9 +160,12 @@
       if (t0 === null) t0 = t;
       var k = Math.min(1, (t - t0) / 1100), e = 1 - Math.pow(1 - k, 3), want = L * e, out = [line[0]], j = 1;
       while (j < line.length && cum[j] <= want) { out.push(line[j]); j++; }
-      if (j < line.length) { var a = line[j - 1], b = line[j], f = (want - cum[j - 1]) / ((cum[j] - cum[j - 1]) || 1); out.push(new N.LatLng(a.lat() + (b.lat() - a.lat()) * f, a.lng() + (b.lng() - a.lng()) * f)); }
-      if (out.length < 2) out.push(line[0]);
-      try { poly.setPath(out); } catch (x) { return; }
+      // 67회차: 지도 인증 실패·화면을 떠나 지도가 사라진 뒤에도 움직임이 돌면 N.LatLng 가 던졌다(콘솔 «reading 'LatLng'») — 그때는 조용히 멈춘다
+      try {
+        if (j < line.length) { var a = line[j - 1], b = line[j], f = (want - cum[j - 1]) / ((cum[j] - cum[j - 1]) || 1); out.push(new N.LatLng(a.lat() + (b.lat() - a.lat()) * f, a.lng() + (b.lng() - a.lng()) * f)); }
+        if (out.length < 2) out.push(line[0]);
+        poly.setPath(out);
+      } catch (x) { return; }
       if (k < 1) window.requestAnimationFrame(step);
     }
     window.requestAnimationFrame(step);

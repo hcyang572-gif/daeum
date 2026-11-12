@@ -185,7 +185,7 @@
       '<div><h3>행복이음에서 내보낸<br>«발굴대상자 조회» 엑셀을 놓으세요</h3><p>.xlsx · .csv · 열 이름은 자동으로 맞춥니다</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="b b-main">' + ic("i-up") + '엑셀 파일 고르기</span><a class="b b-sub" href="#s2">' + (n ? "불러온 명단 보기" : "시연 명단으로 보기") + '</a></div><p class="sub" style="margin:10px 0 0"><a class="lnk" href="../data/demo_list.xlsx" download>시연용 명단 파일 받기(.xlsx · 가상 9가구)</a></p></div><input type="file" id="file" accept=".xlsx,.xls,.csv,.txt" hidden></label>' + msg +
       '<div class="mapcols"><div class="mapcols-h"><b>열 맞춤 미리보기</b><span class="sub" style="margin-left:auto;margin-right:10px">색 점 = ③ 앞당김 기준에 쓰는 열</span>' + state + "</div>" + mc +
       '<div style="padding:2px 16px 12px"><div class="progress"><i style="width:' + (importMsg && importMsg.busy ? 50 : 100) + '%"></i></div></div></div></div>' +
-      '<div class="right"><div class="lab">차수 기록</div><div class="rounds">' + rd + '</div><div class="lab" style="margin-top:4px">불러오면 바로 이어지는 일</div><ul class="then"><li>' + ic("i-loop") + "<span><b>지난 차수와 견주기</b> · 새로 들어온 집, 계속 남은 집, 빠진 집을 나눕니다</span></li><li>" + ic("i-cal") + '<span><b>확인 기한 정하기</b> · 하루 몇 집, 며칠이 필요한지 계산합니다</span></li></ul>' +
+      '<div class="right"><div class="lab">차수 기록</div><div class="rounds">' + rd + '</div><div class="lab" style="margin-top:4px">불러오면 바로 이어지는 일</div><ul class="then"><li>' + ic("i-loop") + "<span><b>지난 차수와 견주기</b> · 새로 들어온 집, 계속 남은 집, 빠진 집을 나눕니다</span></li><li>" + ic("i-cal") + '<span><b>확인 기한 정하기</b> · 하루 몇 가구, 며칠이 필요한지 계산합니다</span></li></ul>' +
       '<div class="privacy" style="margin-top:auto">' + ic("i-shield") + "<span>파일은 이 PC 브라우저 안에서만 읽고 서버로 보내지 않습니다. 성명·주민등록번호·연락처·주소 열은 읽지 않습니다.</span></div></div>");
   }
   function bind1() {
@@ -221,7 +221,7 @@
       var dt = new Date(d.date + "T00:00:00"), lab = W.charAt(dt.getDay()) + (d.kind === "today" ? " · 오늘" : d.kind === "go" ? " · " + d.day + "일차" : d.end ? " · 기한" : "");
       return '<div class="rb ' + (d.kind === "today" ? "today" : d.kind === "go" ? "go" : d.end ? "end" : "spare") + '"><b>' + dt.getDate() + "</b><span>" + lab + "</span></div>"; }).join("") + (dp.days.length > 10 ? "" : "") + "</div>" +
       '<div class="dl-say">' + (dp.over ? '<span class="warnline">' + ic("i-warn", "s") + esc(dp.line) + "</span>" : '<span>근무일 <b class="num">' + dp.left + '</b>일 남음</span><span>하루 <b class="num">' + dp.perDay + '</b>집 기준 <b class="num">' + dp.need + '</b>일 방문</span><span>여유 <b class="num">' + dp.spare + "</b>일(부재 다시 방문용)</span>") + "</div>"
-      : '<div class="dl-empty"><span class="st-tag st-todo">기한 미정</span><span>기한을 정하면 하루 몇 집인지 알려 드립니다.</span></div>';
+      : '<div class="dl-empty"><span class="st-tag st-todo">기한 미정</span><span>기한을 정하면 하루 몇 가구인지 알려 드립니다.</span></div>';
     var rows = ids.map(function (id) {
       var h = BY[id], mm = m[id] || {}, r = RB[id], g = r ? r.gap : h.daysSinceContact, gp = g == null ? 100 : Math.min(100, g / 900 * 100), cnt = +mm.cnt || 1, st = statusOf(id);
       var procTag = /처리\s*중/.test(mm.proc || "") ? '<span class="st-tag st-doing">처리 중</span>' : /완료/.test(mm.proc || "") ? '<span class="st-tag st-done">처리 완료</span>' : '<span class="st-tag st-todo">' + esc(mm.proc || "미처리") + "</span>";
@@ -413,7 +413,7 @@
     });
     tl += '<div class="tl-row" style="--dc:' + col + '"><div class="tl-t num"><b>' + (D4.s.back ? D4.s.back.arrive : D4.s.end) + '</b><small>복귀</small></div><div class="tl-ax"><b class="o">시</b></div><div style="padding-top:10px" class="sub">상주시청 · 이동 ' + D4.s.travelMin + "분 · 상담 " + D4.s.consultMin + "분</div></div>";
     var sync = SY.state();
-    return pc(4, "s4", '<div class="l"><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div class="lab">' + (dl.until ? "기한 " + md(dl.until) + "까지" : "기한 미정 · ② 에서 정하기") + '</div><h2 class="h-scr" style="margin-top:8px">' + title + '</h2></div><span class="sub">하루 ' + (dl.perDay || 5) + "집 · 상담 30분 · 점심 12~13시</span></div>" +
+    return pc(4, "s4", '<div class="l"><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div class="lab">' + (dl.until ? "기한 " + md(dl.until) + "까지" : "기한 미정 · ② 에서 정하기") + '</div><h2 class="h-scr" style="margin-top:8px">' + title + '</h2></div><span class="sub">하루 ' + (dl.perDay || 5) + "가구 · 상담 30분 · 점심 12~13시</span></div>" +
       '<div class="daycards">' + cards + "</div>" + (ow.over ? '<p class="warnline">' + ic("i-warn", "s") + esc(ow.why.join(" · ")) + " — 한 집을 다음 일차로 미뤄 보세요.</p>" : "") +
       '<div class="tl" id="tl4">' + tl + "</div>" +
       '<div class="l-foot"><span class="sub">순서는 끌어서 바꿀 수 있습니다 · 이동 시간은 ' + (D4.s.road ? "도로 경로 기준" : "직선 거리 근사(«약»)") + '</span><button class="b b-sub b-sm" data-act="print">' + ic("i-print", "s") + "일정표 인쇄</button></div></div>" +
@@ -471,7 +471,7 @@
     return { ds: ds, d: fd, hid: hid, i: idx, row: fd.s.rows[idx], done: fd.ids.filter(function (id) { return statusOf(id) !== "planned"; }) };
   }
   function phHead(c, extra) {
-    return '<div class="ph-h"><div class="row"><span class="meta">' + c.d.n + "일차 · " + c.d.ids.length + "집 중 " + (c.i + 1) + "번째 " + syncChip(true) + '</span><div class="prog">' + c.d.ids.map(function (id) { return '<i class="' + (id === c.hid ? "c" : statusOf(id) !== "planned" ? "d" : "") + '"></i>'; }).join("") + "</div></div>" + (extra || "") + "</div>";
+    return '<div class="ph-h"><div class="row"><span class="meta">' + c.d.n + "일차 · " + c.d.ids.length + "가구 중 " + (c.i + 1) + "번째 " + syncChip(true) + '</span><div class="prog">' + c.d.ids.map(function (id) { return '<i class="' + (id === c.hid ? "c" : statusOf(id) !== "planned" ? "d" : "") + '"></i>'; }).join("") + "</div></div>" + (extra || "") + "</div>";
   }
   function phMenu() { return '<nav class="ph-menu" aria-label="다른 화면"><a href="#s2">' + ic("i-list", "s") + '명단</a><a href="#s4">' + ic("i-route", "s") + '계획</a><a href="#s8">' + ic("i-doc", "s") + '보고</a><a href="#s9">' + ic("i-calc", "s") + "사후관리</a></nav>"; }
   function typesFor(h) {
@@ -554,9 +554,9 @@
     var stops = c.d.ids.map(function (id, i) { var st = statusOf(id), dn = st !== "planned", nx = id === c.hid; return '<a class="st ' + (dn ? "dn" : "") + " " + (nx ? "nx" : "") + '" href="#s5:' + id + '"><b>' + (dn ? "✓" : i + 1) + '</b><span><span class="hid">' + id + '</span> <span style="color:var(--ink-3);font-size:13px">· ' + esc(BY[id].area) + '</span></span><span class="t num">' + (dn ? TAG[st] : "") + c.d.s.rows[i].arrive + "</span></a>"; }).join("");
     var segBtns = segs > 1 ? '<div class="segs">' + Array.apply(null, { length: segs }).map(function (_, k) { return '<button class="b b-sub b-sm" data-seg="' + k + '">' + (k * 6 + 1) + "~" + Math.min(left.length, k * 6 + 6) + "</button>"; }).join("") + "</div>" : "";
     return '<div class="ph ph6"><div class="ph-map" id="map6"></div>' +
-      '<div class="map-top"><span class="glass-chip">' + c.d.n + "일차 · " + c.d.ids.length + '집</span><span class="glass-chip num">' + c.d.s.km + "km" + (c.d.s.road ? "" : " 약") + " · " + c.d.s.end + ' 끝</span><a class="glass-chip" href="#s5:' + c.hid + '" aria-label="요약으로">' + ic("i-back", "s") + "요약</a></div>" +
+      '<div class="map-top"><span class="glass-chip">' + c.d.n + "일차 · " + c.d.ids.length + '가구</span><span class="glass-chip num">' + c.d.s.km + "km" + (c.d.s.road ? "" : " 약") + " · " + c.d.s.end + ' 끝</span><a class="glass-chip" href="#s5:' + c.hid + '" aria-label="요약으로">' + ic("i-back", "s") + "요약</a></div>" +
       '<div class="sheet"><div><div class="grab"></div><div class="nextc"><div class="pinbig">' + (c.i + 1) + "</div><div><b>가구 " + c.hid + "</b><small>" + pips(r) + " " + esc(h.area) + (vt.best && vt.absences.length ? " · " + esc(vt.absences[0].label) + " 부재 " + vt.absences.length + "번 → " + esc(vt.best.label) : "") + '</small></div><div class="eta num">' + (c.row ? c.row.arrive : "") + "<small>" + (c.row ? c.row.km + "km · " + c.row.travelMin + "분" : "") + "</small></div></div>" +
-      '<div class="dayprog" style="grid-template-columns:repeat(' + c.d.ids.length + ',1fr)">' + c.d.ids.map(function (id) { return '<i class="' + (id === c.hid ? "n" : statusOf(id) !== "planned" ? "" : "t") + '"></i>'; }).join("") + '</div><div class="dayprog-l"><span>' + c.done.length + "집 완료</span><span>남은 " + left.length + "집</span></div></div>" +
+      '<div class="dayprog" style="grid-template-columns:repeat(' + c.d.ids.length + ',1fr)">' + c.d.ids.map(function (id) { return '<i class="' + (id === c.hid ? "n" : statusOf(id) !== "planned" ? "" : "t") + '"></i>'; }).join("") + '</div><div class="dayprog-l"><span>' + c.done.length + "가구 완료</span><span>남은 " + left.length + "가구</span></div></div>" +
       '<div class="stops">' + stops + '</div><div class="ph-foot">' + segBtns + '<button class="b b-river b-lg" data-act="nav">' + '<svg class="ic l" style="fill:currentColor;stroke:none" aria-hidden="true"><use href="#i-nav"/></svg>네이버 지도로 길안내</button><div class="navnote">이름·주소 대신 «방문 ' + (c.i + 1) + "»로 넘깁니다 · 앱이 없으면 웹으로</div>" +
       '<a class="b b-sub b-lg" href="#s7:' + c.hid + '">도착했어요 · 기록 시작</a></div></div></div>';
   }
@@ -603,7 +603,7 @@
       (n >= 3 ? '<div class="msg">' + esc(a3.steps[0].text) + '</div><div style="display:flex;gap:8px"><button class="b b-sub" style="flex:1" data-act="copytong">' + ic("i-copy", "s") + '문안 복사</button><button class="b b-sub" style="flex:1" data-act="neighbor">이웃 탐문 남기기</button></div>' : "") + "</div>" +
       '<div class="sec-h"><b>다음 시도</b><small>비어 있던 시간을 피함</small></div><div class="promise" style="background:var(--river-wash);box-shadow:none">' + ic("i-clock") + "<span>" + (nextDay && nextDay.date ? md(nextDay.date) + " " : "다음 근무일 ") + esc(vt.best ? vt.best.label + "(" + vt.best.hours + ")" : "") + "</span>" + (nextDay ? '<span class="st-tag st-new">' + nextDay.n + "일차에 넣기</span>" : "") + "</div></div>";
     var refuse = '<div data-res="refuse"' + (res7 === "refuse" ? "" : " hidden") + '><div class="absent-box" style="background:var(--alert-wash);box-shadow:inset 0 0 0 1px rgba(179,50,42,.18)"><b>지금은 필요 없다고 하셨습니다</b><span>근무일 5일 뒤(' + md(U.addWorkdays(now, 5)) + ')에 한 번 더 권해 보도록 할 일에 넣습니다. 거절 사유는 한 줄만 남겨 주세요.</span><input class="refuse-in" id="refuseWhy" maxlength="60" placeholder="예: 자녀가 도와준다고 하심" value="' + esc(dr.refuse || "") + '"></div></div>';
-    var isMetTxt = isLast ? "저장 · 오늘 방문 끝" : "저장 · 다음 집으로";
+    var isMetTxt = isLast ? "저장 · 오늘 방문 끝" : "저장 · 다음 가구으로";
     return '<div class="ph"><div><div class="ph-h"><div class="row"><a class="b b-ghost" href="#s5:' + c.hid + '" style="padding:0 4px">' + ic("i-back") + '요약</a><span class="meta num">' + hm(dr.at) + " 도착 · " + Math.max(0, Math.round((now - new Date(dr.at)) / 60000)) + '분째</span></div><h2 class="h1" style="font-size:26px">가구 ' + c.hid + " · 만난 결과</h2>" +
       '<div class="seg" id="seg7" role="radiogroup" aria-label="만난 결과"><button role="radio" aria-checked="' + (res7 === "met") + '" class="' + (res7 === "met" ? "on" : "") + '" data-r="met">' + ic("i-check") + '만남</button><button role="radio" aria-checked="' + (res7 === "absent") + '" class="' + (res7 === "absent" ? "on" : "") + '" data-r="absent">' + ic("i-door") + '부재</button><button role="radio" aria-checked="' + (res7 === "refuse") + '" class="' + (res7 === "refuse" ? "on" : "") + '" data-r="refuse">' + ic("i-x") + "거절</button></div></div></div>" +
       '<div class="ph-scroll" id="body7">' + met + absent + refuse + "</div>" +
@@ -703,7 +703,7 @@
     var rf = app.querySelector('[data-act="ref"]'); if (rf) rf.addEventListener("click", function () {
       var k = document.getElementById("refOrg").value, sc = caseOf(sel8);
       var rec = { text: F.askGuide.draft({ label: "가구 " + sel8, area: BY[sel8].area, at: sc.at, method: "방문 상담", needs: F.askGuide.detect(sc.memo), summary: sc.memo, guide: F.askGuide.check(sc.memo, null, {}) }).text, area: BY[sel8].area, label: "가구 " + sel8, at: sc.at };
-      needHwpx().then(function (W2) { return W2.download(F.referral.build(rec, k, { office: BY[sel8].area + " 맞춤형복지팀" }), F.referral.fileName(k)); }).then(function () { toast("의뢰서를 내려받았습니다"); }, function () { toast("한글 파일을 만들지 못했습니다"); });
+      needHwpx().then(function (W2) { return W2.download(F.referral.build(rec, k, { office: BY[sel8].area + " 맞춤형복지팀" }), F.referral.fileName(k, new Date(), sel8)); }).then(function () { toast("의뢰서를 내려받았습니다"); }, function () { toast("한글 파일을 만들지 못했습니다"); });
     });
     var bg = app.querySelector('[data-act="big"]'); if (bg) bg.addEventListener("click", function () {
       var nx = F.promises.open(prAll(), sel8)[0];
@@ -732,7 +732,7 @@
           { t: "tbl", title: "<표 1> 가구별 확인 결과(개인정보 4칸 없음)", head: ["가구", "순서", "확인한 것", "조치·연계"], widths: TW ? [Math.round(TW * .14), Math.round(TW * .12), Math.round(TW * .44), TW - Math.round(TW * .14) - Math.round(TW * .12) - Math.round(TW * .44)] : undefined,
             rows: cases.map(function (x) { return [x.id, ord(x.id), x.st === "planned" ? "아직 기록 없음" : x.found, x.act || ""]; }) },
           { t: "p", kind: "note", text: "※ 순서 = 한국사회보장정보원 발굴 순위 → 방문 순서(현장 사정 4가지로 최대 7칸 앞당김, 기준표 3차) · 가구는 모두 시연용 가상 · 담당자 확인 후 확정  끝." }] };
-      return W2.download(doc, "현장확인결과_" + roundYm() + "_" + D8.n + "일차_" + ymd(now).replace(/-/g, "") + ".hwpx");
+      return W2.download(doc, ymd(now) + "_전체_현장확인결과_" + roundYm() + "차수" + D8.n + "일차.hwpx");
     }).then(function () { var o = lsGet(LS_REPORT, {}) || {}; o[roundYm() + ":" + day8] = new Date().toISOString(); lsSet(LS_REPORT, o); toast("확정하고 내려받았습니다"); render(); }, function () { toast("한글 파일을 만들지 못했습니다 — 다시 눌러 주세요"); });
   }
 
@@ -743,7 +743,7 @@
     var ev = {}; function add(date, k, t) { (ev[date] = ev[date] || []).push([k, t]); }
     ac.forEach(function (x) { if (x.state !== "done") add(x.date, x.state === "overdue" ? "x" : "f", x.householdId + " " + x.stepLabel.replace(" 재확인", "")); });
     prs.forEach(function (p) { if (p.due) add(p.due, p.done ? "ok" : p.due < today ? "x" : "p", p.householdId + " " + clip(p.text, 10)); });
-    ds.forEach(function (d) { if (d.date) { var dn = d.ids.every(function (id) { return statusOf(id) !== "planned"; }); add(d.date, dn ? "ok" : "v", d.n + "일차 " + d.ids.length + "집"); } });
+    ds.forEach(function (d) { if (d.date) { var dn = d.ids.every(function (id) { return statusOf(id) !== "planned"; }); add(d.date, dn ? "ok" : "v", d.n + "일차 " + d.ids.length + "가구"); } });
     if (dl.until) add(dl.until, "d", "명단 기한");
     var cal = F.aftercare.month([], ym, {}), cells = "일월화수목금토".split("").map(function (d) { return '<div class="wd">' + d + "</div>"; }).join("");
     var wk0 = U.startOfDay(now); wk0 = new Date(wk0.getTime() - wk0.getDay() * 864e5); var wk1 = new Date(wk0.getTime() + 6 * 864e5);
@@ -762,7 +762,7 @@
     var circ = 201, off = circ * (1 - (total ? (met + ab + rf) / total : 0));
     return pc(9, "s9", '<div class="l"><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div class="lab">' + now.getFullYear() + "년 " + (now.getMonth() + 1) + '월</div><h2 class="h-scr" style="margin-top:8px">다시 볼 날을 놓치지 않게</h2></div><div class="legend"><span><i style="background:var(--river)"></i>방문</span><span><i style="background:var(--warn)"></i>재확인</span><span><i style="background:var(--gam)"></i>약속</span><span><i style="background:var(--alert)"></i>기한 지남</span><span><i style="background:var(--ink)"></i>명단 기한</span></div></div><div class="cal-wrap"><div class="cal">' + cells + "</div></div></div>" +
       '<div class="r"><div class="ring-wrap"><svg width="76" height="76" viewBox="0 0 78 78" aria-hidden="true"><circle cx="39" cy="39" r="32" fill="none" stroke="var(--fog-2)" stroke-width="9"/><circle cx="39" cy="39" r="32" fill="none" stroke="var(--river)" stroke-width="9" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="' + off.toFixed(0) + '" transform="rotate(-90 39 39)"/><text x="39" y="44" text-anchor="middle" font-family="Hahmlet" font-weight="700" font-size="19" fill="#132029">' + met + "/" + total + "</text></svg>" +
-      '<div><div class="lab">' + esc(roundYm()) + " 명단" + (dl.until ? " · 기한 " + dl.until.slice(5).replace("-", ".") : "") + '</div><div style="font:700 17px/1.3 var(--f-display);margin-top:6px">' + met + "가구 확인 · " + (total - met) + '가구 남음</div><div class="seg4"><i style="flex:' + (met || .001) + ';background:var(--ok)"></i><i style="flex:' + (ab + rf || .001) + ';background:var(--warn)"></i><i style="flex:' + (rest || .001) + ';background:var(--sheet-3)"></i></div><div class="sub" style="margin-top:6px">만남 ' + met + " · 부재 " + ab + (rf ? " · 거절 " + rf : "") + (nextD ? " · " + (nextD.date === today ? "오늘" : nextD.date ? md(nextD.date) : "다음") + " " + nextD.n + "일차 " + nextD.ids.filter(function (id) { return statusOf(id) === "planned"; }).length + "집" : "") + "</div></div></div>" +
+      '<div><div class="lab">' + esc(roundYm()) + " 명단" + (dl.until ? " · 기한 " + dl.until.slice(5).replace("-", ".") : "") + '</div><div style="font:700 17px/1.3 var(--f-display);margin-top:6px">' + met + "가구 확인 · " + (total - met) + '가구 남음</div><div class="seg4"><i style="flex:' + (met || .001) + ';background:var(--ok)"></i><i style="flex:' + (ab + rf || .001) + ';background:var(--warn)"></i><i style="flex:' + (rest || .001) + ';background:var(--sheet-3)"></i></div><div class="sub" style="margin-top:6px">만남 ' + met + " · 부재 " + ab + (rf ? " · 거절 " + rf : "") + (nextD ? " · " + (nextD.date === today ? "오늘" : nextD.date ? md(nextD.date) : "다음") + " " + nextD.n + "일차 " + nextD.ids.filter(function (id) { return statusOf(id) === "planned"; }).length + "가구" : "") + "</div></div></div>" +
       '<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lab">이번 주 할 일</span><span class="sub num">' + todo.length + "건 중 " + todo.filter(function (x) { return x.done; }).length + "건 끝</span></div>" +
       (todo.length ? '<ul class="todo">' + todo.slice(0, 8).map(function (x) { return '<li class="' + (x.done ? "dn" : "") + '"><button class="ck' + (x.done ? " on" : "") + '" data-todo="' + esc(x.id) + '" data-k="' + x.k + '" aria-label="끝냄 표시"' + (x.k === "v" ? " disabled" : "") + "></button><div>" + esc(x.t) + "<small>" + esc(x.s) + "</small></div>" + tag(x) + "</li>"; }).join("") + "</ul>" : '<div class="emptybox"><p>이번 주는 다시 볼 집이 없습니다.</p></div>') +
       '<div class="loop">' + ic("i-loop") + '<span>다음 차수 명단이 오면 ①에서 이번 차수와 자동으로 견줍니다.</span><a class="b b-ghost" href="#s1" style="height:28px">①로</a></div></div>');

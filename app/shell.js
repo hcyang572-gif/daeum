@@ -9,13 +9,16 @@
    ⛔ 넣지 않는 것: 주민 화면 · 신고 접수 · .ics · 다크 화면.                                                              */
 (function (root) {
   "use strict";
+  // S12-x(🩵 미르 64회차): 아이콘 = 시안 S12-h v2.2 그대로(오늘=집 · 현장=문 · 기록=마이크 · 보고=문서)
   var I = {
-    today: '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.7" fill="currentColor" stroke="none"/>',
+    today: '<path d="M4 11.5 12 4l8 7.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/>',
     visit: '<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>',
-    field: '<path d="M3.5 11 12 4l8.5 7v9h-17z"/><path d="M9.5 20v-5.5h5V20"/>',
-    rec: '<path d="M5 19.5h4L19.5 9a2.1 2.1 0 0 0-3-3L6 16.5z"/><path d="M14.5 8l3 3M5 19.5h14"/>',
-    rep: '<path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'
+    field: '<path d="M6 21V4.5A1.5 1.5 0 0 1 7.5 3h8A1.5 1.5 0 0 1 17 4.5V21M3.5 21h17"/><circle cx="13.6" cy="12.4" r=".9" fill="currentColor"/>',
+    rec: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
+    rep: '<path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9.5 13h5M9.5 16.5h3.5"/>'
   };
+  // 레일(PC)에만 보이는 작은 설명 — 시안 TABDEF 세 번째 칸
+  var DESC = { today: "지금 할 일", visit: "순서·동선", field: "집 앞·확인·상담", rec: "고르면 문장", rep: "문서·실적" };
   // [열쇠, 이름, 주소(가구 번호를 이어 붙일지), 묶이는 화면]
   var TABS = [
     ["today", "오늘", "#today", false, ["today"]],
@@ -38,15 +41,36 @@
   /** 탭 링크 5개(폴드용 접힘선 칸 포함). on = 화면 이름 또는 탭 열쇠, hid = 지금 가구 */
   function links(on, hid) {
     var k = tabOf(on), x = hid ? ":" + hid : "";
-    return TABS.map(function (t, i) {
-      return (i === 3 ? '<i class="hinge" aria-hidden="true"></i>' : "") +
-        '<a href="' + t[2] + (t[3] ? x : "") + '" data-tab="' + t[0] + '"' + (i === k ? ' class="on" aria-current="page"' : "") + ">" + svg(t[0]) + "<span>" + t[1] + "</span></a>";
-    }).join("");
+    // S12-x: 시안처럼 왼손 3(오늘·방문·현장) | 오른손 2(기록·보고) 두 덩이(.tg) — 폰·PC에서는 한 줄(display:contents), 폴드에서만 쟁반 두 개
+    var a = TABS.map(function (t, i) {
+      return '<a href="' + t[2] + (t[3] ? x : "") + '" data-tab="' + t[0] + '"' + (i === k ? ' class="on" aria-current="page"' : "") + ">" + svg(t[0]) + "<span>" + t[1] + "<small>" + DESC[t[0]] + "</small></span></a>";
+    });
+    return '<span class="tg">' + a.slice(0, 3).join("") + '</span><i class="hinge" aria-hidden="true"></i><span class="tg">' + a.slice(3).join("") + "</span>";
+  }
+  // S12-x 65회차: 새 셸(시안 v3 tabsHTML·railHTML 그대로) — 단추(<button data-go="#화면">) · 아이콘 = shared/icons_s12x.js(I) · 현장 = 청록 열쇠(.key)
+  //   폰·폴드 = 아래 탭(두 덩이 .tg) · 태블릿·PC = 왼쪽 레일(.rl, 작은 설명). 기능·주소는 links() 와 같다(가구 번호 이어 붙임).
+  var IK = { today: "today", visit: "route", field: "field", rec: "record", rep: "report" };
+  function go(t, x) { return t[2] + (t[3] ? x : ""); }
+  function dotOf(t, o) { return t[0] === "rep" && o && o.dot ? '<em class="dot" style="font-style:normal">' + o.dot + "</em>" : ""; }
+  function tabsHTML(view, hid, I, o) {
+    var k = tabOf(view), x = hid ? ":" + hid : "";
+    var b = TABS.map(function (t, i) {
+      return '<button type="button" class="pr' + (t[0] === "field" ? " key" : "") + (i === k ? " on" : "") + '" data-go="' + go(t, x) + '" data-tab="' + t[0] + '" aria-current="' + (i === k ? "page" : "false") + '">' + ((I || {})[IK[t[0]]] || svg(t[0])) + "<span>" + t[1] + "</span>" + dotOf(t, o) + "</button>";
+    });
+    return '<div class="tg">' + b.slice(0, 3).join("") + '</div><div class="tg">' + b.slice(3).join("") + "</div>";
+  }
+  function railHTML(view, hid, I, o) {
+    var k = tabOf(view), x = hid ? ":" + hid : "";
+    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12y70" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
+      TABS.map(function (t, i) {
+        return '<button type="button" class="rl pr' + (i === k ? " on" : "") + '" data-go="' + go(t, x) + '" data-tab="' + t[0] + '"' + (i === k ? ' aria-current="page"' : "") + ">" + ((I || {})[IK[t[0]]] || svg(t[0])) + "<span>" + t[1] + "<small>" + DESC[t[0]] + "</small></span>" + dotOf(t, o) + "</button>";
+      }).join("") + ((o && o.foot) || "");
   }
   function subtabs(view, hid) {
     var k = tabOf(view), t = TABS[k], s = t && SUB[t[0]]; if (!s) return "";
     var x = hid ? ":" + hid : "";
-    return '<nav class="subtabs" aria-label="' + t[1] + ' 안 화면">' + s.map(function (q) { return '<a href="' + q[1] + (q[3] ? x : "") + '"' + (q[2] === view ? ' class="on" aria-current="page"' : "") + ">" + q[0] + "</a>"; }).join("") + "</nav>";
+    // S12-x 66회차: 시안 v3 .subseg(«계획·순서 | 동선·길안내», «문서 | 실적·사후관리») — 단추 data-go 로 주소 이동
+    return '<nav class="subseg subtabs" aria-label="' + t[1] + ' 안 화면">' + s.map(function (q) { return '<button type="button" class="pr' + (q[2] === view ? " on" : "") + '" data-go="' + q[1] + (q[3] ? x : "") + '"' + (q[2] === view ? ' aria-current="page"' : "") + ">" + q[0] + "</button>"; }).join("") + "</nav>";
   }
 
   // ── 브라우저에서만 ──
@@ -55,29 +79,28 @@
   /** 그린 뒤 한 번 부른다: 작은 칸 끼우기 · 행동줄 옮기기 · 전환 움직임 */
   function after(app, view, hid) {
     if (!app) return;
-    var main = app.querySelector("main");
+    var main = app.querySelector("main"), col0 = app.querySelector("main > .col") || main; // S12-x 66회차: <main class="main"> 안 칸(.col) 2~3개 — 작은 칸은 첫 칸 맨 위
     // ② 작은 칸
     var st = subtabs(view, hid);
-    if (st && main && !main.querySelector(".subtabs")) {
-      var anchor = main.querySelector(":scope > .ph-brand") || null, tmp = doc.createElement("div"); tmp.innerHTML = st;
-      var node = tmp.firstChild;
-      if (anchor) anchor.parentNode.insertBefore(node, anchor.nextSibling); else main.insertBefore(node, main.firstChild);
+    if (st && col0 && !col0.querySelector(".subtabs")) {
+      var tmp = doc.createElement("div"); tmp.innerHTML = st;
+      col0.insertBefore(tmp.firstChild, col0.firstChild);
     }
     // ③ 행동줄
     var old = app.querySelector(":scope > .actbar"); if (old) old.remove();
     var items = Array.prototype.slice.call(app.querySelectorAll("[data-dock]"));
     doc.body.classList.toggle("has-dock", items.length > 0);
+    app.classList.toggle("hasact", items.length > 0); // S12-x 65회차: 시안 v3 — 행동줄이 있으면 칸 아래 여백(app/v3_live.css ①)
     if (items.length) {
       items.sort(function (a, b) { return (+b.getAttribute("data-dock") || 1) - (+a.getAttribute("data-dock") || 1); }); // 2(보조) 왼쪽 → 1(주) 오른쪽
       var bar = doc.createElement("div"); bar.className = "actbar" + (items.length > 1 ? " two" : ""); bar.setAttribute("role", "group"); bar.setAttribute("aria-label", "다음 단계");
       items.slice(0, 2).forEach(function (el) { bar.appendChild(el); });
-      if (main && !main.querySelector(".actbar-sp")) { var sp = doc.createElement("div"); sp.className = "actbar-sp"; sp.setAttribute("aria-hidden", "true"); main.appendChild(sp); }
       app.appendChild(bar);
     }
     // ④ 전환(탭이 바뀔 때만)
     var k = tabOf(view);
     if (lastTab !== null && k !== lastTab && !RM.matches) {
-      var box = app.querySelector(".desk") || main;
+      var box = main;
       if (box) {
         box.style.setProperty("--sh-dx", (k > lastTab ? 24 : -24) + "px");
         box.classList.remove("sh-in"); void box.offsetWidth; box.classList.add("sh-in");
@@ -105,13 +128,13 @@
   if (doc) {
     // 260ms 안 이중 탭 무시(탭·작은 칸)
     doc.addEventListener("click", function (e) {
-      var a = e.target && e.target.closest && e.target.closest(".tabs a, .subtabs a");
+      var a = e.target && e.target.closest && e.target.closest(".tabs a, .tabs button, .rail .rl, .subtabs button");
       if (!a) return;
       var t = Date.now(); if (t - lastTap < 260) { e.preventDefault(); e.stopPropagation(); return; }
       lastTap = t;
     }, true);
   }
-  var api = { TABS: TABS, SUB: SUB, tabOf: tabOf, links: links, subtabs: subtabs, after: after, busy: busy };
+  var api = { TABS: TABS, SUB: SUB, tabOf: tabOf, links: links, tabsHTML: tabsHTML, railHTML: railHTML, subtabs: subtabs, after: after, busy: busy };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DaeumShell = api;
 })(typeof window !== "undefined" ? window : globalThis);

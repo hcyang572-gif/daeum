@@ -99,11 +99,11 @@
         '<li class="ch-fs"><span class="ch-fl">' + esc(s.label) + '</span><span class="ch-fb"><i class="c1" style="width:' + w + '%"></i></span><b class="num">' + num(s.n) + '</b><em class="num">' + pct(s.n, top) + "%</em></li>";
     }).join("") + "</ol>";
   }
-  /** 흐름도 — stages: [{label, sub, n}] · 단계를 화살표로 잇고, 멈춘 집 수를 마디 크기·테두리로(0이면 비움) */
+  /** 흐름도 — stages: [{label, sub, n}] · 단계를 화살표로 잇고, 멈춘 가구 수를 마디 크기·테두리로(0이면 비움) */
   function flow(stages, o) {
     o = o || {}; var unit = o.unit || "곳", mx = Math.max.apply(null, stages.map(function (s) { return s.n; }).concat([1]));
     var lab = stages.map(function (s) { return s.label + (s.sub ? "(" + s.sub + ")" : "") + " " + s.n + unit; }).join(" → ");
-    return '<ol class="ch-flow" role="img" aria-label="' + esc("멈춘 집: " + lab) + '">' + stages.map(function (s) {
+    return '<ol class="ch-flow" role="img" aria-label="' + esc("멈춘 가구: " + lab) + '">' + stages.map(function (s) {
       var sz = s.n ? Math.round(40 + 16 * Math.sqrt(s.n / mx)) : 36;
       return '<li class="ch-fn' + (s.n ? " on" : "") + '"><span class="ch-fd num" style="--sz:' + sz + 'px">' + num(s.n) + '</span><b>' + esc(s.label) + "</b>" + (s.sub ? '<span class="ch-fsub">' + esc(s.sub) + "</span>" : "") + "</li>";
     }).join("") + "</ol>";
