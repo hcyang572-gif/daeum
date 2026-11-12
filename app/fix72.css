@@ -141,3 +141,12 @@ html[data-nudge="off"] #app .dock .pri.glow::after { content: none; animation: n
 .sheet .sp-tm { display: grid; gap: 8px; }
 .sheet .sp-tm .tm-al { animation: none; }
 .tm-alerts .tm-bn { pointer-events: auto; }
+/* 79회차 덤(11-13 실폰 344px): «도착했어요»가 «도착했어…»로 잘림 — 길안내와 반반(약 150px)일 때 글 칸이 74px 뿐(16+8 여백·화살표 40·간격 12).
+   좁은 폭에서만 화살표 칸 28px·여백·간격을 줄이고 글자 15px, 그래도 모자라면 줄바꿈(어절 단위). 411px 이상은 그대로. */
+@media (max-width: 380px) {
+  #app .dock .row:has(> .sbt.nav) > .pri { grid-template-columns: minmax(0, 1fr) 28px; gap: 6px; padding: 6px 6px 6px 12px; }
+  #app .dock .row:has(> .sbt.nav) > .pri b { font-size: 15px; white-space: normal; text-overflow: clip; word-break: keep-all; line-height: 1.15; }
+  #app .dock .row:has(> .sbt.nav) > .pri > .go { width: 28px; height: 28px; border-radius: 10px; }
+  #app .dock .row:has(> .sbt.nav) > .pri > .go svg { width: 16px; height: 16px; }
+  #app .dock .row:has(> .sbt.nav) > .sbt.nav { font-size: 15px; gap: 6px; padding: 6px 8px; }
+}

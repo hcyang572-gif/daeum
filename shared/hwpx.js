@@ -13,7 +13,12 @@
              | {t:"img", data:Uint8Array, ext:"png"(기본·jpg·svg 시험), width:0~1(본문 폭 비율, 기본 1), title:"[그림 1] …", src:"※ 출처: …"}   // 그림 파일은 BinData/ 에 넣는다(S11-d4)
              | {t:"p", text, kind:"note"|"src"|"end"|"att"(붙임 줄 — 본문 글자)} | {t:"break"}
              | {t:"tbl", title:"<표 1> …", unit:"(단위: …)", head:[…], rows:[[…]], align:"center"(선택), foot:{label:"합계", sum:[1,2], fx:{3:"=C{r}/B{r}*100"}}, src:"※ 출처: …", widths:[…]} ] }
-   foot.sum = 합계(=SUM) 낼 열 번호, foot.fx = 그 밖의 식({r}=합계 줄 번호, 예 접촉률 =C7/B7*100). */
+   foot.sum = 합계(=SUM) 낼 열 번호, foot.fx = 그 밖의 식({r}=합계 줄 번호, 예 접촉률 =C7/B7*100).
+   79회차 ⓓ-뒷단(_design/docs78/SPEC.md) 신설 블록:
+     {t:"sign", items:["담당","팀장","읍면동장"]}(결재란·오른쪽) · {t:"concl", text, label:"결론", tone:"warn"}(위·아래 굵은 선 결론 상자, 구형 box 도 이 모양)
+     {t:"form", rows:[[항목,내용]] 또는 [[항목,내용,항목,내용]], title, widths}(입력 양식표 — 항목 칸 회색·가운데, 내용 칸 왼쪽, 쪼개지 않음)
+     {t:"legend", items:[[이름,뜻]], colors:[["pine"|"mustard"|"red"|"grey", 뜻]]}(읽는 법 상자) · {t:"ci", mk:"1."|"☐"}(기호 바꿈) · {t:"t2", norule:true}
+     {t:"p", kind:"tail"(꼬리 한 줄)|"big"(큰 글씨 한 줄)|"att2"(붙임 둘째 줄)} · 표(tbl·tbl2) 열 정렬은 al 이 없으면 자동(숫자 오른쪽·날짜·번호 가운데·글 왼쪽) */
 (function (root, factory) {
   var ns = factory(root);
   root.DaeumHwpx = ns;
@@ -42,19 +47,24 @@
     // S11-d4 C안(공문 정제형) — 크기 4단 22·15·13·10. 29 제목 · 30 소제목 · 31 본문 굵게 · 32 본문 굵은 빨강 · 33 숫자 카드 큰 글 · 34 카드 라벨 · 35 작은 굵은 빨강 · 36 표 머리 · 37 표 칸 · 38 표 칸 빨강 · 39 표 합계 · 40 부제 · 41 카드 단위 · 42 그림 제목 · 43 본문 작은 회색 · 44 작은 굵은 초록
     [2, 22, 1, "#14211F"], [2, 15, 1, "#14211F"], [0, 13, 1, "#000000"], [0, 13, 1, "#B42318"], [2, 22, 1, "#2F5D50"], [2, 10, 0, "#333333"], [2, 10, 1, "#B42318"], [2, 10, 0, "#595959"], [2, 10, 0, "#000000"], [2, 10, 1, "#B42318"], [2, 10, 1, "#000000"], [2, 10, 0, "#595959"], [2, 13, 0, "#333333"], [2, 13, 1, "#14211F"], [0, 10, 0, "#595959"], [2, 10, 1, "#2F5D50"],
     // S12-d 40 큰 글씨(kpi2 big): 45 카드 머리말 18pt 굵게 · 46 카드 값 26pt 굵게
-    [2, 18, 1, "#333333"], [2, 26, 1, "#2F5D50"]];
-  var C4 = { title: 29, sec: 30, bold: 31, red: 32, kBig: 33, kLab: 34, kRed: 35, th: 36, td: 37, tdRed: 38, tdSum: 39, sub: 40, kUnit: 41, cap: 42, small: 43, green: 44, bigLab: 45, bigVal: 46 };
+    [2, 18, 1, "#333333"], [2, 26, 1, "#2F5D50"],
+    // 79회차 ⓓ-뒷단(SPEC docs78): 47 표 머리 굵게(먹색) · 48 꼬리 한 줄(회색 10pt)
+    [2, 10, 1, "#14211F"], [2, 10, 0, "#595959"]];
+  var C4 = { title: 29, sec: 30, bold: 31, red: 32, kBig: 33, kLab: 34, kRed: 35, th: 36, td: 37, tdRed: 38, tdSum: 39, sub: 40, kUnit: 41, cap: 42, small: 43, green: 44, bigLab: 45, bigVal: 46, thB: 47, tail: 48 };
   // 문단 모양: [정렬, 왼쪽, 내어쓰기(음수 — 한글은 첫 줄을 왼쪽 여백에 두고 둘째 줄부터 그만큼 안으로), 위, 아래, 줄간격%, 다음과 함께]
-  var PP = { body: 0, center: 1, right: 2, l1: 3, l2: 4, l3: 5, l4: 6, cellL: 7, cellR: 8, cellC: 9, ch: 10, note: 11, cap: 12, tight: 13, legend: 14 };
+  var PP = { left0: 7, body: 0, center: 1, right: 2, l1: 3, l2: 4, l3: 5, l4: 6, cellL: 7, cellR: 8, cellC: 9, ch: 10, note: 11, cap: 12, tight: 13, legend: 14 };
   var PPS = [["JUSTIFY", 0, 0, 0, 0, 160, 0], ["CENTER", 0, 0, 0, 0, 160, 0], ["RIGHT", 0, 0, 0, 0, 160, 0],
-    ["JUSTIFY", 0, -1800, 1000, 0, 160, 0], ["JUSTIFY", 1300, -1800, 300, 0, 160, 0], ["JUSTIFY", 2600, -1000, 200, 0, 160, 0], ["JUSTIFY", 3900, -1000, 100, 0, 160, 0],
-    ["LEFT", 0, 0, 0, 0, 130, 0], ["RIGHT", 0, 0, 0, 0, 130, 0], ["CENTER", 0, 0, 0, 0, 130, 0], ["LEFT", 0, 0, 1800, 600, 160, 1], ["LEFT", 0, 0, 200, 0, 130, 0], ["LEFT", 0, 0, 800, 150, 130, 1],
+    // 79회차 SPEC §1-1·1-2: 개조식 = 왼쪽 정렬(양쪽 정렬 금지) · 단계 들여쓰기 한 벌(□ 0/1800 · ○ 1300/1700 · - 2600/1300 · · 3700/1100) · □ 은 다음 문단과 함께
+    ["LEFT", 0, -1800, 1000, 0, 160, 1], ["LEFT", 1300, -1700, 300, 0, 160, 0], ["LEFT", 2600, -1300, 200, 0, 160, 0], ["LEFT", 3700, -1100, 100, 0, 160, 0],
+    ["LEFT", 0, 0, 0, 0, 130, 0], ["RIGHT", 0, 0, 0, 0, 130, 0], ["CENTER", 0, 0, 0, 0, 130, 0], ["LEFT", 0, 0, 1800, 600, 160, 1], ["LEFT", 0, 0, 400, 0, 130, 0], ["LEFT", 0, 0, 600, 200, 130, 1],
     ["CENTER", 0, 0, 0, 0, 100, 0], ["LEFT", 0, 0, 200, 0, 140, 0],
     // S11-d4: 15 ○ 줄 · 16 - 줄 · 17 □ 소제목 · 18 제목 · 19 그림 제목 · 20 부제
-    ["JUSTIFY", 2000, -2000, 100, 0, 140, 0], ["JUSTIFY", 3400, -1400, 0, 0, 140, 0], ["LEFT", 0, 0, 1000, 200, 130, 1], ["CENTER", 0, 0, 800, 100, 130, 0], ["LEFT", 0, 0, 800, 100, 130, 1], ["CENTER", 0, 0, 0, 300, 130, 0],
+    ["LEFT", 1300, -1700, 200, 0, 145, 0], ["LEFT", 2600, -1300, 0, 0, 145, 0], ["LEFT", 0, 0, 1000, 300, 130, 1], ["CENTER", 0, 0, 0, 300, 130, 0], ["LEFT", 0, 0, 800, 100, 130, 1], ["CENTER", 0, 0, 0, 300, 130, 0],
     // S12-d 40 doc.compact(한 쪽 맞춤 선택): 21 장 제목 · 22 □ 줄 — 위 간격·줄간격만 줄임
-    ["LEFT", 0, 0, 600, 250, 150, 1], ["JUSTIFY", 0, -1800, 200, 0, 145, 0]];
-  var P4 = { o: 15, d: 16, sec: 17, title: 18, cap: 19, sub: 20 };
+    ["LEFT", 0, 0, 600, 250, 150, 1], ["LEFT", 0, -1800, 200, 0, 145, 1],
+    // 79회차: 23 기관·날짜줄(선 밑 4pt 띄움) · 24 꼬리 한 줄 · 25 붙임 둘째 줄(«붙임» 글자 폭만큼 안으로)
+    ["RIGHT", 0, 0, 400, 300, 130, 0], ["LEFT", 0, 0, 400, 0, 130, 0], ["LEFT", 2600, 0, 0, 0, 160, 0]];
+  var P4 = { o: 15, d: 16, sec: 17, title: 18, cap: 19, sub: 20, made: 23, tail: 24, att2: 25 };
   var PC = { ch: 21, l1: 22 }; // doc.compact 전용
   var COMPACT = false;     // section() 동안만 켜진다
   // 테두리/배경: 1 없음(쪽) · 2 없음(글자) · 3 표 칸 · 4 머리 칸(회색) · 5 합계 칸(옅은 회색, 위 굵은 선) · 6 제목 상자 · 7 결론 상자
@@ -81,7 +91,9 @@
       // S11-d4 C안 — 배경 칠 없음: 23 위선(굵게) · 24 카드 칸(위·아래 굵은 선) · 25 카드 가운데 칸(+옅은 세로선) · 26 표 머리(아래 굵은 선) · 27 표 줄(아래 옅은 선) · 28 표 합계 줄(없음) · 29 결정 표 머리(위·아래 굵은 선)
       bfx(23, { l: null, r: null, t: ["0.4 mm", "#14211F"], b: null }), bfx(24, { l: null, r: null, t: ["0.4 mm", "#14211F"], b: ["0.4 mm", "#14211F"] }),
       bfx(25, { l: ["0.12 mm", "#B8C4BF"], r: ["0.12 mm", "#B8C4BF"], t: ["0.4 mm", "#14211F"], b: ["0.4 mm", "#14211F"] }), bfx(26, { l: null, r: null, t: null, b: ["0.4 mm", "#14211F"] }),
-      bfx(27, { l: null, r: null, t: null, b: ["0.12 mm", "#B8C4BF"] }), bfx(28, { l: null, r: null, t: null, b: null }), bfx(29, { l: null, r: null, t: ["0.4 mm", "#14211F"], b: ["0.4 mm", "#14211F"] })];
+      bfx(27, { l: null, r: null, t: null, b: ["0.12 mm", "#B8C4BF"] }), bfx(28, { l: null, r: null, t: null, b: null }), bfx(29, { l: null, r: null, t: ["0.4 mm", "#14211F"], b: ["0.4 mm", "#14211F"] }),
+      // 79회차 SPEC §2: 30 양식표 항목 칸(가는 격자 + 옅은 회색 #EEF2F0)
+      bfx(30, grid, "#EEF2F0")];
   }
   function header() {
     var langs = ["HANGUL", "LATIN", "HANJA", "JAPANESE", "OTHER", "SYMBOL", "USER"];
@@ -116,7 +128,7 @@
   function t(s) { return "<hp:t>" + esc(s) + "</hp:t>"; }
   function para(pp, runs, brk) { return '<hp:p id="0" paraPrIDRef="' + pp + '" styleIDRef="0" pageBreak="' + (brk ? 1 : 0) + '" columnBreak="0" merged="0">' + runs + "</hp:p>"; }
   function secPr(plain) {
-    var mt = plain ? 3400 : COMPACT ? 3400 : PAGE.t, mb = plain ? 3000 : COMPACT ? 3000 : PAGE.b;
+    var mt = PAGE.t, mb = PAGE.b; // 79회차 SPEC §1: C안·compact 도 같은 쪽 여백(위 20·아래 15·좌우 20mm)
     var nf = function (place, len) { return '<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/><hp:noteLine length="' + len + '" type="SOLID" width="0.12 mm" color="#000000"/><hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/><hp:numbering type="CONTINUOUS" newNum="1"/><hp:placement place="' + place + '" beneathText="0"/>'; };
     var pbf = function (ty) { return '<hp:pageBorderFill type="' + ty + '" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER"><hp:offset left="1417" right="1417" top="1417" bottom="1417"/></hp:pageBorderFill>'; };
     return '<hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="0" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">' +
@@ -126,17 +138,18 @@
       "<hp:footNotePr>" + nf("EACH_COLUMN", -1) + "</hp:footNotePr><hp:endNotePr>" + nf("END_OF_DOCUMENT", 14692344) + "</hp:endNotePr>" + pbf("BOTH") + pbf("EVEN") + pbf("ODD") + "</hp:secPr>";
   }
   function tcell(c, r, w, h, bfId, inner, headRow, span, mg) {
-    mg = mg || [510, 510, 141, 141];
+    mg = mg || [567, 567, 283, 283]; // 79회차 SPEC §2: 좌우 2.0mm · 상하 1.0mm
     return '<hp:tc name="" header="' + (headRow ? 1 : 0) + '" hasMargin="0" protect="0" editable="0" dirty="0" borderFillIDRef="' + bfId + '"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">' + inner +
       '</hp:subList><hp:cellAddr colAddr="' + c + '" rowAddr="' + r + '"/><hp:cellSpan colSpan="' + (span || 1) + '" rowSpan="1"/><hp:cellSz width="' + w + '" height="' + h + '"/><hp:cellMargin left="' + mg[0] + '" right="' + mg[1] + '" top="' + mg[2] + '" bottom="' + mg[3] + '"/></hp:tc>';
   }
   function table(rows, opts) {
     // rows: [[{inner, w, bf, span}]] — 한 줄 칸 폭 합 = 표 폭
-    var nr = rows.length, nc = opts.cols, H = opts.rowH || 1700, W = opts.width || TW;
-    var body = rows.map(function (cells, r) { var c = 0; return "<hp:tr>" + cells.map(function (x) { var s = tcell(c, r, x.w, (opts.rowHs && opts.rowHs[r]) || H, x.bf, x.inner, opts.headRows && r < opts.headRows, x.span, x.mg); c += x.span || 1; return s; }).join("") + "</hp:tr>"; }).join("");
+    var nr = rows.length, nc = opts.cols, H = opts.rowH || 1984, W = opts.width || TW, hH = opts.headH || H;
+    var hOf = function (r) { return (opts.rowHs && opts.rowHs[r]) || (opts.headRows && r < opts.headRows ? hH : H); };
+    var body = rows.map(function (cells, r) { var c = 0; return "<hp:tr>" + cells.map(function (x) { var s = tcell(c, r, x.w, hOf(r), x.bf, x.inner, opts.headRows && r < opts.headRows, x.span, x.mg); c += x.span || 1; return s; }).join("") + "</hp:tr>"; }).join("");
     return '<hp:tbl id="' + nid() + '" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="' + (opts.split ? "CELL" : "NONE") + '" repeatHeader="1" rowCnt="' + nr + '" colCnt="' + nc + '" cellSpacing="0" borderFillIDRef="3" noAdjust="0">' +
-      '<hp:sz width="' + W + '" widthRelTo="ABSOLUTE" height="' + (opts.rowHs ? opts.rowHs.reduce(function (a, b) { return a + b; }, 0) : nr * H) + '" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/>' +
-      '<hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>' + body + "</hp:tbl>";
+      '<hp:sz width="' + W + '" widthRelTo="ABSOLUTE" height="' + rows.reduce(function (a, _, r) { return a + hOf(r); }, 0) + '" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/>' +
+      '<hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="567" right="567" top="283" bottom="283"/>' + body + "</hp:tbl>";
   }
   function inTable(tbl, pp) { return para(pp == null ? PP.center : pp, run(CP.body, tbl + "<hp:t/>")); }
   function cellP(pp, cp, text) { return para(pp, run(cp, t(text))); }
@@ -147,11 +160,29 @@
   }
   function colName(i) { return String.fromCharCode(65 + i); }
   function num(v) { return typeof v === "number" ? String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : String(v == null ? "" : v); }
+  /** 79회차 SPEC §2 열별 정렬 자동 판정 — 숫자·금액·% = 오른쪽 · 날짜·시각·가구 번호 = 가운데 · 나머지(글) = 왼쪽. 한 열 안에서 섞이면 글이 하나라도 있으면 왼쪽 */
+  function alOne(v) {
+    var s = String(v == null ? "" : v).split("\n")[0].replace(/\*\*|!!/g, "").trim();
+    if (!s || /^[—–-]$/.test(s)) return null;
+    if (/^[+\-−±]?[\d,.]+%?$/.test(s)) return "R";
+    if (/^\d{1,4}[.\- ]+\d/.test(s) || /^[A-Z]{1,2}-\d+/.test(s) || /^\d{1,2}:\d{2}/.test(s) || /^\d+차$/.test(s)) return "C";
+    return "L";
+  }
+  function autoAl(rows, nc) {
+    var out = [];
+    for (var i = 0; i < nc; i++) {
+      var k = {}; (rows || []).forEach(function (r) { var a = alOne(r[i]); if (a) k[a] = 1; });
+      out.push(k.L || (!k.R && !k.C) ? "L" : k.C ? "C" : "R");
+    }
+    return out;
+  }
   function dataTable(b) {
     var nc = b.head.length, ws = b.widths || null;
-    if (!ws) { var first = Math.round(TW * (nc > 4 ? 0.22 : 0.34)), rest = Math.floor((TW - first) / (nc - 1)); ws = [first]; for (var i = 1; i < nc; i++) ws.push(i === nc - 1 ? TW - first - rest * (nc - 2) : rest); }
-    var rows = [b.head.map(function (h, i) { return { w: ws[i], bf: 12, inner: cellP(PP.cellC, CP.headW, h) }; })];
-    (b.rows || []).forEach(function (r, ri) { rows.push(r.map(function (v, i) { return { w: ws[i], bf: ri % 2 ? 11 : 10, inner: cellP(b.align === "center" ? PP.cellC : i ? PP.cellR : PP.cellL, CP.cell, num(v)) }; })); });
+    if (!ws) { var first = Math.round(TW * (nc > 4 ? 0.22 : 0.3)), rest = Math.floor((TW - first) / (nc - 1)); ws = [first]; for (var i = 1; i < nc; i++) ws.push(i === nc - 1 ? TW - first - rest * (nc - 2) : rest); }
+    // 79회차 SPEC §2: 소나무 채움 머리 폐기 → 머리 가운데·굵게·아래 굵은 선, 줄마다 옅은 선, 열 정렬 자동
+    var al = b.align === "center" ? b.head.map(function () { return "C"; }) : (b.al || autoAl(b.rows, nc)), ppA = function (a) { return a === "R" ? PP.cellR : a === "C" ? PP.cellC : PP.cellL; };
+    var rows = [b.head.map(function (h, i) { return { w: ws[i], bf: 26, inner: cellP(PP.cellC, C4.thB, h) }; })];
+    (b.rows || []).forEach(function (r) { rows.push(r.map(function (v, i) { return { w: ws[i], bf: 27, inner: cellP(ppA(al[i]), CP.cell, num(v)) }; })); });
     if (b.foot) {
       var R = rows.length + 1, f = b.foot, n = (b.rows || []).length; // 한글 표 주소: 열 A,B…, 줄 1부터(머리행 = 1)
       var sumOf = function (i) { return (b.rows || []).reduce(function (s, r) { return s + (typeof r[i] === "number" ? r[i] : 0); }, 0); };
@@ -164,13 +195,13 @@
           var ex = f.fx[i].replace(/\{r\}/g, R), v = f.val && f.val[i] != null ? f.val[i] : "";
           inner = para(PP.cellR, formulaRun(CP.cellB, ex, v));
         } else inner = cellP(PP.cellR, CP.cellB, "");
-        return { w: ws[i], bf: 13, inner: inner };
+        return { w: ws[i], bf: 23, inner: inner };
       }));
     }
     var out = [];
-    if (b.title) out.push(para(PP.cap, run(CP.label, t(b.title)) + (b.unit ? run(CP.note, t("  " + b.unit)) : "")));
-    out.push(inTable(table(rows, { cols: nc, headRows: 1, split: true, rowH: COMPACT ? 1200 : 1500 })));
-    if (b.src) out.push(para(PP.note, run(CP.note, t(b.src))));
+    if (b.title) out.push(para(PP.cap, run(C4.thB, t(b.title)) + (b.unit ? run(C4.tail, t("  " + b.unit)) : "")));
+    out.push(inTable(table(rows, { cols: nc, headRows: 1, split: !b.keep, rowH: COMPACT ? 1700 : 1984, headH: COMPACT ? 1800 : 2126 })));
+    if (b.src) out.push(para(PP.note, run(C4.tail, t(b.src))));
     out.push(spacer());
     return out.join("");
   }
@@ -258,8 +289,62 @@
     return out || run(base, "<hp:t/>");
   }
   function rule() { return inTable(table([[{ w: TW, bf: 23, mg: [0, 0, 0, 0], inner: emptyP() }]], { cols: 1, rowH: 100 })); }
-  function titleBlock(b) {
-    return para(P4.title, run(C4.title, t(b.title))) + (b.sub ? para(P4.sub, run(C4.sub, t(b.sub))) : "") + rule() + (b.made ? para(PP.right, run(C4.small, t(b.made))) : "") ;
+  function titleBlock(b) { // 79회차: 선 밑 4pt 띄우고 기관·날짜줄(맑은 고딕 10pt 회색). b.norule = 선 없음(큰 글씨 안내문 — 카드 선과 두 겹 방지)
+    return para(P4.title, run(C4.title, t(b.title))) + (b.sub ? para(P4.sub, run(C4.sub, t(b.sub))) : "") + (b.norule ? "" : rule()) + (b.made ? para(P4.made, run(C4.tail, t(b.made))) : "");
+  }
+  /** 79회차 SPEC §3-2 결재란 — 오른쪽 위 3칸(담당/팀장/읍면동장), 윗줄 직위 7mm·아랫줄 서명 14mm, 칸 20mm */
+  function signBlock(b) {
+    var it = b.items || ["담당", "팀장", "읍면동장"], cw = 5669, lw = TW - cw * it.length;
+    var r1 = it.map(function (k) { return { w: cw, bf: 30, mg: [100, 100, 100, 100], inner: cellP(PP.cellC, CP.cellB, k) }; });
+    var r2 = it.map(function () { return { w: cw, bf: 10, mg: [100, 100, 100, 100], inner: cellP(PP.cellC, CP.cell, "") }; });
+    if (b.made) { // 79회차: 결재란 왼쪽 빈 칸 = 기관·날짜줄(제목 선 아래 한 줄을 따로 쓰지 않아 1쪽에 맞춤)
+      r1.unshift({ w: lw, bf: 2, mg: [0, 600, 0, 0], inner: cellP(PP.cellL, C4.tail, "") });
+      r2.unshift({ w: lw, bf: 2, mg: [0, 600, 0, 0], inner: cellP(PP.cellL, C4.tail, b.made) });
+      return para(PP.tight, run(CP.tiny, "<hp:t/>")) + inTable(table([r1, r2], { cols: it.length + 1, width: TW, rowHs: [1984, 3969] }), PP.left0) + spacer();
+    }
+    return inTable(table([r1, r2], { cols: it.length, width: cw * it.length, rowHs: [1984, 3969] }), PP.right) + spacer();
+  }
+  /** 79회차 SPEC §3-3 한 줄 결론 상자 — 칠 없이 위·아래 굵은 선, 왼쪽 «결론» 소나무 10pt 굵게, 오른쪽 13pt 굵게 */
+  function conclBlock(b) {
+    var wl = 6400, warn = b.tone === "warn";
+    return inTable(table([[{ w: wl, bf: 24, mg: [400, 200, 300, 300], inner: cellP(PP.cellL, warn ? C4.kRed : CP.barV, b.label || "결론") },
+      { w: TW - wl, bf: 24, mg: [300, 300, 300, 300], inner: para(PP.cellL, rich(b.text || "", C4.cap, C4.cap, C4.red)) }]], { cols: 2, rowH: 2400 })) + spacer();
+  }
+  /** 79회차 SPEC §2 입력 양식표 — 항목 칸 가운데·굵게·옅은 회색, 내용 칸 왼쪽, 가는 격자, 쪼개지 않음.
+      rows: [[항목, 내용]] 또는 4열 [[항목, 내용, 항목, 내용]](짝수 칸 = 항목). 4열 표 안 2칸 줄은 내용이 나머지를 합친다. 내용 «\n» = 칸 안 줄바꿈 */
+  function formBlock(b) {
+    var four = (b.rows || []).some(function (r) { return r.length > 2; }), out = [];
+    var ws = b.widths || (four ? [8200, 15895, 8200, 15895] : [10600, TW - 10600]), nc = ws.length;
+    var rows = (b.rows || []).map(function (r) {
+      var cells = [], c = 0;
+      for (var i = 0; i < r.length; i += 2) {
+        var last = i + 2 >= r.length, span = last ? nc - c - 1 : 1, wv = 0; for (var j = c + 1; j < c + 1 + span; j++) wv += ws[j];
+        cells.push({ w: ws[c], bf: 30, inner: cellP(PP.cellC, CP.cellB, r[i]) });
+        var vv = String(r[i + 1] == null ? "" : r[i + 1]).split("\n");
+        cells.push({ w: wv, bf: 10, span: span, inner: vv.map(function (x) { return para(PP.cellL, rich(x, CP.cell, CP.cellB, C4.tdRed)); }).join("") });
+        c += 1 + span;
+      }
+      return cells;
+    });
+    if (b.title) out.push(para(PP.cap, run(C4.thB, t(b.title)) + (b.unit ? run(C4.tail, t("  " + b.unit)) : "")));
+    out.push(inTable(table(rows, { cols: nc, rowH: b.rowH || 2268 })));
+    if (b.src) out.push(para(PP.note, run(C4.tail, t(b.src))));
+    if (!b.nospace) out.push(spacer());
+    return out.join("");
+  }
+  /** 79회차 확인 목록 — ☐ 항목을 선 없는 2열 표로(8줄 → 4줄). items: [글] */
+  function chkBlock(b) {
+    var it = b.items || [], n = b.cols || 2, cw = Math.floor(TW / n), rows = [];
+    for (var i = 0; i < it.length; i += n) { var r = []; for (var j = 0; j < n; j++) r.push({ w: j === n - 1 ? TW - cw * (n - 1) : cw, bf: 2, mg: [1300, 300, 100, 100], inner: it[i + j] != null ? para(PP.cellL, run(CP.body, t("☐ ")) + run(CP.cell, t(it[i + j]))) : cellP(PP.cellL, CP.cell, "") }); rows.push(r); }
+    return inTable(table(rows, { cols: n, rowH: 1700 }), PP.left0) + spacer();
+  }
+  /** 79회차 SPEC §3-4 읽는 법 상자 — 1칸 표·가는 격자. items: [[이름, 뜻]] · colors: [["pine"|"mustard"|"red"|"grey", 뜻]] */
+  var LEG_CP = { pine: 19, mid: 20, light: 21, mustard: 22, red: 35, grey: 23 }; // grey = 구성비 띠 거절 칸과 같은 #B9C2BF
+  function legendBlock(b) {
+    var inner = para(PP.cellL, run(CP.barV, t(b.title || "읽는 법")));
+    (b.items || []).forEach(function (x) { inner += para(PP.cellL, run(CP.cellB, t(x[0] + " ")) + run(CP.cell, t("= " + x[1]))); });
+    if (b.colors && b.colors.length) inner += para(PP.cellL, b.colors.map(function (c) { return run(LEG_CP[c[0]] || 48, t("■ ")) + run(CP.cell, t(c[1] + "    ")); }).join(""));
+    return inTable(table([[{ w: TW, bf: 10, mg: [567, 567, 283, 283], inner: inner }]], { cols: 1, rowH: 1984 })) + spacer();
   }
   function kpi2(b) {
     var it = b.items, n = it.length, w = Math.floor(TW / n);
@@ -273,16 +358,17 @@
   /** 일반 표(칠 없음): 머리 아래 굵은 선·줄마다 옅은 선. al 은 열마다 "L"/"R"/"C". 칸 글에 «
 » 이 있으면 둘째 줄은 작은 회색 */
   function tbl2(b) {
-    var nc = b.head.length, ws = b.widths, ask = b.grid === "ask", al = b.al || b.head.map(function (_, i) { return i ? "R" : "L"; });
+    var nc = b.head.length, ask = b.grid === "ask", al = b.al || autoAl(b.rows, nc); // 79회차 SPEC §2: 열 정렬 자동 판정
+    var ws = b.widths || (function () { var first = Math.round(TW * (nc > 4 ? 0.22 : 0.3)), rest = Math.floor((TW - first) / (nc - 1)), o = [first]; for (var i = 1; i < nc; i++) o.push(i === nc - 1 ? TW - first - rest * (nc - 2) : rest); return o; })();
     var pp = function (a) { return a === "R" ? PP.cellR : a === "C" ? PP.cellC : PP.cellL; };
-    var rows = [b.head.map(function (h, i) { return { w: ws[i], bf: ask ? 29 : 26, inner: para(pp(al[i]), run(C4.th, t(h))) }; })];
+    var rows = [b.head.map(function (h, i) { return { w: ws[i], bf: ask ? 29 : 26, inner: para(PP.cellC, run(C4.thB, t(h))) }; })]; // 머리 = 가운데·굵게
     var hl = {}; (b.hl || []).forEach(function (r) { hl[r] = 1; });
     function cell(v, i, ri, sum) {
       var parts = String(v == null ? "" : v).split("\n"), main = parts[0], red = hl[ri] && (i === 0 || b.hlCols && b.hlCols.indexOf(i) >= 0);
       var cp = ask && i === 0 ? 0 : sum ? C4.tdSum : red ? C4.tdRed : C4.td;
       var inner = para(pp(al[i]), ask && i === 0 ? rich(main, 0, C4.bold, C4.red) : rich(main, cp, C4.tdSum, C4.tdRed));
       if (parts[1]) inner += para(pp(al[i]), run(C4.small, t(parts[1])));
-      return { w: ws[i], bf: sum ? 28 : 27, mg: ask ? [300, 300, 220, 220] : [510, 510, 141, 141], inner: inner };
+      return { w: ws[i], bf: sum ? 23 : 27, mg: ask ? [300, 300, 220, 220] : [567, 567, 283, 283], inner: inner };
     }
     (b.rows || []).forEach(function (r, ri) { rows.push(r.map(function (v, i) { return cell(v, i, ri); })); });
     if (b.sum) rows.push(b.sum.map(function (v, i) {
@@ -290,19 +376,18 @@
       if (b.fx && i > 0 && v !== "" && !isNaN(Number(String(v).replace(/,/g, "")))) c.inner = para(pp(al[i]), formulaRun(C4.tdSum, "=SUM(" + colName(i) + "2:" + colName(i) + (rows.length) + ")", v)); // 합계 칸 = 한글 표 계산식
       return c;
     }));
-    var out = inTable(table(rows, { cols: nc, headRows: 1, rowH: ask ? 1600 : 1500 }));
-    if (b.src) out += para(PP.note, run(C4.small, t(b.src)));
+    var out = (b.title ? para(PP.cap, run(C4.thB, t(b.title)) + (b.unit ? run(C4.tail, t("  " + b.unit)) : "")) : "") + inTable(table(rows, { cols: nc, headRows: 1, rowH: 1984, headH: 2126, split: !!b.split }));
+    if (b.src) out += para(PP.note, run(C4.tail, t(b.src)));
     return out + (b.nospace ? "" : spacer());
   }
   function section(doc) {
     var P = []; COMPACT = !!doc.compact; // doc.compact = 한 쪽 맞춤(여백·장 간격·표 행 높이만 줄임, 내용·글자 크기 그대로)
     // 첫 문단: 구역 설정 + 쪽 번호(중앙 하단 «- n -»)
     P.push(para(PP.center, run(CP.body, secPr(doc.plain) + '<hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl><hp:ctrl><hp:pageNum pos="BOTTOM_CENTER" formatType="DIGIT" sideChar="-"/></hp:ctrl>') + run(CP.body, "<hp:t/>")));
-    // 제목 상자
-    if (!doc.plain) { // doc.plain = S11-d4 C안: 제목은 {t:"t2"} 블록이 그린다
-      P.push(inTable(table([[{ w: TW, bf: 8, inner: cellP(PP.center, CP.titleW, doc.title || "") + (doc.subtitle ? cellP(PP.center, CP.subL, doc.subtitle) : "") }]], { cols: 1, rowH: COMPACT ? 3200 : 4200 })));
-      P.push(para(PP.right, run(CP.note, t([doc.made, doc.office].filter(Boolean).join("  ")))));
-      if (doc.note) P.push(para(PP.note, run(CP.note, t(doc.note))));
+    // 제목 — 79회차 SPEC §1: 구형 소나무 제목상자 폐기 → 모든 문서가 C안 제목(22pt·부제·선·기관·날짜줄). doc.plain 문서는 {t:"t2"} 블록이 직접 그린다
+    if (!doc.plain) {
+      P.push(titleBlock({ title: doc.title || "", sub: doc.subtitle, made: [doc.made, doc.office].filter(Boolean).join(" · ") }));
+      if (doc.note) P.push(para(PP.note, run(C4.tail, t(doc.note))));
     }
     var pend = false; // C안: 쪽 나눔은 «다음 소제목 문단»에 붙인다(빈 문단이 새 쪽으로 밀려 빈 쪽이 생기는 것을 막음)
     (doc.blocks || []).forEach(function (b) {
@@ -313,17 +398,25 @@
       else if (b.t === "img") P.push(imgFig(b));
       else if (b.t === "t2") P.push(titleBlock(b));
       else if (b.t === "sec") { P.push(para(P4.sec, run(C4.sec, t("□ " + b.text)), pend)); pend = false; }
-      else if (b.t === "ci") P.push(para(b.lv === 3 ? P4.d : P4.o, (b.lv === 3 ? run(0, t("- ")) : run(0, t("○ "))) + rich(b.text, 0, C4.bold, C4.red)));
+      else if (b.t === "ci") P.push(para(b.lv === 3 ? P4.d : P4.o, run(0, t((b.mk || (b.lv === 3 ? "-" : "○")) + " ")) + rich(b.text, 0, C4.bold, C4.red))); // b.mk = 기호 바꿈(번호 «1.»·체크 «☐»)
+      else if (b.t === "sign") P.push(signBlock(b));
+      else if (b.t === "concl") P.push(conclBlock(b));
+      else if (b.t === "form") P.push(formBlock(b));
+      else if (b.t === "legend") P.push(legendBlock(b));
+      else if (b.t === "chk") P.push(chkBlock(b));
       else if (b.t === "kpi2") P.push(kpi2(b));
       else if (b.t === "cap2") P.push(para(P4.cap, run(C4.cap, t(b.title))) + (b.sub ? para(PP.note, run(C4.small, t(b.sub))) : ""));
       else if (b.t === "tbl2") P.push(tbl2(b));
       else if (b.t === "gap") P.push(spacer());
-      else if (b.t === "ch") P.push(para(COMPACT ? PC.ch : PP.ch, run(CP.ch, t(b.text))));
+      else if (b.t === "ch") { P.push(para(P4.sec, run(C4.sec, t(b.text)), pend)); pend = false; } // 79회차: 구형 장 제목(HY헤드라인M)도 C안 소제목 모양
       else if (b.t === "li") { var lv = Math.max(1, Math.min(4, b.lv || 1)); P.push(para(COMPACT && lv === 1 ? PC.l1 : PP["l" + lv], run(lv === 1 ? CP.l1 : CP.body, t(SYM[lv - 1] + " " + b.text)))); }
-      else if (b.t === "p" && b.kind === "small") P.push(para(PP.note, run(C4.small, t(b.text))));
-      else if (b.t === "p") P.push(b.kind === "att" ? para(PP.body, run(CP.body, t(b.text))) : para(b.kind === "end" ? PP.right : PP.note, run(b.kind === "end" ? CP.body : CP.note, t(b.text))));
-      else if (b.t === "break") { if (doc.plain) pend = true; else P.push(para(PP.body, run(CP.body, "<hp:t/>"), true)); }
-      else if (b.t === "box") { var warnB = b.tone === "warn"; P.push(inTable(table([[{ w: Math.round(TW * 0.2), bf: warnB ? 14 : 8, inner: cellP(PP.cellC, CP.tagW, b.label || "") }, { w: TW - Math.round(TW * 0.2), bf: warnB ? 22 : 21, mg: [800, 500, 141, 141], inner: cellP(PP.cellL, CP.sayL, b.text || "") }]], { cols: 2, rowH: 2900 })) + spacer()); }
+      else if (b.t === "p" && b.kind === "small") P.push(para(PP.note, run(C4.tail, t(b.text))));
+      else if (b.t === "p" && b.kind === "tail") P.push(para(P4.tail, run(C4.tail, t(b.text)))); // 꼬리 한 줄(시연 문구)
+      else if (b.t === "p" && b.kind === "big") P.push(para(PP.center, run(C4.bigLab, t(b.text))));
+      else if (b.t === "p" && b.kind === "att2") P.push(para(P4.att2, run(CP.body, t(b.text)))); // 붙임 둘째 줄부터
+      else if (b.t === "p") P.push(b.kind === "att" ? para(PP.body, run(CP.body, t(b.text))) : para(b.kind === "end" ? PP.right : PP.note, run(b.kind === "end" ? CP.body : C4.tail, t(b.text))));
+      else if (b.t === "break") { pend = true; } // 쪽 나눔은 다음 소제목 문단에 붙인다(빈 문단이 새 쪽으로 밀려 빈 쪽이 생기는 것을 막음)
+      else if (b.t === "box") P.push(conclBlock(b)); // 79회차: 구형 결론 상자(소나무 칠)도 결론 상자 모양
       else if (b.t === "tbl") P.push(dataTable(b));
     });
     COMPACT = false;

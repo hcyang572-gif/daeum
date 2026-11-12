@@ -385,11 +385,15 @@
   /** 모델 → DaeumHwpx.build(doc) 의 doc — C안 공문 정제형. [그림 1]은 PNG(opts.chartPng: Uint8Array)로 넣는다(없으면 숫자 한 줄) */
   function hwpxDoc(m, opts) {
     opts = opts || {};
-    var B = [{ t: "t2", title: m.title, sub: m.subtitle, made: "보고일 " + dot(m.made) + " · " + m.office }];
+    // 79회차 ⓓ-뒷단(SPEC docs78 R1): 구조는 그대로 — 결재란 · 읽는 법 상자(앱 화면 «읽는 법»과 같은 뜻) · 음수 ASCII «-»
+    var asc = function (s) { return String(s == null ? "" : s).replace(/−/g, "-"); };
+    var B = [{ t: "t2", title: m.title, sub: m.subtitle }, { t: "sign", made: "보고일 " + dot(m.made) + " · " + m.office },
+      { t: "legend", items: [["처리 완료", "방문해 결과를 기록한 가구"], ["목표선", "명단 ÷ 차수 일수 × 경과일(고르게 처리했다면 보고일까지 마쳤어야 할 가구)"], ["증감", "늘면 +, 줄면 -"]],
+        colors: [["pine", "처리·정상"], ["mustard", "부족·주의"], ["red", "기한·위험"], ["grey", "참고"]] }];
     m.body.forEach(function (n) {
       if (n.t === "ch") B.push({ t: "sec", text: n.text });
-      else if (n.t === "li") B.push({ t: "ci", lv: n.lv, text: n.text });
-      else if (n.t === "kpis") B.push({ t: "kpi2", items: m.kpis });
+      else if (n.t === "li") B.push({ t: "ci", lv: n.lv, text: asc(n.text) });
+      else if (n.t === "kpis") B.push({ t: "kpi2", items: m.kpis.map(function (k) { return { k: k.k, v: asc(k.v), u: k.u, s: asc(k.s) }; }) });
       else if (n.t === "fig") {
         B.push({ t: "cap2", title: "[그림 " + n.no + "] " + n.title, sub: n.sub });
         if (opts.chartPng) B.push({ t: "img", data: opts.chartPng, width: 0.8, alt: "누적 처리 완료 " + n.data.done[n.data.done.length - 1] + "가구, 목표선 " + n.data.goal + "가구" });
@@ -405,6 +409,7 @@
       else if (n.t === "note") B.push({ t: "p", kind: "small", text: n.text });
       else if (n.t === "break") B.push({ t: "break" });
     });
+    B.push({ t: "p", kind: "end", text: "끝." }, { t: "p", kind: "tail", text: "닿음 · 시연용 가상 데이터 · 개인정보 4칸 미기재" });
     return { title: m.title, made: dot(m.made), office: m.office, plain: true, blocks: B };
   }
   var TWW = 48190; // 본문 폭(hwpx.js 의 TW 와 같음)

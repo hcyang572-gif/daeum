@@ -89,16 +89,44 @@
     return list.slice().sort(by === "hid" ? function (a, b) { return a.hid < b.hid ? -1 : a.hid > b.hid ? 1 : 0; } : function (a, b) { return T(b.touched) - T(a.touched); });
   }
   /** hwpx 문서 모양(shared/hwpx.js) — 고른 가구들을 한 파일로 */
+  // 79회차 ⓓ-뒷단(SPEC docs78 H1): 첫 장 가구 요약표 · 가구마다 쪽 나눔 · 메모는 «방문 기록» 표에 한 번만(문서에는 고유 항목만) · 문서 «항목: 값» 줄은 양식표로
   function hwpxDoc(groups, docEdits, made) {
-    var blocks = [{ t: "box", label: "한 줄 결론", text: "가구 " + groups.length + "곳 방문 기록과 문서(가상 데이터 · 시연용)" }];
+    var dd = function (d) { d = new Date(d); return (d.getMonth() + 1) + ". " + d.getDate() + "."; }, nV = 0, nD = 0;
+    var sum = groups.map(function (g) { var ds = docsOf(g, docEdits); nV += g.visits.length; nD += ds.length; return [g.hid, g.area, g.visits.length + "회", RES[g.res], String(ds.length)]; });
+    var cnt = {}; groups.forEach(function (g) { cnt[g.res] = (cnt[g.res] || 0) + 1; });
+    var blocks = [{ t: "t2", title: "가구별 방문 기록·문서", sub: "복지 사각지대 현장 업무 도우미(닿음) · 가구 " + groups.length + "곳", made: (made ? made + " · " : "") + "상주시청" },
+      { t: "concl", text: "가구 " + groups.length + "곳 · 방문 " + nV + "회 — " + Object.keys(RES).filter(function (k) { return cnt[k]; }).map(function (k) { return RES[k] + " " + cnt[k]; }).join(" · ") + " · 문서 " + nD + "건" },
+      { t: "sec", text: "가구 요약" },
+      { t: "tbl2", head: ["가구", "읍면", "방문", "최종 결과", "문서 수"], al: ["C", "C", "C", "C", "R"], rows: sum, split: true }];
+    var norm = function (s) { return String(s || "").replace(/\s+/g, " ").trim(); }, notes = [];
+    var dfix = function (s) { return String(s).replace(/(^|[^\d])(\d{1,2})\.(\d{1,2})\./g, "$1$2. $3."); }; // 문서 안 날짜 «11. 13.»(SPEC §1)
     groups.forEach(function (g, i) {
+      var memos = {}; g.visits.forEach(function (v) { if (v.memo) memos[norm(v.memo)] = v.n; });
       if (i) blocks.push({ t: "break" });
-      blocks.push({ t: "ch", text: (i + 1) + ". 가구 " + g.hid + " · " + g.area + " · " + RES[g.res] });
-      g.visits.forEach(function (v) { blocks.push({ t: "li", lv: 1, text: v.n + "차 " + md(v.at) + " " + RES[v.res] + " — " + (v.memo || "기록 없음") }); });
-      docsOf(g, docEdits).forEach(function (d) { blocks.push({ t: "li", lv: 1, text: d.nm }); d.text.split("\n").slice(1).forEach(function (ln) { if (ln.trim()) blocks.push({ t: "li", lv: 2, text: ln }); }); });
+      blocks.push({ t: "sec", text: (i + 1) + ". 가구 " + g.hid + " · " + g.area + " · 최종 " + RES[g.res] });
+      blocks.push({ t: "tbl2", title: "방문 기록", head: ["차수", "방문일", "결과", "기록"], al: ["C", "C", "C", "L"], widths: [4600, 8400, 5200, 29990],
+        rows: g.visits.map(function (v) { return [v.n + "차", dd(v.at) + " " + hm(v.at), RES[v.res], v.memo || "기록 없음"]; }), split: true });
+      docsOf(g, docEdits).forEach(function (d) {
+        var kv = [], other = [];
+        d.text.split("\n").slice(1).forEach(function (ln) {
+          if (!ln.trim()) return;
+          var j = ln.indexOf(": ");
+          if (j > 0 && j < 14 && !/^※/.test(ln)) {
+            var k = ln.slice(0, j), v = ln.slice(j + 2);
+            if (/^(가구|대상|출장지)$/.test(k)) return; // 위 머리줄·표와 같은 값
+            if (memos[norm(v)]) v = "(위 «방문 기록» " + memos[norm(v)] + "차 참고)";
+            kv.push([k, dfix(v)]);
+          } else if (/^※/.test(ln)) { if (notes.indexOf(ln) < 0) notes.push(ln); } // ※ 안내는 끝에 한 번만
+          else other.push(dfix(ln));
+        });
+        blocks.push({ t: "cap2", title: d.nm + (d.edited ? " (직접 고침)" : "") });
+        if (kv.length) blocks.push({ t: "form", rows: kv, rowH: 1984 });
+        other.forEach(function (ln) { blocks.push({ t: "ci", lv: 2, text: ln }); });
+      });
     });
-    blocks.push({ t: "p", kind: "end", text: "끝." });
-    return { title: "가구별 방문 기록·문서", subtitle: "복지 사각지대 현장 업무 도우미(닿음)", made: made || "", office: "상주시청", blocks: blocks };
+    if (notes.length) blocks.push({ t: "p", kind: "small", text: "※ " + notes.map(function (n) { return n.replace(/^※\s*/, ""); }).join(" · ") });
+    blocks.push({ t: "p", kind: "end", text: "끝." }, { t: "p", kind: "tail", text: "닿음 · 시연용 가상 데이터 · 개인정보 4칸 미기재" });
+    return { plain: true, title: "가구별 방문 기록·문서", blocks: blocks };
   }
   /** 65회차: 화면 이름표(시안 v3 .tag 색: ok=만남 · w=부재 · g=거절) · 고친 때 글자(«오늘 10:48»·«11. 3. 11:02») */
   var RK = { met: "ok", absent: "w", refuse: "g" };

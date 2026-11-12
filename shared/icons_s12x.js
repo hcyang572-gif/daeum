@@ -46,7 +46,9 @@
       '<path d="M7.6 13.4V6.6a1.3 1.3 0 0 1 2.6 0v5M10.2 11.6V4.8a1.3 1.3 0 0 1 2.6 0v6.8M12.8 11.6V5.8a1.3 1.3 0 0 1 2.6 0v6.2M15.4 12.2V8.6a1.3 1.3 0 0 1 2.6 0v5.9a6 6 0 0 1-6 6h-.7a5.4 5.4 0 0 1-4.3-2.2l-2.6-3.6a1.25 1.25 0 0 1 1.9-1.6l1.3 1.3"/>'),
 
     // ── 3. 현장·방문 ──
-    nav: svg('<path d="M12 3.2 19 19.6 12 16 5 19.6z"/>', '<path d="M12 3.2 19 19.6 12 16 5 19.6z"/>'),
+    // 79회차(11-13 호창님 «길안내 아이콘 촌스러» → 네이버 지도 «느낌»): 초록 둥근 사각 배지(#03C75A) + 흰 길찾기 경로(출발점 → 꺾인 길 → 화살촉). 색 고정(currentColor 아님) · ⛔ 네이버 로고(N) 쓰지 않음
+    nav: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="#03C75A"/>' +
+      '<path d="M8 17.2V12.4a2.6 2.6 0 0 1 2.6-2.6h5.6M13.6 7.1l2.7 2.7-2.7 2.7" fill="none" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="17.6" r="1.7" fill="#FFFFFF"/></svg>',
     door: svg(DOORF, '<path d="' + DOOR + 'M4 20.5h16"/><path d="M10 12h5.5M13.2 9.7l2.3 2.3-2.3 2.3"/>'),
     knock: svg(DOORF, '<path d="' + DOOR + 'M4 20.5h16"/><path d="M10.5 9.5a1.8 1.8 0 1 1 2.6 1.6c-.7.4-1.1.9-1.1 1.7M12 15.2v.2"/>'),
     home2: svg('<path d="M5.5 20v-9.4L12 5.5l6.5 5.1V20z"/>', '<path d="M4 20h16M5.5 20v-9.4L12 5.5l6.5 5.1V20"/><path d="M10 20v-4.5h4V20"/>'),

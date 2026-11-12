@@ -250,7 +250,7 @@
     draft: function (ctx) {
       ctx = ctx || {};
       var at = ctx.at ? new Date(ctx.at) : new Date(), g = ctx.guide || { items: [], missing: [] };
-      var asked = g.items.filter(function (x) { return x.asked; }).map(function (x) { return x.q.replace(/\(.*?\)/g, "").replace(/(인지|는지|있는지|되는지|먹는지)$/, "").trim(); });
+      var asked = g.items.filter(function (x) { return x.asked; }).map(function (x) { return x.q.replace(/\(.*?\)/g, "").trim(); }); // 79회차: 끝말 자르기(«물이»·«원하») 폐기 — 질문 그대로
       var v = {
         subject: (ctx.label || "") + (ctx.area ? " · " + ctx.area : ""),
         consultAt: U.ymd(at) + " " + hm(at), method: ctx.method || "가정방문", tries: ctx.tries || "",
@@ -302,21 +302,27 @@
       var now = ctx.now ? new Date(ctx.now) : new Date(), office = ctx.office || ((rec.area || "○○읍면동") + " 맞춤형복지팀(가상)");
       var lines = String(rec.text || "").split("\n").slice(1).map(function (l) { var i = l.indexOf(": "); return i > 0 ? [l.slice(0, i), mask(l.slice(i + 2))] : null; }).filter(Boolean);
       var lb = String(rec.label || "가구"), TW = ctx.TW || (root.DaeumHwpx && root.DaeumHwpx.TW) || 0; // 표 너비 = HWPUNIT(본문 폭)
-      var made = now.getFullYear() + ". " + (now.getMonth() + 1) + ". " + now.getDate() + ".";
+      var dot = function (d) { return d.getFullYear() + ". " + (d.getMonth() + 1) + ". " + d.getDate() + "."; }, made = dot(now), due = U.addWorkdays(now, 5);
+      // 79회차 ⓓ-뒷단(SPEC docs78 D3): 공문 머리표(수신·발신·제목·의뢰일·회신 기한·긴급도) + 대상자 4칸 + 의뢰 내용 4개(사유·호소·욕구·긴급)만 + 본인 동의 칸 + 요청 번호 목록 + 붙임 → 1쪽
+      var L = {}; lines.forEach(function (l) { L[l[0]] = l[1]; });
+      var urgent = /긴급/.test(L["긴급 여부"] || "") && !/^일반/.test(L["긴급 여부"] || "");
       var blocks = [
-        { t: "ch", text: "Ⅰ. 대상자" },
-        { t: "tbl", title: "<표 1> 대상자 정보(개인정보 가림 4칸)", head: ["항목", "내용"], widths: TW ? [Math.round(TW * 0.28), TW - Math.round(TW * 0.28)] : undefined,
-          rows: [["성명", "(행복이음 확인 후 기재)"], ["주민등록번호", "(행복이음 확인 후 기재)"], ["연락처", "(행복이음 확인 후 기재)"], ["주소", (rec.area || "") + " (상세는 행복이음 확인 후 기재) · 관리 번호 " + lb]] },
-        { t: "ch", text: "Ⅱ. 상담 내용(공무원 확정 기록)" }
+        { t: "t2", title: o.title, sub: o.org + " 앞" }, { t: "sign", made: made + " · 상주시청 · " + office },
+        { t: "form", rows: [["수신", o.org, "발신", "상주시청 " + office], ["제목", o.title], ["의뢰일", made, "회신 기한", dot(due) + "(근무일 5일)"], ["긴급도", (urgent ? "☐ 일반  ☑ 긴급" : "☑ 일반  ☐ 긴급"), "담당 연락처", "☎ ____-____ (팀 전화)"]] },
+        { t: "sec", text: "대상자" },
+        { t: "form", rows: [["성명", "(행복이음 확인 후 기재)", "주민등록번호", "(행복이음 확인 후 기재)"], ["연락처", "(행복이음 확인 후 기재)", "관리 번호", lb], ["주소", (rec.area || "") + " (상세는 행복이음 확인 후 기재)"]] },
+        { t: "sec", text: "의뢰 내용·요청 사항" }
       ];
-      if (rec.why) blocks.push({ t: "li", lv: 1, text: "의뢰 사유: " + mask(String(rec.why)).slice(0, 200) }); // S12-v U10: 현장에서 쓴 «연계 의뢰 사유»(rec.why, 선택)
-      lines.forEach(function (l) { blocks.push({ t: "li", lv: 1, text: l[0] + ": " + l[1] }); });
-      blocks.push({ t: "ch", text: "Ⅲ. 요청 사항 · 붙임" });
-      blocks.push({ t: "li", lv: 1, text: o.purpose });
-      o.ask.forEach(function (a) { blocks.push({ t: "li", lv: 1, text: a }); });
-      blocks.push({ t: "li", lv: 1, text: "붙임: " + o.docs.join(", ") + " · 회신: " + office });
-      blocks.push({ t: "p", kind: "note", text: "※ 닿음 확정 기록으로 만든 초안 · 성명·주민등록번호·연락처·주소는 행복이음 확인 후 기재 · 본인 동의 확인 후 발송  끝." });
-      return { title: o.title, subtitle: o.org + " 앞", made: made, office: office, compact: true, blocks: blocks }; // compact = 한 쪽 맞춤(S12-d 40)
+      var ask = [];
+      if (rec.why) ask.push(["의뢰 사유", mask(String(rec.why)).slice(0, 200)]); // S12-v U10: 현장에서 쓴 «연계 의뢰 사유»(rec.why, 선택)
+      [["주요 호소", "주요 호소(상담 내용 요약)"], ["욕구 영역", "욕구 영역"], ["긴급 여부", "긴급 여부"]].forEach(function (k) { if (L[k[1]]) ask.push([k[0], String(L[k[1]]).replace(/^확인:\s*/, "")]); });
+      ask.push(["본인 동의", "☐ 서면 동의(정보 제공 동의서)   ☐ 구두 동의(일시:            )"]);
+      ask.push(["요청 사항", o.purpose + "\n" + o.ask.map(function (a, i) { return (i + 1) + ". " + a; }).join("   ")]); // 번호 목록(한 칸 안 — 1쪽 맞춤)
+      blocks.push({ t: "form", rows: ask });
+      blocks.push({ t: "p", kind: "att", text: "붙임  1. " + o.docs[0] + " 1부." + (o.docs[1] ? "" : "  끝.") });
+      o.docs.slice(1).forEach(function (d, i, a) { blocks.push({ t: "p", kind: "att2", text: (i + 2) + ". " + d + " 1부." + (i === a.length - 1 ? "  끝." : "") }); });
+      blocks.push({ t: "p", kind: "tail", text: "닿음 확정 기록으로 만든 초안 · 본인 동의 확인 후 발송 · 시연용 가상 데이터 · 개인정보 4칸 미기재" });
+      return { plain: true, title: o.title, subtitle: o.org + " 앞", made: made, office: office, blocks: blocks };
     }
   };
 
