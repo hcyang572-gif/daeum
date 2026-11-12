@@ -6,8 +6,8 @@
 <!-- S12-v U29(보안 5-4): GitHub Pages 는 헤더를 못 달아 meta CSP. 허용 = 같은 출처 + 닿음 Supabase(https·wss) + 글꼴(jsdelivr·Google) + xlsx(cdnjs) + 네이버 지도(*.naver.com·*.naver.net·*.pstatic.net).
      script 'unsafe-inline' 은 네이버 지도·설문 글꼴 onload 가 깨지지 않게 남김(지도 실동작 확인 뒤 조일 것). jsdelivr 스크립트 허용은 sync.js 가 shared/vendor/ 로 바뀌면 뺄 수 있음. 문제 생기면 이 meta 한 줄만 지우면 원상. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.naver.com https://*.naver.net https://*.pstatic.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://*.naver.com https://*.naver.net https://*.pstatic.net; font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data: blob: https://*.naver.com https://*.naver.net https://*.pstatic.net; connect-src 'self' https://gicjzrxgktpovnphtjhi.supabase.co wss://gicjzrxgktpovnphtjhi.supabase.co https://*.naver.com https://*.naver.net https://*.pstatic.net https://*.navercorp.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
-<link rel="manifest" href="../manifest.webmanifest?v=s12z77">
-<link rel="apple-touch-icon" href="../shared/icons/apple-touch-icon.png?v=s12z77">
+<link rel="manifest" href="../manifest.webmanifest?v=s12z78">
+<link rel="apple-touch-icon" href="../shared/icons/apple-touch-icon.png?v=s12z78">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,11 +16,11 @@
 <meta name="description" content="복지 사각지대 현장 업무 도우미(닿음) — 한국사회보장정보원 발굴 명단을 받은 날부터 방문·기록·보고·사후관리까지(담당 공무원 전용, 시연 가구는 모두 가상)">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#ECEAE5">
-<link rel="icon" href="../shared/icons/daeum.svg?v=s12z77" type="image/svg+xml">
+<link rel="icon" href="../shared/icons/daeum.svg?v=s12z78" type="image/svg+xml">
 <!-- S12-v M2: Hahmlet·IBM Plex 불러오기 제거 — Pretendard 는 flow.css 가 불러옴 -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="flow.css?v=s12z77">
-<link rel="stylesheet" href="../shared/a11y.css?v=s12z77">
+<link rel="stylesheet" href="flow.css?v=s12z78">
+<link rel="stylesheet" href="../shared/a11y.css?v=s12z78">
 </head>
 <body>
 <!-- 닿음 S11-k 흐름 ①~⑨ — 화면은 officer/flow.js 가 그린다. 아이콘 묶음(20 격자 · 선 1.7 · 둥근 끝)은 시안과 같다. -->
@@ -62,20 +62,20 @@
 </svg>
 <div id="app"><p style="padding:24px" role="status">닿음을 불러오는 중…</p></div>
 <noscript><p style="padding:24px">닿음 공무원 화면은 자바스크립트가 켜져 있어야 합니다.</p></noscript>
-<script src="../shared/config.js?v=s12z77"></script>
+<script src="../shared/config.js?v=s12z78"></script>
 <script src="../data/households.js"></script>
 <script src="../data/alerts_demo.js"></script>
 <script src="features.js"></script>
-<script src="fieldwork.js?v=s12z77"></script>
+<script src="fieldwork.js?v=s12z78"></script>
 <script src="priority.js"></script>
-<script src="route_plan.js?v=s12z77"></script>
-<script src="route_map.js?v=s12z77"></script>
-<script src="../data/demo_list_full.js?v=s12z77"></script>
-<script src="import_list.js?v=s12z77"></script>
-<script src="demo_seed.js?v=s12z77"></script>
-<script src="../shared/sync.js?v=s12z77"></script>
-<script src="flow.js?v=s12z77"></script>
+<script src="route_plan.js?v=s12z78"></script>
+<script src="route_map.js?v=s12z78"></script>
+<script src="../data/demo_list_full.js?v=s12z78"></script>
+<script src="import_list.js?v=s12z78"></script>
+<script src="demo_seed.js?v=s12z78"></script>
+<script src="../shared/sync.js?v=s12z78"></script>
+<script src="flow.js?v=s12z78"></script>
 <script src="../shared/pwa.js"></script>
-<script src="../shared/a11y.js?v=s12z77"></script>
+<script src="../shared/a11y.js?v=s12z78"></script>
 </body>
 </html>
