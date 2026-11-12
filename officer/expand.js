@@ -148,7 +148,7 @@
       kpi("기초수급 가구 비율(근사)", v.basicRate != null ? v.basicRate.toFixed(1) + "%" : "—", b && b.basicRate != null ? b.basicRate.toFixed(1) + "%" : null),
       kpi("시군 복지서비스(D2)", v.d2 != null ? v.d2 + "종" : "—", b && b.d2 != null ? b.d2 + "종" : null)
     ]));
-    if (v.d2Sample.length) out.appendChild(h("p", { class: "small" }, [h("b", { text: "주민 창구에 붙을 시군 서비스 예: " }), v.d2Sample.join(" · ")]));
+    if (v.d2Sample.length) out.appendChild(h("p", { class: "small" }, [h("b", { text: "연계 안내에 붙일 시군 서비스 예: " }), v.d2Sample.join(" · ")]));
     var tb = h("tbody");
     v.areas.forEach(function (a) { tb.appendChild(h("tr", null, [h("th", { scope: "row", text: a.name }), h("td", { class: "num", text: a.hh.toLocaleString("ko-KR") }), h("td", { class: "num", text: pct(a.oneRate) }), h("td", { class: "num", text: pct(a.a65Rate) })])); });
     out.appendChild(h("h4", { text: v.name + " 읍면동 " + v.areaCount + "곳 — 1인 세대·고령 비율 높은 순" }));

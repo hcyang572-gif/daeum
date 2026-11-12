@@ -52,13 +52,13 @@
     "2027-10-04": "개천절 대체공휴일(추정)", "2027-10-11": "한글날 대체공휴일(추정)", "2027-12-27": "성탄절 대체공휴일(추정)"
   };
   function isOff(d) { var w = d.getDay(); return w === 0 || w === 6 || !!HOLIDAYS[ymd(d)]; }
-  /** 영업일 더하기(토·일·관공서 공휴일 건너뜀 — 임시공휴일은 미반영) */
+  /** 근무일 더하기(토·일·관공서 공휴일 건너뜀 — 임시공휴일은 미반영) */
   function addWorkdays(d, n) {
     d = startOfDay(d);
     while (n > 0) { d = new Date(d.getTime() + DAY); if (!isOff(d)) n--; }
     return d;
   }
-  /** 영업일 빼기(시연 기록을 «오늘» 기준으로 거꾸로 깔 때) */
+  /** 근무일 빼기(시연 기록을 «오늘» 기준으로 거꾸로 깔 때) */
   function subWorkdays(d, n) {
     d = startOfDay(d);
     while (n > 0) { d = new Date(d.getTime() - DAY); if (!isOff(d)) n--; }
@@ -118,11 +118,11 @@
   F.route = { plan: planRoute, DETOUR: DETOUR, KMH: KMH, VISIT_MIN: VISIT_MIN };
 
   // ── 요청 처리 기한(시연 설정) ─────────────────────────────
-  // ⚠️ 지침상 개별 처리 기한은 미확인(01_리서치/현행_위기가구_발굴절차.md 3행). 시연 기본값: 긴급 당일·일반 3영업일(O-08).
+  // ⚠️ 지침상 개별 처리 기한은 미확인(01_리서치/현행_위기가구_발굴절차.md 3행). 시연 기본값: 긴급 당일·일반 3근무일(O-08).
   var DUE = { urgent: 0, normal: 3, soonDays: 1 }; // O-08: 긴급은 «오늘 먼저»와 맞게 접수 당일이 기한
   function requestDue(r) { return addWorkdays(new Date(r.createdAt), r.urgent ? DUE.urgent : DUE.normal); }
   function isOpen(r) { return r && r.status !== "done" && r.status !== "cancelled"; }
-  // ── 주민 신호 종류(S9h C안: 주민 창구 = «이웃 제보·도움 요청 → 방문 순서 반영» 입구) ──
+  // ── 도움 요청 종류(S9h C안: «이웃 제보·도움 요청 → 방문 순서 반영» 입구) ──
   // self = 본인 요청 · family = 가족이 대신 · neighbor = 이웃이 걱정된다고 알림(r.signal 이 있으면 그것을 따른다)
   function signalOf(r) {
     if (!r) return "self";
@@ -208,7 +208,7 @@
     var visitsFailed = mine.filter(function (t) { return t.channel === "visit" && t.result === "no_answer"; }).length;
     var tried = uniq(mine.map(function (t) { return slotOf(t.at); }));
     var slot = SLOTS.filter(function (s) { return tried.indexOf(s) < 0; })[0] || SLOTS[(SLOTS.indexOf(slotOf(last.at)) + 1) % 3];
-    var gap = last.channel === "ai" ? 1 : Math.min(out.failed, 3); // 1·2·3 영업일 간격으로 늘림(가정)
+    var gap = last.channel === "ai" ? 1 : Math.min(out.failed, 3); // 1·2·3 근무일 간격으로 늘림(가정)
     // 정보원 AI 초기상담 전화(채널 "ai")가 못 닿았으면 담당자 전화를 한 번 더 걸기보다 방문으로 넘긴다(현행 절차: AI 전화 → 심층상담·방문)
     var channel = last.result === "wrong_contact" || last.channel === "ai" ? "visit" : last.channel === "phone" && out.failed >= 2 ? "visit" : last.channel;
     var why = last.result === "refused" ? "거부 — 시간을 두고 다른 담당자·이웃 통해 다시 권유"
@@ -291,8 +291,8 @@
         date: today,
         counts: { newRequests: newItems.length, dueSoon: dueItems.length, revisits: revisit.length, stops: stops.length, noResp: stops.filter(function (s) { return s.alert === "noresp"; }).length },
         sections: [
-          { key: "new", title: "새 주민 신호", hint: "주민 창구로 들어온 도움 요청·이웃 알림", items: newItems },
-          { key: "due", title: "기한 임박", hint: "처리 기한(시연 설정: 긴급 당일·일반 3영업일) 하루 이내·지남", items: dueItems },
+          { key: "new", title: "새 도움 요청", hint: "아직 확인하지 않은 도움 요청·이웃 알림", items: newItems },
+          { key: "due", title: "기한 임박", hint: "처리 기한(시연 설정: 긴급 당일·일반 3근무일) 하루 이내·지남", items: dueItems },
           { key: "revisit", title: "재방문·재연락", hint: "지난 시도 결과로 오늘 다시 할 집", items: revisit },
           { key: "route", title: "오늘 동선", hint: "읍면별로 묶고 가까운 순", items: route.order }
         ],
@@ -398,7 +398,7 @@
         ["situation", "가구 상황", sents.filter(function (s) { return /혼자|가족|자녀|배우자|살|집/.test(s); }).slice(0, 2).join(". ")],
         ["urgent", "긴급 여부", urgent ? "긴급 — 당일 긴급복지·정신건강 연계 검토" : "일반"],
         ["action", "조치 내용", svcNames.length ? "연계 후보 안내: " + svcNames.join(", ") : ""],
-        ["plan", "향후 계획", urgent ? "1영업일 안에 재연락·연계 결과 확인" : "연계 신청 결과를 2주 안에 확인"]
+        ["plan", "향후 계획", urgent ? "1근무일 안에 재연락·연계 결과 확인" : "연계 신청 결과를 2주 안에 확인"]
       ].map(function (f) { return { key: f[0], label: f[1], value: f[2] || "", auto: !!f[2] }; });
       var caseForm = CASE_DOMAINS.map(function (d) {
         var from = needs.filter(function (n) { return NEED_TO_DOMAIN[n] === d; });
@@ -494,7 +494,7 @@
     complaintForm: function (o) {
       o = o || {}; var at = o.at ? new Date(o.at) : new Date();
       return ["[민원·위험 상황 기록]", "일시: " + ymd(at) + " " + pad(at.getHours()) + ":" + pad(at.getMinutes()), "장소: " + (o.area || "") + " " + (o.label || ""),
-        "동행자: " + (o.buddy || "(없음)"), "상황(들은 말·행동을 있는 그대로): ", "대응(자리 피함·112 신고·팀장 보고 등): ",
+        "상황(들은 말·행동을 있는 그대로): ", "대응(자리 피함·112 신고·팀장 보고 등): ",
         "증거(녹음·사진 여부, 개인 식별 주의): ", "후속 조치(2인 방문 지정·민원 담당 공유): "].join("\n");
     }
   };
@@ -530,7 +530,7 @@
   // ── ⑪ 연계 누락·미신청 보드 (상담 → 안내 → 신청 → 결정, 어디서 멈췄나) ───────
   // 현장 고충 5: 위기가구 서비스 연계율 24.9%(2021), 예측 63.3만 → 수급 22.8만(01_리서치/현행_위기가구_발굴절차.md §6).
   // 행복이음은 연계율을 «집계»하지만, 담당자 개인의 «안내했는데 신청 안 한 집» 알림은 공개 자료에서 확인되지 않는다(행복이음_기능_대조.md §3).
-  var GAP = { afterLink: 14, afterSeen: 3, afterApply: 30 }; // 시연 기본값: 안내 뒤 14일·요청 확인 뒤 3영업일·신청 뒤 30일
+  var GAP = { afterLink: 14, afterSeen: 3, afterApply: 30 }; // 시연 기본값: 안내 뒤 14일·요청 확인 뒤 3근무일·신청 뒤 30일
   var OUTCOME = { applied: "신청함", decided: "결정 확인", not_applied: "안 하기로 함" };
   function outcomeKey(o) { if (!o) return null; var r = o.result; return r === "applied" || r === "not_applied" ? r : "decided"; } // 옛 값(«확인»·«선정»)은 결정 확인으로 본다
   F.linkGap = {
@@ -562,7 +562,7 @@
         var hs = (r.history || []).slice(-1)[0], x = startOfDay(hs ? hs.at : r.createdAt), wd = 0, end = startOfDay(now);
         while (x < end) { x = new Date(x.getTime() + DAY); if (x.getDay() % 6) wd++; }
         return { id: r.id, requestId: r.id, label: reqLabel(r), area: r.region || "", days: wd,
-          why: "«" + (r.status === "seen" ? "확인" : "방문 예정") + "» 뒤 " + wd + "영업일 변화 없음" };
+          why: "«" + (r.status === "seen" ? "확인" : "방문 예정") + "» 뒤 " + wd + "근무일 변화 없음" };
       }).filter(function (x) { return x.days >= GAP.afterSeen; });
       // 서비스별 «안내했는데 신청 안 함»(결과 미확인 14일 이상·안 하기로 함) — 어떤 사업이 새는지 본다
       var bySvc = {};
@@ -581,7 +581,7 @@
         ],
         total: a.length + b.length + c.length + e.length,
         notApplied: Object.keys(bySvc).map(function (n) { return { name: n, n: bySvc[n] }; }).sort(function (x, y) { return y.n - x.n; }),
-        note: "멈춤 기준(시연 설정): 신호 확인 뒤 " + GAP.afterSeen + "영업일 · 안내 뒤 " + GAP.afterLink + "일 · 신청 뒤 " + GAP.afterApply +
+        note: "멈춤 기준(시연 설정): 신호 확인 뒤 " + GAP.afterSeen + "근무일 · 안내 뒤 " + GAP.afterLink + "일 · 신청 뒤 " + GAP.afterApply +
           "일. 선정·탈락은 소관 기관이 결정하고, 여기서는 담당자가 «확인했는지»만 챙깁니다."
       };
     },
@@ -660,7 +660,7 @@
     var line = SLOTS.map(function (k) { return k + " " + (bySlot[k].length ? bySlot[k].length + "회(" + bySlot[k][bySlot[k].length - 1] + ")" : "안 해 봄"); }).join(" · ");
     return { tries: mine.length, items: items, bySlot: bySlot, line: line };
   };
-  /** 오늘부터 days 영업일치 재시도 일정(지난 제안일은 오늘로) → [{date, label, items:[{id,label,area,slot,channel,why,escalate,overdue}]}] */
+  /** 오늘부터 days 근무일치 재시도 일정(지난 제안일은 오늘로) → [{date, label, items:[{id,label,area,slot,channel,why,escalate,overdue}]}] */
   F.contacts.plan = function (attempts, households, now, days, extra) {
     now = now ? new Date(now) : new Date(); days = days || 5;
     var byId = {}; (households || []).forEach(function (h) { byId[h.id] = h; });
