@@ -114,7 +114,7 @@
     var map = state.map; clear();
     var bounds = new N.LatLngBounds();
     var o = new N.LatLng(opts.office.lat, opts.office.lng); bounds.extend(o);
-    state.overlays.push(new N.Marker({ map: map, position: o, title: opts.office.name || "출발",
+    state.overlays.push(new N.Marker({ map: map, position: o, title: opts.office.name || "출발", zIndex: 90, // 77회차: 연계처 표지(10~12)보다 위
       icon: { content: '<div class="nm-office" aria-hidden="true">' + esc(opts.office.short || "시청") + "</div>", anchor: new N.Point(22, 14) } }));
     var line;
     if (opts.path && opts.path.length > 1) line = opts.path.map(function (p) { return new N.LatLng(p[1], p[0]); });
