@@ -148,7 +148,8 @@
   }
 
   // ── 그리기 ──
-  var CHEV = '<svg viewBox="0 0 24 24" class="rc-chev" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  /** 79회차: 아이콘 = 닿음 아이콘 체계 78 묶음(shared/icons_s12x.js) — 따로 그린 꺾쇠·마이크·연필 지움 */
+  function DI(n, cls) { var D = g.DaeumIcons, s = (D && D.I[n]) || ""; return cls ? s.replace('class="ic"', 'class="ic ' + cls + '"') : s; }
   /** 상황 고르기 카드 — 78회차 ⓪-3(11-13 호창님 «상담일지는 항상 펼친 화면으로»): 접기 없이 늘 펼침(open 인자는 옛 호출 호환용, 무시) · 줄을 누르면 하단 시트가 열린다 */
   function composerHtml(c, ctx, open) {
     var L = lines(c, ctx), picked = ROWS.filter(function (r) { return vals(c, r[0]).length; }).length;
@@ -158,7 +159,7 @@
       '<div class="rc-rows">' + ROWS.map(function (r, i) {
         var v = vals(c, r[0]);
         return '<button type="button" class="rc-row' + (v.length ? " has" : "") + '" data-cf="' + r[0] + '"><i>' + (i + 1) + '</i><span class="rc-rn">' + r[1] + '</span><span class="rc-rv">' +
-          (v.length ? v.slice(0, 3).map(function (x) { return "<em>" + esc(x) + "</em>"; }).join("") + (v.length > 3 ? '<em class="m">+' + (v.length - 3) + "</em>" : "") : "<small>고르기</small>") + "</span>" + CHEV + "</button>";
+          (v.length ? v.slice(0, 3).map(function (x) { return "<em>" + esc(x) + "</em>"; }).join("") + (v.length > 3 ? '<em class="m">+' + (v.length - 3) + "</em>" : "") : "<small>고르기</small>") + "</span>" + DI("chevR", "rc-chev") + "</button>";
       }).join("") + "</div></div>" +
       '<div class="rc-lines" aria-live="polite"><div class="rc-lh"><b>자동 문장</b><small>미리 반영 ' + (c.pre || 0) + "개 · 직접 누름 " + (c.taps || 0) + "번 · 글자 0</small></div>" +
       (L.length ? L.map(function (l) { return "<p>· " + esc(l) + "</p>"; }).join("") : '<p class="rc-why">고르면 여기에 문장이 생깁니다.</p>') + "</div></section>";
@@ -268,15 +269,13 @@
   }
 
   // ── 덧붙이기(말하기·글로 쓰기) — 시간 제한 없음 ──
-  var MIC = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-  var PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19.5h4L19.5 9a2.1 2.1 0 0 0-3-3L6 16.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14.5 8l3 3" stroke="currentColor" stroke-width="2"/></svg>';
   function clock(sec) { sec = Math.max(0, Math.floor(sec || 0)); return Math.floor(sec / 60) + ":" + pad(sec % 60); }
   function subHtml(o) {
     o = o || {};
     var waves = ""; for (var i = 0; i < 22; i++) waves += '<i style="animation-delay:' + ((i * 53) % 600) + 'ms"></i>';
     return '<section class="rc-sub blk"><div class="rc-sh"><b>덧붙이기</b><small>선택 · 시간 제한 없음</small></div>' +
-      '<div class="rc-btns"><span class="rc-bi"><button type="button" class="rc-micb" data-act="mic" aria-label="말하기"' + (o.sr ? "" : " disabled") + ">" + MIC + "</button><b>말하기</b></span>" +
-      '<span class="rc-bi"><button type="button" class="rc-pen" data-act="typing" aria-label="글로 쓰기" aria-controls="memo">' + PEN + "</button><b>글로 쓰기</b></span>" +
+      '<div class="rc-btns"><span class="rc-bi"><button type="button" class="rc-micb" data-act="mic" aria-label="말하기"' + (o.sr ? "" : " disabled") + ">" + DI("record") + "</button><b>말하기</b></span>" +
+      '<span class="rc-bi"><button type="button" class="rc-pen" data-act="typing" aria-label="글로 쓰기" aria-controls="memo">' + DI("pen") + "</button><b>글로 쓰기</b></span>" +
       '<span class="rc-mt"><b id="mict">' + clock(0) + '</b><span class="rc-wave" aria-hidden="true">' + waves + "</span><small>" +
       (o.sr ? "누르면 듣고, 다시 누르면 멈춥니다. 음성 원본은 남기지 않고 받아쓴 글만 씁니다." : "이 브라우저는 받아쓰기를 지원하지 않습니다 · 글로 남겨 주세요.") + "</small></span></div>" +
       (o.ex || "") + "</section>";

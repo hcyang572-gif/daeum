@@ -9,14 +9,8 @@
    ⛔ 넣지 않는 것: 주민 화면 · 신고 접수 · .ics · 다크 화면.                                                              */
 (function (root) {
   "use strict";
-  // S12-x(🩵 미르 64회차): 아이콘 = 시안 S12-h v2.2 그대로(오늘=집 · 현장=문 · 기록=마이크 · 보고=문서)
-  var I = {
-    today: '<path d="M4 11.5 12 4l8 7.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/>',
-    visit: '<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/>',
-    field: '<path d="M6 21V4.5A1.5 1.5 0 0 1 7.5 3h8A1.5 1.5 0 0 1 17 4.5V21M3.5 21h17"/><circle cx="13.6" cy="12.4" r=".9" fill="currentColor"/>',
-    rec: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
-    rep: '<path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9.5 13h5M9.5 16.5h3.5"/>'
-  };
+  // 79회차: 아이콘 = 닿음 아이콘 체계 78(shared/icons_s12x.js 의 DaeumIcons.I) 하나만 — 예비 세트 지움(오늘=달력 · 방문=동선 · 현장=문 · 기록=마이크 · 보고=문서)
+  function BI() { return (root.DaeumIcons && root.DaeumIcons.I) || {}; }
   // 레일(PC)에만 보이는 작은 설명 — 시안 TABDEF 세 번째 칸
   var DESC = { today: "지금 할 일", visit: "순서·동선", field: "집 앞·확인·상담", rec: "고르면 문장", rep: "문서·실적" };
   // [열쇠, 이름, 주소(가구 번호를 이어 붙일지), 묶이는 화면]
@@ -37,7 +31,7 @@
     for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === view || TABS[i][4].indexOf(view) >= 0) return i;
     return -1;
   }
-  function svg(k) { return '<svg class="ti" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + I[k] + "</svg>"; }
+  function svg(k) { return BI()[IK[k]] || ""; }
   /** 탭 링크 5개(폴드용 접힘선 칸 포함). on = 화면 이름 또는 탭 열쇠, hid = 지금 가구 */
   function links(on, hid) {
     var k = tabOf(on), x = hid ? ":" + hid : "";
@@ -61,7 +55,7 @@
   }
   function railHTML(view, hid, I, o) {
     var k = tabOf(view), x = hid ? ":" + hid : "";
-    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z82" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
+    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z83" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
       TABS.map(function (t, i) {
         return '<button type="button" class="rl pr' + (i === k ? " on" : "") + '" data-go="' + go(t, x) + '" data-tab="' + t[0] + '"' + (i === k ? ' aria-current="page"' : "") + ">" + ((I || {})[IK[t[0]]] || svg(t[0])) + "<span>" + t[1] + "<small>" + DESC[t[0]] + "</small></span>" + dotOf(t, o) + "</button>";
       }).join("") + ((o && o.foot) || "");
@@ -120,8 +114,8 @@
     else if (fsIn()) { var d = root.document, x = d.exitFullscreen || d.webkitExitFullscreen; try { var p = x && x.call(d); if (p && p.catch) p.catch(function () {}); } catch (e) { /* 무시 */ } }
     return on;
   }
-  var ARW = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-  var DWN = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
+  var ARW = BI().arrow || ""; // 79회차: 묶음 arrow·arrowD(옛 따로 그린 화살표 지움)
+  var DWN = BI().arrowD || "";
   /** 옮겨 온 단추를 시안 모양으로 — 주(.pri.glow: <span><b>이름</b><small>설명</small></span><span class="go">) · 보조(.sbt: 아이콘 + 짧은 이름) */
   function asPri(el, glow) {
     var sm = el.querySelector(":scope > small"); if (sm) el.removeChild(sm);

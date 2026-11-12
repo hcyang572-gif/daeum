@@ -9,21 +9,12 @@
   "use strict";
   var OPT = { autoFirst: true, browseBtn: true };
   var SEEN = "daeum.ob.seen";
-  var IC = {
-    arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
-    key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg>',
-    mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg>',
-    lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
-    eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
-    shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>',
-    chev:'<svg class="o-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
-    x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-    device:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 12h8"/></svg>',
-    moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',
-    trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
-    pc:'<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="21" height="13" rx="2.5"/><path d="M9 22h8M13 17v5"/></svg>',
-    phone:'<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="12" height="21" rx="3"/><path d="M11.5 20h3"/></svg>'
-  };
+  // 79회차: 아이콘 = 닿음 아이콘 체계 78 묶음(shared/icons_s12x.js) — 따로 그린 13개(선 1.7~2.2·26 격자 섞임) 지움.
+  //   열쇠 → 묶음 이름(chev=chevD 펼침 꺾쇠·phone=device 폰). 읽을 때 묶음에서 꺼낸다(불러오는 순서와 무관).
+  var ICK = { arrow: "arrow", key: "key", mail: "mail", lock: "lock", eye: "eye", shield: "shield", chev: "chevD", x: "x", device: "device", moon: "moon", trash: "trash", pc: "pc", phone: "device" };
+  function BI(n, cls) { var D = root.DaeumIcons, s = (D && D.I[n]) || ""; return cls ? s.replace('class="ic"', 'class="ic ' + cls + '"') : s; }
+  var IC = {};
+  Object.keys(ICK).forEach(function (k) { Object.defineProperty(IC, k, { enumerable: true, get: function () { return BI(ICK[k], k === "chev" ? "o-chev" : ""); } }); });
   // 표장(닿음: 두 점이 맞닿는 고리) — 시안 v3 색
   var MARK = '<svg viewBox="0 0 24 24"><defs><linearGradient id="mk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2E8293"/><stop offset="1" stop-color="#123C46"/></linearGradient></defs><circle cx="9" cy="12" r="6" fill="none" stroke="url(#mk)" stroke-width="2.6"/><circle cx="15" cy="12" r="6" fill="none" stroke="#B99B63" stroke-width="2.6" opacity=".95"/><circle cx="12" cy="12" r="1.6" fill="#123C46"/></svg>';
   var FF = 'font-family="Noto Sans KR,sans-serif"', FN = 'font-family="Space Grotesk,Noto Sans KR,sans-serif"';
@@ -201,8 +192,8 @@
     '<circle r="3.6" fill="#8FD9E4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M168 62 C186 52 196 52 210 60"/></circle>'+
     '<circle r="3.6" fill="#E8CE96"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M210 84 C196 92 186 92 168 84"/></circle>'+
     '</svg>'; }
-  var DB = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6.5c0 1.6 3.4 2.8 7.5 2.8s7.5-1.2 7.5-2.8V5.5M4.5 12v6.5c0 1.6 3.4 2.8 7.5 2.8s7.5-1.2 7.5-2.8V12"/></svg>';
-  var RE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+  function DB_() { return BI("db"); } // 79회차: 묶음 db·replay
+  function RE_() { return BI("replay"); }
 
   // 단계 이름 = 앱 아래 탭 쪽 낱말(명단·동선·현장·기록·보고) · 출처 숫자 = shared/data.html 그대로
   var SLIDES = [
@@ -217,7 +208,7 @@
     { st: "보고", ey: "보고서 자동 생성", ill: ill4, h: '기록이 그대로<br><em>보고서 한 장</em>으로', p: "출장 결과 보고와 서비스 연계 의뢰서가 hwpx 한 쪽으로 만들어집니다.",
       src: '<b>한국사회보장정보원 복지서비스 목록 · 자원정보 23건</b> · 연계처 712건으로 의뢰' }
   ];
-  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z82" alt="">';
+  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z83" alt="">';
   var REDUCE = !!(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches);
   var H = { login: function () {}, start: function () {} }, OB = { d: null, i: 0, pc: false };
 
@@ -231,9 +222,9 @@
     var flow = '<ol class="o-flow" aria-label="업무 흐름">' + SLIDES.map(function (s, k) { var c = pc ? "o-done" : (k === i ? "o-on" : k < i ? "o-done" : "");
       return '<li class="' + c + '"><button type="button" data-dot="' + k + '" aria-current="' + (!pc && k === i) + '"><span class="o-fn">' + (k + 1) + '</span><span class="o-fl">' + s.st + "</span></button></li>"; }).join("") + "</ol>";
     var slides = SLIDES.map(function (s, k) { return '<article class="o-ob-slide' + (k === i || pc ? " o-on" : "") + '" aria-roledescription="안내 장" aria-label="' + (k + 1) + " / " + n + " " + s.ey + '">' +
-      '<div class="o-ill">' + s.ill("ob" + k) + '<button class="o-replay" type="button" data-act="replay" data-k="' + k + '">' + RE + "다시 보기</button></div>" +
+      '<div class="o-ill">' + s.ill("ob" + k) + '<button class="o-replay" type="button" data-act="replay" data-k="' + k + '">' + RE_() + "다시 보기</button></div>" +
       '<div class="o-ob-txt"><div class="o-ob-ey"><span class="o-num">0' + (k + 1) + "</span><i></i>" + s.ey + "</div><h3>" + s.h + "</h3><p>" + s.p + "</p>" +
-      '<p class="o-src' + (s.key ? " o-key" : "") + '">' + DB + "<span>" + s.src + "</span></p></div></article>"; }).join("");
+      '<p class="o-src' + (s.key ? " o-key" : "") + '">' + DB_() + "<span>" + s.src + "</span></p></div></article>"; }).join("");
     return '<div class="o-scrim"></div><div class="o-ob">' +
       '<div class="o-ob-card"><div class="o-ob-top"><div class="o-ob-brand"><span class="o-mark">' + LOGO + "</span><span><b>닿음</b><small>복지 사각지대 현장 업무 도우미</small></span></div>" +
       '<button class="o-skip" type="button" data-act="skip">건너뛰기</button></div>' +

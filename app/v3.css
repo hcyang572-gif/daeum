@@ -831,6 +831,19 @@ html[data-mode="fold"] .app .hbar>.wx,html[data-mode="tab"] .app .hbar>.wx,html[
 .ky .ic-d,.btn .ic-d,.rl .ic-d,.tabs button .ic-d,.li .ic-d,.evb .ic-d,.doc .ic-d,.res button .ic-d,.bl .ic .ic-d{fill:var(--goldL,#B99B63);opacity:.38}
 .tabs button.on .ic-d,.rl.on .ic-d,.res button.on .ic-d{fill:var(--goldL,#B99B63);opacity:.62}
 .btn.pri .ic-d,.btn.safe .ic-d,.btn.sos .ic-d,.tabs button.key .ic-d,.ky.safe-on .ic-d,.ky.safe-warn .ic-d,.micb .ic-d,.shieldo .ic-d,.fs.lit .ic-d,.toast .ic-d{fill:#fff;opacity:.24}
+/* 79회차 ⚙️ 파로: 아이콘 체계 78 크기 4단계 + 광학 보정(작을수록 굵게 · _design/icons78/SPEC.md 4절) — 속성 stroke-width 보다 CSS 가 이긴다 */
+:root{--ic-sw16:2;--ic-sw20:1.8;--ic-sw24:1.6;--ic-sw28:1.5;--ic-sw40:1.4}
+.ic{stroke-width:var(--ic-sw24)}
+.qf .ic svg,.bl .ic svg,.pick svg,.ky.outk svg,.dock .nx .ar svg,.nb-tg svg,.nb-tel svg,svg.ic.i16{width:16px;height:16px;stroke-width:var(--ic-sw16)}
+.qf .ic .ic-d,.bl .ic .ic-d,.pick .ic-d,.nb-tg .ic-d,.nb-tel .ic-d,svg.ic.i16 .ic-d{display:none}
+.btn:not(.ibt) svg,.evb svg,.toast svg,.dock .sbt svg,.hrec-search>svg,.hrec-ftog svg,.dsm-disc svg,svg.ic.i20{width:20px;height:20px;stroke-width:var(--ic-sw20)}
+.tabs button svg,.ky svg,.rl svg,.li svg,.btn.ibt>svg,svg.ic.i24{width:24px;height:24px;stroke-width:var(--ic-sw24)}
+.res button svg,.shieldo svg,.eic svg,.emp>svg,.lock .lk svg,svg.ic.i28{width:28px;height:28px;stroke-width:var(--ic-sw28)}
+.micb svg,.rc-micb svg{stroke-width:var(--ic-sw40)}
+svg.ic.i16,svg.ic.i20{flex:none;display:inline-block;vertical-align:-.2em}
+/* 글자 기호 대신 쓴 작은 아이콘 자리 — 방문 계획 줄 끌기 손잡이 · 지난 단계 ✓ */
+.stop .grip{display:inline-flex;color:var(--ink3,#6B767D);cursor:grab;margin-right:4px;vertical-align:middle}
+.stop .mv button svg.ic{width:20px;height:20px}
 /* 머리 오른쪽 열쇠 — 세라믹 돌출 + 안쪽 금빛 실선(손 올리면) + 눌리면 각인 */
 .ky{position:relative;border-radius:16px;color:var(--ink,#11181C);transition:transform var(--t-up,280ms) var(--e-up,ease),box-shadow var(--t-up,280ms);
   background:radial-gradient(120% 80% at 30% 0%,rgba(255,255,255,.95),transparent 60%),linear-gradient(180deg,#FFFFFF,#EEEAE3);

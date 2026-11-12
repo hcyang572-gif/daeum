@@ -75,7 +75,7 @@
   function sheet(html, onBind) {
     document.querySelectorAll("dialog.fd-sheet").forEach(function (d) { d.close(); });
     var d = document.createElement("dialog"); d.className = "fd-sheet";
-    d.innerHTML = '<div class="fd-sh-in"><span class="fd-grab" aria-hidden="true"></span>' + html + '<button type="button" class="fd-x" data-x="1" aria-label="닫기">×</button></div>';
+    d.innerHTML = '<div class="fd-sh-in"><span class="fd-grab" aria-hidden="true"></span>' + html + '<button type="button" class="fd-x" data-x="1" aria-label="닫기">' + svg("x") + '</button></div>';
     document.body.appendChild(d);
     d.addEventListener("close", function () { d.remove(); });
     d.addEventListener("click", function (e) { if (e.target === d || e.target.closest("[data-x]")) d.close(); });
@@ -140,7 +140,7 @@
     var ask = get(hid).pair;
     return '<section class="fd-card fd-pair blk" aria-label="2인 방문 권장"><div class="fd-h"><b>2인 방문 권장</b><span class="fd-tag w">' + esc(p.why) + "</span></div>" +
       '<p class="fd-why">혼자 들어가지 않도록 동료에게 동행을 요청하세요. 요청에는 가구번호·읍면·시각만 갑니다.</p>' +
-      (ask ? '<p class="fd-ok">✓ ' + esc(hm(ask.at)) + " 동행 요청함 · 2인 방문</p>" : "") +
+      (ask ? '<p class="fd-ok">' + svg("check").replace('class="ic"', 'class="ic i16"') + " " + esc(hm(ask.at)) + " 동행 요청함 · 2인 방문</p>" : "") +
       '<button type="button" class="sbtn fd-btn" data-fd-act="pair">' + (ask ? "동행 요청 다시 보내기" : "동료와 같이 가기") + "</button></section>";
   }
   function pairSheet(hid) {
@@ -180,7 +180,7 @@
     }
     sheet(body(), function bindNf(dl) {
       var inn = dl.querySelector(".fd-sh-in");
-      function re() { inn.innerHTML = '<span class="fd-grab" aria-hidden="true"></span>' + body() + '<button type="button" class="fd-x" data-x="1" aria-label="닫기">×</button>'; wire(); }
+      function re() { inn.innerHTML = '<span class="fd-grab" aria-hidden="true"></span>' + body() + '<button type="button" class="fd-x" data-x="1" aria-label="닫기">' + svg("x") + '</button>'; wire(); }
       function wire() {
         inn.querySelectorAll("[data-nfa]").forEach(function (b) { b.addEventListener("click", function () { sel.area = b.dataset.nfa; C.vib(); re(); }); });
         inn.querySelectorAll("[data-nfs]").forEach(function (b) { b.addEventListener("click", function () { sel.signs[b.dataset.nfs] = !sel.signs[b.dataset.nfs]; C.vib(); re(); }); });
@@ -190,7 +190,7 @@
           all.newhh.push(x); save(all); C.vib();
           inn.innerHTML = '<span class="fd-grab" aria-hidden="true"></span><h3>등록했습니다 · <span class="num">' + x.id + '</span></h3><p class="fd-why">행복이음 «신규 상담»에 아래 초안을 붙여 넣고, 성명·주소·연락처는 그 화면에 직접 입력하세요.</p>' +
             '<pre class="fd-paper">' + esc(F.newFind.draft(x)) + "</pre>" +
-            '<div class="fd-row"><button type="button" class="sbtn" data-x="1">닫기</button><button type="button" class="sbtn go" data-nfcopy="1">초안 복사</button></div><button type="button" class="fd-x" data-x="1" aria-label="닫기">×</button>';
+            '<div class="fd-row"><button type="button" class="sbtn" data-x="1">닫기</button><button type="button" class="sbtn go" data-nfcopy="1">초안 복사</button></div><button type="button" class="fd-x" data-x="1" aria-label="닫기">' + svg("x") + '</button>';
           inn.querySelector("[data-nfcopy]").addEventListener("click", function () { C.copy(F.newFind.draft(x)); });
           C.render();
         });
@@ -318,8 +318,8 @@
   function bindReport(scope) { scope.querySelectorAll("[data-fd-hand]").forEach(function (b) { b.addEventListener("click", function () { handSheet(b.dataset.fdHand); }); }); }
 
   // ═════ ④ 화면 가림 · 자동 잠금 — 머리 단추 두 개(모든 화면), 잠금 화면엔 가구번호만 ═════
-  var ICO = { eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>', eyeOff: '<path d="M3 3l18 18M10.6 6.1A9.6 9.6 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-3.2 3.8M6.2 7.6A16 16 0 0 0 2.5 12S6 18 12 18c1.5 0 2.9-.4 4.1-1"/>', lock: '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>' };
-  function svg(k) { return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + ICO[k] + "</svg>"; }
+  // 79회차: 아이콘 = 닿음 아이콘 체계 78 묶음(eye 뜬 눈 · eyeOff 가림 · lock) — 따로 그린 ICO(선 1.9) 지움
+  function svg(k) { var D = root.DaeumIcons; return (D && D.I[k]) || ""; }
   function veilOn() { return document.body.classList.contains("fd-veil"); }
   function keys() {
     var v = veilOn();

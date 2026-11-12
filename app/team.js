@@ -8,7 +8,7 @@
   var TM = window.DaeumTeam, SY = window.DaeumSync;
   if (!TM) return;
   var RES = { met: "만남", absent: "부재", refuse: "거부", indirect_ok: "간접 확인" };
-  var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9.5" r="2.5"/><path d="M3.5 19c.6-3.3 2.9-5 5.5-5s4.9 1.7 5.5 5"/><path d="M14.8 14.6c.7-.4 1.4-.6 2.2-.6 2 0 3.6 1.3 4 4"/></svg>';
+  function DI(n) { var D = window.DaeumIcons; return (D && D.I[n]) || ""; } // 79회차: 아이콘 = 닿음 아이콘 체계 78 묶음(people·x)
   var host, dlg;
 
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -179,7 +179,7 @@
   function open() {
     if (dlg && dlg.open) return;
     dlg = document.createElement("dialog"); dlg.className = "tm-dlg"; dlg.setAttribute("aria-label", "우리 팀 · 동료 안부");
-    dlg.innerHTML = '<div class="tm-in"><header class="tm-top"><h3>' + ICON + "우리 팀 · 동료 안부</h3>" + '<button type="button" class="tm-x" aria-label="닫기">×</button></header><div class="tm-body"></div></div>';
+    dlg.innerHTML = '<div class="tm-in"><header class="tm-top"><h3>' + DI("people") + "우리 팀 · 동료 안부</h3>" + '<button type="button" class="tm-x" aria-label="닫기">' + DI("x") + '</button></header><div class="tm-body"></div></div>';
     document.body.appendChild(dlg); dlg.querySelector(".tm-x").addEventListener("click", function () { dlg.close(); });
     dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
     dlg.addEventListener("close", function () { dlg.remove(); dlg = null; });

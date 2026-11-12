@@ -65,12 +65,9 @@
   function saveOn(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) { /* 무시 */ } }
 
   // ── 그리기: 단추·목록 ───────────────────────────────────
-  var GLYPH = { // 20 격자 · 선 1.7 · 둥근 끝(닿음 아이콘 묶음과 같은 결)
-    hh: '<path d="M4 9.5 10 4.5l6 5V16H4z"/><path d="M8.5 16v-3.5h3V16"/>',
-    link: '<path d="M7.4 12.6 12.6 7.4"/><path d="M9 5.6l1.4-1.4a3 3 0 0 1 4.2 4.2L13.2 9.8"/><path d="M11 14.4l-1.4 1.4a3 3 0 0 1-4.2-4.2l1.4-1.4"/>',
-    senior: '<path d="M3.5 16h13"/><path d="M5 16V9l5-3.5L15 9v7"/><path d="M8.5 16v-3h3v3"/>'
-  };
-  function ico(k) { return '<svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + GLYPH[k] + "</svg>"; }
+  // 79회차: 아이콘 = 닿음 아이콘 체계 78 묶음(방문 가구 home2 · 연계처 link · 경로당 senior · 전화 phone) — 20 격자 따로 그림 지움
+  var GK = { hh: "home2", link: "link", senior: "senior", tel: "phone" };
+  function ico(k) { var D = root.DaeumIcons; return (D && D.I[GK[k]]) || ""; }
   function kmTxt(x) { return x.km != null ? "약 " + x.km.toFixed(1) + " km" : "위치 미확인"; }
   function item(x) {
     return '<li class="nb-it ' + (x.layer || (x.cat === "경로당" ? "senior" : "link")) + (x.stale ? " stale" : "") + '" data-ix="' + x.ix + '">' +
@@ -79,7 +76,7 @@
       '<span class="nb-meta"><em class="nb-km">' + kmTxt(x) + "</em>" + (x.km != null ? "<span>" + esc(x.hid) + " 기준</span>" : "") +
       (x.stale ? '<em class="nb-chk">방문 전 확인 · ' + esc(x.base) + " 명단</em>" : "") + "</span>" +
       '<span class="nb-src"><i class="src-ico" aria-hidden="true"></i>' + esc(x.srcName) + "(" + esc(x.src) + ")</span></div>" +
-      (x.tel ? '<a class="nb-tel" href="tel:' + esc(telNo(x.tel)) + '" aria-label="' + esc(x.n) + " 전화 걸기 " + esc(x.tel) + '"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 3.5h-2a.9.9 0 0 0-.9 1A12.6 12.6 0 0 0 15.5 16.7a.9.9 0 0 0 1-.9v-2l-3-1.3-1.5 1.5a9.5 9.5 0 0 1-5-5l1.5-1.5z"/></svg><span>' + esc(x.tel) + "</span></a>" : "") +
+      (x.tel ? '<a class="nb-tel" href="tel:' + esc(telNo(x.tel)) + '" aria-label="' + esc(x.n) + " 전화 걸기 " + esc(x.tel) + '">' + ico("tel") + '<span>' + esc(x.tel) + "</span></a>" : "") +
       "</li>";
   }
   function panelHtml(m, on, nHh) {

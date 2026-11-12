@@ -57,12 +57,9 @@
       '<path class="m-rb" d="M40 21 A12 12 0 0 0 30.4 25.8"/><circle class="m-hl" cx="17.5" cy="26" r="2"/>'
   };
   // 기존 체계 — 오목 원판 안의 가는 선 그림(기관 로고 아님)
-  var GLY = {
-    src: '<path d="M6 3h7l3 3v11H6z M13 3v3h3 M8.5 10h5 M8.5 13h5"/>',
-    assign: '<path d="M3 17V8l5-3 5 3v9 M1.5 17h13 M14 11h4.5 M16.5 9l2 2-2 2"/>',
-    decide: '<path d="M2.5 4h15v9.5h-15z M7.5 17h5 M10 13.5V17 M7 9l2 2 4-4"/>',
-    after: '<path d="M16 10a6 6 0 1 1-2-4.5 M16 3.5V6h-2.5 M10 7v3.2l2.2 1.4"/>'
-  };
+  // 79회차: 아이콘 = 닿음 아이콘 체계 78 묶음(명단 report · 배정 door · 판단 pc · 사후 hist) — 20 격자 따로 그림 지움
+  var GK = { src: "report", assign: "door", decide: "pc", after: "hist" };
+  function gly(k) { var D = window.DaeumIcons; return (D && D.I[GK[k]]) || ""; }
 
   // ── 전 과정. ext=기존 체계 · h=그 단계 화면(있을 때만 이동) ──
   var FLOW = [
@@ -88,7 +85,7 @@
   // ── 큰 그림 ──
   var played = false; // 이 쪽을 연 뒤 한 번 재생했으면 다시 그릴 때(화면 갱신)는 완성 그림으로
   function nodeHtml(x, i) {
-    if (x.ext) return '<li class="dsm-n dsm-ext" data-i="' + i + '"><span class="dsm-vis"><span class="dsm-disc"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">' + GLY[x.k] + '</svg></span></span>' +
+    if (x.ext) return '<li class="dsm-n dsm-ext" data-i="' + i + '"><span class="dsm-vis"><span class="dsm-disc">' + gly(x.k) + '</span></span>' +
       '<span class="dsm-tx"><b>' + esc(x.t) + "</b><small>" + esc(x.s) + '</small><em class="dsm-tag">' + (x.end ? x.end + " · " : "") + "기존 체계</em></span></li>";
     var n = STEPS.indexOf(x) + 1;
     return '<li class="dsm-n dsm-st" data-i="' + i + '"><span class="dsm-vis">' + obj(x.k) + '</span><span class="dsm-tx"><i class="dsm-no">' + pad(n) + "</i><b>" + esc(x.t) + "</b><small>" + esc(x.s) + "</small></span></li>";
