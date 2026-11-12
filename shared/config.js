@@ -13,6 +13,8 @@ window.DAEUM_CONFIG = {
   // 도로 경로(네이버 Directions 15) 서버 함수. 상한 IP당 300·전체 1,000회/일(S12-i4). 실패·상한(429)·끊김·키 없음이면
   //   화면 오류 없이 직선거리 어림값(«약»)으로 자동 대체. 같은 경로는 그날 이 기기 안에서만 다시 쓴다(서버 저장 0, 약관 §7.3).
   routeEndpoint: "https://gicjzrxgktpovnphtjhi.supabase.co/functions/v1/daeum-route",
+  // S12-t·S12-v U15(A5) 오늘 날씨 띠(기상청 초단기실황·특보) 서버 함수 — 경로 주소에서 만들지 않고 따로 둔다. 비우면 띠·특보 줄을 숨긴다.
+  weatherEndpoint: "https://gicjzrxgktpovnphtjhi.supabase.co/functions/v1/daeum-weather",
 
   // 적용 예시 지역: 상주시 24개 읍면동(1읍 17면 6동). 가구는 모두 가상(실제 주민 아님). 두 창구의 읍면동 이름 정본은 이 목록 하나다.
   // 출처: 행정안전부 주민등록 인구통계 읍면동 목록(jumin.mois.go.kr, 2026-09) · 도로명주소 목록(dorojuso.kr) 대조(2026-10-29).

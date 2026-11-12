@@ -8,7 +8,8 @@
   "use strict";
   var C = root.DAEUM_CONFIG || {}, F = root.DaeumFeatures || {};
   var K = { plan: "daeum.visit.plan", log: "daeum.visit.log", queue: "daeum.visit.queue", safe: "daeum.s12.safeAlerts" };
-  var LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js";
+  // S12-v U30(5-5): 같은 출처 사본(shared/vendor) — 이 파일 주소 기준으로 풀어 사무 화면(officer/)에서도 같은 파일을 가리킨다
+  var LIB = new URL("vendor/supabase-js-2.45.4.min.js", (root.document && root.document.currentScript || {}).src || (root.location && root.location.href) || "http://localhost/shared/").href;
   var GUARD = /gicjzrxgktpovnphtjhi\.supabase\.co$/; // 닿음 전용 프로젝트만 허용
   var S = { mode: "local", why: "login", user: null, at: null, client: null, ch: null, subs: [], gen: 0, conUser: null, flushing: null, pullAgain: false, pulling: null };
   var SESSION_WAIT = C.syncSessionWaitMs || 6000; // 세션 읽기가 이보다 오래 걸리면 저장된 세션으로 바로 붙는다(잠금 경합 대비)
@@ -54,7 +55,18 @@
     if (S.ch && S.mode === "live" && S.ch.send) { try { S.ch.send({ type: "broadcast", event: "safety", payload: a }); } catch (e) { /* 다음 다시 보내기 때 */ } }
     return a;
   }
-  function enqueue(op) { var q = queue(); q.push(op); set(K.queue, q.slice(-200)); } // 로그인 안 한 채 오래 써도 200건까지만
+  function enqueue(op) {
+    var q = queue();
+    // S12-v U1: 계획은 «통째로 맞추기»라 같은 차수의 앞선 계획 보내기는 새것 하나로 대신한다(옛 것이 막혀 뒤를 붙잡지 않게)
+    if (op.t === "plan") q = q.filter(function (x) { return !(x.t === "plan" && x.round_ym === op.round_ym); });
+    q.push(op); set(K.queue, q.slice(-200)); } // 로그인 안 한 채 오래 써도 200건까지만
+  /** 계획 행(서버 칸 이름) — 확정·편집·(시연) 상태 바꿈 모두 같은 모양으로 보낸다. updated_at 은 지금(«오늘 고친 차수» 판정에 쓰임) */
+  function planOp(p) {
+    var now = new Date().toISOString();
+    return { t: "plan", round_ym: p.round_ym, rows: (p.rows || []).map(function (r) {
+      return { round_ym: p.round_ym, day: r.day, seq: r.seq, household_no: r.household_no, planned_at: r.planned_at, status: r.status || "planned", list_rank: r.list_rank, visit_rank: r.visit_rank, ranked_at: p.ranked_at, until_date: p.until, updated_at: now };
+    }) };
+  }
 
   function loadLib() {
     if (root.supabase && root.supabase.createClient) return Promise.resolve(root.supabase);
@@ -110,7 +122,9 @@
       try { if (/[?&]demo=off\b/.test(root.location.search)) daily = false; } catch (e) { /* 주소 없음(시험 환경) */ }
       var t0 = new Date(); t0.setHours(0, 0, 0, 0); t0 = t0.toISOString();
       var fresh = function (v) { return !daily || !v || v >= t0; }; // 시각이 없는 행은 그대로 받는다
-      var pr = (r[0].data || []).filter(function (x) { return fresh(x.updated_at); });
+      // S12-v U2: 행마다 거르면 «오늘 고친 한 줄»만 남아 계획이 1~2줄로 줄었다 → 차수 단위로: 오늘 고친 행이 하나라도 있는 차수는 그 차수 행 전체를 받는다
+      var hot = {}; (r[0].data || []).forEach(function (x) { if (fresh(x.updated_at)) hot[x.round_ym] = 1; });
+      var pr = (r[0].data || []).filter(function (x) { return hot[x.round_ym]; });
       r[1].data = (r[1].data || []).filter(function (x) { return fresh(x.created_at); });
       var p = rowsToPlan(pr); if (p) { if (daily) p.from_seed = "S9j"; set(K.plan, p); } // from_seed: 다음 날 시연 시드가 그날 기준으로 다시 깐다
       var local = logs().filter(function (x) { return x.seed || x.__local; }), ids = {};
@@ -129,16 +143,27 @@
   function flush1() {
     var c = S.client, q = queue(); if (!c || !S.user || !q.length || S.mode !== "live") return Promise.resolve();
     var op = q[0], job;
-    if (op.t === "plan") job = c.from("visit_plan").delete().eq("round_ym", op.round_ym).then(function (r) { if (r.error) throw r.error; return c.from("visit_plan").insert(op.rows); });
+    // S12-v U1: 지우고 다시 넣기 → unique(owner_id,round_ym,household_no)에 걸려 넣기만 실패하면 서버 계획이 비었다.
+    //   upsert 로 바꿔 끼우고, 같은 차수에서 이번 계획에 없는 가구만 지운다
+    if (op.t === "plan") job = (op.rows.length ? c.from("visit_plan").upsert(op.rows, { onConflict: "owner_id,round_ym,household_no" }) : Promise.resolve({})).then(function (r) {
+      if (r && r.error) throw r.error;
+      var keep = op.rows.map(function (x) { return '"' + String(x.household_no).replace(/[^A-Z0-9-]/g, "") + '"'; });
+      var d = c.from("visit_plan").delete().eq("round_ym", op.round_ym);
+      return keep.length ? d.not("household_no", "in", "(" + keep.join(",") + ")") : d; });
     else if (op.t === "log") job = c.from("visit_log").insert(op.row);
+    else if (op.t === "unlog") job = c.from("visit_log").delete().eq("id", op.id); // S12-v U16(F4) 되돌리기·고치기
     else if (op.t === "status") job = c.from("visit_plan").update({ status: op.status, updated_at: new Date().toISOString() }).eq("round_ym", op.round_ym).eq("household_no", op.household_no);
     else job = Promise.resolve({});
     return job.then(function (r) {
       // 이미 들어간 기록(같은 id, 23505)은 보낸 것으로 친다 — 끊겼다 다시 보낼 때 생긴다
       if (r && r.error && !(op.t === "log" && r.error.code === "23505")) throw r.error;
-      var rest = queue(); rest.shift(); set(K.queue, rest); S.at = new Date(); emit("sent");
+      var rest = queue(); rest.shift(); set(K.queue, rest); S.at = new Date(); S.fails = 0; emit("sent");
       return flush1();
-    }).catch(function (e) { if (root.console) console.warn("[닿음 연동] 보내기 실패 — 이 기기에 남겨 둠", e && e.message); mode("offline", "send"); });
+    }).catch(function (e) {
+      if (root.console) console.warn("[닿음 연동] 보내기 실패 — 이 기기에 남겨 둠", e && e.message);
+      // S12-v U1: 맨 앞이 3번 넘게 실패하면 «막힘»으로 알린다(화면이 S.why === "stuck" 으로 안내)
+      S.fails = (S.fails || 0) + 1; S.lastErr = String(e && (e.message || e.code) || "").slice(0, 80);
+      mode("offline", S.fails >= 3 ? "stuck" : "send"); });
   }
   function connect() {
     var c = S.client, g = ++S.gen; // 새로 붙을 때마다 세대 번호 — 늦게 끝난 옛 시도는 무시
@@ -165,7 +190,7 @@
   // ── 바깥에서 부르는 것 ──
   var api = {
     keys: K,
-    state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email } : null, at: S.at, pending: queue().length, enabled: enabled() }; },
+    state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email } : null, at: S.at, pending: queue().length, enabled: enabled(), fails: S.fails || 0, lastErr: S.lastErr || "" }; },
     on: function (f) { S.subs.push(f); },
     plan: plan, logs: logs,
     safety: { list: safeAll, send: safeSend },
@@ -183,25 +208,57 @@
     },
     signIn: function (email, pw) { return client().then(function (c) { return c.auth.signInWithPassword({ email: email, password: pw }); }).then(function (r) { if (r.error) throw r.error; return r; }); },
     signUp: function (email, pw) { return client().then(function (c) { return c.auth.signUp({ email: email, password: pw }); }).then(function (r) { if (r.error) throw r.error; return r; }); },
-    signOut: function () { return client().then(function (c) { return c.auth.signOut(); }).then(function () { setUser(null); }); },
+    /** S12-v U24(1-5): o.wipe 이면 서버 로그아웃 뒤 이 기기의 닿음 저장분(daeum.* — 방문 기록·계획·명단 메타·보낼 줄 등)과 sessionStorage 를 지운다.
+     *  서버에 못 닿아도(끊김) 이 기기 정리는 한다. 시연 데이터는 다음에 열 때 demo_seed.js 가 다시 깐다(daeum.demo.seededFor 도 지워지므로) */
+    signOut: function (o) {
+      o = o || {};
+      var done = function () { setUser(null); if (o.wipe) api.wipeDevice(); };
+      return client().then(function (c) { return c.auth.signOut(); }).then(done, function (e) { done(); if (!o.wipe) throw e; });
+    },
+    /** 이 기기의 닿음 저장분 일괄 삭제 — 지운 키 개수 */
+    wipeDevice: function () {
+      var n = 0;
+      [root.localStorage, root.sessionStorage].forEach(function (st) {
+        try { if (!st) return; var ks = []; for (var i = 0; i < st.length; i++) ks.push(st.key(i));
+          ks.forEach(function (k) { if (/^daeum[.-]/.test(k) || /^sb-.*-auth-token/.test(k)) { st.removeItem(k); n++; } }); } catch (e) { /* 저장소를 못 쓰면 그대로 */ }
+      });
+      return n;
+    },
     /** 방문 계획 확정 — 이 기기에 저장하고 서버(로그인 시)에 같은 차수 행을 바꿔 끼운다 */
     savePlan: function (p) {
       p = JSON.parse(JSON.stringify(p)); delete p.seed; p.saved_at = new Date().toISOString(); set(K.plan, p);
-      enqueue({ t: "plan", round_ym: p.round_ym, rows: p.rows.map(function (r) {
-        return { round_ym: p.round_ym, day: r.day, seq: r.seq, household_no: r.household_no, planned_at: r.planned_at, status: r.status || "planned", list_rank: r.list_rank, visit_rank: r.visit_rank, ranked_at: p.ranked_at, until_date: p.until };
-      }) });
+      enqueue(planOp(p));
       emit("data"); return flush();
     },
     /** 방문 결과 저장 — 메모는 가린 뒤에만. 계획 행 상태도 함께 바꾼다 */
     addLog: function (row) {
       var r = { id: uid(), household_no: row.household_no, at: row.at || new Date().toISOString(), result: row.result, memo: mask(row.memo || "").slice(0, 1000),
-        tags: (row.tags || []).slice(0, 12), promises: (row.promises || []).map(function (x) { return { text: mask(x.text).slice(0, 80), due: x.due || null, kind: x.kind || "" }; }).slice(0, 8), __local: true };
+        tags: (row.tags || []).slice(0, 12).map(function (x) { return mask(x).slice(0, 40); }) /* S12-v U22: 꼬리표도 같은 가림 */, promises: (row.promises || []).map(function (x) { return { text: mask(x.text).slice(0, 80), due: x.due || null, kind: x.kind || "" }; }).slice(0, 8), __local: true };
       var L = logs(); L.push(r); set(K.log, L);
       var p = plan(), st = r.result === "met" ? "done" : r.result === "absent" ? "absent" : r.result === "refuse" ? "refused" : null;
-      if (p && st) { p.rows.forEach(function (x) { if (x.household_no === r.household_no) x.status = st; }); set(K.plan, p); enqueue({ t: "status", round_ym: p.round_ym, household_no: r.household_no, status: st }); }
+      if (p && st) { p.rows.forEach(function (x) { if (x.household_no === r.household_no) x.status = st; }); set(K.plan, p);
+        // S12-v U2: 시연 계획(그날 시드)은 상태 한 줄만 바꾸면 서버엔 어제 계획이 남는다 → 계획 전체를 오늘 것으로 맞춘다
+        enqueue(p.from_seed || p.seed ? planOp(p) : { t: "status", round_ym: p.round_ym, household_no: r.household_no, status: st }); }
       var send = Object.assign({}, r); delete send.__local;
       enqueue({ t: "log", row: send });
       emit("data"); return flush().then(function () { return r; });
+    },
+    /** S12-v U16(F4) 기록 빼기(«되돌리기 5초»·«기록 고치기») — 아직 안 보냈으면 대기열에서 빼고, 보냈으면 서버 행을 지운다(RLS 본인 행만).
+     *  계획 행 상태는 그 가구의 남은 마지막 기록으로(없으면 방문 전) 되돌린다 */
+    removeLog: function (id) {
+      var L = logs(), r = L.filter(function (x) { return x.id === id; })[0]; if (!r) return Promise.resolve(false);
+      set(K.log, L.filter(function (x) { return x.id !== id; }));
+      var q = queue(), inQ = q.some(function (op) { return op.t === "log" && op.row && op.row.id === id; });
+      if (inQ) set(K.queue, q.filter(function (op) { return !(op.t === "log" && op.row && op.row.id === id); }));
+      else if (!r.seed) enqueue({ t: "unlog", id: id });
+      var p = plan();
+      if (p) {
+        var rest = logs().filter(function (x) { return x.household_no === r.household_no; }).sort(function (a, b) { return a.at < b.at ? -1 : 1; }).pop();
+        var st = rest ? (rest.result === "met" ? "done" : rest.result === "absent" ? "absent" : rest.result === "refuse" ? "refused" : "planned") : "planned";
+        p.rows.forEach(function (x) { if (x.household_no === r.household_no) x.status = st; }); set(K.plan, p);
+        enqueue(p.from_seed || p.seed ? planOp(p) : { t: "status", round_ym: p.round_ym, household_no: r.household_no, status: st });
+      }
+      emit("data"); return flush().then(function () { return true; });
     }
   };
   root.addEventListener && root.addEventListener("online", function () { if (S.user) connect(); });

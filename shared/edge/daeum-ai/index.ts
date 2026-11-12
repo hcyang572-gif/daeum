@@ -21,8 +21,11 @@ const MAX_SERVICES = 60;
 // S11-d(11-02): IP당 20회는 발표장 한 IP에서 리허설·심사 시연을 하면 바닥난다(11-02 측정 중 429 실측) → IP당 100회·전체 300회.
 //   1회 비용(추정) = 입력 12,932·출력 774토큰(11-02 실측 평균 17건) × $2/$10 per MTok × 1,324.3원/$ ≈ 44.5원
 //   → 하루 최대 300회 ≈ 13,400원(추정). 단가·환율 출처: 01_리서치/법근거_AI요금_출처.md · MN-D02.
-const DAILY_PER_IP = 100;
-const DAILY_TOTAL = 300;
+// S12-v U28: 상한은 서버 비밀로 재배포 없이 한시 조정(심사 기간 등) — 비우면 아래 기본값.
+//   npx supabase secrets set DAEUM_AI_PER_IP=150 DAEUM_AI_TOTAL=600 --project-ref gicjzrxgktpovnphtjhi   (되돌리기: secrets unset …)
+//   ⚠ 시연이 비로그인 호출이라(JWT 검사 없음 — P6 때 재검토) Origin 은 위조 가능하고, 이 하루 상한과 콘솔 월 한도가 실제 방어선이다.
+const DAILY_PER_IP = envInt("DAEUM_AI_PER_IP", 100);
+const DAILY_TOTAL = envInt("DAEUM_AI_TOTAL", 300);
 const ALLOW_ORIGINS = ["https://hcyang572-gif.github.io", "http://localhost:8000", "http://127.0.0.1:8000"];
 
 const SYSTEM = `너는 복지 상담 창구의 안내자다. 사람이 자기(또는 가족의) 상황을 말하면, 함께 받은 «서비스 목록»에서 받을 수 있을 만한 것을 고른다.
@@ -50,25 +53,36 @@ function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), { status, headers: { ...cors(origin), "Content-Type": "application/json; charset=utf-8" } });
 }
 
-async function ipHash(req: Request): Promise<string> {
-  const ip = (req.headers.get("cf-connecting-ip") || (req.headers.get("x-forwarded-for") || "").split(",")[0] || "unknown").trim();
+// S12-v U28(4-3): IP 는 cf-connecting-ip 만 믿는다 — x-forwarded-for 첫 값은 호출자가 마음대로 적을 수 있어 IP별 상한 우회에 쓰였다.
+//   cf-connecting-ip 가 없으면 하나의 공용 칸("no-cf")으로 센다(헤더 위조로 새 칸을 못 만듦). 그 칸은 IP별 상한 대신 전체 상한만 받는다
+//   (모든 사용자가 한 칸에 모이므로 IP 상한을 걸면 정상 사용자가 막힘). DAEUM_IP_STRICT=1 이면 없을 때 거절.
+//   ipSrc("cf"|"none")를 응답에 실어 배포 뒤 실제 헤더가 오는지 확인한다(IP 원문·해시는 내보내지 않음).
+function envInt(name: string, d: number): number { const v = parseInt(Deno.env.get(name) || "", 10); return Number.isFinite(v) && v > 0 ? v : d; }
+function clientIp(req: Request): { ip: string | null; src: "cf" | "none" } {
+  const ip = (req.headers.get("cf-connecting-ip") || "").trim();
+  if (ip) return { ip, src: "cf" };
+  return { ip: Deno.env.get("DAEUM_IP_STRICT") === "1" ? null : "no-cf", src: "none" };
+}
+async function ipHash(ip: string): Promise<string> {
   const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("daeum:" + ip));
   return Array.from(new Uint8Array(d)).slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /** 상한 확인 + 1 증가(원자적, DB 함수 daeum_ai_hit). 확인 자체가 실패하면 AI를 부르지 않는다(비용 쪽으로 안전하게). */
-async function rateOk(req: Request): Promise<{ ok: boolean; why?: string; ip?: number; total?: number }> {
+async function rateOk(req: Request): Promise<{ ok: boolean; why?: string; ip?: number; total?: number; ipSrc?: string }> {
+  const who = clientIp(req);
+  if (!who.ip) return { ok: false, why: "no-ip", ipSrc: who.src };
   const url = Deno.env.get("SUPABASE_URL"), sk = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !sk) return { ok: false, why: "limiter-env" };
   try {
     const r = await fetch(url + "/rest/v1/rpc/daeum_ai_hit", {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: sk, Authorization: "Bearer " + sk },
-      body: JSON.stringify({ p_ip: await ipHash(req), p_ip_limit: DAILY_PER_IP, p_total_limit: DAILY_TOTAL }),
+      body: JSON.stringify({ p_ip: await ipHash(who.ip), p_ip_limit: who.src === "cf" ? DAILY_PER_IP : DAILY_TOTAL, p_total_limit: DAILY_TOTAL }),
     });
     if (!r.ok) return { ok: false, why: "limiter-" + r.status };
     const j = await r.json();
-    return { ok: !!j.ok, why: j.why, ip: j.ip, total: j.total };
+    return { ok: !!j.ok, why: j.why, ip: j.ip, total: j.total, ipSrc: who.src };
   } catch {
     return { ok: false, why: "limiter-error" };
   }
@@ -101,7 +115,7 @@ Deno.serve(async (req) => {
   if (!situation || !services.length) return json({ error: "상황 문장과 서비스 목록이 필요합니다" }, 400, origin);
   const rl = await rateOk(req);
   // 사용량(quota)은 발표 전 점검(tools/ai_preflight.js)이 남은 횟수를 보도록 함께 돌려준다 — IP 원문·해시는 내보내지 않는다
-  const quota = { ip: rl.ip ?? null, ipLimit: DAILY_PER_IP, total: rl.total ?? null, totalLimit: DAILY_TOTAL };
+  const quota = { ip: rl.ip ?? null, ipLimit: DAILY_PER_IP, total: rl.total ?? null, totalLimit: DAILY_TOTAL, ipSrc: rl.ipSrc ?? null };
   if (!rl.ok) return json({ error: "오늘 AI 안내 사용량을 넘었습니다(" + (rl.why || "") + ")", quota, aiPeriod }, 429, origin);
 
   const ids = new Set(services.map((s) => s.id));

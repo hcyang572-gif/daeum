@@ -7,7 +7,7 @@
 @media (max-width: 1023.98px) {
   .top .tabs.tabs5 { grid-template-columns: repeat(5, 1fr); }
   .bnav nav.tabs5 { grid-template-columns: repeat(5, 1fr); max-width: 520px; padding: 5px; gap: 4px; border-radius: 18px; }
-  .bnav nav.tabs5 a { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; min-height: 54px; padding: 7px 2px 6px; font-size: 12px; border-radius: 13px; letter-spacing: -.02em; }
+  .bnav nav.tabs5 a { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; min-height: 54px; padding: 7px 2px 6px; font-size: var(--fs-1); border-radius: 13px; letter-spacing: -.02em; }
   .tabs5 .ti { width: 22px; height: 22px; }
   /* 현장 탭은 가운데 큰 열쇠 — 선택 안 됐을 때도 살짝 도드라짐 */
   .tabs5 a[data-tab="field"]:not(.on) .ti { color: var(--now); opacity: 1; }
@@ -26,7 +26,7 @@
 /* ── 묶음 안 작은 칸(방문: 계획|동선 · 보고: 문서|실적) ── */
 .subtabs { display: inline-flex; gap: 4px; padding: 4px; margin: 0 0 14px; border-radius: 14px; background: var(--well);
   box-shadow: inset 0 2px 4px rgba(33,30,46,.12), inset 0 -1px 0 rgba(255,255,255,.7); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-.subtabs a { flex: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 11px; font-size: 14px; font-weight: 800; color: var(--mute); text-decoration: none; transition: background-color .2s, color .2s, box-shadow .2s; }
+.subtabs a { flex: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 11px; font-size: var(--fs-2); font-weight: 800; color: var(--mute); text-decoration: none; transition: background-color .2s, color .2s, box-shadow .2s; }
 .subtabs a.on { color: var(--ink); background: linear-gradient(180deg, #fff, #FAF8F4); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(33,30,46,.06), 0 2px 0 var(--edge); }
 main.ph > .subtabs { margin: 0; align-self: flex-start; }
 @media (min-width: 1024px) { .desk .subtabs { display: none; } }
@@ -63,28 +63,28 @@ body.sh-moving::before { animation-play-state: paused !important; } /* 전환 �
 /* ── 시간 걸리는 작업 진행 표시(0.3초 넘을 때만) ── */
 .sh-busy { position: fixed; z-index: 70; left: 0; right: 0; top: 0; height: 0; pointer-events: none; opacity: 0; transition: opacity .2s; }
 .sh-busy.on { opacity: 1; }
-.sh-busy i { position: absolute; left: 0; right: 0; top: 0; height: 3px; overflow: hidden; background: rgba(224,88,31,.15); }
-.sh-busy i::after { content: ""; position: absolute; top: 0; bottom: 0; width: 38%; background: linear-gradient(90deg, rgba(224,88,31,0), var(--now), rgba(224,88,31,0)); animation: shBar 1.1s cubic-bezier(.4,0,.2,1) infinite; }
-.sh-busy span { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); white-space: nowrap; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #fff; background: var(--rail); box-shadow: 0 10px 22px -10px rgba(17,26,39,.7); }
+.sh-busy i { position: absolute; left: 0; right: 0; top: 0; height: 3px; overflow: hidden; background: rgba(201,78,26,.15); }
+.sh-busy i::after { content: ""; position: absolute; top: 0; bottom: 0; width: 38%; background: linear-gradient(90deg, rgba(201,78,26,0), var(--now), rgba(201,78,26,0)); animation: shBar 1.1s cubic-bezier(.4,0,.2,1) infinite; }
+.sh-busy span { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); white-space: nowrap; padding: 7px 14px; border-radius: 999px; font-size: var(--fs-1); font-weight: 600; color: #fff; background: var(--rail); box-shadow: 0 10px 22px -10px rgba(17,26,39,.7); }
 @keyframes shBar { from { transform: translateX(-100%); } to { transform: translateX(280%); } }
 
 /* ── 오늘: 발굴 명단 카드 ── */
 .lcard { padding: 16px 16px 14px; margin-bottom: 14px; }
 .lc-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.lc-h b { font-size: 15px; font-weight: 900; }
-.lc-h small { font-size: 12px; color: var(--mute); }
-.lc-n { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 10px; font-size: 13px; color: var(--mute); }
-.lc-n b { color: var(--ink); font-size: 15px; font-weight: 900; }
-.lc-n span:first-child b { font-size: 28px; color: var(--now); margin-right: 2px; }
+.lc-h b { font-size: var(--fs-3); font-weight: 900; }
+.lc-h small { font-size: var(--fs-1); color: var(--mute); }
+.lc-n { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 10px; font-size: var(--fs-1); color: var(--mute); }
+.lc-n b { color: var(--ink); font-size: var(--fs-3); font-weight: 900; }
+.lc-n span:first-child b { font-size: var(--fs-6); color: var(--now); margin-right: 2px; }
 .lc-ar { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 5px; }
-.lc-ar li { display: grid; grid-template-columns: 64px minmax(0,1fr) 26px; gap: 8px; align-items: center; font-size: 12.5px; }
+.lc-ar li { display: grid; grid-template-columns: 64px minmax(0,1fr) 26px; gap: 8px; align-items: center; font-size: var(--fs-1); }
 .lc-ar i { height: 8px; border-radius: 4px; background: var(--well); position: relative; overflow: hidden; }
-.lc-ar i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); border-radius: 4px; background: linear-gradient(90deg, #C94E1A, #D96227); }
+.lc-ar i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); border-radius: 4px; background: linear-gradient(90deg, var(--now), var(--now-hi)); }
 .lc-ar b { text-align: right; font-weight: 800; }
 .lc-up { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 52px; cursor: pointer; text-align: center; }
-.lc-up small { font-size: 11.5px; font-weight: 600; color: var(--mute); }
-.lc-msg { margin: 8px 0 0; font-size: 12.5px; padding: 8px 10px; border-radius: 10px; background: rgba(12,135,103,.08); }
+.lc-up small { font-size: var(--fs-1); font-weight: 600; color: var(--mute); }
+.lc-msg { margin: 8px 0 0; font-size: var(--fs-1); padding: 8px 10px; border-radius: 10px; background: rgba(11,132,101,.08); }
 .lc-msg.bad { background: var(--risk-soft); color: var(--risk); }
-.lc-src { margin: 8px 0 0; font-size: 11.5px; color: var(--mute); }
+.lc-src { margin: 8px 0 0; font-size: var(--fs-1); color: var(--mute); }
 
 @media (prefers-reduced-motion: reduce) { .sh-in { animation: none; } .sh-busy i::after { animation: none; width: 100%; } }

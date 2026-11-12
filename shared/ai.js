@@ -287,8 +287,11 @@
     return ids;
   }
   function clip(v, n) { v = v == null ? "" : String(v); return v.length > n ? v.slice(0, n) : v; }
+  /* S12-v U23(1-4): 보내기 전 화면에서 한 번 더 가림(서버 redact.ts 와 이중) — 화면 가림 정본 = officer/fieldwork.js F.mask(이름·주민번호·연락처·주소·이메일·계좌).
+     F.mask 가 없는 화면(국민 창구 등)에서는 원래대로 서버 가림만. */
+  function scrub(v) { var M = window.DaeumFeatures && window.DaeumFeatures.mask; return M ? M(String(v == null ? "" : v)) : String(v == null ? "" : v); }
   function compactSvc(s, target, support) {
-    return { id: s.id, name: clip(s.name, 60), target: clip(target, 160), support: clip(support, 120) };
+    return { id: s.id, name: clip(scrub(s.name), 60), target: clip(scrub(target), 160), support: clip(scrub(support), 120) }; // U23: 서비스 칸도 같은 가림
   }
   /** 관련도 순서로 앞을 채우고 나머지는 원래 순서로 덧붙인 뒤 max 건에서 자른다 */
   function topFirst(all, firstIds, max) {
@@ -348,7 +351,7 @@
       sentProfile.childAges = [];
       sentProfile.childAgeNote = "자녀 나이는 말씀하지 않음(학교급으로 본 범위 " + profile.childAges.join("~") + "세 — 요약에 숫자로 쓰지 말 것)";
     }
-    return post({ situation: String(input.text || "").slice(0, 1200), proxy: input.proxy || {}, profile: sentProfile, services: compact })
+    return post({ situation: scrub(input.text || "").slice(0, 1200), proxy: input.proxy || {}, profile: sentProfile, services: compact })
       .then(function (ans) { logUsage("국민", ans, compact.length); return ans; });
   }
 
@@ -473,9 +476,9 @@
       return compactSvc(s, s.target || ("욕구 범주: " + (s.tags || []).join(", ")), s.support || (s.org ? "소관: " + s.org : ""));
     });
     return post({
-      situation: ("[담당 공무원 상담 기록] " + String(text)).slice(0, 1200),
+      situation: ("[담당 공무원 상담 기록] " + scrub(text)).slice(0, 1200), // U23: 화면 가림 뒤에 보냄
       proxy: { isProxy: false },
-      profile: { kind: "officer.record", label: ctx.label || "", factors: (ctx.factors || []).map(function (f) { return f.name; }), needs: r.needs, urgent: r.urgent },
+      profile: { kind: "officer.record", label: scrub(ctx.label || ""), factors: (ctx.factors || []).map(function (f) { return f.name; }), needs: r.needs, urgent: r.urgent },
       services: compact
     }).then(function (ans) {
       logUsage("공무원", ans, compact.length);

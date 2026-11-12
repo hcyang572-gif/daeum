@@ -1,23 +1,23 @@
 /* 닿음 S12-m 연계 카드(집 앞 요약 아래) — app.css 토큰(--ink·--mute·--well·--line) 그대로 씀 */
 .lkc { padding: 12px 14px; }
 .lk-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-.lk-h b { font-size: 14px; font-weight: 900; }
-.lk-h span { font-size: 11.5px; font-weight: 700; color: var(--mute); }
+.lk-h b { font-size: var(--fs-2); font-weight: 900; }
+.lk-h span { font-size: var(--fs-1); font-weight: 600; color: var(--mute); }
 .lk-line { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
-.lk-c { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: var(--well); font-size: 12.5px; line-height: 1.4; min-width: 0; }
-.lk-c b { font-size: 11px; font-weight: 900; color: var(--mute); }
+.lk-c { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: var(--well); font-size: var(--fs-1); line-height: 1.4; min-width: 0; }
+.lk-c b { font-size: var(--fs-1); font-weight: 900; color: var(--mute); }
 .lk-c.on { background: #fff; box-shadow: inset 0 0 0 2px var(--ink); }
 .lk-c.on b { color: var(--ink); }
 .lk-tel { font-weight: 800; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; min-height: 24px; }
 .lk-more { margin-top: 8px; }
-.lk-more summary { cursor: pointer; font-size: 12.5px; font-weight: 800; padding: 8px 0; min-height: 40px; display: flex; align-items: center; }
-.lk-sub { margin: 10px 0 2px; font-size: 11.5px; font-weight: 800; color: var(--mute); }
-.lk-none { font-size: 12px; color: var(--mute); margin: 4px 0; }
+.lk-more summary { cursor: pointer; font-size: var(--fs-1); font-weight: 800; padding: 8px 0; min-height: var(--tap); display: flex; align-items: center; }
+.lk-sub { margin: 10px 0 2px; font-size: var(--fs-1); font-weight: 800; color: var(--mute); }
+.lk-none { font-size: var(--fs-1); color: var(--mute); margin: 4px 0; }
 .lk-l { list-style: none; margin: 0; padding: 0; }
 .lk-l li { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 2px 10px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line); }
-.lk-l li b { display: block; font-size: 13px; font-weight: 800; }
-.lk-l li small { display: block; font-size: 11.5px; color: var(--mute); }
-.lk-k { font-size: 10.5px; font-weight: 900; padding: 3px 7px; border-radius: 6px; background: var(--well); white-space: nowrap; margin-top: 1px; }
-.lk-stale { display: inline-block; margin-top: 3px; font-style: normal; font-size: 11px; font-weight: 800; color: #7A4B00; background: #FFF1D6; padding: 2px 6px; border-radius: 5px; }
+.lk-l li b { display: block; font-size: var(--fs-1); font-weight: 800; }
+.lk-l li small { display: block; font-size: var(--fs-1); color: var(--mute); }
+.lk-k { font-size: var(--fs-1); font-weight: 900; padding: 3px 7px; border-radius: 6px; background: var(--well); white-space: nowrap; margin-top: 1px; }
+.lk-stale { display: inline-block; margin-top: 3px; font-style: normal; font-size: var(--fs-1); font-weight: 800; color: #7A4B00; background: #FFF1D6; padding: 2px 6px; border-radius: 5px; }
 @media print { .lk-more { display: none; } }
-.lk-km { display: inline-block; margin: 3px 6px 0 0; font-size: 11px; font-weight: 800; color: var(--ink); }
+.lk-km { display: inline-block; margin: 3px 6px 0 0; font-size: var(--fs-1); font-weight: 800; color: var(--ink); }

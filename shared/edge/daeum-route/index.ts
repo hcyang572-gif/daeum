@@ -15,8 +15,9 @@ const CHUNK = 17;
 // 하루 호출 상한(Directions 호출 수 기준). NCP 비용 상한·악용 대비 — 넘으면 429 → 화면은 오류 없이 직선거리 어림값(«약»)으로 돌아간다.
 // S12-i4(D-081 보정, 호창님 «좀더 여유있게»): IP당 300·전체 1,000회/일. 최악 1,000회×약 20원≈2만 원/일은 NCP 월 1만 원 예산 알림으로 감지.
 // ⛔ 경로 결과는 서버에 저장하지 않는다(네이버 지도 API 약관 §7.3) — DB 에는 호출 «횟수»만 센다(route_limit.sql).
-const DAILY_PER_IP = 300;
-const DAILY_TOTAL = 1000;
+// S12-v U28: 서버 비밀 DAEUM_ROUTE_PER_IP·DAEUM_ROUTE_TOTAL 로 재배포 없이 조정(비우면 기본값)
+const DAILY_PER_IP = envInt("DAEUM_ROUTE_PER_IP", 300);
+const DAILY_TOTAL = envInt("DAEUM_ROUTE_TOTAL", 1000);
 
 function cors(origin: string | null) {
   const o = origin && ALLOW_ORIGINS.includes(origin) ? origin : ALLOW_ORIGINS[0];
@@ -30,20 +31,31 @@ function cors(origin: string | null) {
 function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), { status, headers: { ...cors(origin), "Content-Type": "application/json; charset=utf-8" } });
 }
-async function ipHash(req: Request): Promise<string> {
-  const ip = (req.headers.get("cf-connecting-ip") || (req.headers.get("x-forwarded-for") || "").split(",")[0] || "unknown").trim();
+// S12-v U28(4-3): IP 는 cf-connecting-ip 만 믿는다 — x-forwarded-for 첫 값은 호출자가 마음대로 적을 수 있어 IP별 상한 우회에 쓰였다.
+//   cf-connecting-ip 가 없으면 하나의 공용 칸("no-cf")으로 센다(헤더 위조로 새 칸을 못 만듦). 그 칸은 IP별 상한 대신 전체 상한만 받는다
+//   (모든 사용자가 한 칸에 모이므로 IP 상한을 걸면 정상 사용자가 막힘). DAEUM_IP_STRICT=1 이면 없을 때 거절.
+//   ipSrc("cf"|"none")를 응답에 실어 배포 뒤 실제 헤더가 오는지 확인한다(IP 원문·해시는 내보내지 않음).
+function envInt(name: string, d: number): number { const v = parseInt(Deno.env.get(name) || "", 10); return Number.isFinite(v) && v > 0 ? v : d; }
+function clientIp(req: Request): { ip: string | null; src: "cf" | "none" } {
+  const ip = (req.headers.get("cf-connecting-ip") || "").trim();
+  if (ip) return { ip, src: "cf" };
+  return { ip: Deno.env.get("DAEUM_IP_STRICT") === "1" ? null : "no-cf", src: "none" };
+}
+async function ipHash(ip: string): Promise<string> {
   const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("daeum:" + ip));
   return Array.from(new Uint8Array(d)).slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 /** 상한 확인 + n 증가(DB 함수 daeum_route_hit, route_limit.sql). 확인이 실패하면 부르지 않는다. */
 async function rateOk(req: Request, n: number): Promise<{ ok: boolean; why?: string }> {
+  const who = clientIp(req);
+  if (!who.ip) return { ok: false, why: "no-ip" };
   const url = Deno.env.get("SUPABASE_URL"), sk = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !sk) return { ok: false, why: "limiter-env" };
   try {
     const r = await fetch(url + "/rest/v1/rpc/daeum_route_hit", {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: sk, Authorization: "Bearer " + sk },
-      body: JSON.stringify({ p_ip: await ipHash(req), p_n: n, p_ip_limit: DAILY_PER_IP, p_total_limit: DAILY_TOTAL }),
+      body: JSON.stringify({ p_ip: await ipHash(who.ip), p_n: n, p_ip_limit: who.src === "cf" ? DAILY_PER_IP : DAILY_TOTAL, p_total_limit: DAILY_TOTAL }),
     });
     if (!r.ok) return { ok: false, why: "limiter-" + r.status };
     const j = await r.json();

@@ -13,6 +13,42 @@ const BASE = "https://apis.data.go.kr/1360000";
 const TTL = 10 * 60 * 1000, WARN_TTL = 30 * 60 * 1000;
 const cache = new Map<string, { exp: number; v: unknown }>();
 
+// S12-v U28(4-3): IP 는 cf-connecting-ip 만 믿는다 — x-forwarded-for 첫 값은 호출자가 마음대로 적을 수 있어 IP별 상한 우회에 쓰였다.
+//   cf-connecting-ip 가 없으면 하나의 공용 칸("no-cf")으로 센다(헤더 위조로 새 칸을 못 만듦). 그 칸은 IP별 상한 대신 전체 상한만 받는다
+//   (모든 사용자가 한 칸에 모이므로 IP 상한을 걸면 정상 사용자가 막힘). DAEUM_IP_STRICT=1 이면 없을 때 거절.
+//   ipSrc("cf"|"none")를 응답에 실어 배포 뒤 실제 헤더가 오는지 확인한다(IP 원문·해시는 내보내지 않음).
+function envInt(name: string, d: number): number { const v = parseInt(Deno.env.get(name) || "", 10); return Number.isFinite(v) && v > 0 ? v : d; }
+function clientIp(req: Request): { ip: string | null; src: "cf" | "none" } {
+  const ip = (req.headers.get("cf-connecting-ip") || "").trim();
+  if (ip) return { ip, src: "cf" };
+  return { ip: Deno.env.get("DAEUM_IP_STRICT") === "1" ? null : "no-cf", src: "none" };
+}
+async function ipHash(ip: string): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("daeum:" + ip));
+  return Array.from(new Uint8Array(d)).slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+// S12-v U27: 날씨 호출 상한 — 캐시를 비켜 기상청까지 가는 호출만 센다(db/migration_s12v_hardening.sql daeum_kind_hit, 표 daeum_ai_usage 의 'wx:' 줄).
+//   기상청 개발 계정 하루 한도(일 10,000건, 한 번에 2~3건 소모) 보호. 상한 DB 가 아직 없거나 실패하면 «열어 둔다»(무료 자료라 가용성 우선).
+const WX_PER_IP = envInt("DAEUM_WX_PER_IP", 200), WX_TOTAL = envInt("DAEUM_WX_TOTAL", 2000);
+async function wxOk(req: Request): Promise<boolean> {
+  const who = clientIp(req);
+  if (!who.ip) return false;
+  const url = Deno.env.get("SUPABASE_URL"), sk = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !sk) return true;
+  try {
+    const r = await fetch(url + "/rest/v1/rpc/daeum_kind_hit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: sk, Authorization: "Bearer " + sk },
+      body: JSON.stringify({ p_kind: "wx", p_ip: await ipHash(who.ip), p_n: 1, p_ip_limit: who.src === "cf" ? WX_PER_IP : WX_TOTAL, p_total_limit: WX_TOTAL }),
+    });
+    if (!r.ok) return true;
+    const j = await r.json();
+    return j.ok !== false;
+  } catch {
+    return true;
+  }
+}
+
 function cors(origin: string | null) {
   const o = origin && ALLOW_ORIGINS.includes(origin) ? origin : ALLOW_ORIGINS[0];
   return { "Access-Control-Allow-Origin": o, "Access-Control-Allow-Methods": "GET, OPTIONS", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Vary": "Origin" };
@@ -68,6 +104,7 @@ Deno.serve(async (req) => {
 
   const ck = nx + "," + ny, hit = cache.get(ck);
   if (hit && hit.exp > Date.now()) return json(hit.v, 200, origin);
+  if (!(await wxOk(req))) return json({ error: "오늘 날씨 조회 한도에 닿았습니다", code: "limit" }, 429, origin);
   try {
     const n = kst(40), f = kst(45); // 실황은 매시 40분 뒤, 초단기예보는 매시 45분 뒤 올라온다
     const [obs, fc, w] = await Promise.all([

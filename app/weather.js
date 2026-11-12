@@ -66,13 +66,19 @@
       '<span class="dwx-src"><i class="src-ico" aria-hidden="true"></i>기상청' + (v.time ? " " + v.time : "") + "</span></div>" +
       (v.safe ? '<div class="dwx-safe" data-k="' + v.safe.k + '"><b>방문 안전</b> ' + esc(v.safe.line) + "</div>" : "");
   }
-  var API = { kmToLL: kmToLL, grid: grid, pickArea: pickArea, safety: safety, view: view, html: html };
+  /** S12-v U15(B10): 받은 실제 특보(기상청)만 화면 «주의» 줄·방문 순위의 원천으로 — 없으면 null(시연용 가짜 특보는 쓰지 않음) */
+  function alertOf(w) {
+    var n = w && (w.warn || []).filter(function (x) { return /주의보|경보/.test(String(x)); })[0];
+    return n ? { name: String(n), level: /경보/.test(n) ? "경보" : "주의보" } : null;
+  }
+  var cur = null;
+  var API = { kmToLL: kmToLL, grid: grid, pickArea: pickArea, safety: safety, view: view, html: html, alertOf: alertOf, current: function () { return cur; } };
   if (typeof module !== "undefined" && module.exports) { module.exports = API; return; }
   root.DaeumWeather = API;
 
   // ───── 화면(브라우저) ─────
   var C = root.DAEUM_CONFIG || {};
-  var EP = C.weatherEndpoint || (C.routeEndpoint ? String(C.routeEndpoint).replace(/daeum-route$/, "daeum-weather") : "");
+  var EP = C.weatherEndpoint || ""; // S12-v U15(A5): 날씨 주소는 config.js 에 따로(경로 주소에서 만들지 않음)
   if (!EP || C.weatherOff) return;
   var LS = "daeum.s12.wx", band = null, last = "";
   function ymd(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
@@ -84,6 +90,10 @@
     return { place: a ? a.name : "상주시", nx: g.nx, ny: g.ny };
   }
   function hide() { if (band) band.hidden = true; }
+  function keep(w) { // 받은 값을 기억하고, 특보가 바뀌면 화면에 알린다(집 앞 «주의» 줄·방문 순위가 다시 그려지게)
+    var a = alertOf(w), b = alertOf(cur), ch = (a && a.name) !== (b && b.name); cur = w;
+    if (ch) try { root.dispatchEvent(new CustomEvent("daeum:wx")); } catch (e) { /* 옛 브라우저 */ }
+  }
   function show(v) {
     if (!v) { hide(); return; }
     if (!band) {
@@ -100,12 +110,12 @@
     var tg = target(), k = tg.nx + "," + tg.ny;
     if (!force && k === last && band && !band.hidden) return;
     last = k;
-    var c = getCache(k); if (c) { show(view(c, tg.place)); return; }
+    var c = getCache(k); if (c) { keep(c); show(view(c, tg.place)); return; }
     if (typeof fetch !== "function") return;
     var ctl = typeof AbortController === "function" ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 8000);
     fetch(EP + "?nx=" + tg.nx + "&ny=" + tg.ny, { signal: ctl ? ctl.signal : undefined, cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (w) { clearTimeout(tm); var v = view(w, tg.place); if (v) setCache(k, w); show(v); })
+      .then(function (w) { clearTimeout(tm); var v = view(w, tg.place); if (v) { setCache(k, w); keep(w); } show(v); })
       .catch(function () { clearTimeout(tm); hide(); });
   }
   function start() { load(true); root.addEventListener("hashchange", function () { setTimeout(function () { load(false); }, 50); }); setInterval(function () { load(true); }, 10 * 60e3); }

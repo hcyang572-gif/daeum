@@ -56,10 +56,15 @@
   --num: "Manrope", "Pretendard Variable", Pretendard, "Malgun Gothic", sans-serif;
   --fs-xs: .875rem; --fs-s: .9375rem; --fs-b: 1.0625rem; --fs-l: 1.1875rem; --fs-h3: 1.3125rem; --fs-h2: 1.625rem;
   --fs-h1: clamp(1.875rem, 6.4vw, 2.375rem);
-  --fw-m: 600; --fw-b: 700; --fw-h: 700;
+  --fw-m: 600; --fw-b: 800; --fw-h: 900;   /* U33(S12-v M2): 메인 굵기 3단계 600/800/900 */
   /* ── 간격(4px 단계) ── */
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px; --sp-14: 56px;
   --tap: 44px; --tap-main: 60px;
+  /* ── S12-v 공용 정본(61회차 미르 M3): 글자 7단계·모서리 4단계·현장 누름·초록 유약. 메인 app/app.css·사무 officer/flow.css 는 이 파일을 읽지 않아 같은 값을 따로 둔다 — 바꿀 때 세 곳 함께 ── */
+  --fs-1: 13px; --fs-2: 14px; --fs-3: 16px; --fs-4: 18px; --fs-5: 22px; --fs-6: 28px; --fs-7: 34px;
+  --r-card: 14px; --r-btn: 12px; --r-chip: 999px; --r-tag: 6px;
+  --tap-field: 48px;
+  --go-glaze: #0B6B52;
   /* ── 움직임(우리가족 AuroraTiming) ── */
   --c-std: cubic-bezier(.33,1,.68,1); --c-push: cubic-bezier(.32,.72,0,1); --c-spring: cubic-bezier(.34,1.12,.64,1); --c-exit: cubic-bezier(.32,0,.67,0);
   --t-press: 70ms; --t-fast: 160ms; --t: 240ms; --t-push: 320ms; --t-slow: 420ms;
@@ -112,7 +117,7 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
 .sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .num { font-family: var(--num); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .cnum { font: var(--fw-m) var(--fs-xs) var(--f); letter-spacing: .01em; color: var(--ink2); }
-.bignum { font-family: var(--num); font-weight: 200; letter-spacing: -.045em; line-height: .9; font-variant-numeric: tabular-nums; }
+.bignum { font-family: var(--num); font-weight: 900; letter-spacing: -.045em; /* U33(S12-v M2): 굵기 200 → 메인 큰 숫자 900 */ line-height: .9; font-variant-numeric: tabular-nums; }
 
 /* ══════════ 공통 부품(두 창구가 같이 쓴다) ══════════ */
 /* 오로라 빛 번짐 — 화면마다 하나, 뒤에 고정. 아주 천천히 돈다(살아 있는 바탕) */
@@ -155,7 +160,7 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
   background-color: var(--s1a); background-image: var(--nz-card), var(--float); background-size: var(--nz-s), auto; box-shadow: var(--hl), var(--e-sm); transition: transform var(--t-fast) var(--c-std); }
 .d-round:active { transform: scale(.94); }
 /* 꼬리표 — 색과 함께 점·글자로 뜻을 전한다 */
-.d-tag { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: var(--fw-m); line-height: 1.3; }
+.d-tag { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 10px; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: var(--fw-m); line-height: 1.3; }
 .d-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
 .d-tag.neg { color: var(--neg); background: var(--neg-soft); }
 .d-tag.acc { color: var(--acc-ink); background: var(--acc-soft); }
@@ -168,7 +173,7 @@ a { color: var(--acc-ink); text-underline-offset: 3px; }
 .d-sheet { width: min(26rem, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow: auto; margin: auto; padding: var(--sp-5); border: 0; border-radius: var(--r-lg); color: var(--ink);
   background-color: var(--solid); background-image: var(--nz-card), linear-gradient(180deg, var(--s1a), var(--s1b)); background-size: var(--nz-s), auto; box-shadow: var(--hl), var(--e3); }
 .d-sheet[open] { animation: d-tab var(--t) var(--c-std) both; }
-.d-sheet::backdrop { background: color-mix(in srgb, #1B1830 32%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.d-sheet::backdrop { background: rgba(18,26,39,.32); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .d-sheet .sh-h { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin: 0 0 var(--sp-3); }
 .d-sheet .sh-h h2 { margin: 0; font-size: var(--fs-h3); font-weight: var(--fw-b); letter-spacing: -.03em; }
 .d-sheet ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }

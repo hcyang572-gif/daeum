@@ -383,6 +383,10 @@
     reportCards: reportCards, bindReport: bindReport,
     /** 다른 화면(기록 i2·문서)이 읽는 값: {indirect, away, sms, refwhy, handoff, pair} */
     get: function (hid) { return C ? get(hid) : {}; },
+    /** S12-v U4: 부재 메모·간접 확인은 이 한 곳에만 쓴다(기록 화면도 여기로) */
+    set: function (hid, k, v) { if (C) put(hid, k, v); },
+    /** S12-v U4(F10): 다음 방문 제안 — 현장 확인·기록 화면이 같은 계산을 읽는다 */
+    nextOf: function (hid) { return C ? nextOf(hid) : null; },
     newList: function () { return C ? st().newhh.slice() : []; },
     lock: function () { lock(); }, unlock: unlock
   };

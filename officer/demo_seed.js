@@ -17,11 +17,15 @@
   function areaOf(hid) { return AREA_OF[String(hid).charAt(0)] || ""; }
 
   // S10p-3 F-1 «시연 초기화»: 주소 끝 ?demo=reset → 담기·앞에 두기·특보 선택·시도 기록 등 시연 조작을 지우고 기본값으로(도로 경로 캐시는 남김 — 호출 한도 보호)
+  // S12-v U19: 날 바뀜 초기화(DAILY_RE)보다 좁던 범위를 넓힘 — 안전 모드·기록·문서·채운 칸·하루 요약(daeum.s12.*)·방문 계획/결과/초안(daeum.visit.*)·주변 보기(daeum.nearby.on.v1).
+  //   남기는 것: 도로 경로 캐시(daeum.officer.road)·로그인 세션(daeum.auth·sb-*)
+  var RESET_RE = /^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import|visit\.|s12\.|nearby\.on\.v1$)/;
+  var DAILY_RE = /^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import|visit\.(plan|log|queue)|s12\.)/;
   try {
     if (/[?&]demo=reset(?![a-z])/.test(root.location.search)) {
       var LS = root.localStorage, ks = [];
       for (var i = 0; i < LS.length; i++) ks.push(LS.key(i));
-      ks.forEach(function (k) { if (/^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import)/.test(k) && k !== "daeum.officer.road") LS.removeItem(k); });
+      ks.forEach(function (k) { if (RESET_RE.test(k) && k !== "daeum.officer.road") LS.removeItem(k); });
       if (root.history && root.history.replaceState) root.history.replaceState(null, "", root.location.pathname + (root.location.hash || "#today"));
     }
   } catch (e) { /* 저장소를 못 쓰면 그대로 */ }
@@ -71,7 +75,7 @@
   //   ?demo=reset 과 같은 범위 + 방문 계획·결과·보낼 줄·s12 알림. 도로 경로 캐시·로그인 세션(sb-*)은 남긴다. 끄기: config.demoDailyReset === false
   if (seeded && seeded.day !== today && C.demoDailyReset !== false) {
     try { var LS2 = root.localStorage, ks2 = []; for (var j = 0; j < LS2.length; j++) ks2.push(LS2.key(j));
-      ks2.forEach(function (k) { if (/^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import|visit\.(plan|log|queue)|s12\.)/.test(k) && k !== "daeum.officer.road") LS2.removeItem(k); });
+      ks2.forEach(function (k) { if (DAILY_RE.test(k) && k !== "daeum.officer.road") LS2.removeItem(k); });
     } catch (e) { /* 저장소를 못 쓰면 그대로 */ }
   }
 

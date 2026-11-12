@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="../manifest.webmanifest">
-<link rel="apple-touch-icon" href="../shared/icons/apple-touch-icon.png">
+<!-- S12-v U29(보안 5-4): GitHub Pages 는 헤더를 못 달아 meta CSP. 허용 = 같은 출처 + 닿음 Supabase(https·wss) + 글꼴(jsdelivr·Google) + xlsx(cdnjs) + 네이버 지도(*.naver.com·*.naver.net·*.pstatic.net).
+     script 'unsafe-inline' 은 네이버 지도·설문 글꼴 onload 가 깨지지 않게 남김(지도 실동작 확인 뒤 조일 것). jsdelivr 스크립트 허용은 sync.js 가 shared/vendor/ 로 바뀌면 뺄 수 있음. 문제 생기면 이 meta 한 줄만 지우면 원상. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.naver.com https://*.naver.net https://*.pstatic.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://*.naver.com https://*.naver.net https://*.pstatic.net; font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data: blob: https://*.naver.com https://*.naver.net https://*.pstatic.net; connect-src 'self' https://gicjzrxgktpovnphtjhi.supabase.co wss://gicjzrxgktpovnphtjhi.supabase.co https://*.naver.com https://*.naver.net https://*.pstatic.net https://*.navercorp.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<link rel="manifest" href="../manifest.webmanifest?v=s12v61">
+<link rel="apple-touch-icon" href="../shared/icons/apple-touch-icon.png?v=s12v61">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,7 +24,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://hcyang572-gif.github.io/daeum/survey/">
-<link rel="icon" href="../shared/icons/daeum.svg" type="image/svg+xml">
+<link rel="icon" href="../shared/icons/daeum.svg?v=s12v61" type="image/svg+xml">
 <!-- 성능(v3): 공용 tokens.css(@import 사슬·잡음 배경)를 읽지 않고 이 화면 전용 값만 쓴다.
      글꼴은 시스템 글꼴로 먼저 그리고, 프리텐다드는 막지 않게 내려받아 «다음 화면 전환 때» 바꾼다(읽는 중 글자가 출렁이지 않게). -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>

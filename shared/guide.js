@@ -25,6 +25,25 @@
 
   function u(p) { return new URL(p, ROOT).href; }
 
+  /* S12-v U5: 연계처·좌표 숫자의 원천 = 데이터 파일 머리말(meta) 한 곳.
+     data/public_extra.js(count·sources) + data/resources.js(total) + data/public_extra_geo.js(tried·ok·fail).
+     파일을 안 불러온 화면(ai_check 등)은 아래 대체값을 쓰고, guide.test.js 가 대체값 = meta 를 확인한다(갈라지면 시험 실패). */
+  var LINK_FALLBACK = { extra: 712, res: 23, total: 735, sources: 10, orgs: 7, geoTried: 708, geoOk: 692, geoFail: 16 };
+  function links() {
+    var X = window.__DAEUM_PUBLIC_EXTRA__, R = window.__DAEUM_RESOURCES__, Q = window.__DAEUM_PUBLIC_GEO__, o = {}, k;
+    for (k in LINK_FALLBACK) o[k] = LINK_FALLBACK[k];
+    if (X) {
+      o.extra = X.count != null ? X.count : (X.items || []).length;
+      if (X.sources) { var g = {}; X.sources.forEach(function (s) { g[String(s.name).split("_")[0]] = 1; }); o.sources = X.sources.length; o.orgs = Object.keys(g).length; }
+    }
+    if (R && R.total != null) o.res = R.total;
+    if (Q && Q.tried != null) { o.geoTried = Q.tried; o.geoOk = Q.ok; o.geoFail = Q.fail; }
+    o.total = o.extra + o.res;
+    o.fromMeta = !!(X && R && Q);
+    return o;
+  }
+  var LK = links();
+
   /* ── 활용 데이터 표(정본) ── kind: pub 공공데이터 · virt 가상(시연) · self 닿음 자체 · ref 참고 자료 */
   var DATA = [
     { id: "D1", kind: "pub", org: "한국사회보장정보원", name: "중앙부처복지서비스", no: "15090532", url: "https://www.data.go.kr/data/15090532/openapi.do",
@@ -138,7 +157,7 @@
       how: "보내기 전 이름·전화·주민번호를 가림 · 추천은 D1·D2 목록에 있는 것만", cycle: "요청할 때", base: "실패하면 규칙 모드",
       screens: [["공무원", "기록 › 자동 정리"], ["공무원", "AI 추천 검증"]], does: "상담 내용을 기록 문장으로 · 맞는 복지서비스 후보" },
     { id: "K1", kind: "svc", org: "행정안전부", name: "주소정보누리집 좌표제공 API(주소 → 건물 출입구 좌표)", no: "", url: "https://business.juso.go.kr/addrlink/openApi/apiExprn.do",
-      how: "한 번 변환해 저장(화면에서는 부르지 않음) · 708건 중 692 성공(못 찾은 16곳은 2018 경로당)", cycle: "정적", base: "2026-11-12 변환",
+      how: "한 번 변환해 저장(화면에서는 부르지 않음) · " + LK.geoTried + "건 중 " + LK.geoOk + " 성공(못 찾은 " + LK.geoFail + "곳은 2018 경로당)", cycle: "정적", base: "2026-11-12 변환",
       screens: [["공무원", "연계 카드 › 가까운 순"]], does: "연계처 주소에 좌표를 붙여 가구에서 가까운 순으로" },
 
     { id: "R1", kind: "ref", org: "한국석유관리원·충북대", name: "한국유화학회지 2016(33권 4호) 휘발유 CO₂ 계수", no: "", url: "",
@@ -408,7 +427,7 @@
     },
     help: function (side) { var d = dialog("dgHelp", "사용 방법", true); renderHelp(d.querySelector(".dg-body"), side || SIDE || "officer"); open(d); },
     data: function (ids) { var d = dialog("dgData", "활용 데이터", true); open(d); renderData(d.querySelector(".dg-body"), ids); },
-    renderData: renderData, renderHelp: renderHelp, hit: hit, infer: infer, scan: scan, DATA: DATA, counts: counts
+    renderData: renderData, renderHelp: renderHelp, hit: hit, infer: infer, scan: scan, DATA: DATA, counts: counts, links: links
   };
   window.DaeumGuide = api;
 

@@ -5,8 +5,23 @@
 (function () {
   "use strict";
   var G = window.DaeumGuide;
+  /* S12-v U5: 구성도(build_s12u.py 생성 SVG, 손으로 안 고침) 안 연계처·좌표 숫자도 meta로 맞춘다 */
+  function syncSys(L) {
+    var fig = document.getElementById("system-diagram");
+    if (!fig || !L || !L.fromMeta) return;
+    var R = [[/공공데이터 연계처 \d+곳/g, "공공데이터 연계처 " + L.extra + "곳"], [/연계처 \d+곳 · \d+종 기관/g, "연계처 " + L.extra + "곳 · " + L.sources + "종 기관"],
+      [/지도 좌표 \d+곳/g, "지도 좌표 " + L.geoOk + "곳"], [/같은 동네 \d+곳/g, "같은 동네 " + L.total + "곳"], [/연계처 \d+곳·/g, "연계처 " + L.total + "곳·"]];
+    Array.prototype.forEach.call(fig.querySelectorAll("text, desc"), function (n) {
+      var t = n.textContent, v = t; R.forEach(function (r) { v = v.replace(r[0], r[1]); });
+      if (v !== t) n.textContent = v;
+    });
+  }
+  if (G && G.links) syncSys(G.links());
   var box = document.getElementById("dataFlow");
   if (!box || !G) return;
+  /* S12-v U5: 연계처 숫자는 데이터 파일 meta에서(DaeumGuide.links) */
+  var L = G.links();
+  function lk(k) { return L[k]; }
 
   var I = {
     list: '<path d="M8 6h11M8 12h11M8 18h7"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
@@ -33,7 +48,7 @@
       { g: "people", info: "인구 · 1인 세대", from: "행정안전부", act: "읍면 고독사 위험도", sub: "닿음 추정 지수", to: ["보고", "방문 전 카드"], ids: "D12,D13,M1" },
       { g: "house", info: "건물 나이", from: "국토교통부 건축물대장", act: "30년 넘은 집 비율", sub: "난방·전기·누수 살피기", to: ["가구 명단", "방문 전 카드"], ids: "D15,P22" },
       { g: "cross", info: "병·의원·약국 190곳", from: "국립중앙의료원", act: "방문 시각에 문 연 곳", to: ["방문 전 카드"], ids: "MED" },
-      { g: "pin", info: "연계처 735곳", from: "한국사회보장정보원 자원정보 23 · 7개 기관 712", act: "좌표 붙여 가까운 순", sub: "좌표: 주소정보누리집(한 번 변환)", to: ["연계 카드", "방문 전 카드"], ids: "P3,P11,P12,P13,P14,P16,P17,P18,P19,P20,K1" }
+      { g: "pin", info: "연계처 " + lk("total") + "곳", from: "한국사회보장정보원 자원정보 " + lk("res") + " · " + lk("orgs") + "개 기관 " + lk("extra"), act: "좌표 붙여 가까운 순", sub: "좌표: 주소정보누리집(한 번 변환)", to: ["연계 카드", "방문 전 카드"], ids: "P3,P11,P12,P13,P14,P16,P17,P18,P19,P20,K1" }
     ] },
     { h: "현장 — 실시간", live: true, lanes: [
       { g: "route", info: "지도 · 도로 경로", from: "네이버클라우드플랫폼", live: 1, act: "도로 기준 방문 순서", sub: "누를 때마다 새로 계산", to: ["방문 › 지도"], ids: "N1,N2" },
@@ -80,7 +95,7 @@
     });
     h += "</ol></section>";
   });
-  h += '<p class="dv-foot">줄을 누르면 아래 표의 출처 줄로 갑니다. 연계처 735곳 = 한국사회보장정보원 자원정보 23 + 보건복지부·상주시·국립중앙의료원 등 7개 기관 712. 인구·건물 나이는 읍면 단위 합계만 쓰고, 가구는 모두 가상입니다.</p>';
+  h += '<p class="dv-foot">줄을 누르면 아래 표의 출처 줄로 갑니다. 연계처 ' + lk("total") + '곳 = 한국사회보장정보원 자원정보 ' + lk("res") + ' + 보건복지부·상주시·국립중앙의료원 등 ' + lk("orgs") + '개 기관 ' + lk("extra") + '. 인구·건물 나이는 읍면 단위 합계만 쓰고, 가구는 모두 가상입니다.</p>';
   box.innerHTML = h;
 
   /* 화면에 들어올 때 한 번 재생(움직임 줄이기면 정지 그림 — CSS가 막음) */

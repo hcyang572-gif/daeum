@@ -3,7 +3,7 @@
    움직임 = B안 유리 계기: 렌즈(광택 도자기 구슬)가 선을 따라 미끄러지며 지나간 단계가 하나씩 또렷해짐 — 약 3초 한 번.
    렌즈는 흐림 효과에 기대지 않는다(흰 테·그림자·광택으로 캡처·PDF에서도 보임). 움직임 줄이기 설정이면 완성 정지 그림. */
 .dsm, .dsm-mini, .dsm-card {
-  --dsm-go: #0B6B52; --dsm-ink: var(--ink, #1C2420); --dsm-mute: #6B6C66; --dsm-grey: #A19D94; --dsm-hair: #C9C4B9;
+  --dsm-go: var(--go-glaze, #0B6B52); --dsm-ink: var(--ink, #1C2420); --dsm-mute: #62635D; --dsm-grey: #A19D94; --dsm-hair: #C9C4B9;
   --dsm-ease: cubic-bezier(.22,.8,.24,1);
 }
 .dsm { container-type: inline-size; position: relative; color: var(--dsm-ink); }
@@ -12,10 +12,10 @@
 
 /* 머리 */
 .dsm-h { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; margin-bottom: 22px; }
-.dsm-eye { display: block; margin-bottom: 5px; font: 500 11px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .1em; color: var(--dsm-mute); }
-.dsm-t { margin: 0; font-size: 21px; line-height: 1.3; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
+.dsm-eye { display: block; margin-bottom: 5px; font: 600 12px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .1em; color: var(--dsm-mute); }
+.dsm-t { margin: 0; font-size: 22px; line-height: 1.3; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
 .dsm-t em { font-style: normal; color: var(--dsm-go); }
-.dsm-re { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px 0 11px; border: 0; border-radius: 17px; font: 500 13px/1 inherit; color: var(--dsm-ink); cursor: pointer;
+.dsm-re { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px 0 11px; border: 0; border-radius: 17px; font: 600 13px/1 inherit; color: var(--dsm-ink); cursor: pointer;
   background: linear-gradient(180deg, #FFFFFF, #F1EEE8); box-shadow: 0 0 0 1px rgba(60,52,38,.08), inset 0 1px 0 rgba(255,255,255,.9), 0 6px 14px -8px rgba(60,52,38,.35); }
 .dsm-re svg { width: 15px; height: 15px; }
 .dsm-re:active { transform: translateY(1px); box-shadow: 0 0 0 1px rgba(60,52,38,.1), 0 2px 6px -4px rgba(60,52,38,.35); }
@@ -31,10 +31,10 @@
 .dsm-vis { height: 72px; display: grid; place-items: center; }
 .dsm-tx { display: block; min-width: 0; }
 .dsm-tx b { display: block; font-size: 14px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
-.dsm-tx small { display: block; margin-top: 2px; font-size: 11.5px; line-height: 1.4; color: var(--dsm-mute); }
-.dsm-ext .dsm-tx b { font-size: 12.5px; font-weight: 500; color: #4A4B46; }
-.dsm-tag { display: block; margin-top: 5px; font: 500 10px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; letter-spacing: .05em; color: var(--dsm-mute); }
-.dsm-no { display: block; margin-bottom: 4px; font: 500 11px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--dsm-go); }
+.dsm-tx small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.4; color: var(--dsm-mute); }
+.dsm-ext .dsm-tx b { font-size: 13px; font-weight: 600; color: #4A4B46; }
+.dsm-tag { display: block; margin-top: 5px; font: 600 12px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; letter-spacing: .05em; color: var(--dsm-mute); }
+.dsm-no { display: block; margin-bottom: 4px; font: 600 12px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--dsm-go); }
 
 /* 기존 체계: 판에 새긴 오목 원판 */
 .dsm-disc { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: #6E6A62; background: linear-gradient(180deg, #E2DED6, #ECE9E3); box-shadow: inset 0 1.5px 3px rgba(60,52,38,.14), 0 1px 0 rgba(255,255,255,.85); }
@@ -53,7 +53,7 @@
 .dsm-o .m-b { fill: url(#dsm-cB); } .dsm-o .m-s { fill: url(#dsm-cS); } .dsm-o .m-t { fill: url(#dsm-cT); }
 .dsm-o .m-a { fill: url(#dsm-cA); } .dsm-o .m-ad { fill: url(#dsm-cAD); } .dsm-o .m-l { fill: #D9D4CA; }
 .dsm-o .m-ra { fill: none; stroke: url(#dsm-cA); stroke-width: 7; } .dsm-o .m-rb { fill: none; stroke: url(#dsm-cB2); stroke-width: 7; }
-.dsm-o .m-dash { fill: none; stroke: #0B6B52; stroke-width: 2; stroke-linecap: round; stroke-dasharray: .1 5; }
+.dsm-o .m-dash { fill: none; stroke: var(--dsm-go, #0B6B52); stroke-width: 2; stroke-linecap: round; stroke-dasharray: .1 5; }
 .dsm-o .m-hl { fill: #fff; opacity: .55; }
 
 /* 선 · 닿음 구간 초록 선 · 렌즈 */
@@ -102,7 +102,7 @@
   .dsm-art { width: 50px; height: 50px; }
   .dsm-st .dsm-tx { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; align-items: baseline; }
   .dsm-no { grid-row: 1; margin: 0; }
-  .dsm-st .dsm-tx b { grid-row: 1; font-size: 15px; }
+  .dsm-st .dsm-tx b { grid-row: 1; font-size: 16px; }
   .dsm-st .dsm-tx small { grid-column: 2; margin: 0; }
   .dsm-lens { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
   .dsm-solo { padding: 18px 14px 14px; }
@@ -115,7 +115,7 @@
 .dsm-sum-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(180deg, #E2DED6, #ECE9E3); box-shadow: inset 0 1.5px 3px rgba(60,52,38,.12), 0 1px 0 #fff; }
 .dsm-sum-art { width: 32px; height: 32px; overflow: visible; }
 .dsm-sum-t { flex: 1; min-width: 0; }
-.dsm-sum-t b { display: block; font-size: 14.5px; font-weight: 600; letter-spacing: -.015em; color: var(--dsm-ink); }
+.dsm-sum-t b { display: block; font-size: 14px; font-weight: 600; letter-spacing: -.015em; color: var(--dsm-ink); }
 .dsm-sum-t small { display: block; font-size: 12px; color: var(--dsm-mute); }
 .dsm-sum-go { flex: none; width: 28px; height: 28px; border-radius: 50%; position: relative; background: linear-gradient(180deg, #FFFFFF, #F1EEE8); box-shadow: 0 0 0 1px rgba(60,52,38,.1), 0 4px 10px -6px rgba(60,52,38,.4); }
 .dsm-sum-go::after { content: ""; position: absolute; left: 10px; top: 8px; width: 7px; height: 7px; border: solid var(--dsm-mute); border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); transition: transform .4s var(--dsm-ease); }
@@ -124,7 +124,7 @@
 
 /* ── 작은 위치 띠: 오목한 홈 + 점 6개 + 렌즈 ── */
 .dsm-mini-slot { margin: 0 0 14px; }
-.dsm-mini { display: flex; align-items: center; gap: 10px; max-width: 560px; min-height: 42px; font-size: 12.5px; color: var(--dsm-ink); }
+.dsm-mini { display: flex; align-items: center; gap: 10px; max-width: 560px; min-height: 42px; font-size: 13px; color: var(--dsm-ink); }
 .dsm-mini.none { display: none; }
 .dsm-mlogo { flex: none; width: 20px; height: 20px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,.18); }
 .dsm-mline { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; height: 40px; padding: 0; border-radius: 20px;
@@ -140,9 +140,9 @@ a.dsm-md:hover::before { background: #8F897D; }
 .dsm-mk.still { transition: none; }
 .dsm-mart { width: 26px; height: 26px; overflow: visible; }
 .dsm-mc { flex: none; min-width: 6.6em; display: grid; gap: 2px; line-height: 1.15; }
-.dsm-mc i { font: 500 10.5px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; color: var(--dsm-mute); font-variant-numeric: tabular-nums; }
+.dsm-mc i { font: 600 12px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; color: var(--dsm-mute); font-variant-numeric: tabular-nums; }
 .dsm-mc b { font-size: 13px; font-weight: 600; letter-spacing: -.01em; color: var(--dsm-go); white-space: nowrap; }
-@media (max-width: 400px) { .dsm-mini { gap: 8px; } .dsm-mc { min-width: 5.6em; } .dsm-mc b { font-size: 12.5px; } }
+@media (max-width: 400px) { .dsm-mini { gap: 8px; } .dsm-mc { min-width: 5.6em; } .dsm-mc b { font-size: 13px; } }
 
 @media (prefers-reduced-motion: reduce) {
   .dsm *, .dsm *::before, .dsm *::after, .dsm-mini *, .dsm-mini *::before { animation: none !important; transition: none !important; }

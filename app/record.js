@@ -64,7 +64,10 @@
     var cri = uniq((ctx.types || []).filter(function (t) { return CRI.indexOf(t) >= 0; }).concat(sit.map(criOfSit)));
     var act = uniq((ctx.svcNames || []).map(svcAct));
     var live = ctx.single ? "혼자" : ctx.kid ? "자녀" : "";
-    return { live: live, cri: cri, sit: sit, act: act };
+    // S12-v U11: 현장(점검 «문제 있음»·현장 상황)에서 나오지 않고 명단 위기정보에서만 온 위기 유형 → «명단에서 가져옴»
+    var fieldCri = uniq((ctx.fieldTypes || []).concat(sit.map(criOfSit)));
+    var fromList = ctx.listTypes ? cri.filter(function (t) { return fieldCri.indexOf(t) < 0 && ctx.listTypes.indexOf(t) >= 0; }) : [];
+    return { live: live, cri: cri, sit: sit, act: act, fromList: fromList };
   }
   /** 상태 만들기·맞추기: 미리 반영한 값은 담당자가 뺀 것(off)만 빼고 다시 채운다 → 현장 점검을 나중에 고쳐도 따라온다 */
   function sync(c, ctx) {
@@ -75,7 +78,7 @@
     if (d.live && c.live === d.live) pre++;
     ["cri", "sit", "act"].forEach(function (k) { d[k].forEach(function (v) { if (!c.off[k + "|" + v]) c[k][v] = 1; if (c[k][v]) pre++; }); });
     if (ctx && ctx.res === "refuse" && !c.will && !c.off["will|원하지 않음"]) c.will = "원하지 않음";
-    c.pre = pre;
+    c.pre = pre; c.fromList = d.fromList.filter(function (v) { return c.cri[v]; });
     return c;
   }
   function multi(k) { return ROWS.filter(function (r) { return r[0] === k; })[0][2]; }
@@ -127,7 +130,9 @@
     var L = [], cri = vals(c, "cri"), sit = vals(c, "sit"), act = vals(c, "act"), will = c.will || "";
     var LV = { "혼자": "혼자 사는", "배우자": "배우자와 사는", "자녀": "자녀와 사는", "부모": "부모와 사는", "손자녀": "손자녀와 사는", "다른 가족": "가족과 함께 사는" };
     var lv = c.live ? (LV[c.live] || c.live + "와(과) 사는") : "";
-    if (lv || cri.length) L.push((lv ? lv + " 가구로, " : "") + (cri.length ? cri.join("·") + " 위기가 확인됨" : "위기 유형은 확인 중"));
+    var fl = (c.fromList || []).filter(function (v) { return cri.indexOf(v) >= 0; }), ok = cri.filter(function (v) { return fl.indexOf(v) < 0; });
+    // S12-v U11: 명단에서만 온 위기 유형은 «확인됨»이라 쓰지 않는다(감사 때 사실과 다른 기록)
+    if (lv || cri.length) L.push((lv ? lv + " 가구로, " : "") + (ok.length ? ok.join("·") + " 위기가 확인됨" : fl.length ? "" : "위기 유형은 확인 중") + (fl.length ? (ok.length ? ", " : "") + "명단 위기정보 " + fl.join("·") + "(명단에서 가져옴 · 현장 확인 전)" : ""));
     if (ctx.checkN) L.push("현장 점검 " + ctx.checkN + "항목 중 문제 " + (ctx.badN || 0) + "항목");
     if (sit.length) L.push("현장 상황: " + sit.join(", "));
     if (c.live === "혼자" && (cri.indexOf("고립") >= 0 || sit.some(function (s) { return /대화 상대|연락 끊김|외출/.test(s); }))) L.push("혼자 살며 고립 신호가 겹쳐 안부 확인 주기를 짧게 잡음");
@@ -149,6 +154,7 @@
     var L = lines(c, ctx), picked = ROWS.filter(function (r) { return vals(c, r[0]).length; }).length;
     return '<section class="rc-cmp blk" data-rc="cmp"><details class="rc-fold"' + (open === false ? "" : " open") + '><summary><span class="rc-h">상황 고르기 <small>→ 상담일지 문장 자동 작성</small></span><span class="rc-n"><b>' + picked + "</b>/" + ROWS.length + "줄</span></summary>" +
       '<p class="rc-why">현장 점검·상담에서 고른 것은 미리 반영했습니다. 줄을 누르면 아래에서 고르는 창이 열립니다.</p>' +
+      ((c.fromList || []).length ? '<p class="rc-why rc-fromlist">위기 유형 «' + esc(c.fromList.join("·")) + '»은 <b>명단에서 가져옴</b> — 현장에서 확인되지 않으면 빼 주세요</p>' : "") +
       '<div class="rc-rows">' + ROWS.map(function (r, i) {
         var v = vals(c, r[0]);
         return '<button type="button" class="rc-row' + (v.length ? " has" : "") + '" data-cf="' + r[0] + '"><i>' + (i + 1) + '</i><span class="rc-rn">' + r[1] + '</span><span class="rc-rv">' +

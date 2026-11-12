@@ -15,9 +15,9 @@
   "theme_color": "#ECEAE5",
   "categories": ["productivity", "government"],
   "icons": [
-    { "src": "shared/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "shared/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "shared/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "shared/icons/daeum.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "shared/icons/icon-192.png?v=s12v61", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "shared/icons/icon-512.png?v=s12v61", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "shared/icons/icon-maskable-512.png?v=s12v61", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "shared/icons/daeum.svg?v=s12v61", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }
