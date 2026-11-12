@@ -81,3 +81,20 @@ html.pwa-app #pwa-install { display: none !important; }
 .sheet .sp-sec .sf-t .sf-q i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .sheet .sp-sec .sf-t .sf-q.on { opacity: 1; }
 .sheet .sp-sec .sf-t .sf-end { margin-left: auto; color: #2F6B3F; }
+
+/* 77회차 지도 — 방문 가구 표지가 주인공(색·크기 설명은 officer/nearby_layer.css 끝)
+   원인: 라이브 CSS(v3_live.css)에 옛 app.css 의 .nm-* 표지 규칙이 빠져 있어 순번이 바탕 없는 맨 글자로 그려졌다 → 여기에 전부 다시 둔다 */
+.rt-nmap .nm-spot { position: relative; width: 0; height: 0; }
+.rt-nmap .nm-spot .nm-lead { position: absolute; left: 0; top: -1px; height: 2px; border-radius: 1px; transform-origin: 0 50%; background: #0B6178; opacity: .75; }
+.rt-nmap .nm-spot .nm-dot { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #0B6178; box-shadow: 0 0 0 2px #fff; }
+.rt-nmap .nm-office { display: grid; place-items: center; min-width: 44px; height: 28px; padding: 0 8px; border-radius: 8px; background: #1B2328; color: #fff; font: 800 12px/1 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; box-shadow: 0 0 0 2px #fff; }
+.rt-nmap .nm-ghost { display: block; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 2.5px #9AA7B0; opacity: .8; }
+.rt-nmap .nm-stop.pop { animation: rtPop .35s cubic-bezier(.3,1.5,.6,1) both; }
+@media (prefers-reduced-motion: reduce) { .rt-nmap .nm-stop.pop { animation: none; } }
+.rt-nmap .nm-stop { display: grid; place-items: center; border-radius: 50%; cursor: pointer;
+  width: 34px; height: 34px; background: #0B6178; color: #fff; font: 900 15px/1 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; letter-spacing: -.02em;
+  box-shadow: 0 0 0 2.5px #fff, 0 5px 12px -3px rgba(5,40,50,.6); }
+.rt-nmap .nm-spot .nm-stop { position: absolute; left: -17px; top: -17px; }
+.rt-nmap .nm-stop.req { background: #0B6178; }
+.rt-nmap .nm-stop.nx { background: #0B6178; transform: scale(1.2); box-shadow: 0 0 0 2.5px #fff, 0 0 0 6px #35B3CE, 0 0 18px 6px rgba(53,179,206,.55), 0 6px 14px -4px rgba(5,40,50,.6); }
+.rt-nmap .nm-stop.dn { background: #D3E3E7; color: #0B4F60; box-shadow: 0 0 0 2px #fff, 0 3px 8px -3px rgba(5,40,50,.4); }

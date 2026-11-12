@@ -87,3 +87,16 @@
   .nb-it .nb-tel span { display: inline !important; }
   .nb-it .nb-tel { width: auto; }
 }
+
+/* 77회차(11-13 호창님 «지도에서 방문 가구가 메인·순번 눈에 띄게·연계처는 약하게·색감을 달리»)
+   방문 가구 = 진한 청록 #0B6178(경로선 같은 색)·34px·흰 숫자 15px 굵게 · 다음 가구 = 밝은 고리 #35B3CE + 빛번짐
+   연계처 = 옅은 회청 #C9D2D8(반투명)·18px·작은 아이콘 #5E6E79 · 경로당 = 웜그레이 16px · 둘 다 방문 가구 아래층(zIndex 10~12 < 100+)
+   방문 가구 #0B6178 ↔ 연계처 #C9D2D8 대비 4.6:1 · 크기·모양(숫자 원 vs 작은 점)도 달라 색약자도 구분 */
+.nb-pin { width: 18px; height: 18px; color: #5E6E79; opacity: .85;
+  background: #C9D2D8; box-shadow: 0 0 0 1.5px rgba(255,255,255,.9), 0 2px 4px -1px rgba(30,40,50,.35); }
+.nb-pin svg { width: 11px; height: 11px; }
+.nb-pin.senior { width: 16px; height: 16px; color: #7A6E5E; background: #DCD5CA; box-shadow: 0 0 0 1.5px rgba(255,255,255,.9), 0 2px 4px -1px rgba(60,50,30,.3); }
+.nb-pin.senior svg { width: 10px; height: 10px; }
+.nb-pin:hover { opacity: 1; }
+.nb-tg[aria-pressed="true"].hh { background: linear-gradient(180deg, #1A7F96 -30%, #0B6178 70%); box-shadow: 0 0 0 1px rgba(5,50,62,.6), inset 0 1px 0 rgba(255,255,255,.25), 0 8px 16px -10px rgba(5,50,62,.7); }
+.nb-tg[aria-pressed="true"].link { color: #2F3B43; background: linear-gradient(180deg, #DCE3E8 -30%, #C9D2D8 70%); box-shadow: 0 0 0 1px rgba(60,75,85,.35), inset 0 1px 0 rgba(255,255,255,.6); }

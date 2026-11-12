@@ -132,14 +132,14 @@
     });
     var anim = state.animateNext && !REDUCED && !!window.requestAnimationFrame; state.animateNext = false;
     if (line.length > 1) {
-      var poly = new N.Polyline({ map: map, path: anim ? line.slice(0, 1).concat(line.slice(0, 1)) : line, strokeColor: opts.color || "#5B4FD0", strokeOpacity: .9,
-        strokeWeight: 5, strokeStyle: opts.path ? "solid" : "shortdash", strokeLineCap: "round", strokeLineJoin: "round" });
+      var poly = new N.Polyline({ map: map, path: anim ? line.slice(0, 1).concat(line.slice(0, 1)) : line, strokeColor: opts.color || "#0B6178", strokeOpacity: .92,
+        strokeWeight: 6, strokeStyle: opts.path ? "solid" : "shortdash", strokeLineCap: "round", strokeLineJoin: "round" });
       state.overlays.push(poly);
       if (anim) growLine(poly, line, N);
     }
     opts.stops.forEach(function (s) {
       var p = new N.LatLng(s.lat, s.lng); bounds.extend(p);
-      var mk = new N.Marker({ map: map, position: p, title: s.no + ". " + s.label, zIndex: 100 + s.no,
+      var mk = new N.Marker({ map: map, position: p, title: s.no + ". " + s.label, zIndex: 100 + s.no + (s.cls === "nx" ? 500 : 0), // 77회차: 다음 가구는 맨 위
         icon: { content: stopHtml(s, 0, 0, anim), anchor: new N.Point(0, 0) } });
       state.overlays.push(mk); state.stops.push({ m: mk, s: s, key: "0,0" });
     });

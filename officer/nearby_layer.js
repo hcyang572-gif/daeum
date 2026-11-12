@@ -130,8 +130,8 @@
       ["link", "senior"].forEach(function (layer) {
         m[layer].forEach(function (x) {
           if (x.lat == null) return;
-          var mm = new N.Marker({ map: map, position: new N.LatLng(x.lat, x.lng), title: x.n, zIndex: layer === "link" ? 40 : 30, visible: !!on[layer],
-            icon: { content: pinHtml(x, layer), anchor: new N.Point(15, 15) } });
+          var mm = new N.Marker({ map: map, position: new N.LatLng(x.lat, x.lng), title: x.n, zIndex: layer === "link" ? 12 : 10, visible: !!on[layer],
+            icon: { content: pinHtml(x, layer), anchor: new N.Point(layer === "link" ? 9 : 8, layer === "link" ? 9 : 8) } }); // 77회차: 연계처·경로당은 작게(18·16px)·방문 가구 아래층
           N.Event.addListener(mm, "click", function () { iw.setContent(iwHtml(x)); iw.open(map, mm); });
           mk.push({ m: mm, layer: layer });
         });
