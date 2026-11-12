@@ -98,3 +98,8 @@ html.pwa-app #pwa-install { display: none !important; }
 .rt-nmap .nm-stop.req { background: #0B6178; }
 .rt-nmap .nm-stop.nx { background: #0B6178; transform: scale(1.2); box-shadow: 0 0 0 2.5px #fff, 0 0 0 6px #35B3CE, 0 0 18px 6px rgba(53,179,206,.55), 0 6px 14px -4px rgba(5,40,50,.6); }
 .rt-nmap .nm-stop.dn { background: #D3E3E7; color: #0B4F60; box-shadow: 0 0 0 2px #fff, 0 3px 8px -3px rgba(5,40,50,.4); }
+
+/* 77회차: 방문 계획 «일정에서 빼기 ×» — 뺄 수 없는 줄은 흐리게(누르면 이유 알림), 손 순서일 때 «최적 순서로 다시 맞추기» 작게 */
+.tline .mv button.x[aria-disabled="true"] { opacity: .3; cursor: help; }
+.rt-opt .rt-re { margin: 8px 0 0; }
+.rt-opt .rt-re .sbtn { min-height: 36px; padding: 0 12px; font-size: 13px; font-weight: 800; }

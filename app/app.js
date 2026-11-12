@@ -93,6 +93,8 @@
     var stops = ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; });
     return (stops.length > 1 ? RP.twoOpt(RP.nearest(stops, OFFICE), OFFICE, true) : stops).map(function (s) { return s.id; });
   }
+  /** 77회차: 가구 하나를 뺀 새 순서 — 지금 순서가 최적이었으면 남은 가구로 다시 최적화, 손으로 바꾼 순서면 그 순서를 지킨다 */
+  function planDrop(ids, id) { var rest = ids.filter(function (x) { return x !== id; }); return ids.join() === routeOrder(ids).join() ? routeOrder(rest) : rest; }
   function sched(ids) { var order = ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y, h: BY[id] }; });
     // S12-i4: 그날 이 기기 안에 받아 둔 도로 결과(네이버 Directions 15)가 있으면 그 구간, 없으면 직선 어림값(«약»). 구간 수가 안 맞으면 어림값
     var hit = RP.roadStore && order.length ? RP.roadStore.get(RP.cacheKey(order, true)) : null, legs = hit && hit.legs && hit.legs.length === order.length + 1 ? hit.legs : RP.approxLegs(order, OFFICE, true);
@@ -202,7 +204,7 @@
     sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\"></i></button>";
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z79" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z80" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + (I.lock || "") + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eye + "</button>" +
@@ -868,7 +870,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z79"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z80"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -1117,7 +1119,7 @@
       tl += '<li class="leg"><span></span><span class="ax"></span><span class="c">차로 ' + (row.approx ? "약 " : "") + row.travelMin + "분 · " + row.km + "km" + (row.approx ? "" : " · 도로") + "</span></li>" +
         '<li class="stop' + (st !== "planned" ? " dn" : "") + '" draggable="true" data-di="' + i + '"><span class="t">' + row.arrive + "<small>~" + row.leave + '</small></span><span class="ax"><b>' + (i + 1) + '</b></span><div class="c"><div class="nm"><b>' + id + "</b>" + esc(h.area + " · " + ageLine(h)) + stTag(st) + '</div><div class="why"><span class="rk">한국사회보장정보원 ' + esc(lr) + "순위</span>" + esc(clip(indText(h).join(" · "), 40)) + "</div></div>" +
         '<div class="mv"><button type="button" data-mv="' + i + ':-1" aria-label="' + id + ' 앞으로"' + (i ? "" : " disabled") + '>▲</button><button type="button" data-mv="' + i + ':1" aria-label="' + id + ' 뒤로"' + (i < D4.ids.length - 1 ? "" : " disabled") + ">▼</button>" +
-        '<button type="button" class="x" data-out="' + id + '" aria-label="' + id + ' 이 일차에서 빼기" title="이 일차에서 빼기"' + (st === "planned" && D4.ids.length > 1 ? "" : " disabled") + ">✕</button></div></li>";
+        '<button type="button" class="x" data-out="' + id + '" aria-label="' + id + ' 이 일차에서 빼기" title="이 일차에서 빼기"' + (st === "planned" && D4.ids.length > 1 ? "" : ' aria-disabled="true" data-why="' + (st !== "planned" ? "visited" : "last") + '"') + ">✕</button></div></li>"; // 77회차: disabled 면 눌러도 아무 반응이 없어 «먹통» → 흐리게 두고 누르면 이유를 알린다
     });
     var addable = ds.filter(function (d) { return d.n !== D4.n && d.ids.length > 1; }).reduce(function (a, d) { return a.concat(d.ids.filter(function (id) { return statusOf(id) === "planned"; }).map(function (id) { return { id: id, n: d.n }; })); }, []);
     var addSel = addable.length && D4.ids.length < RP.MAX_ROAD_STOPS ? '<label class="addin"><span class="sr">다른 일차 가구를 이 일차에 넣기</span><select data-act="addin"><option value="">+ 가구 넣기</option>' + addable.map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.id) + " · " + esc(BY[x.id].area) + " · " + x.n + "일차에서</option>"; }).join("") + "</select></label>" : "";
@@ -1186,10 +1188,13 @@
     app.querySelectorAll("[data-day]").forEach(function (b) { b.addEventListener("click", function () { planDay = +b.dataset.day; render(); }); });
     app.querySelectorAll("[data-mv]").forEach(function (b) { b.addEventListener("click", function () { var a = b.dataset.mv.split(":"), i = +a[0]; vib(); reorder(D4, RP.move(D4.ids, i, i + +a[1])); }); });
     // 42 편집 — 빼기·되살리기·최적 순서·끌어서 순서(PC). 바꿀 때마다 reorder → 저장(확정 계획이면 실시간) → 다시 그림(지도·비교 카드 재계산)
-    app.querySelectorAll("[data-out]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.out; if (D4.ids.length < 2) return; vib(); reorder(D4, D4.ids.filter(function (x) { return x !== id; }), (D4.out || []).concat([id])); toast(id + " 을(를) 이 일차에서 뺐습니다 · 아래 «되살리기»로 되돌립니다"); }); });
+    app.querySelectorAll(".tline [data-out]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.out;
+      if (b.getAttribute("aria-disabled") === "true" || D4.ids.length < 2) { toast(b.dataset.why === "visited" ? id + " 은(는) 이미 방문 기록이 있어 일정에서 뺄 수 없습니다" : "마지막 한 가구는 뺄 수 없습니다 · 다른 일차로 옮기려면 그 일차의 «가구 넣기»"); return; }
+      vib(); reorder(D4, planDrop(D4.ids, id), (D4.out || []).concat([id])); toast(id + " 을(를) 이 일차에서 뺐습니다 · 아래 «되살리기»로 되돌립니다"); }); }); // 77회차: 최적 순서였으면 남은 가구로 다시 최적화, 직접 바꾼 순서면 그 순서 유지
     app.querySelectorAll("[data-back]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.back; vib(); var wasOpt = D4.ids.join() === routeOrder(D4.ids).join(); // 최적 순서였으면 되살린 집까지 넣어 다시 잇고, 직접 바꾼 순서면 끝에 붙인다
       reorder(D4, wasOpt ? routeOrder(D4.ids.concat([id])) : D4.ids.concat([id]),(D4.out || []).filter(function (x) { return x !== id; })); toast(id + " 을(를) 되살렸습니다"); }); });
     var ob = app.querySelector('[data-act="opt"]'); if (ob) ob.addEventListener("click", function () { vib(); replan(D4, ob); });
+    var po = document.getElementById("pmopt"); if (po) po.addEventListener("click", function (e) { if (e.target.closest('[data-act="reopt"]')) { vib(); reorder(D4, routeOrder(D4.ids)); toast("최적 순서로 다시 맞췄습니다"); } }); // 77회차
     var ad = app.querySelector('[data-act="addin"]'); if (ad) ad.addEventListener("change", function () { var id = ad.value; if (!id) return; vib(); moveIn(D4, id); });
     bindShare(ds);
     var drag = null;
@@ -1336,7 +1341,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z79"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z80"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -1350,7 +1355,7 @@
     var RM = window.DaeumRouteMap, rb = RM && RM.cacheGet(RP.cacheKey(rtStops(before), true)), ra = RM && RM.cacheGet(RP.cacheKey(rtStops(after), true));
     // 45 미르(D-080): 시연 모드에선 거리·시간 숫자를 직선×1.3 근사로 고정(시연 4곳 76.4→52.5km·115→79분·31%) — 경로 서버(429·한도) 상태와 무관하게 언제 열어도 같은 값. 지도선은 도로 경로를 받으면 그 모양 그대로.
     var fixed = RT_DEMO_FIXED, road = !fixed && !!(rb && ra), b = rtSum(before, road ? rb : null), a = rtSum(after, road ? ra : null);
-    return { b: b, a: a, road: road, same: before.join() === after.join(), dKm: b.km - a.km, dMin: b.min - a.min, pct: b.km > 0 ? (b.km - a.km) / b.km * 100 : 0, path: road ? ra.path : null, fixed: fixed };
+    return { before: before, after: after, b: b, a: a, road: road, same: before.join() === after.join(), dKm: b.km - a.km, dMin: b.min - a.min, pct: b.km > 0 ? (b.km - a.km) / b.km * 100 : 0, path: road ? ra.path : null, fixed: fixed };
   }
   function rtOptHtml(r) {
     var y = r.road ? "" : "약 ", f1 = function (v) { return (Math.round(v * 10) / 10).toFixed(1); }, f0 = function (v) { return Math.round(v); };
@@ -1358,9 +1363,15 @@
       : r.dKm > 0 ? '<b class="rt-h">이 순서로 돌면 <em>' + y + f1(r.dKm) + "km · " + f0(Math.max(0, r.dMin)) + "분</em> 짧아집니다</b>"
       : '<b class="rt-h">직접 바꾼 순서 · 명단 순서보다 ' + y + f1(-r.dKm) + "km 깁니다</b>";
     var w = r.b.km > 0 ? Math.max(8, Math.min(100, r.a.km / r.b.km * 100)) : 100;
+    // 77회차(11-13 호창님 «일정 순서를 변경할 때마다 동선 최적화 결과가 달라져야»): 손으로 바꾼 순서면 그 순서 값 + 최적 순서 값을 나란히, 차이 한 줄 + 작은 «최적 순서로 다시 맞추기»
+    var best = r.after && r.after.length > 1 ? routeOrder(r.after) : null, man = !!best && best.join() !== r.after.join(), o = man ? rtSum(best, null) : null, mine = man ? rtSum(r.after, null) : null;
+    if (man) head = '<b class="rt-h">직접 바꾼 순서 · 최적 순서보다 <em>' + (mine.min - o.min >= 0.5 ? y + f0(mine.min - o.min) + "분" : "거의 같게") + "</em>" + (mine.min - o.min >= 0.5 ? " 더 걸립니다" : " 걸립니다") + "</b>";
+    var wo = man && r.b.km > 0 ? Math.max(8, Math.min(100, o.km / r.b.km * 100)) : 0;
     return '<section class="rt-opt blk" aria-label="동선 최적화 결과"><div class="rt-tag">동선 최적화 결과</div>' + head +
       '<div class="rt-bars"><div class="rt-r"><span>명단 순서</span><i class="rt-b0" style="width:100%"></i><b>' + y + f1(r.b.km) + "km · " + f0(r.b.min) + "분</b></div>" +
-      '<div class="rt-r on"><span>최적 순서</span><i class="rt-b1" style="width:' + w.toFixed(0) + '%"></i><b>' + y + f1(r.a.km) + "km · " + f0(r.a.min) + "분</b></div></div>" +
+      '<div class="rt-r on"><span>' + (man ? "지금 순서" : "최적 순서") + '</span><i class="rt-b1" style="width:' + w.toFixed(0) + '%"></i><b>' + y + f1(r.a.km) + "km · " + f0(r.a.min) + "분</b></div>" +
+      (man ? '<div class="rt-r"><span>최적 순서</span><i class="rt-b1" style="width:' + wo.toFixed(0) + '%;opacity:.45"></i><b>약 ' + f1(o.km) + "km · " + f0(o.min) + "분</b></div>" : "") + "</div>" +
+      (man ? '<p class="rt-re"><button type="button" class="sbtn sm" data-act="reopt">최적 순서로 다시 맞추기</button></p>' : "") +
       (r.dKm >= 0.05 ? '<p class="rt-pct">이동 거리 ' + f0(r.pct) + "% 줄임 · 상담 시간은 그대로</p>" : "") +
       '<p class="rt-src">' + (r.road ? "거리·시간: 네이버 Directions 15 도로 경로(닿음 서버 daeum-route)" : r.fixed ? "거리·시간: 시연 고정값 — 직선거리 × 1.3(우회 계수) · 시속 40km 근사(실제 운영은 네이버 도로 경로)" : "거리·시간: 직선거리 × 1.3(우회 계수) · 시속 40km 근사 — 도로 경로를 받으면 실제 값으로 바뀝니다") +
       " · 순서: 최근접 이웃 → 2-opt · 상주시청 출발·복귀 · 가구 위치는 가상(시연용)</p></section>";
@@ -1396,6 +1407,7 @@
     var nb = app.querySelector('[data-act="nav"]'); if (nb) nb.addEventListener("click", function () { vib(); launch(left.length ? left : c.d.ids, 0); });
     app.querySelectorAll("[data-seg]").forEach(function (b) { b.addEventListener("click", function () { launch(left, +b.dataset.seg); }); });
     rtMapBind("rtmap", "rtopt", c.d.ids, k.hid, "#0B6178");
+    var ro = document.getElementById("rtopt"); if (ro) ro.addEventListener("click", function (e) { if (e.target.closest('[data-act="reopt"]')) { vib(); reorder(c.d, routeOrder(c.d.ids)); toast("최적 순서로 다시 맞췄습니다"); } }); // 77회차
     bindShare(days());
   }
   var rtAsked = {}, rtRO = null;
@@ -2028,7 +2040,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z79")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z79"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z80")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z80"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
