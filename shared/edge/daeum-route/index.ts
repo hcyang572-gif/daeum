@@ -12,9 +12,11 @@ const ALLOW_ORIGINS = ["https://hcyang572-gif.github.io", "http://localhost:8000
 const API = "https://maps.apigw.ntruss.com/map-direction-15/v1/driving";
 const MAX_POINTS = 32;
 const CHUNK = 17;
-// 하루 호출 상한(Directions 호출 수 기준). NCP 무료 한도 소진·악용 대비 — 넘으면 429 → 화면은 직선거리 근사로 돌아간다.
-const DAILY_PER_IP = 30;
-const DAILY_TOTAL = 90;
+// 하루 호출 상한(Directions 호출 수 기준). NCP 비용 상한·악용 대비 — 넘으면 429 → 화면은 오류 없이 직선거리 어림값(«약»)으로 돌아간다.
+// S12-i4(D-081 보정, 호창님 «좀더 여유있게»): IP당 300·전체 1,000회/일. 최악 1,000회×약 20원≈2만 원/일은 NCP 월 1만 원 예산 알림으로 감지.
+// ⛔ 경로 결과는 서버에 저장하지 않는다(네이버 지도 API 약관 §7.3) — DB 에는 호출 «횟수»만 센다(route_limit.sql).
+const DAILY_PER_IP = 300;
+const DAILY_TOTAL = 1000;
 
 function cors(origin: string | null) {
   const o = origin && ALLOW_ORIGINS.includes(origin) ? origin : ALLOW_ORIGINS[0];

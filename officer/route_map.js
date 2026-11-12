@@ -1,11 +1,10 @@
 /* 닿음 S9c — 네이버 지도(NCP Web Dynamic Map) 그리기 + 도로 경로 서버(daeum-route) 호출. window.DaeumRouteMap
    - 지도 키는 공개값(Client ID)만 쓴다. 비밀키(Client Secret)는 서버 함수 비밀에만 있다.
    - 지도 로딩 실패 원인을 구분해 둔다: auth(인증 실패 — Client ID 또는 Web 서비스 URL 미등록), network(스크립트 못 받음), timeout
-   - 도로 결과는 같은 경유지·순서·복귀 여부면 브라우저에 7일 보관해 다시 부르지 않는다(Directions 15 호출 절약) */
+   - 도로 결과는 같은 경유지·순서·복귀 여부면 «그날» 이 기기 안에서 다시 부르지 않는다(S12-i4, 날짜 바뀌면 버림) */
 (function () {
   "use strict";
   var C = window.DAEUM_CONFIG || {};
-  var LS_ROAD = "daeum.officer.road";
   var state = { status: "idle", reason: "", promise: null, map: null, overlays: [], stops: [], animateNext: true, anim: 0 };
   // S11-c 경로 그리기 움직임(고도화 #16): 방문 화면에 «들어올 때마다» 묶은 뒤 경로를 1.1초 동안 그리고 번호 핀을 차례로 띄운다.
   // 같은 화면 안에서 순서만 바꿀 때는 움직이지 않는다(바뀐 것만 움직인다). 움직임 줄이기 설정이면 끈다.
@@ -172,25 +171,33 @@
     naver.maps.Event.trigger(state.map, "resize"); state.map.refreshStyles && state.map.refreshStyles(); } catch (e) { /* 무시 */ } } }
 
   // ── 도로 경로(서버 경유) ─────────────────────────────────
-  function cacheAll() { try { return JSON.parse(localStorage.getItem(LS_ROAD) || "{}"); } catch (e) { return {}; } }
-  function cacheGet(key) { var c = cacheAll()[key]; return c && Date.now() - c.at < 7 * 864e5 ? c.r : null; }
-  function cachePut(key, r) {
-    var c = cacheAll(); c[key] = { at: Date.now(), r: r };
-    var ks = Object.keys(c).sort(function (a, b) { return c[b].at - c[a].at; });
-    ks.slice(20).forEach(function (k) { delete c[k]; }); // 최근 20개만
-    try { localStorage.setItem(LS_ROAD, JSON.stringify(c)); } catch (e) { /* 용량 초과 — 보관 생략 */ }
-  }
-  /** points [[lng,lat]...] → Promise<{legs,m,s,path,cached}> 실패하면 reject({code, error}) */
+  // S12-i4: 같은 경로(경유지·순서·복귀)는 «그날 이 기기 안»에서만 다시 쓴다 — 날짜가 바뀌면 버린다(옛 7일 보관 폐지).
+  //   보관은 DaeumRoutePlan.roadStore(localStorage, try/catch) 하나를 app.js 시각표와 함께 본다. 서버는 결과를 저장하지 않는다(약관 §7.3).
+  //   상한(429)에 닿으면 그날은 더 부르지 않고, 오류·끊김·상한 모두 화면 오류 없이 직선 어림값(«약»)으로 대체된다.
+  var RPm = window.DaeumRoutePlan;
+  var store = RPm && RPm.roadStore ? RPm.roadStore : (function () { var m = {}; return { get: function (k) { return m[k] || null; }, put: function (k, v) { m[k] = v; }, blocked: function () { return m.__b || null; }, block: function (w) { m.__b = w || "limit"; } }; })();
+  function cacheGet(key) { return store.get(key); }
+  function cachePut(key, r) { store.put(key, r); }
+  /** points [[lng,lat]...] → Promise<{legs,m,s,path,cached}> 실패하면 reject({code, error}) — 부르는 쪽은 실패 때 어림값을 그대로 둔다 */
   function road(key, points) {
     var hit = cacheGet(key); if (hit) return Promise.resolve(Object.assign({ cached: true }, hit));
     if (!C.routeEndpoint) return Promise.reject({ code: "no-endpoint" });
+    if (store.blocked()) return Promise.reject({ code: "limit", error: "오늘 상한 — 어림값 사용" });
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return Promise.reject({ code: "offline" });
     var ctl = window.AbortController ? new AbortController() : null;
     var to = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
     return fetch(C.routeEndpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ points: points }), signal: ctl ? ctl.signal : undefined })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { clearTimeout(to); if (!r.ok || !j.legs) throw { code: j.code || "http-" + r.status, error: j.error || "", detail: j.detail || "" }; return j; }); })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { clearTimeout(to);
+        if (r.status === 429 || j.code === "limit") store.block("limit"); // 그날은 더 부르지 않음
+        if (!r.ok || !j.legs) throw { code: j.code || "http-" + r.status, error: j.error || "", detail: j.detail || "" }; return j; }); })
       .then(function (j) { cachePut(key, { legs: j.legs, m: j.m, s: j.s, path: j.path }); return j; },
         function (e) { clearTimeout(to); throw e && e.code ? e : { code: "network" }; });
   }
+  /** 실패해도 늘 이어지는 판: 도로 결과 또는 직선 어림값(approx:true). order=[{id,x,y}], office={x,y} */
+  function roadOrApprox(key, points, order, office, ret) {
+    return road(key, points).then(function (j) { return { legs: j.legs, m: j.m, s: j.s, path: j.path, approx: false }; },
+      function () { return RPm ? RPm.approxRoad(order, office, ret) : { legs: [], m: 0, s: 0, path: null, approx: true }; });
+  }
 
-  window.DaeumRouteMap = { load: load, draw: draw, refresh: refresh, road: road, cacheGet: cacheGet, state: state, _spread: spread, spreadBy: spreadBy };
+  window.DaeumRouteMap = { load: load, draw: draw, refresh: refresh, road: road, roadOrApprox: roadOrApprox, cacheGet: cacheGet, state: state, _spread: spread, spreadBy: spreadBy };
 })();

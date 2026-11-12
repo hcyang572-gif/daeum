@@ -87,14 +87,15 @@
       if (L && !lunchDone && (t >= L[0] || t + tm + consult > L[0])) { t = t < L[0] ? L[1] : t + (L[1] - L[0]); lunchDone = true; lunchBefore = true; }
       t += tm; travelMin += tm; km += leg.m / 1000;
       var arrive = t; t += consult;
-      rows.push({ id: s.id, arrive: hm(arrive), leave: hm(t), travelMin: Math.round(tm), km: +(leg.m / 1000).toFixed(1), lunchBefore: lunchBefore, approx: !!leg.approx });
+      rows.push({ id: s.id, arrive: hm(arrive), leave: hm(t), travelMin: Math.round(tm), km: +(leg.m / 1000).toFixed(1), lunchBefore: lunchBefore, approx: !!(leg.approx || leg.split) });
     });
     var back = null;
     if (opts.ret && legs.length > order.length) {
       var b = legs[order.length]; t += b.s / 60; travelMin += b.s / 60; km += b.m / 1000;
-      back = { arrive: hm(t), travelMin: Math.round(b.s / 60), km: +(b.m / 1000).toFixed(1) };
+      back = { arrive: hm(t), travelMin: Math.round(b.s / 60), km: +(b.m / 1000).toFixed(1), approx: !!(b.approx || b.split) };
     }
-    return { rows: rows, back: back, endMin: Math.round(t), end: hm(t), travelMin: Math.round(travelMin), consultMin: consult * order.length, km: +km.toFixed(1) };
+    var approx = !legs.length || legs.slice(0, order.length + (back ? 1 : 0)).some(function (l) { return !l || l.approx || l.split; });
+    return { rows: rows, back: back, endMin: Math.round(t), end: hm(t), travelMin: Math.round(travelMin), consultMin: consult * order.length, km: +km.toFixed(1), approx: approx };
   }
 
   /** O-06: 근무 시간 넘김 — 마침(복귀) 18:00 넘음 또는 이동+상담 8시간(480분) 넘음. → { over, end, workMin, why:[] } */
@@ -112,9 +113,85 @@
     var x = a.splice(from, 1)[0]; a.splice(to, 0, x); return a;
   }
 
+  // ── S12-i4 도로 경로 «기기 안 당일 보관»·대체·다시 짜기·일정 공유 (순수 함수, 저장소는 넣어 준다) ──
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function dayStamp(now) { var d = now != null ? new Date(now) : new Date(); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+  /**
+   * 같은 경로(경유지·순서·복귀)는 그날 이 기기 안에서 다시 부르지 않는다. 날짜가 바뀌면 통째로 버린다.
+   * storage: localStorage 모양({getItem,setItem,removeItem}) 또는 null(보관 없이 동작) · nowFn: 시험용 시계
+   * 모든 읽기·쓰기는 try/catch — 사생활 보호 창·저장 막힘에서도 화면은 그대로 돈다.
+   * block(why): 상한(429)에 닿으면 그날은 서버를 더 부르지 않는다(어림값으로 바로 대체).
+   */
+  function dayCache(storage, lsKey, nowFn, max) {
+    lsKey = lsKey || "daeum.road.day"; max = max || 40;
+    var mem = null;
+    function today() { return dayStamp(nowFn ? nowFn() : Date.now()); }
+    function read() {
+      var t = today(), o = mem;
+      if (!o) { try { o = storage ? JSON.parse(storage.getItem(lsKey) || "null") : null; } catch (e) { o = null; } }
+      if (!o || o.day !== t || typeof o.r !== "object" || !o.r) o = { day: t, r: {}, ks: [], block: null };
+      if (!Array.isArray(o.ks)) o.ks = Object.keys(o.r);
+      mem = o; return o;
+    }
+    function write(o) { mem = o; try { if (storage) storage.setItem(lsKey, JSON.stringify(o)); } catch (e) { /* 용량 초과·막힘 — 기억(mem)으로만 */ } }
+    return {
+      get: function (k) { var o = read(); return o.r[k] || null; },
+      put: function (k, v) {
+        var o = read(); if (!o.r[k]) o.ks.push(k); o.r[k] = v;
+        while (o.ks.length > max) delete o.r[o.ks.shift()];
+        write(o);
+      },
+      blocked: function () { return read().block; },
+      block: function (why) { var o = read(); o.block = why || "limit"; write(o); },
+      day: function () { return read().day; },
+      clearOld: function () { try { if (storage && storage.removeItem) storage.removeItem("daeum.officer.road"); } catch (e) { /* 옛 7일 보관 지움 */ } }
+    };
+  }
+  /** 도로 결과 대신 쓰는 직선 어림값(구간마다 approx) — 화면은 수치 앞에 «약» */
+  function approxRoad(order, office, ret) {
+    var legs = approxLegs(order, office, ret), m = 0, s = 0;
+    legs.forEach(function (l) { m += l.m; s += l.s; });
+    return { legs: legs, m: m, s: s, path: null, approx: true };
+  }
+  /** 다시 짜기 후보: 최근접+2-opt · (명단 순서)+2-opt · 각각 거꾸로 — 서로 다른 것만, 최대 n개(도로 호출 수 = 후보 수) */
+  function replanCandidates(stops, office, ret, listOrder, n) {
+    var base = candidates(stops, office, ret, listOrder), out = [];
+    base.concat(base.map(function (o) { return o.slice().reverse(); })).forEach(function (o) {
+      if (out.length < (n || 3) && !out.some(function (x) { return sameOrder(x, o); })) out.push(o);
+    });
+    return out;
+  }
+  /** 후보별 결과({legs,s,m,approx}) 중 가장 빠른 것 — 도로 결과가 하나라도 있으면 도로 결과끼리만 비교. → 번호 */
+  function pickBest(results) {
+    var anyRoad = results.some(function (r) { return r && !r.approx; }), bi = -1, bs = Infinity, bm = Infinity;
+    results.forEach(function (r, i) {
+      if (!r || (anyRoad && r.approx)) return;
+      var s = r.s != null ? r.s : (r.legs || []).reduce(function (a, l) { return a + l.s; }, 0), m = r.m != null ? r.m : (r.legs || []).reduce(function (a, l) { return a + l.m; }, 0);
+      if (s < bs - 1e-9 || (Math.abs(s - bs) < 1e-9 && m < bm)) { bi = i; bs = s; bm = m; }
+    });
+    return bi;
+  }
+  /**
+   * 하루 일정 공유 문장(Web Share). ⛔ 개인정보 금지 — 가구번호·읍면·시각만 쓴다(이름·주소·나이·사유·메모를 넘겨도 읽지 않는다).
+   * info: { label:"11월 12일(목) 1일차", start:"09:30", stops:[{id, area, arrive}], back:"15:20"|null, approx:bool, km, travelMin }
+   */
+  function shareText(info) {
+    info = info || {};
+    var safe = function (v) { return String(v == null ? "" : v).replace(/\s+/g, " ").slice(0, 24); };
+    var L = ["[닿음] " + safe(info.label || "방문 일정") + " 방문 일정", safe(info.start || "09:30") + " 상주시청 출발"];
+    (info.stops || []).forEach(function (s, i) { L.push((i + 1) + ". " + safe(s.arrive) + " " + safe(s.id) + " (" + safe(s.area) + ")"); });
+    if (info.back) L.push(safe(info.back) + " 시청 복귀");
+    if (info.km != null) L.push("이동 " + (info.approx ? "약 " : "") + info.km + "km" + (info.travelMin != null ? " · " + (info.approx ? "약 " : "") + info.travelMin + "분" : ""));
+    L.push("※ 가구번호·읍면·시각만 담았습니다(시연용 가상 가구)");
+    return L.join(String.fromCharCode(10));
+  }
+
   var api = { ORIGIN: ORIGIN, DETOUR: DETOUR, KMH: KMH, CONSULT_MIN: CONSULT_MIN, MAX_ROAD_STOPS: MAX_ROAD_STOPS,
     toLatLng: toLatLng, kmBetween: kmBetween, tourKm: tourKm, nearest: nearest, twoOpt: twoOpt, candidates: candidates,
-    approxLegs: approxLegs, cacheKey: cacheKey, schedule: schedule, overWork: overWork, move: move, hm: hm, parseHm: parseHm };
+    approxLegs: approxLegs, cacheKey: cacheKey, schedule: schedule, overWork: overWork, move: move, hm: hm, parseHm: parseHm,
+    dayStamp: dayStamp, dayCache: dayCache, approxRoad: approxRoad, replanCandidates: replanCandidates, pickBest: pickBest, shareText: shareText };
+  // 브라우저: 기기 안 당일 보관 하나를 공용으로(route_map.js 의 서버 호출·app.js 시각표가 같은 것을 본다)
+  if (typeof window !== "undefined") { try { api.roadStore = dayCache(window.localStorage, "daeum.road.day"); } catch (e) { api.roadStore = dayCache(null, "daeum.road.day"); } api.roadStore.clearOld(); }
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DaeumRoutePlan = api;
 })(this);

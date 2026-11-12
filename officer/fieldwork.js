@@ -476,5 +476,123 @@
     }
   };
 
+  // ═══ S12-i3 현장 기능(⚙️ 파로, 2026-11-12 · 시안 S12-h v2.2 «현장 어려움 ①~⑥» + 추가 발굴 가구) — 화면 없는 순수 함수 ═══
+  // ⛔ 돌려주는 값에 성명·주민등록번호·연락처·주소 원문을 넣지 않는다(주소는 이 함수 안에서만 읽고 «확인 필요» 사유만 내보냄).
+
+  // ① 도로명주소 자동 정리 — 띄어쓰기·시도 이름 통일, 도로명/지번 구분, 두 주소 칸 대조. 지번→도로명 실제 변환은 행정안전부 도로명주소 API(도입 때)
+  function addrNorm(s) {
+    s = String(s == null ? "" : s).replace(/[　\s]+/g, " ").replace(/\s*([,()])\s*/g, "$1").trim();
+    if (!s) return "";
+    s = s.replace(/^경북\s*/, "경상북도 ").replace(/^경상북도(?=\S)/, "경상북도 ");
+    if (/^[가-힣]{1,6}[읍면동]\s/.test(s)) s = "경상북도 상주시 " + s; // 읍면부터 적힌 주소
+    if (/^경상북도 (?!상주시)[가-힣]{1,6}[읍면동]\s/.test(s)) s = s.replace(/^경상북도 /, "경상북도 상주시 ");
+    return s.replace(/(\d+)\s*번지/g, "$1").replace(/\s+/g, " ").trim();
+  }
+  function addrKind(s) {
+    if (/[가-힣0-9]+(로|길)\s?\d+(-\d+)?(\s|,|$)/.test(s)) return "road";
+    if (/[가-힣]+[리동가]\s(산\s?)?\d+(-\d+)?(\s|,|$)/.test(s)) return "jibun";
+    return "none";
+  }
+  F.addr = {
+    norm: addrNorm, kind: addrKind,
+    /** a=(행복이음)주소 · b=(행안부)주소 · area=소재행정동 → { kind, flags:[{k,why}], need } (주소 글은 돌려주지 않음) */
+    check: function (a, b, area) {
+      var na = addrNorm(a), nb = addrNorm(b), t = nb || na, flags = [];
+      if (!na && !nb) flags.push({ k: "empty", why: "주소 칸이 비어 있음 — 도로명주소로 못 바꿈" });
+      else {
+        if (na && nb && na !== nb) flags.push({ k: "diff", why: "(행복이음)·(행안부) 주소가 서로 다름" });
+        if (area && t.indexOf(String(area).trim()) < 0) flags.push({ k: "area", why: "소재행정동(" + area + ")과 주소의 읍면이 다름" });
+        if (addrKind(t) === "none") flags.push({ k: "num", why: "번지·건물번호가 없음" });
+      }
+      return { kind: t ? addrKind(t) : "none", flags: flags, need: flags.length > 0 };
+    },
+    /** 명단 한 장 훑기: columns·rows·ids(같은 순서) → { n, tidy, road, jibun, need:[{id, area, why}] } */
+    scan: function (columns, rows, ids) {
+      var c = columns || [], ia = c.indexOf("(행복이음)주소"), ib = c.indexOf("(행안부)주소"), ix = c.indexOf("소재행정동");
+      var out = { n: 0, tidy: 0, road: 0, jibun: 0, need: [] };
+      (rows || []).forEach(function (r, i) {
+        var id = (ids || [])[i]; if (!id) return; out.n++;
+        var area = ix >= 0 ? String(r[ix] || "").trim() : "", k = F.addr.check(ia >= 0 ? r[ia] : "", ib >= 0 ? r[ib] : "", area);
+        if (k.kind === "road") out.road++; else if (k.kind === "jibun") out.jibun++;
+        if (k.need) out.need.push({ id: id, area: area, why: k.flags.map(function (f) { return f.why; }).join(" · ") });
+        else out.tidy++;
+      });
+      return out;
+    }
+  };
+
+  // ② 부재 → 다음 방문 제안: 근무일 gap일 뒤 · 추천 시간대 · 기본 3번, 3번째 부재부터 간접 확인으로 마감 권장
+  F.nextTry = function (o) {
+    o = o || {};
+    var n = +o.absentN || 0, max = (F.contacts && F.contacts.MAX_VISIT_TRIES) || 3, gap = o.gap == null ? 2 : +o.gap;
+    if (n >= max) return { close: true, nth: n, line: "부재 " + n + "번 — 통·이장·이웃 간접 확인으로 마감 권장(" + max + "번 기준 · 시연 기본값)" };
+    var d = U.startOfDay(o.from || new Date()), k = 0, guard = 0;
+    while (k < gap && guard++ < 60) { d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1); if (!U.isOff(d)) k++; }
+    var B = o.best || null;
+    if (!B && o.lastBand) { var i = BANDS.map(function (b) { return b.k; }).indexOf(o.lastBand); var nb = BANDS[Math.min(BANDS.length - 1, i + 1)] || BANDS[BANDS.length - 1]; B = { k: nb.k, label: nb.label, hours: nb.from + "~" + nb.to + "시" }; }
+    if (!B) B = { k: "eve", label: "저녁", hours: "18~21시" };
+    var nth = n + 1, nthT = ["첫", "두", "세", "네"][nth - 1] || nth;
+    return { close: false, nth: nth, date: U.ymd(d), md: md(d), band: B.k, label: B.label, hours: B.hours,
+      line: md(d) + " " + B.label + "(" + B.hours + ") · " + nthT + " 번째 방문" };
+  };
+
+  // ⑤ 2인 방문 권장 — 주의 꼬리표·지난 기록에 위험 낱말이 있는 집(점수 아님, 낱말 대조)
+  var PAIR_RE = /(개가|개 있|맹견|폭언|폭력|위협|흉기|주취|음주|술에? 취|난동|공격|고성|성희롱|위험)/;
+  F.pairNeed = function (notes, logs) {
+    var hit = null;
+    (notes || []).forEach(function (t) { if (!hit && PAIR_RE.test(t)) hit = "주의 꼬리표 «" + clip(t, 16) + "»"; });
+    (logs || []).forEach(function (l) { var t = [l.memo || ""].concat(l.tags || []).join(" "); if (!hit && PAIR_RE.test(t)) hit = "지난 기록에 위험 이력"; });
+    return { need: !!hit, why: hit || "" };
+  };
+
+  // ⑥ 읍면·담당별 남은 가구 — rows:[{id, area, owner, st}] (st: planned·absent·done·refused) → 막대 줄
+  F.remain = function (rows) {
+    var g = {};
+    (rows || []).forEach(function (r) {
+      var k = (r.area || "미상") + "|" + (r.owner || ""), x = g[k] || (g[k] = { area: r.area || "미상", owner: r.owner || "", n: 0, total: 0, absent: 0 });
+      x.total++; if (r.st !== "done" && r.st !== "refused") { x.n++; if (r.st === "absent") x.absent++; }
+    });
+    var list = Object.keys(g).map(function (k) { return g[k]; }).sort(function (a, b) { return b.n - a.n || (a.area < b.area ? -1 : 1); });
+    var mx = list.reduce(function (m, x) { return Math.max(m, x.n); }, 0) || 1;
+    list.forEach(function (x) { x.w = Math.round(x.n / mx * 100); });
+    return { rows: list, n: list.reduce(function (s, x) { return s + x.n; }, 0), total: list.reduce(function (s, x) { return s + x.total; }, 0) };
+  };
+
+  // ③ 한 장 인계 카드 — 가구번호·읍면·유형·횟수만. 자유 글은 mask() 로 가린다(이름·주소·연락처 0)
+  F.handCard = function (o) {
+    o = o || {};
+    var types = (o.types || []).slice(0, 4), v = o.visits || {}, ck = o.checks || {}, links = (o.links || []).slice(0, 3);
+    var lines = [
+      "발굴: " + (types.length ? types.join("·") + " 위기 유형" : "위기정보") + " · 발굴 " + (+o.cnt || 1) + "회째",
+      "지난 방문: " + (v.met ? "만남 " + v.met + "번" + (v.absent ? " · 부재 " + v.absent + "번" : "") : v.absent ? "부재 " + v.absent + "번" : "아직 방문 전"),
+      "확인한 것: " + (ck.n ? "현장 체크 " + ck.n + "건" + (ck.bad ? "(문제 " + ck.bad + ")" : "") : "아직 없음"),
+      "연계: " + (links.length ? links.join(", ") : "—"),
+      "주의: " + (o.pair ? "2인 방문 권장" : "특이 없음")
+    ].map(function (l) { return clip(mask(l), 60); });
+    var next = clip(mask(o.next || (v.absent && !v.met ? "다른 시간대에 다시 방문 · 안 되면 간접 확인으로 마감" : v.met ? "연계 회신 확인 · 신청 여부 전화" : "첫 방문")), 60);
+    var note = o.note ? clip(mask(o.note), 80) : "";
+    var head = (o.id || "") + " · " + (o.area || "") + (o.round ? " · " + o.round + " 차수" : "");
+    var text = "[한 장 인계 카드] " + head + "\n" + lines.map(function (l, i) { return (i + 1) + ". " + l; }).join("\n") + "\n다음 할 일: " + next + (note ? "\n한 줄: " + note : "") + "\n(이름·주소·연락처는 넣지 않습니다 — 행복이음에서 확인)";
+    return { id: o.id || "", area: o.area || "", head: head, lines: lines, next: next, note: note, text: text };
+  };
+
+  // ⑦ 현장 «추가 발굴 가구» — 명단 밖 가구를 담당자가 «직접 본» 경우만 임시 번호로. 주민 신고 접수 아님
+  F.newFind = {
+    SIGNS: ["생계", "주거", "건강", "고립", "돌봄"],
+    nextId: function (list) { var mx = 0; (list || []).forEach(function (x) { var m = /^N-(\d+)$/.exec(x.id || ""); if (m) mx = Math.max(mx, +m[1]); }); var n = mx + 1; return "N-" + (n < 10 ? "00" : n < 100 ? "0" : "") + n; },
+    make: function (list, o) {
+      o = o || {}; if (!o.area) throw new Error("읍면 필요");
+      var at = new Date(o.at || Date.now());
+      return { id: F.newFind.nextId(list), area: String(o.area).slice(0, 12), how: clip(mask(o.how || ""), 80), signs: (o.signs || []).filter(function (s) { return F.newFind.SIGNS.indexOf(s) >= 0; }), at: at.toISOString(), from: o.from || "" };
+    },
+    /** 행복이음 신규 상담 입력용 초안(복사해 붙여 넣기) */
+    draft: function (x) {
+      var d = new Date(x.at), dt = d.getFullYear() + ". " + (d.getMonth() + 1) + ". " + d.getDate() + ".";
+      return "[행복이음 신규 상담 입력 초안] 임시번호 " + x.id + " · " + x.area + " · " + dt + " 현장 추가 발굴\n" +
+        "발견 경위: " + (x.how || "(직접 입력)") + "\n" +
+        "본 위기 신호: " + (x.signs.length ? x.signs.join("·") : "(고르지 않음)") + "\n" +
+        "입력할 때: 성명·주소·연락처는 행복이음에 직접 입력(앱에 남기지 않음) · 초기상담 일정 정하기";
+    }
+  };
   return F;
 });

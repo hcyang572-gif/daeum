@@ -10,7 +10,8 @@ window.DAEUM_CONFIG = {
   // 네이버 지도(NCP Application «daeum», Web Dynamic Map) — Client ID 는 공개값(브라우저 지도 로딩용). 등록 Web URL: github.io · localhost
   // ⛔ Client Secret 은 여기 두지 않는다 — 도로 경로 서버 함수(daeum-route) 비밀(NCP_MAP_KEY)에만.
   naverMapKeyId: "7brwn3eeig",
-  // 도로 경로(네이버 Directions 15) 서버 함수. 실패·한도·키 없음이면 화면이 직선거리 근사로 돌아간다.
+  // 도로 경로(네이버 Directions 15) 서버 함수. 상한 IP당 300·전체 1,000회/일(S12-i4). 실패·상한(429)·끊김·키 없음이면
+  //   화면 오류 없이 직선거리 어림값(«약»)으로 자동 대체. 같은 경로는 그날 이 기기 안에서만 다시 쓴다(서버 저장 0, 약관 §7.3).
   routeEndpoint: "https://gicjzrxgktpovnphtjhi.supabase.co/functions/v1/daeum-route",
 
   // 적용 예시 지역: 상주시 24개 읍면동(1읍 17면 6동). 가구는 모두 가상(실제 주민 아님). 두 창구의 읍면동 이름 정본은 이 목록 하나다.
