@@ -1,6 +1,6 @@
 /* 닿음 기록 탭(S12-i2 ⚙️ 파로, 2026-11-12 · 시안 S12-h v2.2) — 상황 고르기 줄·하단 시트·덧붙이기·실제 보고서 형태
    라이트 기준 · 누르는 곳 44px 이상(장갑·한 손) · 움직임은 transform·opacity 만, 움직임 줄이기면 끔 */
-.rc-main { --rc-acc: var(--go, #0C8767); --rc-ink: var(--ink, #121A27); --rc-mute: var(--mute, #59606E); }
+.rc-main { --rc-acc: var(--go, #0B8465); --rc-ink: var(--ink, #121A27); --rc-mute: var(--mute, #59606E); }
 
 /* 상황 고르기 카드 */
 .rc-cmp { padding: 12px 14px; display: grid; gap: 10px; }
@@ -48,13 +48,13 @@
 .rc-steps { display: flex; gap: 4px; }
 .rc-steps i { flex: 1; height: 4px; border-radius: 3px; background: rgba(33,30,46,.12); }
 .rc-steps i.dn { background: rgba(12,135,103,.4); }
-.rc-steps i.on { background: var(--go, #0C8767); }
+.rc-steps i.on { background: var(--go, #0B8465); }
 .rc-sheet .rc-why { font-size: 13px; }
 .rc-opts { display: flex; flex-wrap: wrap; gap: 6px; }
 .rc-opts button { min-height: 44px; padding: 0 14px; border: 0; border-radius: 22px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--mute, #59606E);
   background: var(--well, #E3E0D9); box-shadow: inset 0 2px 3px rgba(33,30,46,.12), inset 0 -1px 0 rgba(255,255,255,.7); transition: background-color .15s, color .15s, transform .07s; }
 .rc-opts button:active { transform: translateY(1px); }
-.rc-opts button[aria-pressed="true"] { color: #fff; background: linear-gradient(180deg, #14A07B, #0C8767); box-shadow: 0 2px 0 #075B45, inset 0 1px 0 rgba(255,255,255,.25); }
+.rc-opts button[aria-pressed="true"] { color: #fff; background: linear-gradient(180deg, #0B8465, #0A7A5D); box-shadow: 0 2px 0 #075B45, inset 0 1px 0 rgba(255,255,255,.25); }
 .rc-di { display: flex; gap: 8px; }
 .rc-di .in1 { flex: 1; min-width: 0; min-height: 44px; border: 0; border-radius: 12px; padding: 0 12px; font: inherit; font-size: 14px; }
 .rc-di .sbtn, .rc-nav .sbtn { min-height: 44px; }
@@ -71,7 +71,7 @@
 .rc-bi b { font-size: 12px; font-weight: 800; color: var(--rc-ink); }
 .rc-micb, .rc-pen { width: 60px; height: 60px; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; transition: transform .07s; }
 .rc-micb svg, .rc-pen svg { width: 26px; height: 26px; }
-.rc-micb { color: #fff; background: radial-gradient(circle at 50% 30%, #F58449, #E0581F 55%, #CF4C16); box-shadow: 0 4px 0 var(--now-edge, #A93C10), 0 12px 18px -10px rgba(224,88,31,.8); }
+.rc-micb { color: #fff; background: radial-gradient(circle at 50% 30%, #E06A33, #C94E1A 55%, #B84615); box-shadow: 0 4px 0 var(--now-edge, #A93C10), 0 12px 18px -10px rgba(224,88,31,.8); }
 .rc-micb[disabled] { background: #BDB8AF; box-shadow: 0 4px 0 #8E96A2; cursor: default; }
 .rc-micb.rec { animation: rcPulse 1.4s ease-in-out infinite; }
 .rc-pen { color: var(--rc-ink); background: linear-gradient(180deg, #fff, #F2EDE4); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(60,46,28,.16), 0 4px 0 var(--edge, #CDC7BC); }
@@ -81,7 +81,7 @@
 .rc-mt small { font-size: 12px; line-height: 1.45; color: var(--rc-mute); }
 .rc-wave { display: flex; align-items: center; gap: 2px; height: 18px; }
 .rc-wave i { width: 3px; height: 4px; border-radius: 2px; background: rgba(33,30,46,.2); }
-.rc-sub.on .rc-wave i { background: #E0581F; animation: rcWave .6s ease-in-out infinite alternate; }
+.rc-sub.on .rc-wave i { background: #C94E1A; animation: rcWave .6s ease-in-out infinite alternate; }
 @keyframes rcWave { from { transform: scaleY(1); } to { transform: scaleY(4); } }
 @keyframes rcPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 
@@ -100,7 +100,7 @@
 .rc-paperw > summary { list-style: none; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 14px; cursor: pointer; font-size: 14px; font-weight: 900; color: var(--rail, #1C2839); }
 .rc-paperw > summary::-webkit-details-marker { display: none; }
 .rc-paperw > summary small { font-size: 12px; font-weight: 700; color: var(--mute, #59606E); }
-.rc-paperw > summary::after { content: "펼치기"; margin-left: auto; font-size: 12px; font-weight: 800; color: var(--go, #0C8767); }
+.rc-paperw > summary::after { content: "펼치기"; margin-left: auto; font-size: 12px; font-weight: 800; color: var(--go, #0B8465); }
 .rc-paperw[open] > summary::after { content: "접기"; }
 .rc-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 14px 10px; padding: 8px 10px; border-radius: 10px; background: var(--well, #E3E0D9); font-size: 11.5px; color: var(--mute, #59606E); }
 .rc-legend b { color: var(--ink, #121A27); margin-right: 2px; }

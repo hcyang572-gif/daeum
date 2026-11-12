@@ -594,5 +594,65 @@
         "입력할 때: 성명·주소·연락처는 행복이음에 직접 입력(앱에 남기지 않음) · 초기상담 일정 정하기";
     }
   };
+  // ═══ S12-i5 동료 안부 고도화(⚙️ 파로, 2026-11-12) — 화면 없는 순수 함수 ═══
+  // 기존 안전 모드(들어가기 → 예정 시간 넘김 → 같은 계정 다른 화면 배너 → 안부 확인 완료)는 그대로 두고 그 위에 얹는다.
+  // ①예상 시간 칩 ②단계 알림(1차 동료 → 2차 팀장) ③조용한 도움 요청 ④무사 종료 ⑤하루 요약.
+  // 싣는 것: 알림 id·가구 관리 번호·읍면·시각·분·상태·도움 요청 횟수뿐(성명·주소·연락처 0). 받는 사람 이름은 시연용 가상.
+  var SF = F.safety = {
+    CHIPS: [15, 30, 40, 60, 90],              // 40 = 정의서 §7 기본값(A.safetyMin)
+    DEF: 40,
+    LEAD: 15,                                   // 1차(동료) 뒤 이만큼 더 지나면 2차(팀장)
+    WHO: { peer: "동료 박주무관", lead: "김팀장" }, // 시연용 가상 이름
+    elMin: function (at, now) { return Math.max(0, Math.round(((now ? new Date(now) : new Date()) - new Date(at)) / 60000)); },
+    pick: function (n) { n = +n; return SF.CHIPS.indexOf(n) >= 0 ? n : SF.DEF; },
+    /** 지금 몇 단계인가: 0 = 예정 안, 1 = 동료에게, 2 = 팀장에게도 · help = 도움 요청이 열려 있음 */
+    stage: function (a, now) {
+      var el = SF.elMin(a.at, now), lim = +a.min || SF.DEF, lv = el >= lim + SF.LEAD ? 2 : el >= lim ? 1 : 0;
+      var help = (+a.help || 0) > (+a.hok || 0);
+      var next = lv === 0 ? { who: SF.WHO.peer, inMin: lim - el } : lv === 1 ? { who: SF.WHO.lead, inMin: lim + SF.LEAD - el } : null;
+      var to = lv === 2 ? SF.WHO.peer + "·" + SF.WHO.lead : lv === 1 ? SF.WHO.peer : "";
+      return { lv: lv, el: el, min: lim, help: help, next: next, to: to,
+        line: lv === 0 ? "예정 " + lim + "분 · 넘기면 1차 " + SF.WHO.peer + " → " + SF.LEAD + "분 더 지나면 2차 " + SF.WHO.lead
+          : lv === 1 ? "1차 · " + SF.WHO.peer + "에게 알렸습니다 · " + next.inMin + "분 뒤 2차 " + SF.WHO.lead
+          : "2차 · " + SF.WHO.lead + "에게도 알렸습니다" };
+    },
+    /** 하루 기록에 한 건을 더한다(날짜가 바뀌면 새로). rec = 안전 모드 알림 한 건 */
+    note: function (log, rec, now) {
+      now = now ? new Date(now) : new Date();
+      var d = U.ymd ? U.ymd(now) : now.toISOString().slice(0, 10);
+      if (!log || log.date !== d) log = { date: d, items: {} };
+      if (!rec || !rec.id || !rec.hid || rec.id === "DEMO") return log;
+      if ((U.ymd ? U.ymd(new Date(rec.at)) : String(rec.at).slice(0, 10)) !== d) return log;
+      var o = log.items[rec.id] || { hid: rec.hid, area: rec.area || "", at: rec.at, over: false, lead: false, help: 0, fin: "" };
+      var st = SF.stage(rec, now), ended = rec.state === "end";
+      if (!ended && !o.fin) { o.over = o.over || st.lv >= 1; o.lead = o.lead || st.lv >= 2; }
+      o.min = +rec.min || o.min || SF.DEF;
+      o.help = Math.max(o.help || 0, +rec.help || 0);
+      if (ended && !o.fin) { o.fin = rec.fin === "safe" ? "safe" : "rec"; o.endAt = now.toISOString(); }
+      log.items[rec.id] = o; return log;
+    },
+    /** 하루 요약 — 방문 몇 곳·시간 넘김 몇 번·팀장까지 간 것·도움 요청 몇 번·무사 종료 몇 곳 */
+    summary: function (log) {
+      var L = log && log.items ? Object.keys(log.items).map(function (k) { return log.items[k]; }) : [];
+      var s = { visits: uniq(L.map(function (x) { return x.hid; })).length, over: 0, lead: 0, help: 0, safe: 0, open: 0 };
+      L.forEach(function (x) { if (x.over) s.over++; if (x.lead) s.lead++; s.help += x.help || 0; if (x.fin) s.safe++; else s.open++; });
+      s.line = "방문 " + s.visits + "곳 · 시간 넘김 " + s.over + "번" + (s.lead ? "(팀장까지 " + s.lead + "번)" : "") + " · 도움 요청 " + s.help + "번 · 무사 종료 " + s.safe + "곳";
+      return s;
+    },
+    /** 시연용 하루(가상) — 오늘 방문 목록 앞쪽 집으로 그럴듯하게 채운다. 실제 기록이 하나라도 있으면 쓰지 않는다 */
+    demo: function (ids, areaOf, now) {
+      now = now ? new Date(now) : new Date();
+      var base = new Date(now); base.setHours(9, 40, 0, 0);
+      var plan = [[0, 30, 26, 0, "safe"], [55, 45, 58, 1, "safe"], [130, 30, 27, 0, "safe"]]; // [시작(분), 예정, 걸린 분, 도움 요청, 끝]
+      var log = { date: U.ymd ? U.ymd(now) : now.toISOString().slice(0, 10), items: {}, demo: true };
+      (ids || []).slice(0, 3).forEach(function (hid, i) {
+        var p = plan[i], at = new Date(base.getTime() + p[0] * 60000);
+        log.items["SFD-" + i] = { hid: hid, area: areaOf ? areaOf(hid) : "", at: at.toISOString(), min: p[1], over: p[2] >= p[1], lead: p[2] >= p[1] + SF.LEAD, help: p[3], fin: p[4], endAt: new Date(at.getTime() + p[2] * 60000).toISOString() };
+      });
+      return log;
+    },
+    hm: hm
+  };
+
   return F;
 });

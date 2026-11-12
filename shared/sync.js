@@ -36,13 +36,14 @@
   function queue() { return get(K.queue, []) || []; }
   /* 38b ③ 안전 모드 알림 — 테이블 없이 같은 채널의 broadcast(«safety»)로만 주고받는다(서버에 남지 않음).
      같은 브라우저의 다른 창은 localStorage(storage 이벤트)로 받는다 → 로그인 전 시연에서도 두 창이 이어진다.
-     싣는 것: 알림 id·가구 관리 번호·읍면·시작 시각·예정 분·상태(on/ok/end)·rev 뿐. 성명·주소·연락처 없음. */
+     싣는 것: 알림 id·가구 관리 번호·읍면·시작 시각·예정 분·상태(on/ok/end)·rev · (S12-i5) 도움 요청 횟수·확인 횟수·끝난 방식 뿐. 성명·주소·연락처 없음. */
   function safeAll() { return get(K.safe, {}) || {}; }
   function safeMerge(a) {
     if (!a || !a.id || !a.hid) return false;
     var all = safeAll(), old = all[a.id];
     if (old && (old.rev || 0) >= (a.rev || 0)) return false;
-    all[a.id] = { id: String(a.id).slice(0, 60), hid: String(a.hid).slice(0, 12), area: String(a.area || "").slice(0, 20), at: a.at, min: +a.min || 40, state: a.state, rev: +a.rev || Date.now(), by: String(a.by || "").slice(0, 12) };
+    all[a.id] = { id: String(a.id).slice(0, 60), hid: String(a.hid).slice(0, 12), area: String(a.area || "").slice(0, 20), at: a.at, min: +a.min || 40, state: a.state, rev: +a.rev || Date.now(), by: String(a.by || "").slice(0, 12),
+      help: Math.min(Math.max(+a.help || 0, old ? old.help || 0 : 0), 99), hok: Math.min(Math.max(+a.hok || 0, old ? old.hok || 0 : 0), 99), hat: a.hat ? String(a.hat).slice(0, 30) : "", fin: a.fin === "safe" ? "safe" : a.fin ? "rec" : "" }; // S12-i5 도움 요청 횟수·확인 횟수·요청 시각·끝난 방식
     var cut = Date.now() - 12 * 3600e3; // 반나절 지난 것은 지운다
     Object.keys(all).forEach(function (k) { if (new Date(all[k].at).getTime() < cut || (all[k].state === "end" && k !== a.id && all[k].rev < Date.now() - 600e3)) delete all[k]; });
     set(K.safe, all); return true;

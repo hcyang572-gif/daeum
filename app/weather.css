@@ -1,0 +1,16 @@
+/* 닿음 오늘 날씨 띠(S12-t) — 화면 맨 위 얇은 한 줄. 라이트 고정 화면 토큰(app.css)을 따른다. 받아오기 실패면 hidden. */
+.dwx { max-width: 1240px; margin: 0 auto; padding: 6px 24px 0; font: 500 12.5px/1.45 var(--f, sans-serif); color: var(--mute, #59606E); }
+.dwx[hidden] { display: none; }
+.dwx-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 7px; }
+.dwx-pl { font-weight: 800; color: var(--ink, #121A27); }
+.dwx-t { font: 600 13px/1 var(--f-mono, monospace); color: var(--ink, #121A27); letter-spacing: -.01em; }
+.dwx-d { font-style: normal; opacity: .45; }
+.dwx-w { font-weight: 800; color: var(--risk, #C62F3A); }
+.dwx-p { font-weight: 700; color: var(--now-ink, #AE4217); }
+.dwx-src { margin-left: auto; font-size: 11px; color: var(--mute, #59606E); white-space: nowrap; }
+.dwx-safe { margin-top: 4px; padding: 5px 10px; border-radius: 8px; background: var(--risk-soft, #FDE7E8); color: #7A1E25; font-weight: 600; }
+.dwx-safe b { margin-right: 4px; font-weight: 900; color: var(--risk, #C62F3A); }
+.dwx-safe[data-k="cold"], .dwx-safe[data-k="snow"] { background: #E3ECF7; color: #1E3A5F; }
+.dwx-safe[data-k="cold"] b, .dwx-safe[data-k="snow"] b { color: #1F5A9E; }
+@media (max-width: 720px) { .dwx { padding: 6px 16px 0; font-size: 12px; } .dwx-src { margin-left: 0; } }
+@media print { .dwx { display: none !important; } }

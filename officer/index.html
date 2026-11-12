@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <link rel="stylesheet" href="flow.css">
+<link rel="stylesheet" href="../shared/a11y.css?v=s12q">
 </head>
 <body>
 <!-- 닿음 S11-k 흐름 ①~⑨ — 화면은 officer/flow.js 가 그린다. 아이콘 묶음(20 격자 · 선 1.7 · 둥근 끝)은 시안과 같다. -->
@@ -57,7 +58,7 @@
   <symbol id="i-sheet" viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M3 7.5h14M3 12h14M8 3v14"/></symbol>
   <symbol id="i-cal" viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2.5v3M13 2.5v3"/></symbol>
 </svg>
-<div id="app" aria-live="polite"><p style="padding:24px">닿음을 불러오는 중…</p></div>
+<div id="app"><p style="padding:24px" role="status">닿음을 불러오는 중…</p></div>
 <noscript><p style="padding:24px">닿음 공무원 화면은 자바스크립트가 켜져 있어야 합니다.</p></noscript>
 <script src="../shared/config.js"></script>
 <script src="../data/households.js"></script>
@@ -73,5 +74,6 @@
 <script src="../shared/sync.js"></script>
 <script src="flow.js"></script>
 <script src="../shared/pwa.js"></script>
+<script src="../shared/a11y.js?v=s12q"></script>
 </body>
 </html>

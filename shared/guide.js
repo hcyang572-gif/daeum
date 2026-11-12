@@ -5,7 +5,7 @@
      «공공데이터»/«가상» 표식을 붙이고 «자료 표» 연결(→ 활용 데이터 해당 줄)을 단다. data-src-ref="D13,D12" 를 달면 그 줄로 바로 간다.
      화면이 다시 그려져도(MutationObserver) 같은 규칙을 다시 건다 — 각 창구 코드는 꼬리표 글만 쓰면 된다.
    - 첫 방문 소개는 한 번만(localStorage «daeum.intro.seen»). 자동 점검 브라우저(navigator.webdriver)·나란히 보기(iframe)에서는 띄우지 않는다(?intro=1 이면 띄움).
-   - 데이터 표 정본: 01_리서치/활용데이터_목록.md · 03_시제품/data/README.md. 숫자·기준일을 바꾸면 이 표도 함께 고친다. */
+   - 데이터 표 정본: 01_리서치/S12-r_데이터활용_전수표.md(S12-r 11-12: 연계처 10종·자원정보·동기화·AI·카카오 추가, 달력 규격 줄 삭제) · 03_시제품/data/README.md. 숫자·기준일을 바꾸면 이 표도 함께 고친다. */
 (function () {
   "use strict";
   var doc = document;
@@ -63,6 +63,40 @@
       how: "OpenAPI · 개발 PC에서 받아 읍면별 합계만 저장(건물 주소 저장 안 함)", cycle: "필요할 때 다시 받음(원본 월간)", base: "2026-10-30 조회",
       screens: [["공무원", "가구 명단 · 오늘 동선 › 오래된 집"], ["공무원", "방문 전 카드"]],
       does: "읍면별 30년 넘은 주택 비율(주거용 건물 동 수 기준) → 가상 가구에 «오래된 집» 시연 표식 · 난방·전기·누수 살피기" },
+    { id: "P3", kind: "pub", org: "한국사회보장정보원", name: "자원정보서비스 현황", no: "15001839", url: "https://www.data.go.kr/data/15001839/openapi.do",
+      how: "OpenAPI · 받아서 저장(상주시 23곳)", cycle: "필요할 때 다시 받음", base: "2026-11-03 조회",
+      screens: [["공무원", "연계 카드"], ["공무원", "방문 전 카드"]],
+      does: "상주시 민간 연계처(돌봄센터 등) — 같은 동네·가까운 순" },
+    { id: "P11", kind: "pub", org: "보건복지부", name: "사회복지시설 정보", no: "15160109", url: "https://www.data.go.kr/data/15160109/fileData.do",
+      how: "파일 · 상주 90곳만 뽑음", cycle: "포털 갱신 때", base: "기준 2026-03-18",
+      screens: [["공무원", "연계 카드"]], does: "노인여가·복지시설 연계처" },
+    { id: "P12", kind: "pub", org: "경상북도 상주시", name: "상주시 경로당 등록 현황", no: "15005238", url: "https://www.data.go.kr/data/15005238/fileData.do",
+      how: "파일 · 581곳", cycle: "포털 갱신 때", base: "기준 2018-06-30(오래됨)",
+      screens: [["공무원", "연계 카드"]], does: "마을 경로당 — 기준일이 오래돼 «방문 전 확인» 경고와 함께만 보임" },
+    { id: "P13", kind: "pub", org: "경상북도 상주시", name: "상주시 장애인복지시설", no: "15005324", url: "https://www.data.go.kr/data/15005324/fileData.do",
+      how: "파일 · 13곳", cycle: "포털 갱신 때", base: "기준 2024-09-05",
+      screens: [["공무원", "연계 카드"]], does: "장애 가구 연계처" },
+    { id: "P14", kind: "pub", org: "국립중앙의료원", name: "치매안심센터 정보 · 분소 정보", no: "15138421·15145246", url: "https://www.data.go.kr/data/15138421/fileData.do",
+      how: "파일 · 센터 1 + 분소 2(함창·화서)", cycle: "포털 갱신 때", base: "기준 2026-10-27",
+      screens: [["공무원", "연계 카드 › 치매"]], does: "인지저하가 의심되는 어르신 → 관할 센터·전화" },
+    { id: "P16", kind: "pub", org: "한국보건의료정보원", name: "참여 정신건강복지센터 목록", no: "15167096", url: "https://www.data.go.kr/data/15167096/fileData.do",
+      how: "파일 · 1곳", cycle: "포털 갱신 때", base: "기준 2026-09-21",
+      screens: [["공무원", "연계 카드 › 마음건강"]], does: "우울·고립이 의심되는 가구 → 센터 연결" },
+    { id: "P17", kind: "pub", org: "보건복지부", name: "노인돌봄서비스 기관 현황", no: "15004317", url: "https://www.data.go.kr/data/15004317/fileData.do",
+      how: "파일 · 3곳", cycle: "포털 갱신 때", base: "기준 2024-04-23",
+      screens: [["공무원", "연계 카드 › 돌봄"]], does: "홀로 사는 어르신 돌봄 수행기관" },
+    { id: "P18", kind: "pub", org: "우정사업본부", name: "전국 우체국 현황", no: "15070368", url: "https://www.data.go.kr/data/15070368/fileData.do",
+      how: "파일 · 상주 19곳", cycle: "포털 갱신 때", base: "기준 2026-08-31",
+      screens: [["공무원", "연계 카드"]], does: "연락이 닿지 않는 가구 근처 읍면 거점" },
+    { id: "P19", kind: "pub", org: "국민연금공단", name: "국민연금공단 지사 및 상담센터", no: "15010814", url: "https://www.data.go.kr/data/15010814/fileData.do",
+      how: "파일 · 1곳", cycle: "포털 갱신 때", base: "기준 2026-08-01",
+      screens: [["공무원", "연계 카드"]], does: "연금 상담 연계처" },
+    { id: "P20", kind: "pub", org: "국민건강보험공단", name: "국민건강보험공단 본부 및 지사", no: "15142232", url: "https://www.data.go.kr/data/15142232/fileData.do",
+      how: "파일 · 1곳", cycle: "포털 갱신 때", base: "기준 2025-02-24",
+      screens: [["공무원", "연계 카드"]], does: "보험료 문의 연계처" },
+    { id: "P22", kind: "pub", org: "국토교통부", name: "전국 법정동 코드", no: "15063424", url: "https://www.data.go.kr/data/15063424/fileData.do",
+      how: "파일 · 상주 법정동·리 236개", cycle: "정적", base: "코드표",
+      screens: [["공무원", "(화면 없음) 건축물대장 수집용"]], does: "건축물대장(D15)을 읍면별로 모으기 위한 코드표" },
 
     { id: "V1", kind: "virt", org: "닿음(시연)", name: "가상 가구 300곳 · 가상 발굴 명단", no: "", url: "",
       how: "생성기 data/tools/make_households.py(시드 고정)", cycle: "고정", base: "2026-10-29 생성",
@@ -88,25 +122,57 @@
       how: "이 기기(브라우저)에만 저장", cycle: "누를 때마다", base: "—",
       screens: [["공무원", "추천 현장 적합률"], ["공무원", "다시 찾을 집 · 기록"]], does: "담당자가 남긴 시도·연계·적합 표시를 모아 셈" },
 
-    { id: "N1", kind: "svc", org: "네이버클라우드플랫폼", name: "Maps · Web Dynamic Map · Directions 15(도로 경로)", no: "", url: "https://www.ncloud.com/product/applicationService/maps",
-      how: "API · 도로 경로는 서버 함수가 대신 호출(비밀 키 비노출)", cycle: "누를 때마다", base: "—",
-      screens: [["공무원", "방문 › 지도 · 도로 기준 순서"]], does: "지도 위 방문 동선 · 도로 거리·시간으로 순서 후보 비교" },
+    { id: "U1", kind: "svc", org: "한국사회보장정보원(행복이음 통보)", name: "복지사각지대 발굴대상자 명단(엑셀·CSV) 올리기", no: "", url: "",
+      how: "담당자가 내려받아 올림 · 이 브라우저 안에서만 읽음(성명·주민번호·전화는 읽지 않음)", cycle: "차수마다", base: "시연은 가상 9가구 파일",
+      screens: [["공무원", "명단 불러오기 → 오늘 · 방문"]], does: "명단의 가구·위기 신호를 오늘 방문 순서로 정리" },
+    { id: "N1", kind: "svc", live: true, org: "네이버클라우드플랫폼", name: "Maps Directions 15(도로 경로)", no: "", url: "https://www.ncloud.com/product/applicationService/maps",
+      how: "서버 함수가 대신 호출(비밀 키 비노출) · 결과는 저장하지 않음", cycle: "누를 때마다", base: "실패하면 직선거리×1.3 «약»",
+      screens: [["공무원", "방문 › 도로 기준 순서"]], does: "도로 거리·시간으로 방문 순서 후보 비교" },
+    { id: "N2", kind: "svc", live: true, org: "네이버클라우드플랫폼", name: "Maps Web Dynamic Map(웹 지도)", no: "", url: "https://www.ncloud.com/product/applicationService/maps",
+      how: "화면을 열 때 지도를 불러옴 · 길찾기 앱으로 이어 줌", cycle: "열 때마다", base: "—",
+      screens: [["공무원", "방문 › 지도"]], does: "지도 위 방문 가구·동선" },
+    { id: "L1", kind: "svc", live: true, org: "닿음 전용 서버(Supabase)", name: "PC ↔ 폰 실시간 동기화", no: "", url: "",
+      how: "같은 공무원 계정의 PC·폰이 방문 계획·결과의 변화를 구독", cycle: "바뀌는 즉시", base: "상주 정책플랫폼과 분리된 서버",
+      screens: [["공무원", "오늘 · 방문 · 기록(PC·폰 공통)"]], does: "사무실 PC에서 짠 계획이 폰에, 현장 기록이 PC에 곧바로" },
+    { id: "L4", kind: "svc", live: true, org: "Anthropic Claude(닿음 서버 경유)", name: "AI 상담 정리 · 연계 후보 추천", no: "", url: "",
+      how: "보내기 전 이름·전화·주민번호를 가림 · 추천은 D1·D2 목록에 있는 것만", cycle: "요청할 때", base: "실패하면 규칙 모드",
+      screens: [["공무원", "기록 › 자동 정리"], ["공무원", "AI 추천 검증"]], does: "상담 내용을 기록 문장으로 · 맞는 복지서비스 후보" },
+    { id: "K1", kind: "svc", org: "행정안전부", name: "주소정보누리집 좌표제공 API(주소 → 건물 출입구 좌표)", no: "", url: "https://business.juso.go.kr/addrlink/openApi/apiExprn.do",
+      how: "한 번 변환해 저장(화면에서는 부르지 않음) · 708건 중 692 성공(못 찾은 16곳은 2018 경로당)", cycle: "정적", base: "2026-11-12 변환",
+      screens: [["공무원", "연계 카드 › 가까운 순"]], does: "연계처 주소에 좌표를 붙여 가구에서 가까운 순으로" },
 
     { id: "R1", kind: "ref", org: "한국석유관리원·충북대", name: "한국유화학회지 2016(33권 4호) 휘발유 CO₂ 계수", no: "", url: "",
       how: "논문 값 2.174 kgCO₂/L", cycle: "—", base: "2016", screens: [["공무원", "도입 비용·탄소"]], does: "이동 거리 감소 → CO₂ 감소 추정" },
     { id: "R2", kind: "ref", org: "Anthropic · 한국자금중개", name: "AI 가격표 · 매매기준율", no: "", url: "",
       how: "누리집 확인", cycle: "—", base: "2026-10-29 · 2026-10-28", screens: [["공무원", "도입 비용·탄소"]], does: "AI 월 비용 추정(원화)" },
-    { id: "R3", kind: "ref", org: "IETF", name: "RFC 5545 iCalendar 규격", no: "", url: "",
-      how: "규격 문서", cycle: "—", base: "2009-09", screens: [["공무원", "방문 › 달력에 넣기"]], does: "방문 일정을 휴대폰 달력 파일로" },
     { id: "R4", kind: "ref", org: "서울 강남구", name: "«3회 방문 뒤 간접조사» 공개 사례", no: "", url: "",
       how: "공개 누리집(gangnam.go.kr)", cycle: "—", base: "—", screens: [["공무원", "보고 › 다시 찾을 집"]], does: "3번째 허탕 뒤 이웃·통반장 확인 순서" },
     { id: "R5", kind: "ref", org: "나라살림연구소", name: "차수마다 같은 사람이 다시 오른다는 현장 지적", no: "", url: "",
       how: "공개 보고", cycle: "—", base: "2024-03-25", screens: [["공무원", "보고 › 명단 정리"]], does: "지난 차수 비해당 집 표시의 근거" },
     { id: "R6", kind: "ref", org: "보건복지부", name: "복지 사각지대 발굴 차수 일정(정책브리핑 보도)", no: "", url: "https://www.korea.kr/news/policyNewsView.do?newsId=148973765",
-      how: "보도 자료", cycle: "차수마다", base: "2026-10-19", screens: [["공무원", "보고 › 마감 역산"]], does: "이번 차수 기간·마감까지 남은 날" }
+      how: "보도 자료", cycle: "차수마다", base: "2026-10-19", screens: [["공무원", "보고 › 마감 역산"]], does: "이번 차수 기간·마감까지 남은 날" },
+
+    { id: "F1", kind: "pub", plan: true, org: "기상청", name: "단기예보 · 초단기실황", no: "15084084", url: "https://www.data.go.kr/data/15084084/openapi.do",
+      how: "OpenAPI · 서버 함수 또는 주기 저장(키 비노출)", cycle: "시간 단위", base: "개발 중",
+      screens: [["공무원", "화면 위 날씨 띠 · 방문 안전 한 줄"]], does: "방문 가구 읍면동의 기온·하늘·강수" },
+    { id: "F2", kind: "svc", plan: true, org: "네이버클라우드플랫폼 지도 + 위 연계처 좌표", name: "지도 «주변 정보» 겹층", no: "", url: "",
+      how: "새 데이터 아님 — 연계처·경로당 좌표를 지도 층으로", cycle: "정적", base: "개발 중",
+      screens: [["공무원", "방문 › 지도"]], does: "오늘 방문 가구 곁 연계처·경로당을 켜고 끄기" },
+    { id: "F3", kind: "pub", plan: true, org: "국립중앙의료원", name: "AED(자동심장충격기) 위치", no: "15000652", url: "https://www.data.go.kr/data/15000652/openapi.do",
+      how: "OpenAPI · 활용신청 중", cycle: "수시", base: "승인 뒤 추가",
+      screens: [["공무원", "문 앞 안전 카드 · 지도 층"]], does: "방문 가구에서 가장 가까운 AED" },
+    { id: "F4", kind: "pub", plan: true, org: "국민건강보험공단", name: "장기요양기관 검색", no: "15059029", url: "https://www.data.go.kr/data/15059029/openapi.do",
+      how: "OpenAPI · 활용신청 중", cycle: "수시", base: "승인 뒤 추가",
+      screens: [["공무원", "연계 카드 · 지도 층"]], does: "장기요양 연계처" }
   ];
   var BY = {}; DATA.forEach(function (d) { BY[d.id] = d; });
-  var KIND = { pub: "공공데이터", virt: "가상 데이터(시연)", self: "닿음 자체 측정·기록", svc: "지도·경로 서비스", ref: "참고 자료" };
+  var KIND = { pub: "공공데이터", svc: "업무 연결 — 명단 올리기·지도·길찾기·동기화·AI", virt: "가상 데이터(시연)", self: "닿음 자체 측정·기록", ref: "참고 자료", plan: "예정 — 개발·활용신청 중" };
+  /* S12-r: 셈 — 공공데이터포털 번호 수(예정 제외) · 실시간 줄 · 예정 줄. data.html 흐름 그림 범례도 이 값을 쓴다 */
+  function counts() {
+    var nos = {}; DATA.forEach(function (d) { if (d.kind === "pub" && !d.plan && d.no) d.no.split("·").forEach(function (x) { nos[x.trim()] = 1; }); });
+    return { portal: Object.keys(nos).length, live: DATA.filter(function (d) { return d.live; }).length, plan: DATA.filter(function (d) { return d.plan; }).length,
+      virt: DATA.filter(function (d) { return d.kind === "virt"; }).length };
+  }
 
   /* 출처 글 → 데이터 줄 추정(구체적인 것 먼저) */
   var RULES = [
@@ -114,10 +180,13 @@
     [/주민등록 인구·세대 통계/, "D13"], [/행정안전부 주민등록 세대수|주민등록 인구통계|주민등록 인구 및 세대/, "M1"],
     [/15000415|기상특보|특보 코드/, "D11"], [/15000576|15000736|국립중앙의료원/, "MED"], [/15134735|건축HUB|건축물대장/, "D15"],
     [/15108347|지자체복지서비스/, "D2"], [/15090532|중앙부처복지서비스/, "D1"], [/서비스 목록/, "D1"],
-    [/네이버|Directions/, "N1"], [/AI 스피커|무반응|협약 기관|가상 신호/, "V2"], [/지난 차수|동네 미신청/, "V3"], [/가상 사연/, "V4"],
+    [/Directions|도로 경로/, "N1"], [/Web Dynamic Map|네이버 지도/, "N2"], [/네이버/, "N1"], [/실시간 동기화/, "L1"], [/주소정보누리집/, "K1"], [/15001839|자원정보/, "P3"],
+    [/15160109|사회복지시설 정보/, "P11"], [/15005238|경로당/, "P12"], [/15005324|장애인복지시설/, "P13"], [/15138421|15145246|치매안심센터/, "P14"], [/15167096|정신건강복지센터/, "P16"],
+    [/15004317|노인돌봄서비스 기관/, "P17"], [/15070368|우체국/, "P18"], [/15010814|국민연금공단/, "P19"], [/15142232|건강보험공단/, "P20"], [/15063424|법정동 코드/, "P22"],
+    [/15084084|단기예보|초단기실황/, "F1"], [/15000652|AED/, "F3"], [/15059029|장기요양기관/, "F4"], [/AI 스피커|무반응|협약 기관|가상 신호/, "V2"], [/지난 차수|동네 미신청/, "V3"], [/가상 사연/, "V4"],
     [/발굴 명단|가상 가구|가구 수는 가상|명단은 가상|가상 명단|가구는 가상/, "V1"],
     [/자체 측정/, "S1"], [/담당자 표시 기록|담당자 기록/, "S2"],
-    [/석유관리원|kgCO/, "R1"], [/Anthropic|매매기준율/, "R2"], [/RFC 5545/, "R3"], [/강남구/, "R4"], [/나라살림/, "R5"],
+    [/석유관리원|kgCO/, "R1"], [/Anthropic|매매기준율/, "R2"], [/강남구/, "R4"], [/나라살림/, "R5"],
     [/보건복지부 2026-10-19|정책브리핑/, "R6"], [/bokjiro\.go\.kr/, "D1"]
   ];
   function infer(text) {
@@ -229,14 +298,16 @@
   /* ── 활용 데이터 표 ── */
   function renderData(box, hitIds) {
     box.innerHTML = "";
-    var n = DATA.filter(function (d) { return d.kind === "pub"; }).length;
+    var n = counts();
     var sum = el("div", "dg-sum");
-    sum.innerHTML = '<span class="dg-k"><b class="num">' + n + '</b>종</span><span class="d-tag pub">공공데이터</span>' +
-      '<span class="dg-k"><b class="num">' + DATA.filter(function (d) { return d.kind === "virt"; }).length + '</b>종</span><span class="d-tag virt">가상</span>' +
+    sum.innerHTML = '<span class="dg-k"><b class="num">' + n.portal + '</b>종</span><span class="d-tag pub">공공데이터</span>' +
+      '<span class="dg-k"><b class="num">' + n.live + '</b>건</span><span class="d-tag live">실시간</span>' +
+      '<span class="dg-k"><b class="num">' + n.virt + '</b>종</span><span class="d-tag virt">가상</span>' +
+      '<span class="dg-k"><b class="num">' + n.plan + '</b>건</span><span class="d-tag plan">예정</span>' +
       '<span class="dg-note">실제 주민·개인정보 0건</span>';
     box.appendChild(sum);
-    ["pub", "virt", "self", "svc", "ref"].forEach(function (k) {
-      var rows = DATA.filter(function (d) { return d.kind === k; }); if (!rows.length) return;
+    ["pub", "svc", "virt", "self", "ref", "plan"].forEach(function (k) {
+      var rows = DATA.filter(function (d) { return k === "plan" ? d.plan : (d.kind === k && !d.plan); }); if (!rows.length) return;
       var sec = el("section", "dg-sec"); var h = el("h3", null, KIND[k]); sec.appendChild(h);
       var tb = el("table", "dg-tbl"); var cap = el("caption", "sr", KIND[k] + " 목록"); tb.appendChild(cap);
       var th = el("thead"); var tr = el("tr");
@@ -246,7 +317,9 @@
       rows.forEach(function (d) {
         var r = el("tr"); r.id = "src-" + d.id; r.setAttribute("data-id", d.id); r.tabIndex = -1;
         var c1 = el("td"); c1.setAttribute("data-l", "데이터");
-        c1.appendChild(el("span", "dg-org", d.org)); c1.appendChild(el("b", "dg-nm", d.name));
+        c1.appendChild(el("span", "dg-org", d.org));
+        if (d.live) c1.appendChild(el("span", "d-tag live", "실시간")); else if (d.plan) c1.appendChild(el("span", "d-tag plan", "예정"));
+        c1.appendChild(el("b", "dg-nm", d.name));
         c1.appendChild(el("span", "dg-no", (d.no ? "공공데이터포털 " + d.no + " · " : "") + d.base));
         var c2 = el("td", null, d.how + " · " + d.cycle); c2.setAttribute("data-l", "받는 방식");
         var c3 = el("td"); c3.setAttribute("data-l", "쓰는 화면");
@@ -256,7 +329,7 @@
       });
       tb.appendChild(bd); sec.appendChild(tb); box.appendChild(sec);
     });
-    box.appendChild(el("p", "dg-foot2", "공공데이터 이용허락: 행정안전부·한국사회보장정보원 파일은 이용허락 제한 없음, 기상청·병원·약국 OpenAPI는 출처표시(제1유형) — 각 화면 «출처» 꼬리표로 표시. 정본: 01_리서치/활용데이터_목록.md"));
+    box.appendChild(el("p", "dg-foot2", "공공데이터 이용허락: 행정안전부·한국사회보장정보원 파일은 이용허락 제한 없음, 기상청·병원·약국 OpenAPI는 출처표시(제1유형) — 각 화면 «출처» 꼬리표로 표시. «실시간»은 누르거나 바뀔 때마다 그 순간의 값을 받는 것, 나머지는 받아 저장한 자료(기준일 표기). 정본: 01_리서치/S12-r_데이터활용_전수표.md"));
     hit(box, hitIds);
   }
   function hit(box, ids) {
@@ -335,7 +408,7 @@
     },
     help: function (side) { var d = dialog("dgHelp", "사용 방법", true); renderHelp(d.querySelector(".dg-body"), side || SIDE || "officer"); open(d); },
     data: function (ids) { var d = dialog("dgData", "활용 데이터", true); open(d); renderData(d.querySelector(".dg-body"), ids); },
-    renderData: renderData, renderHelp: renderHelp, hit: hit, infer: infer, scan: scan, DATA: DATA
+    renderData: renderData, renderHelp: renderHelp, hit: hit, infer: infer, scan: scan, DATA: DATA, counts: counts
   };
   window.DaeumGuide = api;
 

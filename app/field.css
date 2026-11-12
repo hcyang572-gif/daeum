@@ -41,8 +41,8 @@
 .fd-bars { display: grid; gap: 6px; }
 .fd-bars > div { display: grid; grid-template-columns: 76px minmax(0, 1fr) 30px; gap: 8px; align-items: center; font-size: 12.5px; font-weight: 700; }
 .fd-bars span small { display: block; font-size: 10.5px; color: var(--mute, #59606E); font-weight: 600; }
-.fd-bars i { display: block; height: 10px; border-radius: 5px; width: var(--w); background: linear-gradient(90deg, var(--go, #0C8767), #3E9FA5); transform-origin: left; animation: fd-grow .8s var(--ease, ease-out) both; }
-.fd-bars i.ab { background: linear-gradient(90deg, var(--go, #0C8767), #3E9FA5 70%, var(--now, #E0581F)); }
+.fd-bars i { display: block; height: 10px; border-radius: 5px; width: var(--w); background: linear-gradient(90deg, var(--go, #0B8465), #3E9FA5); transform-origin: left; animation: fd-grow .8s var(--ease, ease-out) both; }
+.fd-bars i.ab { background: linear-gradient(90deg, var(--go, #0B8465), #3E9FA5 70%, var(--now, #C94E1A)); }
 .fd-bars b { text-align: right; font-size: 13px; }
 @keyframes fd-grow { from { transform: scaleX(0); } }
 .fd-hcs { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -69,7 +69,7 @@ dialog.fd-sheet::backdrop { background: rgba(17,26,39,.42); }
 .fd-l { font-size: 13px; font-weight: 800; }
 .fd-opts { display: flex; flex-wrap: wrap; gap: 6px; }
 .fd-opts button { min-height: 44px; padding: 0 14px; border: 0; border-radius: 22px; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--mute, #59606E); background: var(--well, #E3E0D9); box-shadow: inset 0 2px 3px rgba(33,30,46,.12); cursor: pointer; }
-.fd-opts button[aria-checked="true"], .fd-opts button[aria-pressed="true"] { color: var(--ink, #121A27); background: #fff; box-shadow: 0 0 0 1.5px var(--now, #E0581F), 0 2px 0 var(--edge, #CDC7BC); }
+.fd-opts button[aria-checked="true"], .fd-opts button[aria-pressed="true"] { color: var(--ink, #121A27); background: #fff; box-shadow: 0 0 0 1.5px var(--now, #C94E1A), 0 2px 0 var(--edge, #CDC7BC); }
 .fd-nfl { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .fd-nfl li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line, rgba(33,30,46,.09)); }
 .fd-nfl li span { display: grid; } .fd-nfl small { font-size: 11.5px; color: var(--mute, #59606E); }
@@ -88,7 +88,7 @@ body.fd-veil .fd-sens, body.fd-veil .fd-anote, body.fd-veil .fd-need li > span, 
 .fd-lock { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 20px; background: radial-gradient(80% 60% at 50% 30%, rgba(243,241,236,.97), rgba(226,222,214,.99)); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); animation: fd-fade .3s both; }
 @keyframes fd-fade { from { opacity: 0; } }
 .fd-lk-bx { display: grid; gap: 12px; justify-items: center; text-align: center; width: min(360px, 100%); }
-.fd-lk-ic { width: 64px; height: 64px; border-radius: 22px; display: grid; place-items: center; color: var(--go, #0C8767); background: linear-gradient(180deg, #fff, #EEEAE3); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(60,46,28,.14), 0 12px 20px -12px rgba(60,46,28,.5); }
+.fd-lk-ic { width: 64px; height: 64px; border-radius: 22px; display: grid; place-items: center; color: var(--go, #0B8465); background: linear-gradient(180deg, #fff, #EEEAE3); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(60,46,28,.14), 0 12px 20px -12px rgba(60,46,28,.5); }
 .fd-lk-ic svg { width: 30px; height: 30px; }
 .fd-lk-bx h3 { margin: 0; font-size: 24px; } .fd-lk-bx p { margin: 0; color: var(--mute, #59606E); font-size: 13.5px; }
 .fd-lk-l { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }

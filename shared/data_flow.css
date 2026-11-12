@@ -1,0 +1,160 @@
+/* 닿음 «데이터 흐름» 그림(S12-r, 🩵 미르 2026-11-12) — shared/data.html 전용.
+   겉모습 = S12-n2 세라믹 스튜디오(scope_map.css)와 한 식구: 따뜻한 돌빛 판 + 깊은 초록 유약(닿음이 하는 일) + 주황 불씨(실시간).
+   읽는 차례: 어떤 정보·어디서(새긴 원판) → 닿음이 하는 일(들어 올린 초록 받침) → 쓰이는 화면(오목한 칸).
+   움직임: 실시간 줄만 불씨 구슬이 선을 따라 흐름(동기화는 오가며). 움직임 줄이기·인쇄면 정지 그림. 라이트 고정. */
+
+/* ── 공용 색·질감 토큰(S12-r 흐름 그림 · S12-u 전체 시스템 구성도가 함께 쓴다) — 여기 한 곳만 고친다 ── */
+:root {
+  --dv-stone-hi: #F8F6F1; --dv-stone: #EDEAE3; --dv-stone-lo: #E2DED6;  /* 판 바탕: 위 → 아래 */
+  --dv-paper: #FCFBF8; --dv-paper-lo: #F3F0EA;                         /* 들어 올린 받침 */
+  --dv-ink: #1C2420; --dv-ink2: #4A4B46; --dv-mute: #6B6C66; --dv-grey: #A19D94; --dv-hair: #C9C4B9;
+  --dv-go: #0B6B52; --dv-go-hi: #138A6B; --dv-go-lo: #07513E; --dv-go-soft: #E1EFE9;  /* 닿음 초록 유약 */
+  --dv-live: #D9531E; --dv-live-hi: #F08A4B; --dv-live-ink: #A63C19; --dv-live-soft: #FBE9E1;  /* 실시간 불씨 */
+  --dv-virt: #8A5410; --dv-virt-soft: #FBF1DC;                         /* 가상(시연) */
+  --dv-plan-ink: #5F5E58; --dv-plan-line: #B9B4A8;                     /* 예정: 점선 */
+  --dv-raise: inset 0 1px 0 #fff, 0 0 0 1px rgba(60,52,38,.05), 0 5px 0 -1px #DCD7CD, 0 5px 0 0 rgba(60,52,38,.06), 0 22px 36px -22px rgba(52,42,24,.40);
+  --dv-sink: inset 0 1.5px 3px rgba(60,52,38,.14), 0 1px 0 rgba(255,255,255,.85);
+  --dv-glaze: radial-gradient(120% 100% at 22% 0%, rgba(255,255,255,.30), transparent 48%), linear-gradient(160deg, var(--dv-go-hi), var(--dv-go) 55%, var(--dv-go-lo));
+  --dv-glaze-sh: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 4px rgba(0,40,28,.28), 0 0 0 .5px rgba(7,60,45,.4), 0 10px 18px -10px rgba(7,81,62,.55);
+  --dv-ease: cubic-bezier(.22,.8,.24,1);
+}
+
+/* 전체 시스템 구성도 자리(S12-u가 채움) — 비어 있으면 보이지 않음 */
+.dv-sys { margin: 0; }
+.dv-sys:empty { display: none; }
+/* S12-u A안(11-12 확정): 넓은 화면은 폭에 맞춰 줄고, 좁은 화면(720px 미만)은 상자 안에서 옆으로 밀어 본다 */
+.dv-sys { margin: 0 0 22px; }
+.dv-sys-box { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 26px; box-shadow: 0 30px 60px -44px rgba(52,42,24,.45); }
+.dv-sys-box:focus-visible { outline: 2px solid var(--dv-go); outline-offset: 3px; }
+.dv-sys-box > svg { display: block; width: 100%; min-width: 720px; height: auto; }
+@media print { .dv-sys-box { overflow: visible; box-shadow: none; } .dv-sys-box > svg { min-width: 0; } .dv-sys { break-inside: avoid; } }
+
+.dv { container-type: inline-size; position: relative; color: var(--dv-ink); padding: 26px 26px 22px; border-radius: 26px;
+  background: radial-gradient(120% 90% at 18% 0%, var(--dv-stone-hi) 0%, var(--dv-stone) 72%); box-shadow: inset 0 0 0 1px rgba(60,52,38,.06), inset 0 1px 0 #fff, 0 30px 60px -40px rgba(52,42,24,.45); }
+.dv .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.dv-eye { display: block; margin-bottom: 6px; font: 500 11px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .1em; color: var(--dv-mute); }
+.dv-t { margin: 0; font-size: 22px; line-height: 1.3; font-weight: 700; letter-spacing: -.03em; text-wrap: balance; }
+.dv-t em { font-style: normal; color: var(--dv-go); }
+
+/* ── 맨 앞: 숫자·색 읽는 법 ── */
+.dv-key { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px 22px; align-items: center; margin: 20px 0 24px; padding: 16px 18px; border-radius: 18px;
+  background: linear-gradient(180deg, var(--dv-stone-lo), #E9E6DF); box-shadow: var(--dv-sink); }
+.dv-nums { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.dv-nums li { min-width: 74px; padding: 10px 12px 9px; border-radius: 14px; text-align: center; background: linear-gradient(180deg, #fff, var(--dv-paper-lo)); box-shadow: var(--dv-raise); }
+.dv-nums b { display: block; font: 700 26px/1 var(--num, inherit); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.dv-nums small { display: block; margin-top: 5px; font-size: 12px; color: var(--dv-mute); white-space: nowrap; }
+.dv-nums .is-live b { color: var(--dv-live-ink); } .dv-nums .is-zero b { color: var(--dv-go); }
+.dv-sw { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--dv-ink2); }
+.dv-sw li { display: flex; align-items: center; gap: 8px; }
+.dv-sw i { flex: none; display: block; }
+.sw-live { width: 22px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, rgba(217,83,30,.25), var(--dv-live)); position: relative; }
+.sw-live::after { content: ""; position: absolute; right: -3px; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0 15%, var(--dv-live-hi) 45%, var(--dv-live)); }
+.sw-store { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg, var(--dv-stone-lo), #ECE9E3); box-shadow: var(--dv-sink); }
+.sw-go { width: 22px; height: 14px; border-radius: 7px; background: var(--dv-glaze); box-shadow: var(--dv-glaze-sh); }
+.sw-plan { width: 22px; height: 14px; border-radius: 7px; box-shadow: inset 0 0 0 1.5px var(--dv-plan-line); background: repeating-linear-gradient(90deg, transparent 0 3px, rgba(185,180,168,.25) 3px 5px); }
+
+/* ── 열 머리 ── */
+.dv-cols, .dv-lane { display: grid; grid-template-columns: minmax(0, 1.15fr) 56px minmax(0, 1.05fr) 40px minmax(0, 1fr); align-items: center; }
+.dv-cols { margin: 0 0 8px; padding: 0 14px; font: 500 11px/1.2 var(--f-mono, ui-monospace, monospace); letter-spacing: .06em; color: var(--dv-mute); }
+.dv-cols span:nth-child(2) { grid-column: 3; } .dv-cols span:nth-child(3) { grid-column: 5; }
+
+/* ── 묶음 ── */
+.dv-band { margin: 0; padding: 0; border: 0; }
+.dv-band + .dv-band { margin-top: 18px; }
+.dv-bh { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--dv-ink2); }
+.dv-bh::after { content: ""; flex: 1; height: 1px; background: var(--dv-hair); }
+.dv-bh .d-tag { font-size: 11.5px; min-height: 20px; padding: 0 8px; }
+.dv-band.is-live { padding: 12px 10px 10px; margin-left: -10px; margin-right: -10px; border-radius: 20px; background: linear-gradient(180deg, rgba(251,233,225,.7), rgba(251,233,225,.15)); }
+.dv-lanes { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+
+/* ── 한 줄(정보 → 하는 일 → 화면) ── */
+.dv-lane { position: relative; padding: 10px 14px; border-radius: 18px; color: inherit; text-decoration: none; transition: background .24s var(--dv-ease), box-shadow .24s var(--dv-ease); }
+.dv-lane:focus-visible { outline: 2px solid var(--dv-go); outline-offset: 2px; }
+@media (hover: hover) { .dv-lane:hover { background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px rgba(60,52,38,.06); } }
+.dv-src { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.dv-disc { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #7E7A71; background: linear-gradient(180deg, var(--dv-stone-lo), #ECE9E3); box-shadow: var(--dv-sink); }
+.dv-disc svg, .dv-to svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.dv-lane.is-live .dv-disc { color: var(--dv-live-ink); background: linear-gradient(180deg, #F6E3DA, #FBEFEA); }
+.dv-tx { min-width: 0; }
+.dv-tx b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.02em; line-height: 1.3; }
+.dv-tx small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.35; color: var(--dv-mute); }
+.dv-tx .d-tag { min-height: 19px; padding: 0 7px; margin-left: 6px; font-size: 11px; vertical-align: 2px; }
+
+/* 선 */
+.dv-pipe { position: relative; height: 18px; container-type: inline-size; }
+.dv-pipe::before { content: ""; position: absolute; left: 4px; right: 8px; top: 50%; height: 1.5px; margin-top: -.75px; background: var(--dv-hair); }
+.dv-pipe::after { content: ""; position: absolute; right: 3px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-top: 1.5px solid var(--dv-grey); border-right: 1.5px solid var(--dv-grey); transform: rotate(45deg); }
+.dv-lane.is-live .dv-pipe::before { height: 2.5px; margin-top: -1.25px; background: linear-gradient(90deg, rgba(217,83,30,.18), var(--dv-live)); border-radius: 2px; }
+.dv-lane.is-live .dv-pipe::after { border-color: var(--dv-live); }
+.dv-lane.is-both .dv-pipe::before { background: linear-gradient(90deg, var(--dv-live), rgba(217,83,30,.35) 50%, var(--dv-live)); left: 8px; }
+.dv-lane.is-both .dv-pipe .dv-back { position: absolute; left: 3px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-bottom: 1.5px solid var(--dv-live); border-left: 1.5px solid var(--dv-live); transform: rotate(45deg); }
+.dv-lane.is-plan .dv-pipe::before { background: repeating-linear-gradient(90deg, var(--dv-plan-line) 0 4px, transparent 4px 8px); }
+.dv-bead { position: absolute; left: 0; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; opacity: 0; pointer-events: none;
+  background: radial-gradient(circle at 34% 30%, #fff 0 16%, var(--dv-live-hi) 46%, var(--dv-live) 100%); box-shadow: 0 0 0 3px rgba(217,83,30,.16), 0 0 12px rgba(240,138,75,.75); }
+
+/* 닿음이 하는 일 — 초록 유약 받침 */
+.dv-do { justify-self: stretch; min-width: 0; padding: 9px 13px; border-radius: 14px; font-size: 13.5px; font-weight: 600; line-height: 1.35; letter-spacing: -.01em; color: #fff; background: var(--dv-glaze); box-shadow: var(--dv-glaze-sh); text-wrap: balance; }
+.dv-do small { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 500; opacity: .86; }
+.dv-lane.is-plan .dv-do { color: var(--dv-plan-ink); background: transparent; box-shadow: inset 0 0 0 1.5px var(--dv-plan-line); }
+
+/* 쓰이는 화면 — 오목한 칸 */
+.dv-to { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.dv-to span { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 0 10px 0 8px; border-radius: 9px; font-size: 12.5px; font-weight: 600; color: var(--dv-ink2);
+  background: linear-gradient(180deg, #E6E2DA, #EFECE6); box-shadow: inset 0 1px 2px rgba(60,52,38,.12), 0 1px 0 rgba(255,255,255,.85); white-space: nowrap; }
+.dv-to svg { width: 14px; height: 14px; color: var(--dv-go); }
+
+.dv-foot { margin: 18px 0 0; font-size: 12px; line-height: 1.55; color: var(--dv-mute); }
+.dv-foot a { color: var(--dv-go); }
+
+/* ── 움직임: 들어올 때 차례로 떠오름 · 실시간 불씨 흐름 ── */
+.dv-play .dv-lane { animation: dvRise .7s var(--d, 0ms) var(--dv-ease) both; }
+.dv-play .dv-lane.is-live .dv-p1 .dv-bead { animation: dvFlow 2.4s calc(var(--d, 0ms) + 600ms) cubic-bezier(.45,.05,.55,.95) infinite; }
+.dv-play .dv-lane.is-live .dv-p2 .dv-bead { animation: dvFlow 2.4s calc(var(--d, 0ms) + 1400ms) cubic-bezier(.45,.05,.55,.95) infinite; }
+.dv-play .dv-lane.is-both .dv-pipe .dv-bead { animation-name: dvBoth; animation-duration: 3.2s; }
+@keyframes dvRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes dvFlow { 0% { opacity: 0; transform: translateX(0); } 12% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; transform: translateX(calc(100cqw - 12px)); } }
+@keyframes dvBoth { 0%, 100% { opacity: 1; transform: translateX(0); } 50% { opacity: 1; transform: translateX(calc(100cqw - 12px)); } }
+
+/* ── 좁은 폭(폰 360~412): 같은 내용, 세로로 쌓음 ── */
+@container (max-width: 640px) {
+  .dv-cols { display: none; }
+  .dv-key { grid-template-columns: 1fr; gap: 12px; }
+  .dv-nums { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .dv-nums li { min-width: 0; padding: 9px 4px 8px; }
+  .dv-nums b { font-size: 22px; }
+  .dv-nums small { font-size: 11px; white-space: normal; }
+  .dv-t { font-size: 19px; }
+  .dv-lane { grid-template-columns: 22px minmax(0, 1fr); grid-template-areas: "src src" "p1 do" "p2 to"; gap: 0 10px; padding: 12px 10px; background: rgba(255,255,255,.42); }
+  .dv-src { grid-area: src; }
+  .dv-p1 { grid-area: p1; } .dv-p2 { grid-area: p2; } .dv-do { grid-area: do; margin: 8px 0 4px; } .dv-to { grid-area: to; margin-top: 4px; }
+  .dv-pipe { height: auto; align-self: stretch; min-height: 34px; margin-left: 11px; width: 2px; container-type: size; }
+  .dv-pipe::before { left: 0; right: auto; top: 4px; bottom: 10px; width: 1.5px; height: auto; margin: 0; }
+  .dv-lane.is-live .dv-pipe::before { width: 2.5px; height: auto; margin: 0; background: linear-gradient(180deg, rgba(217,83,30,.18), var(--dv-live)); }
+  .dv-lane.is-both .dv-pipe::before { background: linear-gradient(180deg, var(--dv-live), rgba(217,83,30,.35) 50%, var(--dv-live)); top: 9px; }
+  .dv-lane.is-plan .dv-pipe::before { background: repeating-linear-gradient(180deg, var(--dv-plan-line) 0 4px, transparent 4px 8px); }
+  .dv-pipe::after { right: auto; left: -2.5px; top: auto; bottom: 3px; margin: 0; transform: rotate(135deg); }
+  .dv-lane.is-both .dv-pipe .dv-back { left: -2.5px; top: 3px; margin: 0; transform: rotate(135deg); }
+  .dv-bead { left: -4px; top: 0; margin: 0; }
+  .dv-play .dv-lane.is-live .dv-pipe .dv-bead { animation-name: dvFlowV; }
+  .dv-play .dv-lane.is-both .dv-pipe .dv-bead { animation-name: dvBothV; }
+  .dv-band.is-live { margin-left: -6px; margin-right: -6px; padding: 10px 6px 8px; }
+}
+@keyframes dvFlowV { 0% { opacity: 0; transform: translateY(0); } 12% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; transform: translateY(calc(100cqh - 12px)); } }
+@keyframes dvBothV { 0%, 100% { opacity: 1; transform: translateY(0); } 50% { opacity: 1; transform: translateY(calc(100cqh - 12px)); } }
+@media (max-width: 480px) { .dv { padding: 20px 14px 16px; border-radius: 22px; } }
+
+/* 움직임 줄이기: 완성 정지 그림(불씨는 선 가운데 멈춤) */
+@media (prefers-reduced-motion: reduce) {
+  .dv-play .dv-lane, .dv-play .dv-bead { animation: none !important; }
+  .dv-bead { display: none; }
+}
+
+/* 인쇄: 움직임 숨김 · 그림자 단순 · 줄 쪼개지 않음 */
+@media print {
+  .dv { box-shadow: none; border: 1px solid #D8D3C8; background: #F8F6F1; padding: 16px; }
+  .dv *, .dv *::before, .dv *::after { animation: none !important; transition: none !important; }
+  .dv-bead { display: none !important; }
+  .dv-lane { break-inside: avoid; }
+  .dv-band { break-inside: avoid-page; }
+  .dv-do, .dv-nums li { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

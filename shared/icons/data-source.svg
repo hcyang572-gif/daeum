@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 닿음 자체 제작 중립 데이터 아이콘(2026-11-12): 겹친 명단 시트 두 장. 특정 기관 CI와 무관. -->
+  <path d="M6.5 3.5h8a2 2 0 0 1 2 2v8"/>
+  <rect x="3.5" y="6.5" width="10" height="10" rx="2"/>
+  <circle cx="6.6" cy="9.9" r=".85" fill="currentColor" stroke="none"/>
+  <circle cx="6.6" cy="13.1" r=".85" fill="currentColor" stroke="none"/>
+  <path d="M8.7 9.9h2.6M8.7 13.1h2.6"/>
+</svg>

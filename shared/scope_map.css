@@ -1,0 +1,154 @@
+/* 닿음 «맡는 구간» 그림(S12-n2 고급화) — 🩵 미르 2026-11-12
+   겉모습 = A안 세라믹 스튜디오: 따뜻한 돌빛 + 깊은 초록 두 톤, 닿음 구간은 들어 올린 도자기 받침, 기존 체계는 오목하게 새긴 원판.
+   움직임 = B안 유리 계기: 렌즈(광택 도자기 구슬)가 선을 따라 미끄러지며 지나간 단계가 하나씩 또렷해짐 — 약 3초 한 번.
+   렌즈는 흐림 효과에 기대지 않는다(흰 테·그림자·광택으로 캡처·PDF에서도 보임). 움직임 줄이기 설정이면 완성 정지 그림. */
+.dsm, .dsm-mini, .dsm-card {
+  --dsm-go: #0B6B52; --dsm-ink: var(--ink, #1C2420); --dsm-mute: #6B6C66; --dsm-grey: #A19D94; --dsm-hair: #C9C4B9;
+  --dsm-ease: cubic-bezier(.22,.8,.24,1);
+}
+.dsm { container-type: inline-size; position: relative; color: var(--dsm-ink); }
+.dsm-solo { padding: 24px 24px 18px; border-radius: 22px; background: radial-gradient(120% 90% at 20% 0%, #F8F6F1 0%, #EDEAE3 70%); box-shadow: inset 0 0 0 1px rgba(60,52,38,.06), inset 0 1px 0 #fff; }
+.dsm .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 머리 */
+.dsm-h { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; margin-bottom: 22px; }
+.dsm-eye { display: block; margin-bottom: 5px; font: 500 11px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .1em; color: var(--dsm-mute); }
+.dsm-t { margin: 0; font-size: 21px; line-height: 1.3; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
+.dsm-t em { font-style: normal; color: var(--dsm-go); }
+.dsm-re { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px 0 11px; border: 0; border-radius: 17px; font: 500 13px/1 inherit; color: var(--dsm-ink); cursor: pointer;
+  background: linear-gradient(180deg, #FFFFFF, #F1EEE8); box-shadow: 0 0 0 1px rgba(60,52,38,.08), inset 0 1px 0 rgba(255,255,255,.9), 0 6px 14px -8px rgba(60,52,38,.35); }
+.dsm-re svg { width: 15px; height: 15px; }
+.dsm-re:active { transform: translateY(1px); box-shadow: 0 0 0 1px rgba(60,52,38,.1), 0 2px 6px -4px rgba(60,52,38,.35); }
+.dsm-re:focus-visible, .dsm-md:focus-visible, .dsm-card > summary:focus-visible { outline: 2px solid var(--dsm-go); outline-offset: 3px; }
+
+/* 띠 */
+.dsm-flow { position: relative; }
+.dsm-list, .dsm-steps, .dsm-ext-l { list-style: none; margin: 0; padding: 0; }
+.dsm-list { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start; }
+.dsm-ext-l { display: flex; gap: 6px; padding-top: 48px; }
+.dsm-n { min-width: 0; text-align: center; }
+.dsm-ext { width: 86px; }
+.dsm-vis { height: 72px; display: grid; place-items: center; }
+.dsm-tx { display: block; min-width: 0; }
+.dsm-tx b { display: block; font-size: 14px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
+.dsm-tx small { display: block; margin-top: 2px; font-size: 11.5px; line-height: 1.4; color: var(--dsm-mute); }
+.dsm-ext .dsm-tx b { font-size: 12.5px; font-weight: 500; color: #4A4B46; }
+.dsm-tag { display: block; margin-top: 5px; font: 500 10px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; letter-spacing: .05em; color: var(--dsm-mute); }
+.dsm-no { display: block; margin-bottom: 4px; font: 500 11px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--dsm-go); }
+
+/* 기존 체계: 판에 새긴 오목 원판 */
+.dsm-disc { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: #6E6A62; background: linear-gradient(180deg, #E2DED6, #ECE9E3); box-shadow: inset 0 1.5px 3px rgba(60,52,38,.14), 0 1px 0 rgba(255,255,255,.85); }
+.dsm-disc svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 닿음 구간: 들어 올린 도자기 받침 */
+.dsm-zone { position: relative; padding: 48px 12px 20px; border-radius: 28px; background: linear-gradient(180deg, #FCFBF8 0%, #F3F0EA 100%);
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(60,52,38,.05), 0 7px 0 -1px #DCD7CD, 0 7px 0 0 rgba(60,52,38,.06), 0 30px 50px -26px rgba(52,42,24,.42), 0 4px 10px rgba(52,42,24,.05); }
+.dsm-zl { position: absolute; left: 0; right: 0; top: 15px; margin: 0; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--dsm-go); }
+.dsm-zl img { width: 20px; height: 20px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.dsm-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.dsm-art { width: 66px; height: 66px; overflow: visible; }
+
+/* 오브제 재질(무광 도자기 + 초록 유약) */
+.dsm-o .m-sh { fill: url(#dsm-sh); }
+.dsm-o .m-b { fill: url(#dsm-cB); } .dsm-o .m-s { fill: url(#dsm-cS); } .dsm-o .m-t { fill: url(#dsm-cT); }
+.dsm-o .m-a { fill: url(#dsm-cA); } .dsm-o .m-ad { fill: url(#dsm-cAD); } .dsm-o .m-l { fill: #D9D4CA; }
+.dsm-o .m-ra { fill: none; stroke: url(#dsm-cA); stroke-width: 7; } .dsm-o .m-rb { fill: none; stroke: url(#dsm-cB2); stroke-width: 7; }
+.dsm-o .m-dash { fill: none; stroke: #0B6B52; stroke-width: 2; stroke-linecap: round; stroke-dasharray: .1 5; }
+.dsm-o .m-hl { fill: #fff; opacity: .55; }
+
+/* 선 · 닿음 구간 초록 선 · 렌즈 */
+.dsm-rail { position: absolute; z-index: 0; height: 1px; background: var(--dsm-hair); }
+.dsm-v .dsm-rail { width: 1px; }
+.dsm-go { position: absolute; z-index: 2; height: 2px; border-radius: 1px; background: linear-gradient(90deg, rgba(11,107,82,.25), var(--dsm-go) 10%, var(--dsm-go) 90%, rgba(11,107,82,.25)); transform-origin: left center; opacity: .55; pointer-events: none; }
+.dsm-v .dsm-go { width: 2px; background: linear-gradient(180deg, rgba(11,107,82,.25), var(--dsm-go) 10%, var(--dsm-go) 90%, rgba(11,107,82,.25)); transform-origin: center top; }
+.dsm-st .dsm-vis { position: relative; z-index: 3; } /* 초록 선 위로 오브제 */
+.dsm-ext .dsm-vis { position: relative; z-index: 1; } /* 가는 선 위로 원판 */
+/* 쌓임 순서: 선(0) < 받침(z 없음, 문서 순서로 선을 덮음) < 초록 선(2) < 오브제(3) < 렌즈(4) — 받침에 z-index를 주지 않는다 */
+.dsm-lens { position: absolute; z-index: 4; left: 0; top: 0; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; opacity: 0; pointer-events: none;
+  background: radial-gradient(circle at 34% 28%, #FFFFFF 0 14%, rgba(255,255,255,.75) 32%, rgba(214,236,228,.55) 62%, rgba(11,107,82,.28) 100%);
+  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.95), inset 0 -3px 6px rgba(11,107,82,.22), 0 0 0 1px rgba(11,107,82,.28), 0 10px 18px -8px rgba(40,46,30,.5); }
+
+/* 재생: 렌즈가 닿는 때(--d)에 맞춰 단계가 또렷해짐 */
+.dsm-play .dsm-ext { animation: dsmPass .8s var(--d, 0ms) var(--dsm-ease) both; }
+.dsm-play .dsm-zone { animation: dsmRise 1s var(--dsm-ease) both; }
+.dsm-play .dsm-st .dsm-art, .dsm-play .dsm-st .dsm-tx { animation: dsmClear .8s var(--d, 0ms) var(--dsm-ease) both; }
+.dsm-play .dsm-go { animation: dsmDraw var(--go-t, 1600ms) var(--go-d, 850ms) cubic-bezier(.45,.05,.55,.95) both; }
+.dsm-v.dsm-play .dsm-go { animation-name: dsmDrawV; }
+.dsm-play .dsm-zl { animation: dsmFade .9s var(--zl-d, 2600ms) var(--dsm-ease) both; }
+@keyframes dsmPass { from { opacity: .3; } to { opacity: 1; } }
+@keyframes dsmRise { from { opacity: .4; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes dsmClear { from { opacity: .22; filter: blur(4px) saturate(.2); transform: translateY(4px); } to { opacity: 1; filter: none; transform: none; } }
+@keyframes dsmDraw { from { transform: scaleX(0); opacity: .55; } to { transform: scaleX(1); opacity: .55; } }
+@keyframes dsmDrawV { from { transform: scaleY(0); opacity: .55; } to { transform: scaleY(1); opacity: .55; } }
+@keyframes dsmFade { from { opacity: 0; } to { opacity: 1; } }
+
+.dsm-foot { margin: 18px 0 0; font-size: 12px; line-height: 1.5; color: var(--dsm-mute); }
+
+/* ── 좁은 폭(폰 360~412 · 좁은 카드): 세로 띠, 같은 내용 ── */
+@container (max-width: 640px) {
+  .dsm-h { align-items: flex-start; margin-bottom: 16px; }
+  .dsm-t { font-size: 18px; }
+  .dsm-list { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .dsm-ext-l { flex-direction: column; gap: 2px; padding-top: 0; }
+  .dsm-n { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; text-align: left; }
+  .dsm-ext { width: auto; }
+  .dsm-vis { height: 52px; }
+  .dsm-tag { display: inline; margin: 0 0 0 6px; }
+  .dsm-ext .dsm-tx small { display: inline; }
+  .dsm-zone { padding: 44px 0 8px; border-radius: 22px; }
+  .dsm-zl { justify-content: flex-start; left: 20px; top: 14px; }
+  .dsm-steps { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .dsm-st .dsm-vis { height: 58px; }
+  .dsm-art { width: 50px; height: 50px; }
+  .dsm-st .dsm-tx { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; align-items: baseline; }
+  .dsm-no { grid-row: 1; margin: 0; }
+  .dsm-st .dsm-tx b { grid-row: 1; font-size: 15px; }
+  .dsm-st .dsm-tx small { grid-column: 2; margin: 0; }
+  .dsm-lens { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
+  .dsm-solo { padding: 18px 14px 14px; }
+}
+
+/* ── 접는 카드(첫 화면) ── */
+.dsm-card { margin: 0 0 18px; border-radius: 18px; background: linear-gradient(180deg, #FFFEFB, #F8F6F1); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(60,52,38,.05), 0 14px 30px -20px rgba(52,42,24,.38); }
+.dsm-card > summary { list-style: none; display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; border-radius: 18px; }
+.dsm-card > summary::-webkit-details-marker { display: none; }
+.dsm-sum-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(180deg, #E2DED6, #ECE9E3); box-shadow: inset 0 1.5px 3px rgba(60,52,38,.12), 0 1px 0 #fff; }
+.dsm-sum-art { width: 32px; height: 32px; overflow: visible; }
+.dsm-sum-t { flex: 1; min-width: 0; }
+.dsm-sum-t b { display: block; font-size: 14.5px; font-weight: 600; letter-spacing: -.015em; color: var(--dsm-ink); }
+.dsm-sum-t small { display: block; font-size: 12px; color: var(--dsm-mute); }
+.dsm-sum-go { flex: none; width: 28px; height: 28px; border-radius: 50%; position: relative; background: linear-gradient(180deg, #FFFFFF, #F1EEE8); box-shadow: 0 0 0 1px rgba(60,52,38,.1), 0 4px 10px -6px rgba(60,52,38,.4); }
+.dsm-sum-go::after { content: ""; position: absolute; left: 10px; top: 8px; width: 7px; height: 7px; border: solid var(--dsm-mute); border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); transition: transform .4s var(--dsm-ease); }
+.dsm-card[open] .dsm-sum-go::after { transform: translate(0, 4px) rotate(-135deg); }
+.dsm-card > .dsm { padding: 4px 16px 16px; }
+
+/* ── 작은 위치 띠: 오목한 홈 + 점 6개 + 렌즈 ── */
+.dsm-mini-slot { margin: 0 0 14px; }
+.dsm-mini { display: flex; align-items: center; gap: 10px; max-width: 560px; min-height: 42px; font-size: 12.5px; color: var(--dsm-ink); }
+.dsm-mini.none { display: none; }
+.dsm-mlogo { flex: none; width: 20px; height: 20px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.dsm-mline { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; height: 40px; padding: 0; border-radius: 20px;
+  background: linear-gradient(180deg, #E4E0D8, #EEEBE5); box-shadow: inset 0 1.5px 3px rgba(60,52,38,.14), 0 1px 0 rgba(255,255,255,.9); }
+.dsm-md { position: relative; flex: 1; height: 40px; display: grid; place-items: center; border-radius: 20px; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.dsm-md::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #B9B4A9; transition: background .6s var(--dsm-ease); }
+.dsm-md.past::before { background: var(--dsm-go); opacity: .55; }
+a.dsm-md:hover::before { background: #8F897D; }
+.dsm-mk { position: absolute; z-index: 2; top: 50%; width: 36px; height: 36px; margin-top: -18px; border-radius: 50%; pointer-events: none; display: grid; place-items: center;
+  left: calc((100% / 6) * var(--x, 0) + (100% / 12) - 18px); transition: left .9s var(--dsm-ease);
+  background: radial-gradient(circle at 34% 28%, #FFFFFF 0 20%, #FAF8F3 55%, #E9E5DC 100%);
+  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1.5px rgba(11,107,82,.45), 0 0 0 1px rgba(60,52,38,.06), 0 8px 14px -6px rgba(52,42,24,.5); }
+.dsm-mk.still { transition: none; }
+.dsm-mart { width: 26px; height: 26px; overflow: visible; }
+.dsm-mc { flex: none; min-width: 6.6em; display: grid; gap: 2px; line-height: 1.15; }
+.dsm-mc i { font: 500 10.5px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; color: var(--dsm-mute); font-variant-numeric: tabular-nums; }
+.dsm-mc b { font-size: 13px; font-weight: 600; letter-spacing: -.01em; color: var(--dsm-go); white-space: nowrap; }
+@media (max-width: 400px) { .dsm-mini { gap: 8px; } .dsm-mc { min-width: 5.6em; } .dsm-mc b { font-size: 12.5px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dsm *, .dsm *::before, .dsm *::after, .dsm-mini *, .dsm-mini *::before { animation: none !important; transition: none !important; }
+}
+@media print {
+  .dsm-mini-slot, .dsm-re, .dsm-lens { display: none !important; }
+  .dsm *, .dsm *::before { animation: none !important; }
+  .dsm, .dsm-card { break-inside: avoid; }
+}

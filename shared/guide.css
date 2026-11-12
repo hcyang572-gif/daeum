@@ -4,6 +4,8 @@
 /* ① 출처 꼬리표 — 문단 높이는 그대로, «자료 표»만 44px 누름 영역(위아래 음수 여백으로 줄 간격 유지) */
 .d-tag.pub { color: var(--acc-ink); background: var(--acc-soft); }
 .d-tag.virt { color: var(--warn); background: var(--warn-soft); }
+.d-tag.live { gap: 5px; color: var(--dv-live-ink, #A63C19); background: var(--dv-live-soft, #FBE9E1); } .d-tag.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--dv-live, #D9531E); box-shadow: 0 0 0 3px rgba(217,83,30,.18); } /* S12-r 실시간 */
+.d-tag.plan { color: var(--dv-plan-ink, #5F5E58); background: transparent; box-shadow: inset 0 0 0 1px var(--dv-plan-line, #B9B4A8); } .dg-tbl .d-tag.live, .dg-tbl .d-tag.plan { margin: 2px 0 4px; } /* S12-r 예정 */
 .dg-src .d-tag { min-height: 22px; padding: 0 8px; margin-right: 6px; vertical-align: middle; font-size: .8125rem; }
 .dg-src .d-tag + .d-tag { margin-left: -2px; }
 .src-go { display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-height: 44px; min-width: 44px; margin: -12px 0 -12px 4px; padding: 0 8px;

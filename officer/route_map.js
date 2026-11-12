@@ -97,7 +97,7 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   /**
-   * 지도 그리기. opts: { box: HTMLElement, office:{lat,lng,name}, stops:[{lat,lng,no,label,req}], path:[[lng,lat]]|null, ret:bool }
+   * 지도 그리기. opts: { box: HTMLElement, office:{lat,lng,name}, stops:[{lat,lng,no,label,req}], path:[[lng,lat]]|null, ret:bool, onDrawn?:fn(map,N,state) }
    * path 가 없으면 점선 직선(근사)으로 잇는다. 지도 위 장식 없음 — 번호 표지와 경로선만.
    */
   function draw(opts) {
@@ -146,6 +146,8 @@
     line.forEach(function (p) { bounds.extend(p); });
     map.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
     declutter(); // fitBounds 가 바로 끝나 idle 이 늦을 때도 첫 그림부터 풀어 둔다
+    // S12-s 주변 정보 겹층(officer/nearby_layer.js) — 범위 맞춤(fitBounds)에는 넣지 않고 그린 뒤에 얹는다. 겹층 오류가 동선 지도를 막지 않게
+    if (typeof opts.onDrawn === "function") { try { opts.onDrawn(map, N, state); } catch (e) { if (window.console) console.warn("[닿음 지도] 주변 정보 겹층 실패", e); } }
     return true;
   }
   // 경로선을 1.1초 동안 앞에서부터 그린다(감속 곡선). 새로 그리면 이전 움직임은 멈춘다

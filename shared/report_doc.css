@@ -189,3 +189,6 @@ i.c1 { background: var(--c1); } i.c2 { background: var(--c2); } i.c3 { backgroun
 .rpc-ask thead th { border-top: 2px solid var(--rc-ink); } .rpc-ask td { padding: 8px 6px; vertical-align: top; } .rpc-am { display: block; font: 400 13px/1.5 "Noto Serif KR", "Batang", serif; } .rpc-as { display: block; font-size: 10px; color: var(--rc-sub); } .rpc-due { color: var(--rc-red); font-weight: 700; white-space: nowrap; }
 .rpc-pb { height: 0; }
 @media print { .rpc-pb { break-after: page; } .rpc-kpis, .rpc-fig, .rpc-ask { break-inside: avoid; } .rpc-sec { break-after: avoid; } }
+
+/* S12-q 표 제목(화면에선 숨김·낭독기용) */
+.rp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -1,0 +1,20 @@
+/* 데이터 출처 표기 아이콘 — 자체 제작 중립 모양(shared/icons/data-source.svg).
+   색은 글자색(currentColor)을 따른다. 사용: <i class="src-ico" aria-hidden="true"></i>기관명 */
+.src-ico {
+  display: inline-block;
+  width: 1em; height: 1em;
+  margin-right: .3em;
+  vertical-align: -.14em;
+  flex: none;
+  background-color: currentColor;
+  -webkit-mask: url("icons/data-source.svg") center / contain no-repeat;
+          mask: url("icons/data-source.svg") center / contain no-repeat;
+  opacity: .88;
+  font-style: normal;
+}
+@media (forced-colors: active) {
+  .src-ico { background-color: CanvasText; opacity: 1; }
+}
+@media print {
+  .src-ico { opacity: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
