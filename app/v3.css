@@ -290,7 +290,7 @@ html[data-mode="pc"] .app .col,html[data-mode="tab"] .app .col{padding-top:6px}
 /* ── 기록 ── */
 .res{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .res button{min-height:76px;border-radius:18px;display:grid;justify-items:center;align-content:center;gap:6px;font-size:14px;font-weight:700;background:linear-gradient(180deg,var(--card0),var(--card1));box-shadow:var(--edge),var(--hl),var(--e1)}
-.res button svg{width:24px;height:24px;color:var(--ink2)}
+.res button svg{width:28px;height:28px;color:var(--ink2)} /* 77회차: 결과 아이콘(사람·문·손) 24→28px */
 .res button.on{box-shadow:var(--edge),0 0 0 2.5px var(--acc),var(--e1);color:var(--acc2)}.res button.on svg{color:var(--acc)}
 .mic{display:grid;justify-items:center;gap:10px;padding:8px 0 4px}
 .micb{width:108px;height:108px;border-radius:50%;display:grid;place-items:center;color:#fff;position:relative;
@@ -1157,9 +1157,16 @@ html[data-mode="phone"] .app:has(>.dock:not([hidden])) .toast,html[data-mode="fo
 .dock .sbt:active{transform:translateY(1px) scale(.97);transition-duration:var(--t-down)}
 html[data-mode="phone"] .dock .pri{min-height:52px}html[data-mode="phone"] .dock .sbt{min-height:52px;grid-auto-flow:column;gap:6px;font-size:13px}
 html[data-mode="phone"] .dock .pri small{display:none}
-/* 다음 할 일이 가리키는 단추 — 살짝 빛남(고리 3번) · 다른 탭 단추·기능 카드에도 .glow 로 */
-@keyframes nring{0%{outline-color:rgba(42,130,149,.8);outline-offset:1px}100%{outline-color:rgba(42,130,149,0);outline-offset:10px}}
-.glow:is(.pri,.btn,.sbt,.qf,.rl,.tm-btn),.tabs button.glow{outline:2px solid rgba(42,130,149,0);outline-offset:1px;animation:nring 1.8s var(--e-out) 3}
+/* 다음 할 일이 가리키는 단추 — 77회차(11-13 호창님 «부드럽고 자연스럽게 깜빡여줘»): 고리가 퍼지며 뚝 사라지던 3번(1.8s)을
+   2.4s 숨쉬기(ease-in-out, 계속)로 — 고리 진하기 .22↔.62·간격 2↔5px·은은한 빛번짐 0↔10px. 0으로 꺼지는 순간이 없다. 다른 탭 단추·기능 카드에도 .glow 로 */
+@keyframes nring{0%,100%{outline-color:rgba(42,130,149,.22);outline-offset:2px;filter:drop-shadow(0 0 0 rgba(42,130,149,0))}50%{outline-color:rgba(42,130,149,.62);outline-offset:5px;filter:drop-shadow(0 0 10px rgba(42,130,149,.38))}}
+.glow:is(.pri,.btn,.sbt,.qf,.rl,.tm-btn),.tabs button.glow{outline:2px solid rgba(42,130,149,.22);outline-offset:2px;animation:nring 2.4s cubic-bezier(.45,0,.55,1) infinite}
+/* 77회차 단추 규격 «아이콘 + 제목 + 부제»(.btn.ibt) — 아이콘 22px 왼쪽 가운데, 제목 한 줄 · 부제 한 줄(좁으면 둘째 줄까지), 위아래 10px, 최소 56px */
+.btn.ibt{flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;min-height:56px;height:auto;padding:10px 16px;text-align:left;line-height:1.25}
+.btn.ibt>svg{width:22px;height:22px;flex:none;align-self:center}
+.btn.ibt>span{display:grid;gap:2px;min-width:0}
+.btn.ibt>span>b{font-size:15px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
+.btn.ibt>span>small{margin:0;font-size:12.5px;font-weight:600;line-height:1.3;opacity:.8;color:inherit}
 html[data-nudge="off"] .dock .nx{display:none}
 html[data-nudge="off"] .glow:is(.pri,.btn,.sbt,.qf,.rl,.tm-btn),html[data-nudge="off"] .tabs button.glow,html[data-nudge="off"] .dock .nx .ar{animation:none;outline:0}
 /* 폴드 — 가운데 한 판 */
@@ -1189,6 +1196,13 @@ html[data-mode="tab"] .app .qg,html[data-mode="pc"] .app .qg{grid-template-colum
 .qf b{display:block;font-size:13.5px;font-weight:700;line-height:1.3}
 .qf small{display:block;margin-top:2px;font-size:12px;line-height:1.35;color:var(--ink3)}
 .qf .v{font-family:var(--fn);font-variant-numeric:tabular-nums;color:var(--acc2);font-weight:700}
+/* 77회차(11-13 호창님 «명단 불러오기 바로가기 단추 위 아이콘·아랫부분이 이상»): 바로가기 칸 규격 통일 —
+   아이콘은 글 덩어리 세로 가운데 · 제목 한 줄 · 부제 최대 두 줄(낱말 단위로 줄바꿈, 넘치면 …) · 한 줄의 칸 높이 같게 · 홀수 개면 마지막 칸은 한 줄 전체 */
+.qg{grid-auto-rows:1fr}
+.qf{align-items:center}
+.qf b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qf small{word-break:keep-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+html[data-mode="phone"] .qg>.qf:last-child:nth-child(odd),html[data-mode="fold"] .qg>.qf:last-child:nth-child(odd){grid-column:1/-1}
 .qcs{display:flex;flex-wrap:wrap;gap:6px}
 .qcs>[class~=chip]{position:static;display:inline-flex;align-items:center;gap:5px;min-height:32px;max-width:100%;padding:0 11px;border-radius:999px;font-size:12.5px;font-weight:600;line-height:1;color:var(--ink2);background:var(--card0);box-shadow:inset 0 0 0 1px var(--line2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qcs>[class~=chip]::after{content:none}
@@ -1209,7 +1223,7 @@ html[data-mode="fold"] .app .tabs button svg{width:20px;height:20px}
 html[data-mode="fold"] .app .tabs button .dot{top:4px;right:6px}
 @media (prefers-reduced-motion:reduce){
   .app>.dock,.dock .nx,.dock .nx .ar,.dock .nx .ar svg{animation:none}.dock .nx{transition:none}
-  .glow:is(.pri,.btn,.sbt,.qf,.rl,.tm-btn),.tabs button.glow{animation:none;outline-color:rgba(42,130,149,.45);outline-offset:3px}
+  .glow:is(.pri,.btn,.sbt,.qf,.rl,.tm-btn),.tabs button.glow{animation:none;filter:none;outline-color:rgba(42,130,149,.5);outline-offset:3px}
   .dock .pri,.dock .sbt,.qf{transition:none}
 }
 @media print{

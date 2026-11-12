@@ -64,3 +64,10 @@ html.pwa-app #pwa-install { display: none !important; }
 .sheet .sp-sec .card.buddy { margin: 0; }
 .sheet .sp-sec .sfa { margin: 0; }
 .sheet .sp-sec .btn.safe { width: 100%; }
+/* 안전 화면 안 «도움 요청(조용한 점)·동료에게 전화·무사히 끝남» — 한 줄에 간격을 두고 44px 누름 영역 */
+.sheet .sp-sec .sf-t { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.sheet .sp-sec .sf-t > * { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; padding: 0 14px; font-weight: 800; font-size: 14px; text-decoration: none; border: 0; background: rgba(23,79,91,.07); color: #174F5B; box-shadow: inset 0 0 0 1px rgba(23,79,91,.18); }
+.sheet .sp-sec .sf-t .sf-q { width: 44px; padding: 0; opacity: .7; }
+.sheet .sp-sec .sf-t .sf-q i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.sheet .sp-sec .sf-t .sf-q.on { opacity: 1; }
+.sheet .sp-sec .sf-t .sf-end { margin-left: auto; color: #2F6B3F; }
