@@ -37,10 +37,11 @@ main.ph > .subtabs { margin: 0; align-self: flex-start; }
 .actbar > .cta, .actbar > .big { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 2px; }
 .actbar > .big { flex-direction: row; align-items: center; }
 .actbar.two > :first-child { flex: 0 1 42%; }
-.actbar-sp { height: 84px; flex: none; }
+.actbar-sp { height: 94px; flex: none; }
 @media (max-width: 1023.98px) {
-  .actbar { bottom: calc(80px + env(safe-area-inset-bottom)); width: calc(100% - 24px); max-width: 520px; }
-  body.has-dock .toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
+  /* 62회차 🩵 미르(M2-③): 주 단추의 5px 턱 그림자가 탭 막대 윗변에 붙어 가려지던 것 — 10px 띄움(턱 5 + 숨 5) */
+  .actbar { bottom: calc(90px + env(safe-area-inset-bottom)); width: calc(100% - 24px); max-width: 520px; }
+  body.has-dock .toast { bottom: calc(170px + env(safe-area-inset-bottom)); }
 }
 @media (min-width: 700px) and (max-width: 1023.98px) {
   /* 폴드: 한 개면 오른손 쪽 반, 두 개면 왼손|오른손 */

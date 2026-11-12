@@ -6,7 +6,7 @@
 .dwx-t { font: 600 13px/1 var(--f-mono, monospace); color: var(--ink, #121A27); letter-spacing: -.01em; }
 .dwx-d { font-style: normal; opacity: .45; }
 .dwx-w { font-weight: 800; color: var(--risk, #C62F3A); }
-.dwx-p { font-weight: 700; color: var(--now-ink, #AE4217); }
+.dwx-p { font-weight: 800; color: var(--now-ink, #AE4217); }
 .dwx-src { margin-left: auto; font-size: 11px; color: var(--mute, #59606E); white-space: nowrap; }
 .dwx-safe { margin-top: 4px; padding: 5px 10px; border-radius: 8px; background: var(--risk-soft, #FDE7E8); color: #7A1E25; font-weight: 600; }
 .dwx-safe b { margin-right: 4px; font-weight: 900; color: var(--risk, #C62F3A); }

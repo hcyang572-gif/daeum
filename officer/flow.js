@@ -782,7 +782,7 @@
     var d = document.createElement("dialog"); d.className = "acct";
     d.innerHTML = '<form method="dialog" class="acct-in"><h3>PC와 폰 실시간 연동</h3><p class="sub">같은 공무원 계정으로 PC와 폰에서 로그인하면 ④ 방문 계획과 ⑦ 방문 결과가 서로 바로 나타납니다. 서버에는 가구 번호·순서·상태·가린 메모만 갑니다.</p>' +
       '<p class="acct-st">' + syncChip(false) + " " + esc(s.mode === "live" ? "실시간 연동 중" : why[s.why] || "") + "</p>" +
-      (s.user ? "<p>로그인: <b>" + esc(s.user.email) + "</b></p>" + '<label class="acct-wipe"><input type="checkbox" id="aWipe" checked> 이 기기 기록도 지우기(권장 · 공용 PC·폰)</label>' + (s.pending ? '<p class="acct-warn" role="alert">아직 서버로 못 보낸 기록 ' + s.pending + "건도 함께 지워집니다 — 연결된 뒤 로그아웃하면 남습니다.</p>" : "") + '<div class="acct-b"><button class="b b-sub" value="out" data-act="out">로그아웃</button><button class="b b-main" value="close">닫기</button></div>'
+      (s.user ? "<p>로그인: <b>" + esc(s.user.email) + "</b></p>" + '<label class="acct-wipe"><input type="checkbox" id="aWipe" checked> 이 기기 기록도 지우기(권장 · 공용 PC·폰)</label>' + (s.pending ? '<p class="acct-warn" role="alert">아직 서버로 못 보낸 기록 ' + s.pending + "건도 함께 지워집니다 — 연결된 뒤 로그아웃하면 남습니다.</p>" : "") + '<div class="acct-b"><button class="b b-sub" value="out" data-act="out">로그아웃</button><button class="b b-main" value="close">닫기</button></div>' + delBox(s)
         : '<label>전자우편<input type="email" id="aEmail" autocomplete="username" required></label><label>비밀번호<input type="password" id="aPw" autocomplete="current-password" minlength="8" required></label><p class="acct-msg" id="aMsg" role="status"></p><div class="acct-b"><button class="b b-sub" type="button" data-act="up">처음이면 가입</button><button class="b b-main" type="button" data-act="in">로그인</button></div>') +
       '<p class="sub" style="margin-top:14px">더 보기: <a href="../shared/data.html">활용 데이터</a> · <a href="../shared/ai_check.html">AI 추천 검증</a> · <a href="../data/demo_list.xlsx" download>시연 명단 파일</a></p><p class="sub">시연 데이터: 모든 가구·메모는 가상입니다 · <a href="?demo=reset#s2">시연 처음 상태로</a></p><button class="acct-x" value="close" aria-label="닫기">' + ic("i-x") + "</button></form>";
     document.body.appendChild(d); d.showModal();
@@ -793,6 +793,19 @@
     if (bi) bi.addEventListener("click", function () { go(SY.signIn); });
     if (bu) bu.addEventListener("click", function () { go(SY.signUp); });
     if (bo) bo.addEventListener("click", function () { var w = d.querySelector("#aWipe"), wipe = !!(w && w.checked); SY.signOut({ wipe: wipe }).then(function () { if (wipe) location.reload(); else render(); }); }); // S12-v U24(1-5)
+    var bd = d.querySelector('[data-act="del"]'); // 62회차 «계정 지우기»(app/app.js 와 같은 기능)
+    if (bd) bd.addEventListener("click", function (ev) {
+      ev.preventDefault(); var m = d.querySelector("#aDelMsg"), st = SY.state();
+      if (!window.confirm("계정을 지울까요? " + (st.user ? st.user.email : "") + " 계정과 서버의 방문 계획·결과가 모두 지워지고 되돌릴 수 없습니다." + (st.pending ? " 아직 서버로 못 보낸 기록 " + st.pending + "건도 함께 사라집니다." : ""))) return;
+      bd.disabled = true; if (m) m.textContent = "지우는 중…";
+      SY.deleteAccount().then(function (r) { if (m) m.textContent = "지웠습니다(방문 계획 " + ((r && r.plan) || 0) + "건 · 결과 " + ((r && r.log) || 0) + "건)."; setTimeout(function () { location.reload(); }, 900); },
+        function (er) { bd.disabled = false; if (m) m.textContent = "지우지 못했습니다 — " + (er && er.message ? er.message : "잠시 뒤 다시 시도해 주세요") + " · 아무것도 지워지지 않았습니다"; });
+    });
+  }
+  function delBox(s) {
+    if (s.user && s.user.demo) return '<p class="sub">시연 계정은 지울 수 없습니다 — 매일 새벽 처음 상태로 돌아갑니다.</p>';
+    return '<details><summary>계정 지우기</summary><p class="sub">이 계정과 서버에 있는 방문 계획·결과를 모두 지웁니다. 되돌릴 수 없습니다. 이 기기 기록도 함께 지웁니다.</p>' +
+      '<p><button class="b b-sub" type="button" data-act="del">계정과 서버 기록 지우기</button></p><p class="acct-msg" id="aDelMsg" role="status"></p></details>';
   }
   function copy(t) { (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("복사했습니다"); }, function () { window.prompt("복사해 주세요", t); }); }
   var toastT = null;

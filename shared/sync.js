@@ -190,7 +190,7 @@
   // ── 바깥에서 부르는 것 ──
   var api = {
     keys: K,
-    state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email } : null, at: S.at, pending: queue().length, enabled: enabled(), fails: S.fails || 0, lastErr: S.lastErr || "" }; },
+    state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email, demo: api.isDemoUser(S.user) } : null, at: S.at, pending: queue().length, enabled: enabled(), fails: S.fails || 0, lastErr: S.lastErr || "" }; },
     on: function (f) { S.subs.push(f); },
     plan: plan, logs: logs,
     safety: { list: safeAll, send: safeSend },
@@ -214,6 +214,22 @@
       o = o || {};
       var done = function () { setUser(null); if (o.wipe) api.wipeDevice(); };
       return client().then(function (c) { return c.auth.signOut(); }).then(done, function (e) { done(); if (!o.wipe) throw e; });
+    },
+    /** 62회차 «계정 지우기»: 서버 함수 daeum_delete_me(본인 JWT → 본인 방문 계획·결과 행 + auth 사용자 삭제, 시연 계정 거절)를 부른 뒤
+     *  이 기기의 세션·닿음 저장분도 지운다. 서버가 거절하면(시연 계정·끊김) 아무것도 지우지 않고 오류를 그대로 던진다 */
+    isDemoUser: function (u) { u = u || S.user; return !!u && ((u.app_metadata && String(u.app_metadata.daeum_demo) === "true") || /^daeum\.judge\d+@example\.com$/i.test(u.email || "")); },
+    deleteAccount: function () {
+      if (!S.user) return Promise.reject(new Error("로그인 뒤에 지울 수 있습니다"));
+      if (api.isDemoUser(S.user)) return Promise.reject(new Error("시연 계정은 지울 수 없습니다(매일 새벽 처음 상태로 돌아갑니다)"));
+      var res;
+      return client().then(function (c) {
+        return c.rpc("daeum_delete_me").then(function (r) {
+          if (r.error) throw new Error(String(r.error.message || "서버가 거절했습니다").replace(/^daeum:\s*/, ""));
+          res = r.data || {};
+          // 서버에서 계정이 이미 없어졌으므로 이 기기 세션만 끊는다(전역 로그아웃 요청은 실패해도 무시)
+          return c.auth.signOut({ scope: "local" }).catch(function () {});
+        });
+      }).then(function () { setUser(null); api.wipeDevice(); return res; });
     },
     /** 이 기기의 닿음 저장분 일괄 삭제 — 지운 키 개수 */
     wipeDevice: function () {

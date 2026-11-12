@@ -1795,7 +1795,7 @@
     var d = document.createElement("dialog"); d.className = "acct";
     d.innerHTML = '<form method="dialog" class="acct-in"><h3>PC와 폰 실시간 연동</h3><p>같은 공무원 계정으로 PC와 폰에서 로그인하면 방문 계획과 현장 기록이 서로 바로 나타납니다. 서버에는 가구 번호·순서·상태·가린 메모만 갑니다.</p>' +
       "<p>" + syncChip() + " " + esc(s.mode === "live" ? "실시간 연동 중" : why[s.why] || "") + "</p>" +
-      (s.user ? "<p>로그인: <b>" + esc(s.user.email) + "</b></p>" + wipeBox(s) + '<div class="acct-b"><button class="sbtn" type="button" data-act="out">로그아웃</button><button class="sbtn pri" value="close">닫기</button></div>'
+      (s.user ? "<p>로그인: <b>" + esc(s.user.email) + "</b></p>" + wipeBox(s) + '<div class="acct-b"><button class="sbtn" type="button" data-act="out">로그아웃</button><button class="sbtn pri" value="close">닫기</button></div>' + delBox(s)
         : demoBox() + '<label>전자우편<input type="email" id="aEmail" autocomplete="username" required></label><label>비밀번호<input type="password" id="aPw" autocomplete="current-password" minlength="8" required></label>' + PP + '<p id="aMsg" role="status"></p><div class="acct-b"><button class="sbtn" type="button" data-act="up">처음이면 가입</button><button class="sbtn pri" type="button" data-act="in">로그인</button></div>') +
       '<p>시연 데이터: 모든 가구·메모는 가상입니다 · <a href="?demo=reset#today">시연 처음 상태로</a> · <a href="shared/data.html">활용 데이터</a></p><button class="acct-x" value="close" aria-label="닫기">×</button></form>';
     document.body.appendChild(d); d.showModal();
@@ -1812,6 +1812,22 @@
         function (er) { m.textContent = "시연 계정에 들어가지 못했습니다 — " + (er && er.message ? er.message : "잠시 뒤 다시") + " · 로그인 없이도 모든 기능을 이 기기에서 쓸 수 있습니다"; });
     }); });
     if (bo) bo.addEventListener("click", function () { var w = d.querySelector("#aWipe"), wipe = !!(w && w.checked); SY.signOut({ wipe: wipe }).then(function () { d.close(); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); } else render(); }); });
+    var bd = d.querySelector('[data-act="del"]');
+    if (bd) bd.addEventListener("click", function () { delAccount(d, bd, function () { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); }); });
+  }
+  /* 62회차 «계정 지우기»(처리 안내 3번과 실제 기능 맞춤) — 접는 상자 안에 두고, 누르면 확인 한 번 뒤 서버 함수 daeum_delete_me 로 본인 기록·계정을 지운다.
+     시연 계정(심사1~3)은 단추 대신 안내만(서버도 거절). PC·폰 같은 창 · 클래스는 기존 acct-pp·sbtn 재사용 */
+  function delBox(s) {
+    if (s.user && s.user.demo) return '<p class="acct-pp">시연 계정은 지울 수 없습니다 — 매일 새벽 처음 상태로 돌아갑니다.</p>';
+    return '<details class="acct-pp"><summary>계정 지우기</summary><p>이 계정과 서버에 있는 방문 계획·결과를 모두 지웁니다. 되돌릴 수 없습니다. 이 기기 기록도 함께 지웁니다.</p>' +
+      '<p><button class="sbtn" type="button" data-act="del">계정과 서버 기록 지우기</button></p><p id="aDelMsg" role="status"></p></details>';
+  }
+  function delAccount(d, b, after) {
+    var m = d.querySelector("#aDelMsg"), s = SY.state(), extra = s.pending ? " 아직 서버로 못 보낸 기록 " + s.pending + "건도 함께 사라집니다." : "";
+    if (!window.confirm("계정을 지울까요? " + (s.user ? s.user.email : "") + " 계정과 서버의 방문 계획·결과가 모두 지워지고 되돌릴 수 없습니다." + extra)) return;
+    b.disabled = true; if (m) m.textContent = "지우는 중…";
+    SY.deleteAccount().then(function (r) { if (m) m.textContent = "지웠습니다(방문 계획 " + ((r && r.plan) || 0) + "건 · 결과 " + ((r && r.log) || 0) + "건)."; setTimeout(after, 900); },
+      function (er) { b.disabled = false; if (m) m.textContent = "지우지 못했습니다 — " + (er && er.message ? er.message : "잠시 뒤 다시 시도해 주세요") + " · 아무것도 지워지지 않았습니다"; });
   }
   /* S12-w 시연 계정(심사1~3). 비밀번호는 서버 db/migration_s12v_hardening.sql §4 의 $env:DEMO_PW 와 같아야 한다.
      화면 코드에 있으므로 사실상 공개 — 방어선은 서버 쪽 매일 03:30 원복(비밀번호·이메일) + 계정당 행 상한. 실제 개인정보를 넣지 말라는 안내를 같이 띄운다 */
@@ -1828,7 +1844,7 @@
     "<li><b>쓰는 곳</b>닿음의 일정·기록·PC↔폰 동기화에만 씁니다. 다른 목적·제3자 제공 없음</li>" +
     "<li><b>보관·지우기</b>계정을 지우면 서버 기록도 함께 지웁니다. 로그아웃 때 «이 기기 기록도 지우기»로 기기 안 기록을 지울 수 있습니다</li>" +
     "<li><b>AI 사용 때</b>AI 요약·추천을 누를 때만, 이름·연락처·주민번호 등을 가린 뒤 외부 AI 서비스로 보냅니다. 연결이 안 되면 기기 안 자동 문장을 씁니다</li>" +
-    "</ol><p>로그인하지 않아도 모든 기능을 이 기기 안에서 그대로 쓸 수 있습니다.</p></details>";
+    "</ol><p><b>지우는 방법</b> 로그인한 뒤 연동 표시 단추(«PC·폰 실시간 연동»)를 누르면 나오는 이 창 맨 아래 «계정 지우기»에서 계정과 서버 기록을 함께 지웁니다.</p><p>로그인하지 않아도 모든 기능을 이 기기 안에서 그대로 쓸 수 있습니다.</p></details>";
   /** S12-v U24(1-5) 로그아웃 때 «이 기기 기록도 지우기»(권장 · 기본 켬) — 안 보낸 기록이 있으면 먼저 알린다 */
   function wipeBox(s) {
     return '<label class="acct-wipe"><input type="checkbox" id="aWipe" checked> 이 기기 기록도 지우기(권장 · 공용 PC·폰)</label>' + (s.pending ? '<p class="acct-warn" role="alert">아직 서버로 못 보낸 기록 ' + s.pending + "건도 함께 지워집니다 — 연결된 뒤 로그아웃하면 남습니다.</p>" : "");

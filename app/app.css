@@ -108,6 +108,7 @@ main { display: block; }
 
 .fan { position: relative; height: 190px; }
 .fan .d { position: absolute; left: 50%; top: 10px; width: 118px; height: 150px; margin-left: -59px; background: #fff; border-radius: 8px; box-shadow: 0 3px 0 var(--edge), 0 16px 26px -14px rgba(17,26,39,.45); padding: 10px; font-size: var(--fs-1); font-weight: 800; line-height: 1.3; transition: transform .7s cubic-bezier(.2,.9,.25,1.2); }
+.fan .d { overflow-wrap: anywhere; } /* 62회차 🩵 미르: 큰 글씨 설정에서 «보고(복명서)» 같은 긴 낱말이 118px 종이 밖으로 나가던 것 — 낱말이 안 들어갈 때만 끊음 */
 .fan .d i { display: block; height: 4px; border-radius: 2px; background: var(--src-rule-soft); margin-top: 7px; }
 .fan .d i.ai { background: var(--src-ai); }
 .fan.done .d:nth-child(1) { transform: rotate(-16deg) translate(-44px,10px); }
@@ -1514,14 +1515,14 @@ tr.xrow { display: none; }
 .ck-all[aria-pressed="true"] { background: var(--paper, #fff); color: var(--mute); }
 .toast-act { pointer-events: auto; flex: none; margin-left: 4px; min-height: 36px; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.45); background: transparent; color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 .toast:not(.on) .toast-act { pointer-events: none; }
-.acct .acct-wipe { display: flex; flex-direction: row; align-items: center; gap: 8px; font-weight: 700; margin: 8px 0; }
+.acct .acct-wipe { display: flex; flex-direction: row; align-items: center; gap: 8px; font-weight: 600; margin: 8px 0; }
 .acct .acct-wipe input { width: 20px; height: 20px; flex: none; }
-.acct .acct-warn { color: var(--warn-ink, #8A3A10); font-weight: 700; }
+.acct .acct-warn { color: var(--warn-ink, #8A3A10); font-weight: 800; }
 
 /* ══ S12-v M3(🩵 미르 11-12 61회차) — 오늘 화면 순서·헷갈리는 말(F2·F6)·시연 계정·처리 안내 + 줄1 파로 새 클래스 모양 ══
    B안 «단계 레일»·솟은 판/눌린 홈·라이트 고정 그대로. 글자 12px 이상, 누름 44px(현장 48px) 이상. */
 /* F6 단계 앞 탭 이름(«현장·요약») — 작게, 한 단계 옅게 */
-.stp { font-size: 12px; font-weight: 700; color: var(--mute); letter-spacing: 0; margin-right: 4px; }
+.stp { font-size: 12px; font-weight: 600; color: var(--mute); letter-spacing: 0; margin-right: 4px; }
 .st .l .stp { margin-right: 3px; }
 .mini a { height: auto; min-height: 34px; padding: 3px 0; line-height: 1.15; text-align: center; }
 .mini a .stp { display: block; margin: 0 0 1px; font-weight: 600; }
@@ -1553,7 +1554,7 @@ tr.xrow { display: none; }
 .acct-demo-b { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
 .acct-demo-b .sbtn { min-height: var(--tap); justify-content: center; font-weight: 800; color: #fff; background: linear-gradient(180deg, var(--go-hi), var(--go-lo)); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 3px 0 var(--go-glaze), 0 8px 14px -8px var(--go-glow); }
 .acct-demo-b .sbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--go-glaze); }
-.acct-or { display: flex; align-items: center; gap: 10px; font-size: var(--fs-1); font-weight: 700; color: var(--mute); }
+.acct-or { display: flex; align-items: center; gap: 10px; font-size: var(--fs-1); font-weight: 600; color: var(--mute); }
 .acct-or::before, .acct-or::after { content: ""; flex: 1; height: 1px; background: var(--edge); }
 /* U25 처리 안내 4줄 — 접는 상자(펼치면 번호 목록) */
 details.acct-pp { padding: 0; }
@@ -1591,4 +1592,4 @@ details.acct-pp li b { display: block; color: var(--ink); font-weight: 800; }
 .rc-ai > .sbtn.go { width: 100%; min-height: var(--tap-field); margin-top: 8px; justify-content: center; font-size: var(--fs-3); }
 .rc-ai .qbtn .sbtn { min-height: var(--tap-field); justify-content: center; }
 .rc-ai .sbtn.go[aria-pressed="true"] { background: var(--go-soft); color: var(--go-ink); box-shadow: var(--sink); }
-.rc-ai .ttl span { font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: var(--r-chip); background: var(--src-ai-soft); color: #6A5200; }
+.rc-ai .ttl span { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: var(--r-chip); background: var(--src-ai-soft); color: #6A5200; }

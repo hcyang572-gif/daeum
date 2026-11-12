@@ -290,9 +290,6 @@
   /* S12-v U23(1-4): 보내기 전 화면에서 한 번 더 가림(서버 redact.ts 와 이중) — 화면 가림 정본 = officer/fieldwork.js F.mask(이름·주민번호·연락처·주소·이메일·계좌).
      F.mask 가 없는 화면(국민 창구 등)에서는 원래대로 서버 가림만. */
   function scrub(v) { var M = window.DaeumFeatures && window.DaeumFeatures.mask; return M ? M(String(v == null ? "" : v)) : String(v == null ? "" : v); }
-  function compactSvc(s, target, support) {
-    return { id: s.id, name: clip(scrub(s.name), 60), target: clip(scrub(target), 160), support: clip(scrub(support), 120) }; // U23: 서비스 칸도 같은 가림
-  }
   /** 관련도 순서로 앞을 채우고 나머지는 원래 순서로 덧붙인 뒤 max 건에서 자른다 */
   function topFirst(all, firstIds, max) {
     var seen = {}, out = [];
@@ -344,15 +341,16 @@
     var pins = pinnedIds(input.text, profile, all).filter(function (id) { var i = ranked.indexOf(id); return i < 0 || i >= 10; });
     ranked = ranked.filter(function (id) { return pins.indexOf(id) < 0; });
     Array.prototype.splice.apply(ranked, [Math.min(ranked.length, 10), 0].concat(pins));
-    var compact = topFirst(all, ranked, AI_MAX_SERVICES).map(function (s) { return compactSvc(s, s.target, s.support); });
+    // S12-v 1-4 ③(11-12): 서비스는 ID만 보낸다 — 이름·대상·내용은 서버 정본(edge/daeum-ai/catalog.ts)이 채운다
+    var ids = topFirst(all, ranked, AI_MAX_SERVICES).map(function (s) { return s.id; });
     // 학교급으로 «추정»한 자녀 나이는 숫자로 보내지 않는다(AI가 «7살, 12살»처럼 단정해 되읊음 — S5b-2 시험)
     var sentProfile = Object.assign({}, profile);
     if (profile.childAgesGuess) {
       sentProfile.childAges = [];
       sentProfile.childAgeNote = "자녀 나이는 말씀하지 않음(학교급으로 본 범위 " + profile.childAges.join("~") + "세 — 요약에 숫자로 쓰지 말 것)";
     }
-    return post({ situation: scrub(input.text || "").slice(0, 1200), proxy: input.proxy || {}, profile: sentProfile, services: compact })
-      .then(function (ans) { logUsage("국민", ans, compact.length); return ans; });
+    return post({ situation: scrub(input.text || "").slice(0, 1200), proxy: input.proxy || {}, profile: sentProfile, services: ids })
+      .then(function (ans) { logUsage("국민", ans, ids.length); return ans; });
   }
 
   function recommend(input, catalog) {
@@ -472,16 +470,14 @@
     var byId = {};
     (ctx.services || []).forEach(function (s) { byId[s.id] = s; });
     var ranked = rankSvc(ctx.services || [], r.needs, text).map(function (x) { return x.s.id; });
-    var compact = topFirst(ctx.services || [], ranked, AI_MAX_SERVICES).map(function (s) {
-      return compactSvc(s, s.target || ("욕구 범주: " + (s.tags || []).join(", ")), s.support || (s.org ? "소관: " + s.org : ""));
-    });
+    var sendIds = topFirst(ctx.services || [], ranked, AI_MAX_SERVICES).map(function (s) { return s.id; }); // 1-4 ③ ID만
     return post({
       situation: ("[담당 공무원 상담 기록] " + scrub(text)).slice(0, 1200), // U23: 화면 가림 뒤에 보냄
       proxy: { isProxy: false },
       profile: { kind: "officer.record", label: scrub(ctx.label || ""), factors: (ctx.factors || []).map(function (f) { return f.name; }), needs: r.needs, urgent: r.urgent },
-      services: compact
+      services: sendIds
     }).then(function (ans) {
-      logUsage("공무원", ans, compact.length);
+      logUsage("공무원", ans, sendIds.length);
       var dropped = {};
       var picks = keepKnown(ans, byId, 8, text, dropped);
       if (!picks.length) throw new Error("AI 답에 목록 안의 서비스가 없음");

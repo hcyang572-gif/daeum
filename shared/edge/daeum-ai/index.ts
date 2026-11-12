@@ -1,8 +1,9 @@
 // 닿음 AI — Supabase Edge Function (Deno). 배포처는 닿음 전용 프로젝트 daeum(ref gicjzrxgktpovnphtjhi) 한 곳뿐(10-29 A안).
-// 배포: 임시 폴더에 supabase/functions/daeum-ai/{index.ts,redact.ts,gate.ts} 로 복사한 뒤 그 폴더에서
+// 배포: 임시 폴더에 supabase/functions/daeum-ai/{index.ts,redact.ts,gate.ts,pick.ts,catalog.ts} 로 복사한 뒤 그 폴더에서
 //       npx supabase functions deploy daeum-ai --project-ref gicjzrxgktpovnphtjhi --no-verify-jwt --use-api
 //       supabase secrets set ANTHROPIC_API_KEY=...   (키는 서버 비밀에만. 화면 코드·저장소에 두지 않는다)
-// 요청: POST { situation, proxy:{isProxy, relation}, profile, services:[{id,name,target,support}] }
+// 요청: POST { situation, proxy:{isProxy, relation}, profile, services:["서비스ID", …] }
+//   S12-v 1-4 ③(11-12): services 는 ID만 쓴다(옛 화면의 {id,…} 객체도 ID만 꺼냄). 이름·대상·내용은 서버 정본 catalog.ts 에서 꺼낸다.
 // 응답: { summary, picks:[{ id, reason }], redacted:{phone:1,name:2…} }  — id 는 반드시 services 안의 것. 화면도 한 번 더 거른다.
 // AI 사용 기간(11-02): 2026-11-26 00:00 이후 또는 DAEUM_AI_OFF=1 이면 Anthropic·DB를 부르지 않고 503 → 화면은 규칙 모드.
 //   즉시 끄기 : npx supabase secrets set DAEUM_AI_OFF=1 --project-ref gicjzrxgktpovnphtjhi
@@ -11,6 +12,8 @@
 
 import { redactText, redactValue } from "./redact.ts";
 import { aiGate } from "./gate.ts";
+import { pickServices } from "./pick.ts";
+import { CATALOG } from "./catalog.ts";
 
 const MODEL = "claude-sonnet-5-5";
 const MAX_SITUATION = 1200;
@@ -88,8 +91,6 @@ async function rateOk(req: Request): Promise<{ ok: boolean; why?: string; ip?: n
   }
 }
 
-type Svc = { id: string; name: string; target?: string; support?: string };
-
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
   if (req.method === "OPTIONS") return new Response(null, { headers: cors(origin) });
@@ -104,14 +105,14 @@ Deno.serve(async (req) => {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) return json({ error: "서버에 AI 키가 설정되지 않았습니다" }, 503, origin);
 
-  let body: { situation?: string; proxy?: { isProxy?: boolean; relation?: string }; profile?: unknown; services?: Svc[] };
+  let body: { situation?: string; proxy?: { isProxy?: boolean; relation?: string }; profile?: unknown; services?: unknown };
   try { body = await req.json(); } catch { return json({ error: "JSON 형식이 아닙니다" }, 400, origin); }
 
   const redacted: Record<string, number> = {};
   const situation = redactText(String(body.situation ?? "").slice(0, MAX_SITUATION).trim(), redacted);
   const profile = redactValue(body.profile ?? {}, redacted);
-  const services = (Array.isArray(body.services) ? body.services : []).slice(0, MAX_SERVICES)
-    .filter((s) => s && typeof s.id === "string" && typeof s.name === "string");
+  // 화면이 보낸 서비스 글(이름·대상·내용)은 버리고 정본 ID만 남긴다 — 모르는 ID는 빠진다
+  const services = pickServices(body.services, CATALOG, MAX_SERVICES);
   if (!situation || !services.length) return json({ error: "상황 문장과 서비스 목록이 필요합니다" }, 400, origin);
   const rl = await rateOk(req);
   // 사용량(quota)은 발표 전 점검(tools/ai_preflight.js)이 남은 횟수를 보도록 함께 돌려준다 — IP 원문·해시는 내보내지 않는다
@@ -119,7 +120,7 @@ Deno.serve(async (req) => {
   if (!rl.ok) return json({ error: "오늘 AI 안내 사용량을 넘었습니다(" + (rl.why || "") + ")", quota, aiPeriod }, 429, origin);
 
   const ids = new Set(services.map((s) => s.id));
-  const catalog = services.map((s) => `${s.id} | ${s.name} | 대상: ${(s.target ?? "").slice(0, 160)} | 내용: ${(s.support ?? "").slice(0, 120)}`).join("\n");
+  const catalog = services.map((s) => `${s.id} | ${s.name} | 대상: ${s.target} | 내용: ${s.support}`).join("\n");
   const who = body.proxy?.isProxy ? `가족(${body.proxy.relation || "가족"})을 대신해 묻는 질문입니다.` : "본인의 질문입니다.";
 
   const r = await fetch("https://api.anthropic.com/v1/messages", {

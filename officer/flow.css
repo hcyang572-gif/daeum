@@ -549,7 +549,8 @@ label.drop{cursor:pointer}
 /* ⑨ */
 .s9 .l,.s9 .r{overflow:auto;min-height:0}
 .cal-wrap{overflow-x:auto}
-.cal .cd{min-width:0}
+.cal .cd{min-width:0;height:auto;min-height:78px}
+.cal .cd > *{flex:none} /* 62회차 🩵 미르: 일정 3개가 78px 칸에 눌려 셋째 칩 높이 8px로 잘리던 것 — 칸이 늘어나게 */
 .evmore{font-size:13px;color:var(--ink-3);padding-left:4px}
 button.ck{border:0;padding:0;cursor:pointer}
 button.ck[disabled]{cursor:default;opacity:.5}
@@ -632,7 +633,7 @@ button.tg{border:0;cursor:pointer;font:inherit;font-size:14px;font-weight:600;mi
   .s4 .l{padding:16px}
   .daycards{grid-template-columns:minmax(0,1fr)}
   .s9 .l,.s9 .r{padding:16px}
-  .cal .cd{height:64px;padding:4px 3px}
+  .cal .cd{height:auto;min-height:64px;padding:4px 3px}
   .ev{font-size:13px;padding:1px 3px 1px 4px}
   .mapctl{grid-template-columns:minmax(0,1fr)}
 }
@@ -647,7 +648,7 @@ button.tg{border:0;cursor:pointer;font:inherit;font-size:14px;font-weight:600;mi
 .mapbox .nmap{transition:opacity .4s var(--ease)}
 
 /* S12-v M3(🩵 미르 61회차) 사무 화면 로그아웃 «이 기기 기록도 지우기» 선택 — 메인 앱과 같은 모양: 44px 한 줄, 눌린 홈 바탕, 초록 체크 · 못 보낸 기록 경고는 주황 띠 */
-.acct-in label.acct-wipe{display:flex;flex-direction:row;align-items:center;gap:10px;min-height:44px;margin:2px 0;padding:0 12px;border-radius:var(--r-m);background:#F3F1EC;box-shadow:inset 0 1px 2px rgba(33,30,46,.10);font-size:14px;font-weight:700;color:var(--ink);cursor:pointer}
+.acct-in label.acct-wipe{display:flex;flex-direction:row;align-items:center;gap:10px;min-height:44px;margin:2px 0;padding:0 12px;border-radius:var(--r-m);background:#F3F1EC;box-shadow:inset 0 1px 2px rgba(33,30,46,.10);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer}
 .acct-in label.acct-wipe input{width:20px;height:20px;flex:none;margin:0;padding:0;box-shadow:none;accent-color:var(--go)}
 .acct-in label.acct-wipe:focus-within{box-shadow:inset 0 0 0 1.5px var(--go),0 0 0 4px rgba(11,132,101,.14)}
-.acct-in .acct-warn{padding:8px 12px;border-radius:var(--r-m);background:#FFF4E6;color:#8A3A10;font-size:13px;font-weight:700;line-height:1.5;box-shadow:inset 3px 0 0 var(--now)}
+.acct-in .acct-warn{padding:8px 12px;border-radius:var(--r-m);background:#FFF4E6;color:#8A3A10;font-size:13px;font-weight:800;line-height:1.5;box-shadow:inset 3px 0 0 var(--now)}

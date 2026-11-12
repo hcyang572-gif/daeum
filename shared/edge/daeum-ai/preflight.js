@@ -15,7 +15,7 @@ const body = {
   situation: "[점검] 혼자 사는 80대 어르신이 겨울 난방비가 걱정된다고 하셨습니다.",
   proxy: { isProxy: false },
   profile: { kind: "preflight" },
-  services: [{ id: "chk-1", name: "에너지바우처", target: "저소득 취약계층", support: "난방비 지원" }],
+  services: ["D1-WLF00000072"], // 에너지바우처 — 서버 정본 ID만 받는다(S12-v 1-4 ③)
 };
 const t0 = Date.now();
 fetch(C.aiEndpoint, { method: "POST", headers: { "Content-Type": "application/json", Origin: "https://hcyang572-gif.github.io" }, body: JSON.stringify(body) })
