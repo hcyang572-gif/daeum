@@ -14,6 +14,10 @@
   var LIB = new URL("vendor/supabase-js-2.45.4.min.js", (root.document && root.document.currentScript || {}).src || (root.location && root.location.href) || "http://localhost/shared/").href;
   var GUARD = /gicjzrxgktpovnphtjhi\.supabase\.co$/; // 닿음 전용 프로젝트만 허용
   var S = { mode: "local", why: "login", user: null, at: null, client: null, ch: null, subs: [], gen: 0, conUser: null, flushing: null, pullAgain: false, pulling: null };
+  // 73회차 🔐: 가입 확인 메일 링크로 돌아오면 주소 끝(#access_token=…&type=signup 또는 #error=…)에 세션이 실려 온다.
+  //   앱(app.js)이 곧바로 주소를 #today 로 바꿔 라이브러리가 읽기 전에 사라졌다 → 이 파일이 실릴 때(app.js 보다 먼저) 받아 두고 init 에서 직접 세션으로 넣는다
+  var AUTH_HASH = ""; try { var h0 = String(root.location && root.location.hash || ""); if (/access_token=|error_description=|error_code=/.test(h0)) AUTH_HASH = h0.replace(/^#/, ""); } catch (e) { /* 주소 없음(시험) */ }
+  function hashArgs() { var o = {}; AUTH_HASH.split("&").forEach(function (kv) { var i = kv.indexOf("="); if (i > 0) { try { o[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, " ")); } catch (e) { o[kv.slice(0, i)] = kv.slice(i + 1); } } }); return o; }
   var SESSION_WAIT = C.syncSessionWaitMs || 6000; // 세션 읽기가 이보다 오래 걸리면 저장된 세션으로 바로 붙는다(잠금 경합 대비)
 
   /* 실기기(11-03) 교훈: supabase-js 기본 인증 잠금(navigator.locks)은 «같은 주소의 모든 탭»이 나눠 쓴다.
@@ -77,7 +81,15 @@
     var q = queue();
     // S12-v U1: 계획은 «통째로 맞추기»라 같은 차수의 앞선 계획 보내기는 새것 하나로 대신한다(옛 것이 막혀 뒤를 붙잡지 않게)
     if (op.t === "plan") q = q.filter(function (x) { return !(x.t === "plan" && x.round_ym === op.round_ym); });
+    op.qid = uid(); // 73회차 🐞(b): 보낸 «그 건»만 대기열에서 지우려고 붙이는 표
     q.push(op); set(K.queue, q.slice(-200)); } // 로그인 안 한 채 오래 써도 200건까지만
+  /** 73회차 🐞(b): 보내기가 끝난 건만 대기열에서 뺀다 — 옛날엔 맨 앞(shift)을 뺐는데, 보내는 사이 같은 차수 계획을 다시 저장하면
+   *  옛 건은 이미 새 건으로 바뀌어 있어 «새 건»이 지워졌다(날짜를 0.8초 안에 연달아 바꾸면 나중 값이 다른 기기에 안 감) */
+  function dropSent(op) {
+    var q = queue(), k = JSON.stringify(op), i = -1;
+    q.some(function (x, j) { if (op.qid ? x.qid === op.qid : JSON.stringify(x) === k) { i = j; return true; } return false; });
+    if (i >= 0) { q.splice(i, 1); set(K.queue, q); } }
+  function planPending(ym) { return queue().some(function (op) { return op.t === "plan" && op.round_ym === ym; }); }
   /** 계획 행(서버 칸 이름) — 확정·편집·(시연) 상태 바꿈 모두 같은 모양으로 보낸다. updated_at 은 지금(«오늘 고친 차수» 판정에 쓰임) */
   function planOp(p) {
     var now = new Date().toISOString();
@@ -146,7 +158,7 @@
       var hot = {}; (r[0].data || []).forEach(function (x) { if (fresh(x.updated_at)) hot[x.round_ym] = 1; });
       var pr = (r[0].data || []).filter(function (x) { return hot[x.round_ym]; });
       r[1].data = (r[1].data || []).filter(function (x) { return fresh(x.created_at); });
-      var p = rowsToPlan(pr); if (p) { if (daily) p.from_seed = "S9j"; set(K.plan, p); } // from_seed: 다음 날 시연 시드가 그날 기준으로 다시 깐다
+      var p = rowsToPlan(pr); if (p && !planPending(p.round_ym)) { if (daily) p.from_seed = "S9j"; set(K.plan, p); } // 73회차 🐞(b): 못 보낸 새 계획이 있으면 서버 옛 값으로 덮지 않는다(마지막 값 우선) // from_seed: 다음 날 시연 시드가 그날 기준으로 다시 깐다
       var local = logs().filter(function (x) { return x.seed || x.__local; }), ids = {};
       (r[1].data || []).forEach(function (x) { ids[x.id] = 1; });
       var merged = local.filter(function (x) { return !ids[x.id]; }).concat((r[1].data || []).map(function (x) { return { id: x.id, household_no: x.household_no, at: x.at, result: x.result, memo: x.memo, tags: x.tags || [], promises: x.promises || [] }; }));
@@ -183,7 +195,7 @@
       // 이미 들어간 기록(같은 id, 23505)은 보낸 것으로 친다 — 끊겼다 다시 보낼 때 생긴다
       if (r && r.error && (op.t === "doc" || op.t === "undoc") && /does not exist|42P01|schema cache|PGRST205/.test((r.error.code || "") + " " + (r.error.message || ""))) { S.noDoc = true; r = {}; }
       if (r && r.error && !(op.t === "log" && r.error.code === "23505")) throw r.error;
-      var rest = queue(); rest.shift(); set(K.queue, rest); S.at = new Date(); S.fails = 0; emit("sent");
+      dropSent(op); S.at = new Date(); S.fails = 0; emit("sent");
       return flush1();
     }).catch(function (e) {
       if (root.console) console.warn("[닿음 연동] 보내기 실패 — 이 기기에 남겨 둠", e && e.message);
@@ -218,6 +230,8 @@
   // ── 바깥에서 부르는 것 ──
   var api = {
     keys: K,
+    /** 73회차 🔐: 확인 메일에서 돌아온 결과 — welcome = "signup" 등(가입 완료·로그인됨), authErr = {code,text}(링크 만료 등) */
+    authReturn: function () { return { welcome: S.welcome || "", err: S.authErr || null }; },
     state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email, demo: api.isDemoUser(S.user) } : null, at: S.at, pending: queue().length, enabled: enabled(), fails: S.fails || 0, lastErr: S.lastErr || "" }; },
     on: function (f) { S.subs.push(f); },
     /** 68회차 S12-z4 팀 연동(shared/team_sync.js)이 같은 연결·같은 로그인으로 서버 함수·팀 채널을 쓰게 — 로그인 전이면 null */
@@ -245,7 +259,16 @@
       return client().then(function (c) {
         // 세션 읽기가 늦으면(다른 탭 잠금 등) 저장된 세션으로 먼저 붙고, 읽기가 끝나면 그 값으로 맞춘다
         var slow = new Promise(function (ok) { setTimeout(function () { ok({ slow: true }); }, SESSION_WAIT); });
-        var real = c.auth.getSession().then(function (r) { var u = r && r.data && r.data.session ? r.data.session.user : null; return { user: u }; });
+        var ha = AUTH_HASH ? hashArgs() : {}; AUTH_HASH = "";
+        if (ha.error || ha.error_code) { S.authErr = { code: ha.error_code || ha.error || "", text: ha.error_description || "" }; later(function () { emit("auth-error"); }); }
+        var real = ha.access_token && ha.refresh_token
+          ? Promise.resolve(c.auth.setSession({ access_token: ha.access_token, refresh_token: ha.refresh_token })).then(function (r) { // 확인 메일에서 돌아옴 → 바로 로그인 상태
+            var u = r && r.data && r.data.session ? r.data.session.user : null;
+            if (u) { S.welcome = ha.type || "signup"; later(function () { emit("welcome"); }); }
+            if (u) return { user: u };
+            return c.auth.getSession().then(function (r2) { return { user: r2 && r2.data && r2.data.session ? r2.data.session.user : null }; });
+          })
+          : c.auth.getSession().then(function (r) { var u = r && r.data && r.data.session ? r.data.session.user : null; return { user: u }; });
         real.then(function (x) { if ((x.user && x.user.id) !== S.conUser) setUser(x.user); }, function () {});
         return Promise.race([real, slow]);
       }).then(function (r) {

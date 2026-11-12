@@ -1,0 +1,52 @@
+<!-- 제목(Subject): [닿음] 가입 확인 -->
+<!-- Supabase Auth → Email Templates → «Confirm signup» 본문. 인라인 CSS·표 배치만(메일 클라이언트 호환). 색 = 닿음 v3 (#1F6676 / 바탕 #ECEAE5) -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[닿음] 가입 확인</title>
+</head>
+<body style="margin:0;padding:0;background-color:#ECEAE5;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ECEAE5;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;background-color:#FFFFFF;border-radius:16px;">
+        <tr>
+          <td style="padding:32px 28px 8px 28px;font-family:'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;color:#11181C;">
+            <div style="font-size:22px;font-weight:700;color:#1F6676;line-height:1.3;">닿음</div>
+            <div style="font-size:13px;color:#47535B;line-height:1.5;padding-top:2px;">복지 사각지대 현장 업무 도우미</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 28px 8px 28px;font-family:'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;color:#11181C;font-size:16px;line-height:1.6;">
+            가입을 마치려면 아래 단추를 눌러 주세요.
+          </td>
+        </tr>
+        <tr>
+          <td align="center" style="padding:20px 28px 24px 28px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" bgcolor="#1F6676" style="border-radius:12px;">
+                  <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:12px;">가입 확인하고 닿음 열기</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 28px 28px 28px;font-family:'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;color:#47535B;font-size:13px;line-height:1.6;">
+            직접 가입하지 않으셨다면 이 메일을 무시하셔도 됩니다.
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 28px;border-top:1px solid #E2DED6;font-family:'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;color:#6B767D;font-size:12px;line-height:1.5;">
+            보낸 곳: 복지 사각지대 현장 업무 도우미 닿음
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

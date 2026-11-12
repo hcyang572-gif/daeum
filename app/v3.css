@@ -1054,7 +1054,9 @@ summary>span:first-child,summary>b:first-child{flex-shrink:0;padding-right:3px} 
 html[data-mode="tab"] [class~=tline] [class~=stop],html[data-mode="fold"] [class~=tline] [class~=stop]{grid-template-columns:minmax(46px,auto) 30px minmax(0,1fr)}
 [class~=tline] [class~=stop] [class~=t]{white-space:nowrap}   /* «09:4/8» 시각 꺾임 */
 [class~=tline] [class~=rk]{display:inline-block}   /* 꼬리표 뒤 글이 꼬리표와 한 덩이로 묶여 «통/신비»처럼 낱말 중간에서 꺾이던 것 */
-[class~=nb-tx] b,[class~=nb-tx] small{overflow-wrap:break-word}   /* anywhere → 기관 이름이 «복지/관»처럼 꺾이던 것 */
+/* 73회차 미르 (+) 주변 정보 목록 — 띄어쓰기 없는 긴 기관 이름(«상주시노인종합복지관…»)은 어디서 꺾어도 낱말 중간이라
+   두 줄까지만 보이고 말줄임(…). 파로가 이름에 .nb-name 을 붙여도 같은 규칙 */
+[class~=nb-tx]>b,[class~=nb-tx]>small,[class~=nb-name],[class~=nb-addr]{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
 [class~=sfchips] button{white-space:nowrap;min-width:fit-content}   /* «15/분» 꺾임 → 칩이 줄을 넘겨 다음 줄로 */
 html[data-mode="tab"] [class~=tline] [class~=stop] [class~=t],html[data-mode="tab"] [class~=tline] [class~=stop] [class~=ax],
 html[data-mode="fold"] [class~=tline] [class~=stop] [class~=t],html[data-mode="fold"] [class~=tline] [class~=stop] [class~=ax]{grid-row:1/span 2}
@@ -1064,6 +1066,21 @@ html[data-mode="tab"] [class~=tline] [class~=stop] [class~=mv],html[data-mode="f
 html[data-mode="phone"] .app>.actbar .btn,html[data-mode="fold"] .app>.actbar .btn{flex:1 1 auto;min-width:0;padding:0 12px;white-space:nowrap}
 html[data-mode="phone"] .app>.actbar .btn:has(small),html[data-mode="fold"] .app>.actbar .btn:has(small){flex-wrap:wrap;align-content:center;row-gap:0;line-height:1.25}
 html[data-mode="phone"] .app>.actbar .btn small,html[data-mode="fold"] .app>.actbar .btn small{flex-basis:100%;margin:0;text-align:center}
+/* 73회차 미르 (f) 설치 띠 — 닫기(×)가 청록 큰 사각 단추(index.html .pwa button)로 그려져 띠가 134px 까지 부풀던 것
+   → [아이콘][문구][×] 한 줄 격자, ×는 테두리 없는 작은 원 아이콘(누르는 자리 44px 그대로), 안내·설치 단추는 문구 아래 줄 */
+#pwa-install.pwa{display:grid;grid-template-columns:28px minmax(0,1fr) 44px;column-gap:10px;row-gap:6px;align-items:center}
+#pwa-install>.pwa-ic{grid-column:1;grid-row:1}
+#pwa-install>span:first-of-type{grid-column:2;grid-row:1;line-height:1.4}
+#pwa-install>[data-pwa=x]{grid-column:3;grid-row:1}
+#pwa-install>[data-pwa]:not([data-pwa=x]){grid-column:2/4;justify-self:start}
+#pwa-install [data-pwa=x]{width:44px;height:44px;min-width:44px;min-height:44px;margin:-6px 0;padding:0;display:grid;place-items:center;border-radius:50%;
+  background:radial-gradient(circle,rgba(23,79,91,.09) 0 13px,transparent 13.5px);box-shadow:none;color:#47606A;font:500 18px/1 system-ui,sans-serif}
+#pwa-install [data-pwa=x]:hover{background:radial-gradient(circle,rgba(23,79,91,.16) 0 13px,transparent 13.5px)}
+#pwa-install [data-pwa=x]:focus-visible{outline:2px solid #257A8C;outline-offset:-4px}
+/* 73회차 미르 🔐 PC 머리 로그아웃(.ky.outk, 파로 5e57089) — 늘 보이되 작고 조용하게(누르는 자리 44px) */
+.ky.outk{gap:5px;padding:0 12px;font-size:12.5px;font-weight:700;color:var(--ink2);background:transparent;box-shadow:inset 0 0 0 1px rgba(17,24,28,.14)}
+.ky.outk svg{width:15px;height:15px;opacity:.8}
+.ky.outk:hover{color:#B8473A;box-shadow:inset 0 0 0 1px rgba(184,71,58,.4)}
 .card{padding:var(--pad-card);gap:var(--gap-in)}
 .card>*{margin-top:0;margin-bottom:0}
 .card.hero{padding:var(--pad-card)}
