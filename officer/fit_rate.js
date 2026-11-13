@@ -93,7 +93,7 @@
     });
     if (!s.misses.length) ul.appendChild(h("li", "muted", "틀린 추천이 아직 없습니다."));
     d.appendChild(ul);
-    d.appendChild(h("p", "small muted", "틀린 추천은 다음 AI 검증 때 측정 표본(가상 사연)으로 다시 만들어 넣습니다. 가구 이름·상담 원문은 남기지 않습니다."));
+    d.appendChild(h("p", "small muted", "틀린 추천은 다음 AI 추천 검증 때 측정 표본(가상 사연)으로 다시 만들어 넣습니다. 가구 이름·상담 원문은 남기지 않습니다."));
     box.appendChild(d);
   }
 

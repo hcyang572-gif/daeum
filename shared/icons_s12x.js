@@ -79,7 +79,7 @@
       '<path d="M3.5 7a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.5H19a1.5 1.5 0 0 1 1.5 1.5V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z"/><path d="M3.5 11h17"/>'),
     svc: svg('<rect x="3.8" y="4.5" width="4.4" height="4.4" rx="1"/><rect x="3.8" y="10" width="4.4" height="4.4" rx="1"/><rect x="3.8" y="15.5" width="4.4" height="4.4" rx="1"/>', // 받을 수 있는 서비스 = 고를 수 있는 목록
       '<rect x="3.8" y="4.5" width="4.4" height="4.4" rx="1"/><rect x="3.8" y="10" width="4.4" height="4.4" rx="1"/><rect x="3.8" y="15.5" width="4.4" height="4.4" rx="1"/><path d="m4.9 6.8 1 1 1.6-1.8M11.5 6.7h8.5M11.5 12.2h8.5M11.5 17.7h5.5"/>'),
-    aichk: svg('<path d="M12.7 20.5H6.5A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5H14l4 4V11z"/>' + BADGE, // AI 문장 점검 = 문장 + 확인 배지
+    aichk: svg('<path d="M12.7 20.5H6.5A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5H14l4 4V11z"/>' + BADGE, // AI 추천 검증 = 문장 + 확인 배지
       '<path d="M12.7 20.5H6.5A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5H14l4 4V10M8.5 9h5M8.5 12.5h3.5"/>' + BADGE_OK),
     chart: svg('<rect x="5.5" y="13" width="3" height="7" rx="1"/><rect x="10.5" y="7" width="3" height="13" rx="1"/><rect x="15.5" y="10" width="3" height="10" rx="1"/>', // 읍면별 진도·남은 가구 막대
       '<rect x="5.5" y="13" width="3" height="7" rx="1"/><rect x="10.5" y="7" width="3" height="13" rx="1"/><rect x="15.5" y="10" width="3" height="10" rx="1"/><path d="M3.5 20.5h17"/>'),
