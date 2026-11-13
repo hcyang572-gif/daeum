@@ -3,7 +3,7 @@
    - 폰 = 한 장씩 넘김(밀기·흐름 띠·다음) · PC(1024px 이상) = 다섯 장 한 판. 같은 마크업, 폭 클래스(.o-m-phone/.o-m-pc)만 다르다.
    - 움직임 = CSS·SVG만, 장이 보일 때 .o-play 한 번 · 쉼 상태가 마지막 장면(움직임 줄이기면 그대로 정지).
    - 그림 함수(ill0~4·syncArt)와 CSS(app/onboard.css)는 시안에서 변환(클래스 o- 접두 — 앱 .btn·.card 와 안 겹치게).
-   - 🟥 승인 전 추천안 2건은 OPT 한 곳에서 끈다: autoFirst(처음 열 때 자동으로 띄움 · 다시 보기는 «더 보기» 메뉴) · browseBtn(로그인 창 «시연 데이터로 둘러보기»).
+   - OPT 두 칸은 71회차(11-12) 호창님 확정(docs/DECISIONS.md «추천안 3건 확정»): autoFirst=true(처음 열 때 자동으로 띄움 · 다시 보기는 «더 보기» 메뉴) · browseBtn=true(로그인 창 «시연 데이터로 둘러보기»). 끌 일이 생기면 여기 한 곳.
    - 앱과는 DaeumOnboard.hook({ login, start }) 로만 잇는다(app.js 가 붙임). */
 (function (root) {
   "use strict";

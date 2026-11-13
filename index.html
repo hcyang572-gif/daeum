@@ -6,8 +6,8 @@
 <!-- S12-v U29(보안 5-4): GitHub Pages 는 헤더를 못 달아 meta CSP. 허용 = 같은 출처 + 닿음 Supabase(https·wss) + 글꼴(jsdelivr·Google) + xlsx(cdnjs) + 네이버 지도(*.naver.com·*.naver.net·*.pstatic.net).
      script 'unsafe-inline' 은 네이버 지도·설문 글꼴 onload 가 깨지지 않게 남김(지도 실동작 확인 뒤 조일 것). jsdelivr 스크립트 허용은 sync.js 가 shared/vendor/ 로 바뀌면 뺄 수 있음. 문제 생기면 이 meta 한 줄만 지우면 원상. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.naver.com https://*.naver.net https://*.pstatic.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://*.naver.com https://*.naver.net https://*.pstatic.net; font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data: blob: https://*.naver.com https://*.naver.net https://*.pstatic.net; connect-src 'self' https://gicjzrxgktpovnphtjhi.supabase.co wss://gicjzrxgktpovnphtjhi.supabase.co https://*.naver.com https://*.naver.net https://*.pstatic.net https://*.navercorp.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
-<link rel="manifest" href="manifest.webmanifest?v=s12z85">
-<link rel="apple-touch-icon" href="shared/icons/apple-touch-icon.png?v=s12z85">
+<link rel="manifest" href="manifest.webmanifest?v=s12z86">
+<link rel="apple-touch-icon" href="shared/icons/apple-touch-icon.png?v=s12z86">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,7 +16,7 @@
 <meta name="description" content="복지 사각지대 현장 업무 도우미(닿음) — 한국사회보장정보원 발굴 명단을 받은 날부터 방문·기록·보고까지, 같은 내용을 두 번 쓰지 않는 공무원 전용 시제품(상주시 적용 예시, 가구는 모두 가상)">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#F3F1EC">
-<link rel="icon" href="shared/icons/daeum.svg?v=s12z85" type="image/svg+xml">
+<link rel="icon" href="shared/icons/daeum.svg?v=s12z86" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="복지 사각지대 현장 업무 도우미 — 닿음">
 <meta property="og:url" content="https://hcyang572-gif.github.io/daeum/">
@@ -30,20 +30,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="shared/chips.css?v=s12z85">
-<link rel="stylesheet" href="shared/datasrc.css?v=s12z85">
-<link rel="stylesheet" href="app/linkcard.css?v=s12z85">
-<link rel="stylesheet" href="shared/scope_map.css?v=s12z85">
-<link rel="stylesheet" href="shared/a11y.css?v=s12z85">
-<link rel="stylesheet" href="officer/nearby_layer.css?v=s12z85">
-<link rel="stylesheet" href="app/weather.css?v=s12z85">
+<!-- 84회차 ⑮: Noto Sans KR 내려받기 뺌(대체 글꼴일 뿐 — Pretendard·시스템 글꼴이 받음). IBM Plex Sans KR(문서 미리보기 --f-doc 한 곳)은 첫 화면을 막지 않게 따로·늦게 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="shared/chips.css?v=s12z86">
+<link rel="stylesheet" href="shared/datasrc.css?v=s12z86">
+<link rel="stylesheet" href="app/linkcard.css?v=s12z86">
+<link rel="stylesheet" href="shared/scope_map.css?v=s12z86">
+<link rel="stylesheet" href="shared/a11y.css?v=s12z86">
+<link rel="stylesheet" href="officer/nearby_layer.css?v=s12z86">
+<link rel="stylesheet" href="app/weather.css?v=s12z86">
 <!-- S12-x 65회차 새 셸: 옛 화면 CSS 5개(app·shell·record·field·s12x)는 빼고, 내용 규칙만 옮긴 보충(v3_live.css, _design/build_v3_live.py) → 맨 끝에 시안 v3 겉모습(v3.css, 🩵 미르) -->
-<link rel="stylesheet" href="app/fix72.css?v=s12z85"><!-- 72회차 ⚙️ 파로: 일차 날짜·로딩 표시·설치 띠 (v3.css 를 맨 끝에 두는 규칙 때문에 여기, 덮을 곳은 #pwa-install 로 우선)-->
-<link rel="stylesheet" href="app/team.css?v=s12z85"><!-- 68회차 S12-z4 팀 화면(⚙️ 파로) -->
-<link rel="stylesheet" href="app/onboard.css?v=s12z85"><!-- 69회차 S12-z3 첫 실행 안내·로그인 창(⚙️ 파로, 미르 시안 2판) -->
-<link rel="stylesheet" href="app/v3_live.css?v=s12z85">
-<link rel="stylesheet" href="app/v3.css?v=s12z85">
+<link rel="stylesheet" href="app/fix72.css?v=s12z86"><!-- 72회차 ⚙️ 파로: 일차 날짜·로딩 표시·설치 띠 (v3.css 를 맨 끝에 두는 규칙 때문에 여기, 덮을 곳은 #pwa-install 로 우선)-->
+<link rel="stylesheet" href="app/team.css?v=s12z86"><!-- 68회차 S12-z4 팀 화면(⚙️ 파로) -->
+<link rel="stylesheet" href="app/onboard.css?v=s12z86"><!-- 69회차 S12-z3 첫 실행 안내·로그인 창(⚙️ 파로, 미르 시안 2판) -->
+<link rel="stylesheet" href="app/v3_live.css?v=s12z86">
+<link rel="stylesheet" href="app/v3.css?v=s12z86">
 <style>
   .pwa { max-width: 460px; margin: 0 auto 120px; padding: 0 16px; font-size: 13px; color: #47535B; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .pwa[hidden], .pwa [hidden] { display: none; }
@@ -66,41 +68,41 @@
 </div>
 <noscript><p style="padding:24px">이 화면은 자바스크립트가 켜져 있어야 합니다.</p></noscript>
 <!-- S12-x 65회차: 바탕·폭 판정(html[data-mode])을 앱보다 먼저 → 시안 v3 아이콘 묶음 → 앱 -->
-<script src="app/s12x_bg.js?v=s12z85"></script>
-<script src="shared/icons_s12x.js?v=s12z85"></script>
-<script src="shared/config.js?v=s12z85"></script>
-<script src="data/households.js"></script>
-<script src="data/alerts_demo.js"></script>
-<script src="data/old_house.js"></script>
-<script src="data/recipients_sangju.js"></script>
-<script src="data/resources.js"></script>
-<script src="data/public_extra.js?v=s12z85"></script>
-<script src="data/public_extra_geo.js?v=s12z85"></script>
-<script src="officer/features.js"></script>
-<script src="officer/fieldwork.js?v=s12z85"></script>
-<script src="officer/priority.js"></script>
-<script src="officer/route_plan.js?v=s12z85"></script>
-<script src="officer/old_house.js"></script>
-<script src="officer/notify.js"></script>
-<script src="data/demo_list_full.js?v=s12z85"></script>
-<script src="officer/import_list.js?v=s12z85"></script>
-<script src="officer/demo_seed.js?v=s12z85"></script>
-<script src="shared/sync.js?v=s12z85"></script>
-<script src="shared/chips.js?v=s12z85"></script>
-<script src="app/shell.js?v=s12z85"></script>
-<script src="app/record.js?v=s12z85"></script>
-<script src="app/field.js?v=s12z85"></script>
-<script src="app/linkcard.js?v=s12z85"></script>
-<script src="officer/nearby_layer.js?v=s12z85"></script>
-<script src="shared/scope_map.js?v=s12z85"></script>
-<script src="app/hrec.js?v=s12z85"></script>
-<script src="app/onboard.js?v=s12z85"></script><!-- 69회차 S12-z3 -->
-<script src="app/app.js?v=s12z85"></script>
-<script src="shared/team_sync.js?v=s12z85"></script><!-- 68회차 S12-z4 팀 연동·팀 현황(⚙️ 파로) -->
-<script src="app/team.js?v=s12z85"></script>
-<script src="app/weather.js?v=s12z85"></script>
-<script src="app/motion.js?v=s12z85"></script>
-<script src="shared/pwa.js?v=s12z85"></script>
-<script src="shared/a11y.js?v=s12z85"></script>
+<script src="app/s12x_bg.js?v=s12z86"></script>
+<script src="shared/icons_s12x.js?v=s12z86"></script>
+<script src="shared/config.js?v=s12z86"></script>
+<script src="data/households.js?v=s12z86"></script>
+<script src="data/alerts_demo.js?v=s12z86"></script>
+<script src="data/old_house.js?v=s12z86"></script>
+<script src="data/recipients_sangju.js?v=s12z86"></script>
+<script src="data/resources.js?v=s12z86"></script>
+<script src="data/public_extra.js?v=s12z86"></script>
+<script src="data/public_extra_geo.js?v=s12z86"></script>
+<script src="officer/features.js?v=s12z86"></script>
+<script src="officer/fieldwork.js?v=s12z86"></script>
+<script src="officer/priority.js?v=s12z86"></script>
+<script src="officer/route_plan.js?v=s12z86"></script>
+<script src="officer/old_house.js?v=s12z86"></script>
+<script src="officer/notify.js?v=s12z86"></script>
+<script src="data/demo_list_full.js?v=s12z86"></script>
+<script src="officer/import_list.js?v=s12z86"></script>
+<script src="officer/demo_seed.js?v=s12z86"></script>
+<script src="shared/sync.js?v=s12z86"></script>
+<script src="shared/chips.js?v=s12z86"></script>
+<script src="app/shell.js?v=s12z86"></script>
+<script src="app/record.js?v=s12z86"></script>
+<script src="app/field.js?v=s12z86"></script>
+<script src="app/linkcard.js?v=s12z86"></script>
+<script src="officer/nearby_layer.js?v=s12z86"></script>
+<script src="shared/scope_map.js?v=s12z86"></script>
+<script src="app/hrec.js?v=s12z86"></script>
+<script src="app/onboard.js?v=s12z86"></script><!-- 69회차 S12-z3 -->
+<script src="app/app.js?v=s12z86"></script>
+<script src="shared/team_sync.js?v=s12z86"></script><!-- 68회차 S12-z4 팀 연동·팀 현황(⚙️ 파로) -->
+<script src="app/team.js?v=s12z86"></script>
+<script src="app/weather.js?v=s12z86"></script>
+<script src="app/motion.js?v=s12z86"></script>
+<script src="shared/pwa.js?v=s12z86"></script>
+<script src="shared/a11y.js?v=s12z86"></script>
 </body>
 </html>

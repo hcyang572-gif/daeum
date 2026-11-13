@@ -2,27 +2,27 @@
    ① 방문 계획 «일차 방문 날짜» 칸 · ③ 첫 실행 로딩 표시 · ④ 설치 띠(폰에서 눈에 띄게) */
 
 /* ① 일차 방문 날짜 — PC·폰 같은 칸, 좁으면 글이 아래로 */
-.ddate { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 14px; padding: 10px 14px; border-radius: 14px; background: var(--accSoft, rgba(31,102,118,.10)); box-shadow: inset 0 0 0 1px rgba(31,102,118,.18); }
-.ddate label b { font-size: 14px; font-weight: 800; color: var(--acc2, #174F5B); }
-.ddate input[type="date"] { min-height: 44px; padding: 0 10px; border: 1px solid rgba(31,102,118,.35); border-radius: 10px; background: #fff; font-size: 15px; font-weight: 700; color: var(--ink, #11181C); }
-.ddate small { font-size: 12px; color: var(--ink2, #47535B); }
+.ddate { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 14px; padding: 10px 14px; border-radius: var(--r-md); background: var(--accSoft, rgba(31,102,118,.10)); box-shadow: inset 0 0 0 1px rgba(31,102,118,.18); }
+.ddate label b { font-size: var(--fs-2); font-weight: 800; color: var(--acc2, #174F5B); }
+.ddate input[type="date"] { min-height: 44px; padding: 0 10px; border: 1px solid rgba(31,102,118,.35); border-radius: var(--r-md); background: #fff; font-size: var(--fs-2); font-weight: 700; color: var(--ink, #11181C); }
+.ddate small { font-size: var(--fs-0); color: var(--ink2, #47535B); }
 @media (max-width: 599px) { .ddate input[type="date"] { flex: 1 1 160px; } .ddate small { flex-basis: 100%; } }
 
 /* ③ 첫 실행 «불러오는 중» — 닿음 청록 고리 + 가는 막대, 움직임 줄이기면 멈춘 표시 */
-.boot { min-height: 70vh; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px; color: var(--ink2, #47535B); font: 600 14px/1.4 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; background: #F3F1EC; }
+.boot { min-height: 70vh; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px; color: var(--ink2, #47535B); font: 600 var(--fs-2)/1.4 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; background: #F3F1EC; }
 .boot-mark { position: relative; width: 56px; height: 56px; }
 .boot-mark::before, .boot-mark::after { content: ""; position: absolute; inset: 0; border-radius: 50%; }
 .boot-mark::before { border: 5px solid rgba(31,102,118,.14); }
-.boot-mark::after { border: 5px solid transparent; border-top-color: #1F6676; border-right-color: #2E8270; animation: bootSpin .9s linear infinite; }
-.boot-mark i { position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #4FA79A, #1F6676); animation: bootPulse 1.6s ease-in-out infinite; }
-.boot b { font-size: 20px; font-weight: 900; letter-spacing: -.02em; color: #11181C; }
+.boot-mark::after { border: 5px solid transparent; border-top-color: var(--acc); border-right-color: #2E8270; animation: bootSpin .9s linear infinite; }
+.boot-mark i { position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #4FA79A, var(--acc)); animation: bootPulse 1.6s ease-in-out infinite; }
+.boot b { font-size: var(--fs-4); font-weight: 900; letter-spacing: -.02em; color: var(--ink); }
 .boot-bar { width: 140px; height: 4px; border-radius: 2px; background: rgba(31,102,118,.14); overflow: hidden; }
-.boot-bar i { display: block; width: 40%; height: 100%; border-radius: 2px; background: linear-gradient(90deg, #1F6676, #2E8270); animation: bootSlide 1.2s ease-in-out infinite; }
+.boot-bar i { display: block; width: 40%; height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--acc), #2E8270); animation: bootSlide 1.2s ease-in-out infinite; }
 /* 77회차(11-13 호창님 «PC 첫 실행 불러오는 화면이 한쪽에 쪼끄맣게»): .boot 가 .app(PC는 레일 232px + 본문 격자) 첫 칸에 갇혀 있었다
    → 화면 전체를 덮는 고정 층으로 꺼내고, 넓은 화면에선 표시를 키운다(폰은 그대로) */
 #app > .boot { position: fixed; inset: 0; z-index: 60; min-height: 100vh; min-height: 100dvh; width: 100%; }
 @media (min-width: 900px) {
-  #app > .boot { gap: 18px; font-size: 16px; }
+  #app > .boot { gap: 18px; font-size: var(--fs-3); }
   #app > .boot .boot-mark { width: 76px; height: 76px; }
   #app > .boot .boot-mark i { inset: 24px; }
   #app > .boot b { font-size: 28px; }
@@ -39,11 +39,11 @@
 
 /* ④ 설치 띠 — 폰(폭 599 이하)에서는 더 굵고 진하게, 앱 아이콘 자리 */
 #pwa-install.pwa { align-items: center; }
-#pwa-install .pwa-ic { width: 28px; height: 28px; flex: none; border-radius: 8px; background: linear-gradient(180deg, #257A8C, #174F5B); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
-#pwa-install .pwa-ic::after { content: "+"; display: grid; place-items: center; height: 100%; color: #fff; font: 900 18px/1 system-ui, sans-serif; }
+#pwa-install .pwa-ic { width: 28px; height: 28px; flex: none; border-radius: var(--r-sm); background: linear-gradient(180deg, #257A8C, var(--acc2)); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
+#pwa-install .pwa-ic::after { content: "+"; display: grid; place-items: center; height: 100%; color: #fff; font: 900 var(--fs-3)/1 system-ui, sans-serif; }
 @media (max-width: 599px) {
-  .col > #pwa-install.pwa { padding: 10px 6px 10px 12px; border-radius: 16px; background: linear-gradient(180deg, #DDEDEF, #E9F3F3); box-shadow: inset 0 0 0 1.5px rgba(31,102,118,.45), 0 6px 16px -10px rgba(23,79,91,.6); font-size: 14px; }
-  .col > #pwa-install.pwa > span:first-of-type b { color: #174F5B; font-weight: 900; }
+  .col > #pwa-install.pwa { padding: 10px 6px 10px 12px; border-radius: var(--r-lg); background: linear-gradient(180deg, #DDEDEF, #E9F3F3); box-shadow: inset 0 0 0 1.5px rgba(31,102,118,.45), 0 6px 16px -10px rgba(23,79,91,.6); font-size: var(--fs-2); }
+  .col > #pwa-install.pwa > span:first-of-type b { color: var(--acc2); font-weight: 900; }
 }
 html.pwa-app #pwa-install { display: none !important; }
 
@@ -51,7 +51,7 @@ html.pwa-app #pwa-install { display: none !important; }
 #app .ky.bud { gap: 4px; padding: 0 10px 0 8px; color: #fff; background: linear-gradient(180deg, #B4544A, #8E3A32); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 0 0 1px rgba(90,26,20,.45), 0 6px 14px -10px rgba(110,30,20,.7); animation: none; }
 #app .ky.bud > svg { width: 19px; height: 19px; filter: none; }
 #app .ky.bud .ic-d { fill: #fff; opacity: .24; }
-#app .ky.bud .bt { font: 800 13px/1 var(--ff, system-ui, sans-serif); letter-spacing: -.02em; white-space: nowrap; }
+#app .ky.bud .bt { font: 800 var(--fs-1)/1 var(--ff, system-ui, sans-serif); letter-spacing: -.02em; white-space: nowrap; }
 #app .ky.bud .bd { display: none; }
 #app .ky.bud::after { box-shadow: none; }
 #app .ky.bud:hover::after, #app .ky.bud:focus-visible::after { box-shadow: inset 0 0 0 1px rgba(255,255,255,.55); }
@@ -68,31 +68,34 @@ html.pwa-app #pwa-install { display: none !important; }
 .sheet .sp-h { display: flex; align-items: center; gap: 8px; }
 .sheet .sp-h svg { width: 22px; height: 22px; color: #8E3A32; }
 .sheet .sp-sec { display: grid; gap: 8px; margin: 12px 0 0; }
-.sheet .sp-k { font: 800 13px/1.3 var(--ff, system-ui, sans-serif); color: #8E3A32; letter-spacing: -.01em; }
-.sheet .sp-off { margin: 0; font-size: 13px; line-height: 1.5; color: #5A646B; }
-.sheet .sp-go { display: flex; align-items: center; min-height: 44px; font-weight: 800; font-size: 14px; color: #174F5B; text-decoration: none; }
+.sheet .sp-k { font: 800 var(--fs-1)/1.3 var(--ff, system-ui, sans-serif); color: #8E3A32; letter-spacing: -.01em; }
+.sheet .sp-off { margin: 0; font-size: var(--fs-1); line-height: 1.5; color: #5A646B; }
+.sheet .sp-go { display: flex; align-items: center; min-height: 44px; font-weight: 800; font-size: var(--fs-2); color: var(--acc2); text-decoration: none; }
 .sheet .sp-sec .card.buddy { margin: 0; }
 .sheet .sp-sec .sfa { margin: 0; }
 .sheet .sp-sec .btn.safe { width: 100%; }
 /* 안전 화면 안 «도움 요청(조용한 점)·동료에게 전화·무사히 끝남» — 한 줄에 간격을 두고 44px 누름 영역 */
 .sheet .sp-sec .sf-t { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
-.sheet .sp-sec .sf-t > * { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; padding: 0 14px; font-weight: 800; font-size: 14px; text-decoration: none; border: 0; background: rgba(23,79,91,.07); color: #174F5B; box-shadow: inset 0 0 0 1px rgba(23,79,91,.18); }
-.sheet .sp-sec .sf-t .sf-q { width: 44px; padding: 0; opacity: .7; }
-.sheet .sp-sec .sf-t .sf-q i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.sheet .sp-sec .sf-t .sf-q.on { opacity: 1; }
-.sheet .sp-sec .sf-t .sf-end { margin-left: auto; color: #2F6B3F; }
+.sheet .sp-sec .sf-t > * { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-md); padding: 0 14px; font-weight: 800; font-size: var(--fs-2); text-decoration: none; border: 0; background: rgba(23,79,91,.07); color: var(--acc2); box-shadow: inset 0 0 0 1px rgba(23,79,91,.18); }
+/* 84회차 ⑪(🩵 미르) 조용한 도움 요청 — 점 아이콘 옆에 작은 글자 «도움 요청»(.sos-lbl, 마크업 ⚙️ 파로). 눈에 띄지 않게 흐린 채 두되 무엇인지 읽히게 */
+.sheet .sp-sec .sf-t .sf-q { min-width: 44px; gap: 6px; padding: 0 12px 0 11px; opacity: .78; }
+.sheet .sp-sec .sf-t .sf-q i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--sos0); }
+.sheet .sp-sec .sf-t .sf-q .sos-lbl { font-size: var(--fs-1); font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
+.sheet .sp-sec .sf-t .sf-q.on { opacity: 1; color: var(--sos1); background: rgba(184,71,58,.09); }
+.sf-q .sos-lbl { font-size: var(--fs-1); font-weight: 700; white-space: nowrap; } /* 시트 밖(다른 자리)에 놓여도 같은 글자 */
+.sheet .sp-sec .sf-t .sf-end { margin-left: auto; color: var(--okInk); }
 
 /* 77회차 지도 — 방문 가구 표지가 주인공(색·크기 설명은 officer/nearby_layer.css 끝)
    원인: 라이브 CSS(v3_live.css)에 옛 app.css 의 .nm-* 표지 규칙이 빠져 있어 순번이 바탕 없는 맨 글자로 그려졌다 → 여기에 전부 다시 둔다 */
 .rt-nmap .nm-spot { position: relative; width: 0; height: 0; }
 .rt-nmap .nm-spot .nm-lead { position: absolute; left: 0; top: -1px; height: 2px; border-radius: 1px; transform-origin: 0 50%; background: #0B6178; opacity: .75; }
 .rt-nmap .nm-spot .nm-dot { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #0B6178; box-shadow: 0 0 0 2px #fff; }
-.rt-nmap .nm-office { display: grid; place-items: center; min-width: 44px; height: 28px; padding: 0 8px; border-radius: 8px; background: #1B2328; color: #fff; font: 800 12px/1 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; box-shadow: 0 0 0 2px #fff; }
+.rt-nmap .nm-office { display: grid; place-items: center; min-width: 44px; height: 28px; padding: 0 8px; border-radius: var(--r-sm); background: #1B2328; color: #fff; font: 800 var(--fs-0)/1 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; box-shadow: 0 0 0 2px #fff; }
 .rt-nmap .nm-ghost { display: block; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 2.5px #9AA7B0; opacity: .8; }
 .rt-nmap .nm-stop.pop { animation: rtPop .35s cubic-bezier(.3,1.5,.6,1) both; }
 @media (prefers-reduced-motion: reduce) { .rt-nmap .nm-stop.pop { animation: none; } }
 .rt-nmap .nm-stop { display: grid; place-items: center; border-radius: 50%; cursor: pointer;
-  width: 34px; height: 34px; background: #0B6178; color: #fff; font: 900 15px/1 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; letter-spacing: -.02em;
+  width: 34px; height: 34px; background: #0B6178; color: #fff; font: 900 var(--fs-2)/1 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; letter-spacing: -.02em;
   box-shadow: 0 0 0 2.5px #fff, 0 5px 12px -3px rgba(5,40,50,.6); }
 .rt-nmap .nm-spot .nm-stop { position: absolute; left: -17px; top: -17px; }
 .rt-nmap .nm-stop.req { background: #0B6178; }
@@ -102,7 +105,7 @@ html.pwa-app #pwa-install { display: none !important; }
 /* 77회차: 방문 계획 «일정에서 빼기 ×» — 뺄 수 없는 줄은 흐리게(누르면 이유 알림), 손 순서일 때 «최적 순서로 다시 맞추기» 작게 */
 .tline .mv button.x[aria-disabled="true"] { opacity: .3; cursor: help; }
 .rt-opt .rt-re { margin: 8px 0 0; }
-.rt-opt .rt-re .sbtn { min-height: 36px; padding: 0 12px; font-size: 13px; font-weight: 800; }
+.rt-opt .rt-re .sbtn { min-height: 36px; padding: 0 12px; font-size: var(--fs-1); font-weight: 800; }
 /* 78회차 ⓪-3(11-13 호창님 «상담일지는 항상 펼친 화면으로»): 상황 고르기·보고서 미리보기 = 접기 없는 머리(.rc-sum), 지금 문장 칸 높이 제한 없음 · PC·폰 같음 */
 #app .rc-fold > .rc-sum { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; }
 #app .rc-paperw > .rc-sum { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 14px; font-size: var(--fs-2); font-weight: 800; color: var(--rail, #1B2328); }
@@ -114,15 +117,15 @@ html.pwa-app #pwa-install { display: none !important; }
    «도착했어요»(.pri)와 반반 · 높이 56px(폰 52px)·모서리 17px·글자 17px 굵게로 같은 무게. 주 동작은 여전히 진하게 채운 «도착했어요». */
 #app .dock .sbt.nav { flex: 1 1 0; min-width: 0; grid-auto-flow: column; justify-content: center; gap: 8px; min-height: 56px; border-radius: 17px; padding: 6px 12px;
   font-size: 17px; font-weight: 800; letter-spacing: -.02em; color: #1F6676; background: linear-gradient(180deg, #E6F3F5, #D5EAEE);
-  box-shadow: inset 0 0 0 2px #1F6676, 0 8px 18px -12px rgba(23,79,91,.6); white-space: nowrap; }
-#app .dock .sbt.nav svg { width: 22px; height: 22px; color: #1F6676; }
+  box-shadow: inset 0 0 0 2px var(--acc), 0 8px 18px -12px rgba(23,79,91,.6); white-space: nowrap; }
+#app .dock .sbt.nav svg { width: 22px; height: 22px; color: var(--acc); }
 #app .dock .sbt.nav:hover { background: linear-gradient(180deg, #DDEEF1, #C9E3E8); }
 #app .dock .row:has(> .sbt.nav) > .pri { flex: 1 1 0; }
-html[data-mode="phone"] #app .dock .sbt.nav { min-height: 52px; font-size: 16px; }
+html[data-mode="phone"] #app .dock .sbt.nav { min-height: 52px; font-size: var(--fs-3); }
 /* 78회차 ⓪-4: «받기» 꺼진 이유 줄 = 누르면 빨간 빈칸으로 이동하는 글자 단추 */
 #app .flow2 button.fwhy { all: unset; box-sizing: border-box; grid-column: 1 / -1; justify-self: end; min-height: 44px; display: inline-flex; align-items: center; padding: 0 4px; cursor: pointer;
   font-size: var(--fs-1, 12px); font-weight: 700; color: var(--sos0, #B8473A); text-decoration: underline; text-underline-offset: 3px; line-height: 1.4; }
-#app .flow2 button.fwhy:focus-visible { outline: 2px solid var(--sos0, #B8473A); outline-offset: 2px; border-radius: 6px; }
+#app .flow2 button.fwhy:focus-visible { outline: 2px solid var(--sos0, #B8473A); outline-offset: 2px; border-radius: var(--r-sm); }
 /* 78회차 ⓪-7(11-13 호창님 «다음할일 깜빡임이 여전히 촌스러워 … 은은하고 부드럽고 자연스러워야해»): 77회차 nring(고리 진하기·간격·빛번짐 2.4s 계속 반복)을 끈다.
    대신 ① 주 단추(.dock .pri.glow) 위로 옅은 흰 빛줄기(불투명 18%)가 1.4초에 한 번 지나가고 6초 쉼(주기 7.4s, transform 만) ·
    ② 탭·기능 카드 등 다른 .glow 는 움직임 없이 옅은 고리만.
@@ -136,8 +139,8 @@ html[data-mode="phone"] #app .dock .sbt.nav { min-height: 52px; font-size: 16px;
 html[data-nudge="off"] #app .dock .pri.glow::after { content: none; animation: none; }
 @media (prefers-reduced-motion: reduce) { #app .dock .pri.glow::after { content: none; animation: none; } }
 /* 78회차 ⓪-1: 안전 단추 «확인할 것» 수(배너가 담긴 뒤 남는 표시) — 경보 맥박과 별개로 늘 보이는 작은 숫자 점 */
-#app .ky.bud.alarm .bd { display: grid; place-items: center; position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-  background: #FFE08A; color: #5A1A12; font: 800 11px/1 var(--ff, system-ui, sans-serif); font-style: normal; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1.5px #8E3A32; }
+#app .ky.bud.alarm .bd { display: grid; place-items: center; position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--r-sm);
+  background: #FFE08A; color: #5A1A12; font: 800 var(--fs-0)/1 var(--ff, system-ui, sans-serif); font-style: normal; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1.5px #8E3A32; }
 .sheet .sp-tm { display: grid; gap: 8px; }
 .sheet .sp-tm .tm-al { animation: none; }
 .tm-alerts .tm-bn { pointer-events: auto; }
@@ -145,8 +148,17 @@ html[data-nudge="off"] #app .dock .pri.glow::after { content: none; animation: n
    좁은 폭에서만 화살표 칸 28px·여백·간격을 줄이고 글자 15px, 그래도 모자라면 줄바꿈(어절 단위). 411px 이상은 그대로. */
 @media (max-width: 380px) {
   #app .dock .row:has(> .sbt.nav) > .pri { grid-template-columns: minmax(0, 1fr) 28px; gap: 6px; padding: 6px 6px 6px 12px; }
-  #app .dock .row:has(> .sbt.nav) > .pri b { font-size: 15px; white-space: normal; text-overflow: clip; word-break: keep-all; line-height: 1.15; }
-  #app .dock .row:has(> .sbt.nav) > .pri > .go { width: 28px; height: 28px; border-radius: 10px; }
+  #app .dock .row:has(> .sbt.nav) > .pri b { font-size: var(--fs-2); white-space: normal; text-overflow: clip; word-break: keep-all; line-height: 1.15; }
+  #app .dock .row:has(> .sbt.nav) > .pri > .go { width: 28px; height: 28px; border-radius: var(--r-md); }
   #app .dock .row:has(> .sbt.nav) > .pri > .go svg { width: 16px; height: 16px; }
-  #app .dock .row:has(> .sbt.nav) > .sbt.nav { font-size: 15px; gap: 6px; padding: 6px 8px; }
+  #app .dock .row:has(> .sbt.nav) > .sbt.nav { font-size: var(--fs-2); gap: 6px; padding: 6px 8px; }
 }
+
+/* S12-w 83회차 ⚙️ 파로(웹품질 실측): 오늘 화면 제목을 h2→h1(화면마다 h1 하나, KWCAG 6.4.2) — 모양은 옛 .ph h2 와 같은 값 */
+.ph h1 { margin: 0; font: 800 22px/1.25 var(--ff); letter-spacing: -.04em; text-wrap-style: balance; }
+/* S12-w: 판단 근거 카드 div→dl(KWCAG 5.3.1·axe dlitem) — dl 기본 여백 없앰 */
+dl.evt { margin: 0; }
+/* S12-w: 끝난 방문·지난 날 흐림(opacity .6)이 글자 대비 2.5:1로 떨어짐(KWCAG 5.4.3) → 흐림 대신 채도만 낮춤(밝기 유지 → 대비 4.6~5.8:1 그대로) */
+#app .tline .stop.dn .c, #app .wd.past { opacity: 1; filter: saturate(.3); }
+/* S12-w: 단추 모양 링크(a.btn·하단 .dock 길 안내·도착) 밑줄 — 다른 규칙의 underline 이 WebKit(사파리 엔진)에서만 그려짐(웹 호환성) → 단추에는 밑줄 없음 */
+#app a.btn, #app .dock a { text-decoration: none; }

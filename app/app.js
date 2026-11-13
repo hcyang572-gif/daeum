@@ -208,7 +208,7 @@
     sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\">" + (ba || "") + "</i></button>"; // 78회차 ⓪-1: 확인할 것 수(점·숫자)
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z85" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z86" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +
@@ -229,6 +229,20 @@
     OV.el.classList.add("on"); OV.on = true; app.appendChild(OV.el);
     var f0 = OV.el.querySelector(".li"); if (f0) try { f0.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
   }
+  /** 84회차 ⑥ «시연 처음 상태로» — 바로 지우지 않고 확인 시트(지워지는 것 한 줄 · 못 보낸 기록 경고 · 로그인 중이면 서버 자료 안내).
+      지우는 범위는 officer/demo_seed.js RESET_RE(못 보낸 기록 daeum.visit.queue 는 남김). 시트 안 «처음 상태로»(data-reset-go)만 실제 주소로 간다 */
+  function resetAsk() {
+    var s = SY.state(), dlg = document.querySelector("dialog.dob-acct[open]"); if (dlg) try { dlg.close(); } catch (e) { /* 무시 */ }
+    sheetOpen('<div class="ttl"><h3>시연 데이터를 처음 상태로</h3></div>' +
+      "<p>이 기기의 방문 계획·현장 기록·고친 문서·안전 모드·채운 칸을 지우고 가상 48가구 처음 상태로 되돌립니다. 도로 경로 기억과 로그인은 그대로입니다.</p>" +
+      (s.pending ? '<p class="o-acct-warn" role="alert">아직 서버로 못 보낸 기록 ' + s.pending + "건은 지우지 않고 남겨 둡니다 — 연결되면 보냅니다.</p>" : "") +
+      (s.user ? "<p><small>로그인 중이라 같은 계정 서버 자료는 다시 받아옵니다. 시연 계정 서버 자료는 매일 새벽 처음 상태로 돌아갑니다.</small></p>" : "") +
+      '<div class="row2"><a class="btn pr" href="?demo=reset#today" data-reset-go="1">처음 상태로</a><button type="button" class="btn ghost pr" data-ov="x">그만두기</button></div>', "시연 처음 상태로");
+  }
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("[data-reset]") : null; if (!a) return;
+    e.preventDefault(); e.stopPropagation(); if (OV.on) sheetClose(); resetAsk();
+  }, true);
   // 76회차: «더 보기 › 이 기기» 홈 화면에 설치 — 설치 신호 있으면 바로 설치 · 없으면 브라우저별 안내 펼침 · 설치돼 있으면(앱으로 열림 포함) 줄을 숨김
   function pwaLi(li) {
     var P = window.__daeumPwaApi; if (!P || P.hidden()) return "";
@@ -258,7 +272,7 @@
       li("button", 'type="button" data-ov="nudge" aria-pressed="' + (nudgeOn() ? "true" : "false") + '"', I.bell || I.help, "다음 할 일 안내 · " + (nudgeOn() ? "켜짐" : "꺼짐"), nudgeOn() ? "주 단추 위 한 줄 안내 · 누르면 끕니다" : "꺼져 있음 · 누르면 다시 켭니다") +
       (SH.fs && SH.fs.able() ? li("button", 'type="button" data-ov="fs" aria-pressed="' + (SH.fs.on() ? "true" : "false") + '"', I.expand, "전체화면 · " + (SH.fs.on() ? "켜짐" : "꺼짐"), SH.fs.on() ? "주소창 없이 넓게 · 누르면 끕니다" : "꺼져 있음 · 누르면 다시 켭니다") : "") + // 75회차 ⓪-2
       li("button", 'type="button" data-fd-lock="1" data-ov="lock"', I.lock, "지금 잠그기", "자리 비우면 3분 뒤 자동 잠금 · 가구번호만 표시") +
-      li("a", 'href="?demo=reset#today"', I.reset, "시연 데이터 처음 상태로", "가상 48가구 · 지난 기록") +
+      li("a", 'href="?demo=reset#today" data-reset="1"', I.reset, "시연 데이터 처음 상태로", "가상 48가구 · 지난 기록 · 누르면 먼저 묻습니다") +
       '</div><button type="button" class="btn ghost pr" data-ov="x">닫기</button>', "더 보기");
   }
   // 74회차 🧭 «다음 할 일» — 쓰는 도중의 상태(명단·확정·남은 가구·현장·만들 문서)를 보고 셸(SH.nextStep)이 한 줄을 정한다.
@@ -338,7 +352,7 @@
     return confirmed ? 2 : 1;
   }
   // S12-x 66회차: 오늘 = 시안 v3 scrToday 구조 — 첫 칸(제목 .ph · 지금 할 일 · 맡는 구간 · 발굴 명단 · 이어지는 화면) | 둘째 칸(오늘 방문 시간줄 .tl) | 셋째 칸(주소 정리 · 남은 기한 · 가상 데이터 꼬리)
-  function todayHead(now) { return '<div class="ph"><h2>오늘 할 일</h2><span>' + esc(md(now)) + "</span></div>"; }
+  function todayHead(now) { return '<div class="ph"><h1>오늘 할 일</h1><span>' + esc(md(now)) + "</span></div>"; }
   function demoTail() { return '<div class="demo"><span class="samp">가상 데이터</span><span>가구 번호·나이·사유·메모는 모두 시연용 가상 · 실제 개인정보 없음</span><a class="pr" href="#help">사용 방법</a><a class="pr" href="shared/data.html">활용 데이터</a><a class="pr" href="?demo=reset#today">시연 처음 상태로</a></div>'; }
   // 74회차 «보이되 조용하게» — 이 탭의 다른 기능을 이름표(.ql) + 작은 기능 카드(.qg › button.qf: 아이콘·이름·한 줄 효과, 숫자는 .v) · 칩 줄(.qcs › .chip)
   //   카드 한 장 = [아이콘 열쇠, 이름(html — 숫자는 qv()), 한 줄 효과, 동작 속성] · 동작: data-go="#화면"(주소 이동) · data-pick(명단 고르기) · data-qto="선택자"(같은 화면 그 칸으로 내려가기)
@@ -486,7 +500,7 @@
       '<div class="row2 hhnav">' + (prev ? '<a class="evb pr" href="#home:' + prev + '">' + ii("chevL") + '앞 가구</a>' : '<span class="evb pr" aria-disabled="true">' + ii("chevL") + '앞 가구</span>') + '<span class="why">' + (i + 1) + " / " + c.d.ids.length + "</span>" + (next ? '<a class="evb pr" href="#home:' + next + '">다음 가구' + ii("chevR") + '</a>' : '<span class="evb pr" aria-disabled="true">다음 가구' + ii("chevR") + '</span>') + "</div></section>" +
       '<section class="card ft stops" aria-label="도착 전 요약"><div class="ch"><h3>도착 전 요약</h3><span class="samp">' + Math.min(5, lines.length) + '줄</span></div><div class="brief">' + lines.slice(0, 5).map(function (x, n) { return '<div class="bl' + (x.warn ? " w" : "") + '"><span class="ic' + (x.warn ? "" : " n") + '">' + (x.warn ? (I.warn || "!") : n + 1) + "</span><p>" + esc(x.t) + "<small>" + esc(x.lb) + "</small>" + (x.plug.length ? '<span class="srcs">' + x.plug.map(function (p) { return '<span class="plug">' + esc(p) + "</span>"; }).join("") + "</span>" : "") + "</p></div>"; }).join("") + "</div>" +
       '<div class="cact"><button class="btn sm ghost noans" type="button" data-act="noans" data-dock="2" data-dock-lbl="못 만남">' + (I.away || "") + "응답 없음(부재) · 문 앞 확인으로</button></div></section>" + // S12-v U4(F3): 초인종 → 응답 없음 → 문 앞 확인 → 확정
-      '<section class="card basis" aria-label="판단 근거 카드"><div class="ch"><h3>판단 근거</h3><span class="samp">점수 없음</span></div><div class="evt"><div><dt>명단 사유</dt><dd>' + reasons.length + "가지</dd></div><div><dt>발굴 횟수</dt><dd>" + (+m.cnt || 1) + "회</dd></div><div><dt>현장 징후</dt><dd>" + (sign || 0) + "건" + (sign ? "" : " · 집 안에서 채움") + "</dd></div></div>" +
+      '<section class="card basis" aria-label="판단 근거 카드"><div class="ch"><h3>판단 근거</h3><span class="samp">점수 없음</span></div><dl class="evt"><div><dt>명단 사유</dt><dd>' + reasons.length + "가지</dd></div><div><dt>발굴 횟수</dt><dd>" + (+m.cnt || 1) + "회</dd></div><div><dt>현장 징후</dt><dd>" + (sign || 0) + "건" + (sign ? "" : " · 집 안에서 채움") + "</dd></div></dl>" +
       '<span class="why">현장 징후는 집 안에서 «확인» 체크로 채웁니다. 명단 사유 밖 징후는 보고서에 따로 셉니다. 판단은 담당자가 합니다.</span></section>' + C2 + // 68회차 ⑮ 판단 근거를 첫 칸으로(폴드·PC 첫 칸이 짧아 칸 균형 기울던 것)
       minChips() + // S12-i5 ① 예상 시간 칩(탭 한 번)
       (safeOn(hid) ? '<button class="btn safe" type="button" data-act="enter" data-dock="1">' + (I.shield || "") + '안전 모드 켜져 있음 · 계속 <small>' + elMin(safeOn(hid).at) + "분째 · 예정 " + (safeOn(hid).min || A.safetyMin) + "분</small></button>" // S12-v U3: 이미 켜진 집은 새로 켜지 않고 이어 간다
@@ -522,7 +536,7 @@
   var TAB = (function () { try { var t = sessionStorage.getItem("daeum.tab"); if (!t) { t = Math.random().toString(36).slice(2, 10); sessionStorage.setItem("daeum.tab", t); } return t; } catch (e) { return "t"; } })();
   function ownTab(sf) { return !sf.tab || sf.tab === TAB; }
   function elMin(at) { return Math.max(0, Math.round((new Date() - new Date(at)) / 60000)); }
-  function devName() { return window.matchMedia && matchMedia("(max-width: 760px)").matches ? "폰" : "PC"; }
+  function devName() { return /^(tab|pc)$/.test(modeNow()) ? "PC" : "폰"; } // 84회차 ⑯ 폭 판정은 html[data-mode] 하나(폰·폴드 = 폰)
   /** S12-v U3: 이 집에 켜진 안전 모드(없으면 null) */
   function safeOn(hid) { var sf = lsGet(LS_SAFE, null); return sf && sf.hid === hid ? sf : null; }
   /** S12-v U3(B2): 들어가기 — 같은 집이면 켜진 것을 그대로 이어 쓰고(새 id 없음), 다른 집 것이 남아 있으면 먼저 끝낸 뒤(fin moved) 새로 켠다.
@@ -589,8 +603,8 @@
   function safeTools(sf) {
     var on = (sf.help || 0) > (sf.hok || 0);
     var to = reachTo();
-    return '<span class="sf-t"><button type="button" class="sf-q' + (on ? " on" : "") + '" data-act="safehelp" aria-label="' + (on ? "도움 요청을 보냈습니다 · " + to + "에 떠 있습니다" : "조용한 도움 요청 · 누르면 " + to + "에 가구 번호·읍면이 갑니다") + '"><i></i></button>' +
-      (teamLive() ? "" : '<a class="sf-call" href="tel:" aria-label="' + esc(peerWho()) + ' 직접 전화">' + esc(peerWho().replace(/에게$/, "")) + "에게 전화</a>") + // 팀 연동 꺼짐이면 동료가 모르니 전화 앱을 바로 연다(69회차: 1차 동료 이름)
+    return '<span class="sf-t"><button type="button" class="sf-q' + (on ? " on" : "") + '" data-act="safehelp" aria-label="' + (on ? "도움 요청을 보냈습니다 · " + to + "에 떠 있습니다" : "조용한 도움 요청 · 누르면 " + to + "에 가구 번호·읍면이 갑니다") + '"><i></i><span class="sos-lbl">도움 요청</span></button>' + // 84회차 ⑪ 아이콘 옆 글자(모양은 미르)
+      (teamLive() ? "" : '<a class="sf-call" href="tel:" data-act="sfcall" aria-label="' + esc(peerWho().replace(/에게$/, "")) + ' 직접 전화 · 전화 앱을 엽니다(번호는 직접)">' + esc(peerWho().replace(/에게$/, "")) + "에게 전화 <small>전화 앱 열기</small></a>") + // 84회차 ⑩: 번호 없는 tel: 이라 문구를 «전화 앱 열기»로 · PC·태블릿은 안내 토스트(기능 동일) // 팀 연동 꺼짐이면 동료가 모르니 전화 앱을 바로 연다(69회차: 1차 동료 이름)
 
       '<button type="button" class="sf-end" data-act="safeend">무사히 끝남</button></span>';
   }
@@ -605,6 +619,7 @@
       : '<section class="card buddy ft sfb"><div class="safep">' + ring + '<div class="tx"><b>안전 모드 · ' + el + "분째</b><small>" + simTag(esc(st.line)) + (teamLive() ? "" : " · " + esc(reachLine())) + "</small>" + safeTools(sf) + "</div></div></section>";
   }
   function bindSafe(root) { root = root || app; var ok = root.querySelector('[data-act="safeok"]'); if (ok) ok.addEventListener("click", function () { var sf = lsGet(LS_SAFE, null); if (sf) { sf.min = Math.max(sf.min || A.safetyMin, elMin(sf.at)) + 20; lsSet(LS_SAFE, sf); safePush(sf, "ok"); toast(teamLive() ? "안부 확인 완료 · 1차 동료·팀장 화면 알림도 해제" : live() ? "안부 확인 완료 · 같은 계정 다른 화면 알림도 해제" : "안부 확인 완료"); } render(); });
+    var sc = root.querySelector('[data-act="sfcall"]'); if (sc) sc.addEventListener("click", function (e) { if (/^(tab|pc)$/.test(modeNow())) { e.preventDefault(); toast("PC에서는 전화를 걸 수 없습니다 · 폰 현장 화면의 «전화 앱 열기»로 거세요"); } }); // 84회차 ⑩
     var hp = root.querySelector('[data-act="safehelp"]'); if (hp) hp.addEventListener("click", function () { // ③ 조용한 도움 요청 — 소리·큰 알림 없이 한 번에
       var sf = lsGet(LS_SAFE, null); if (!sf) return; sf.help = (sf.help || 0) + 1; sf.hat = new Date().toISOString(); lsSet(LS_SAFE, sf);
       var a = SY.safety ? SY.safety.list()[sf.id] : null; safePush(sf, a && a.state === "ok" ? "ok" : "on");
@@ -715,7 +730,7 @@
       '<div class="meter" aria-hidden="true"><i class="m3" style="width:' + (L.length ? badN / L.length * 100 : 0).toFixed(1) + '%"></i><i class="m-ok" style="width:' + (L.length ? (doneN - badN) / L.length * 100 : 0).toFixed(1) + '%"></i></div><div class="mlg"><span>문제 있음 <b>' + badN + "</b></span><span>괜찮음 <b>" + (doneN - badN) + "</b></span><span>안 봄 <b>" + (L.length - doneN) + "</b></span></div>" + crit + "</section>" +
       C2 + // 68회차 ⑮ 폴드·PC: 현장 확인 목록 | 부재 정리·판단 근거·다음 단추 두 칸(한 칸에 다 몰려 기울던 것)
       (absent && FD ? FD.awayPanel(hid) : "") + // S12-i3 ② 간접 확인·부재 메모·쪽지·문자·다음 방문
-      '<section class="card vs" aria-label="판단 근거 카드"><div class="ch"><h3>판단 근거</h3><span class="samp">점수 없음</span></div><div class="evt"><div><dt>명단 사유</dt><dd>' + reasons.length + '가지</dd></div><div><dt>현장에서 더 본 징후</dt><dd>' + badN + '건</dd></div></div><span class="why">판단은 담당자 · 현장 징후는 기록과 보고서에 그대로 들어갑니다</span></section>' +
+      '<section class="card vs" aria-label="판단 근거 카드"><div class="ch"><h3>판단 근거</h3><span class="samp">점수 없음</span></div><dl class="evt"><div><dt>명단 사유</dt><dd>' + reasons.length + '가지</dd></div><div><dt>현장에서 더 본 징후</dt><dd>' + badN + '건</dd></div></dl><span class="why">판단은 담당자 · 현장 징후는 기록과 보고서에 그대로 들어갑니다</span></section>' +
       (absent ? '<button class="btn pri" type="button" data-act="absave" data-dock="1">' + (I.away || "") + '부재로 기록 저장 <small>' + esc(FD && FD.nextOf(hid) ? FD.nextOf(hid).line : "다음 시도 시간대 자동") + "</small></button>" // S12-v U4(F3): 기록 화면을 건너뛰고 바로 확정
         : '<a class="btn pri" data-dock="1" href="#talk:' + hid + '">' + (I.talk || "") + '상담 시작 <small>질문 ' + Math.min(5, questionsFor(hid, o).length) + "개 · 서비스 " + svcFor(h, badTypes(hid, o)).length + "개 준비됨</small></a>") +
       (absent ? '<a class="btn sm ghost" href="#record:' + hid + '">기록 화면에서 더 쓰기</a>' : '<span class="why">체크는 기록 화면에 미리 채워집니다</span>') +
@@ -874,7 +889,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z85"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z86"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -888,7 +903,7 @@
   }
   function askAI(hid, o, ctx) {
     if (aiBusy[hid]) return; aiBusy[hid] = true; render();
-    var text = aiText(o, ctx), done = function (r) { aiBusy[hid] = false; o.ai = r; saveRec(hid, o); if (cur === "record") render(); };
+    var text = aiText(o, ctx), done = function (r) { aiBusy[hid] = false; var n = recOf(hid); n.ai = r; saveRec(hid, n); if (cur === "record") render(); }; // 84회차 ②: 기다리는 동안 고친 상황·메모를 덮지 않게 최신 초안을 다시 읽어 ai 칸만 붙인다
     needAI().then(function (AI) { return needSvc().then(function () { return AI.summarize(text, aiCtx(hid, o, AI)); }).then(function (r) {
       if (r.source !== "ai") return done({ src: "rule", at: new Date().toISOString(), why: r.fallback ? "연결 실패" : "AI 꺼짐" });
       var byId = {}; Object.keys(SVDB || {}).forEach(function (k) { byId[SVDB[k].id] = SVDB[k]; });
@@ -956,6 +971,18 @@
       ]) + "</main>";
   }
   var micRec = null, micT = null;
+  /** S12-x 84회차 ①: «쓰는 중» 판정 하나 — 초점이 글자 칸(INPUT·TEXTAREA·SELECT·contenteditable)이거나 받아쓰기 중이면 true.
+      실시간·시계 다시 그리기가 쓰던 글(기록 직접 입력 #rcIn·칩 직접 쓰기 등)을 지우지 않게 세 곳이 함께 쓴다(record.js 도 window.isTyping 으로) */
+  var NOTYPE = /^(button|submit|reset|checkbox|radio|range|file|color|image|hidden)$/i;
+  function isTyping() {
+    if (micRec) return true;
+    var ae = document.activeElement; if (!ae || ae === document.body || ae === document.documentElement) return false;
+    if (ae.isContentEditable) return true;
+    if (ae.tagName === "TEXTAREA" || ae.tagName === "SELECT") return true;
+    if (ae.tagName === "INPUT") return !NOTYPE.test(ae.type || "text");
+    return !!(ae.hasAttribute && ae.hasAttribute("data-fill"));
+  }
+  window.isTyping = isTyping;
   function bindRecord(want) {
     var k = pickHid(want); if (!k) return;
     var hid = k.hid, o = recOf(hid), ctx = recCtx(hid, o);
@@ -994,7 +1021,7 @@
     micT = setInterval(function () { if (lab) lab.textContent = RC.clock((Date.now() - t0) / 1000); }, 250);
     rec.onresult = function (e) { var fin = "", tmp = ""; for (var i = 0; i < e.results.length; i++) { if (e.results[i].isFinal) fin += e.results[i][0].transcript; else tmp += e.results[i][0].transcript; } got = fin; if (memo) memo.value = base + fin + tmp; };
     rec.onerror = function () { toast("받아쓰기를 쓸 수 없습니다 — 글로 남겨 주세요"); };
-    rec.onend = function () { clearInterval(micT); micRec = null; o.memo = (base + got).trim(); saveRec(hid, o); render(); };
+    rec.onend = function () { clearInterval(micT); micRec = null; var n = recOf(hid), m = document.getElementById("memo"); n.memo = (m && m.isConnected ? m.value : base + got).trim(); saveRec(hid, n); render(); }; // 84회차 ㉓: 받아쓰는 동안 손으로 고친 글을 살린다(메모 칸 현재 값 기준)
     try { rec.start(); toast("말씀하세요 · 다시 누르면 멈춥니다"); } catch (e) { clearInterval(micT); micRec = null; }
   }
   function saveRecord(c, hid) {
@@ -1126,7 +1153,7 @@
     });
     var addable = ds.filter(function (d) { return d.n !== D4.n && d.ids.length > 1; }).reduce(function (a, d) { return a.concat(d.ids.filter(function (id) { return statusOf(id) === "planned"; }).map(function (id) { return { id: id, n: d.n }; })); }, []);
     var addSel = addable.length && D4.ids.length < RP.MAX_ROAD_STOPS ? '<label class="addin"><span class="sr">다른 일차 가구를 이 일차에 넣기</span><select data-act="addin"><option value="">+ 가구 넣기</option>' + addable.map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.id) + " · " + esc(BY[x.id].area) + " · " + x.n + "일차에서</option>"; }).join("") + "</select></label>" : "";
-    var outL = '<li class="outs"><div class="otools"><button type="button" class="sbtn go" data-act="opt">다시 짜기<small> 도로 기준 가장 빠른 순서</small></button>' + addSel +
+    var outL = '<li class="outs"><div class="otools"><button type="button" class="sbtn go" data-act="opt">빠른 순서로 다시 짜기<small> 도로 기준</small></button>' + addSel +
       '<button type="button" class="sbtn" data-act="share" data-sday="' + D4.n + '">일정 공유</button>' +
       '<span>위·아래 단추나 끌어서 순서 · 빼기 단추로 빼기 · «가구 넣기»로 다른 일차에서 옮기면 경로·거리·시간이 바로 다시 계산됩니다 · 공유에는 가구번호·읍면·시각만</span></div>' +
       (D4.out && D4.out.length ? '<div class="oh">이 일차에서 뺀 가구 <b>' + D4.out.length + "</b></div><ul>" + D4.out.map(function (id) { var h = BY[id]; return '<li><b>' + id + "</b><span>" + esc(h.area + " · " + ageLine(h)) + '</span><button type="button" class="sbtn" data-back="' + id + '">되살리기</button></li>'; }).join("") + "</ul>" : "") + "</li>";
@@ -1141,11 +1168,11 @@
       '<div class="dcards" role="group" aria-label="일차">' + cards + "</div>" + dayDateRow(D4, p) +
       (ow.over ? '<p class="warnline">' + esc(ow.why.join(" · ")) + " — 한 가구를 다음 일차로 미뤄 보세요.</p>" : "") +
       '<ol class="tline blk" aria-label="' + D4.n + '일차 순서">' + tl + "</ol>" + C2 + // S12-x 66회차: 첫 칸 = 일차·순서 | 둘째 칸 = 지도·최적화 비교·확정·기한
-      '<div class="mapw blk"><div class="rt-map rt-plan" id="pmmap"><div class="rt-svg">' + mapSvg({ id: "pm", days: ds.map(function (d) { return { ids: d.ids, focus: d.n === planDay }; }), done: listIds().filter(function (id) { return statusOf(id) !== "planned"; }), labels: true, h: 380, label: D4.n + "일차 방문 순서 지도" }) + '</div><div class="rt-nmap" aria-label="네이버 지도 — ' + D4.n + '일차 방문 순서"><div class="rt-nbox"></div></div></div>' +
+      '<div class="mapw blk"><div class="rt-map rt-plan" id="pmmap"><div class="rt-svg">' + mapSvg({ id: "pm", days: ds.map(function (d) { return { ids: d.ids, focus: d.n === planDay }; }), done: listIds().filter(function (id) { return statusOf(id) !== "planned"; }), labels: true, h: 380, label: D4.n + "일차 방문 순서 지도" }) + '</div><div class="rt-nmap" role="region" aria-label="네이버 지도 — ' + D4.n + '일차 방문 순서"><div class="rt-nbox"></div></div></div>' +
       '<div class="mlg"><span><i class="a"></i>' + D4.n + '일차</span><span class="rt-lg-b"><i class="b"></i>다른 일차</span><span class="rt-lg-t">직선 거리 근사 · 네이버 지도를 불러오는 중</span></div></div>' +
       '<div id="pmopt">' + rtOptHtml(rtCmp(rtListOrder(D4.ids), D4.ids)) + "</div>" + conf +
       qcards("이 탭의 다른 기능", [
-        ["sync", "다시 짜기", "도로 기준 가장 빠른 순서", 'data-qto="[data-act=opt]"'],
+        ["sync", "빠른 순서로 다시 짜기", "도로 기준 가장 빠른 순서", 'data-qto="[data-act=opt]"'],
         ["home2", "가구 넣기", "다른 일차에서 옮겨 오기", 'data-qto="[data-act=addin]"'],
         ["clock", D4.n + "일차 날짜", "달력으로 바꾸기 · 순서 검사", 'data-qto="#dayDate"'],
         ["send", "일정 공유", "가구번호·읍면·시각만", 'data-qto="[data-act=share]"'],
@@ -1197,7 +1224,7 @@
     app.querySelectorAll("[data-back]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.back; vib(); var wasOpt = D4.ids.join() === routeOrder(D4.ids).join(); // 최적 순서였으면 되살린 집까지 넣어 다시 잇고, 직접 바꾼 순서면 끝에 붙인다
       reorder(D4, wasOpt ? routeOrder(D4.ids.concat([id])) : D4.ids.concat([id]),(D4.out || []).filter(function (x) { return x !== id; })); toast(id + " 을(를) 되살렸습니다"); }); });
     var ob = app.querySelector('[data-act="opt"]'); if (ob) ob.addEventListener("click", function () { vib(); replan(D4, ob); });
-    var po = document.getElementById("pmopt"); if (po) po.addEventListener("click", function (e) { if (e.target.closest('[data-act="reopt"]')) { vib(); reorder(D4, routeOrder(D4.ids)); toast("최적 순서로 다시 맞췄습니다"); } }); // 77회차
+    var po = document.getElementById("pmopt"); if (po) po.addEventListener("click", function (e) { if (e.target.closest('[data-act="reopt"]')) { vib(); reorder(D4, routeOrder(D4.ids)); toast("빠른 순서로 다시 짰습니다"); } }); // 77회차
     var ad = app.querySelector('[data-act="addin"]'); if (ad) ad.addEventListener("change", function () { var id = ad.value; if (!id) return; vib(); moveIn(D4, id); });
     bindShare(ds);
     var drag = null;
@@ -1244,7 +1271,7 @@
       .then(function (rs) {
         var bi = RP.pickBest(rs), best = cands[bi < 0 ? 0 : bi], r = rs[bi < 0 ? 0 : bi];
         reorder(D4, best.map(function (s) { return s.id; }));
-        toast("다시 짰습니다 · 이동 " + (r.approx ? "약 " : "") + (Math.round(r.m / 100) / 10).toFixed(1) + "km · " + (r.approx ? "약 " : "") + Math.round(r.s / 60) + "분" + (r.approx ? "(직선 거리 어림)" : "(도로)"));
+        toast("빠른 순서로 다시 짰습니다 · 이동 " + (r.approx ? "약 " : "") + (Math.round(r.m / 100) / 10).toFixed(1) + "km · " + (r.approx ? "약 " : "") + Math.round(r.s / 60) + "분" + (r.approx ? "(직선 거리 어림)" : "(도로)"));
       });
   }
   /** 다른 일차 가구를 이 일차로 옮긴다(확정 계획이면 visit_plan 행의 day 를 바꿔 같은 계정 폰에 실시간). 최적 순서였으면 넣은 뒤 다시 잇는다 */
@@ -1344,7 +1371,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z85"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z86"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -1374,7 +1401,7 @@
       '<div class="rt-bars"><div class="rt-r"><span>명단 순서</span><i class="rt-b0" style="width:100%"></i><b>' + y + f1(r.b.km) + "km · " + f0(r.b.min) + "분</b></div>" +
       '<div class="rt-r on"><span>' + (man ? "지금 순서" : "최적 순서") + '</span><i class="rt-b1" style="width:' + w.toFixed(0) + '%"></i><b>' + y + f1(r.a.km) + "km · " + f0(r.a.min) + "분</b></div>" +
       (man ? '<div class="rt-r"><span>최적 순서</span><i class="rt-b1" style="width:' + wo.toFixed(0) + '%;opacity:.45"></i><b>약 ' + f1(o.km) + "km · " + f0(o.min) + "분</b></div>" : "") + "</div>" +
-      (man ? '<p class="rt-re"><button type="button" class="sbtn sm" data-act="reopt">최적 순서로 다시 맞추기</button></p>' : "") +
+      (man ? '<p class="rt-re"><button type="button" class="sbtn sm" data-act="reopt">빠른 순서로 다시 짜기</button></p>' : "") +
       (r.dKm >= 0.05 ? '<p class="rt-pct">이동 거리 ' + f0(r.pct) + "% 줄임 · 상담 시간은 그대로</p>" : "") +
       '<p class="rt-src">' + (r.road ? "거리·시간: 네이버 Directions 15 도로 경로(닿음 서버 daeum-route)" : r.fixed ? "거리·시간: 시연 고정값 — 직선거리 × 1.3(우회 계수) · 시속 40km 근사(실제 운영은 네이버 도로 경로)" : "거리·시간: 직선거리 × 1.3(우회 계수) · 시속 40km 근사 — 도로 경로를 받으면 실제 값으로 바뀝니다") +
       " · 순서: 최근접 이웃 → 2-opt · 상주시청 출발·복귀 · 가구 위치는 가상(시연용)</p></section>";
@@ -1387,7 +1414,7 @@
     var stops = c.d.ids.map(function (id, j) { var st = statusOf(id); return '<a class="rs' + (st !== "planned" ? " dn" : "") + (id === hid ? " nx" : "") + '" href="#route:' + id + '"><i>' + (st !== "planned" ? ii("check") : j + 1) + '</i><b>' + id + "</b><span>" + esc(BY[id].area) + stTag(st) + '</span><em>' + esc((c.d.s.rows[j] || {}).arrive || "") + "</em></a>"; }).join("");
     // S12-x 66회차: 시안 v3 scrVisit — 첫 칸(지도·최적화 비교·다음 가구·길안내) | 둘째 칸(방문 순서 목록·지나는 길 연계처)
     return '<main class="phx">' +
-      '<div class="mapw blk ph-map rt-map" id="rtmap"><div class="rt-svg">' + mapSvg({ id: "rm", days: [{ ids: c.d.ids, focus: true }], done: done, next: hid, h: 360, label: "오늘 동선 지도" }) + '</div><div class="rt-nmap" aria-label="네이버 지도 — 오늘 방문 순서"><div class="rt-nbox"></div></div>' +
+      '<div class="mapw blk ph-map rt-map" id="rtmap"><div class="rt-svg">' + mapSvg({ id: "rm", days: [{ ids: c.d.ids, focus: true }], done: done, next: hid, h: 360, label: "오늘 동선 지도" }) + '</div><div class="rt-nmap" role="region" aria-label="네이버 지도 — 오늘 방문 순서"><div class="rt-nbox"></div></div>' +
       '<div class="mtop"><span>' + (c.isToday ? "오늘" : c.d.date ? md(c.d.date) : c.d.n + "일차") + " · " + c.d.ids.length + "가구</span><span>" + yak(c.d.s) + c.d.s.km + "km · " + c.d.s.end + " 복귀</span></div></div>" +
       '<div id="rtopt">' + rtOptHtml(rtCmp(rtListOrder(c.d.ids), c.d.ids)) + "</div>" +
       '<section class="nextc blk"><span class="pin">' + (i + 1) + '</span><div><b>다음 가구 ' + hid + "</b><small>" + esc(h.area + " · " + ageLine(h)) + (vt.best && vt.absences.length ? " · " + esc(vt.absences[0].label) + " 부재 " + vt.absences.length + "번 → " + esc(vt.best.label) : "") + '</small></div><span class="eta">' + esc(row.arrive || "") + "<small>" + (row.km != null ? row.km + "km · " + row.travelMin + "분" : "") + "</small></span>" +
@@ -1410,7 +1437,7 @@
     var nb = app.querySelector('[data-act="nav"]'); if (nb) nb.addEventListener("click", function () { vib(); launch(left.length ? left : c.d.ids, 0); });
     app.querySelectorAll("[data-seg]").forEach(function (b) { b.addEventListener("click", function () { launch(left, +b.dataset.seg); }); });
     rtMapBind("rtmap", "rtopt", c.d.ids, k.hid, "#0B6178");
-    var ro = document.getElementById("rtopt"); if (ro) ro.addEventListener("click", function (e) { if (e.target.closest('[data-act="reopt"]')) { vib(); reorder(c.d, routeOrder(c.d.ids)); toast("최적 순서로 다시 맞췄습니다"); } }); // 77회차
+    var ro = document.getElementById("rtopt"); if (ro) ro.addEventListener("click", function (e) { if (e.target.closest('[data-act="reopt"]')) { vib(); reorder(c.d, routeOrder(c.d.ids)); toast("빠른 순서로 다시 짰습니다"); } }); // 77회차
     bindShare(days());
   }
   var rtAsked = {}, rtRO = null;
@@ -1495,7 +1522,7 @@
       '<div class="fsig well"><b>' + field + '</b>가구에서 명단 사유 밖 징후를 현장에서 더 봄<small>현장 확인 «문제 있음» 기준 · 보고서에 따로 셉니다</small></div></section>' +
       '<section class="areac blk"><h2>읍면별 진도</h2>' + abar + '<div class="mlg"><span><i class="a"></i>만남</span><span><i class="c"></i>부재</span><span><i class="d"></i>거절</span><span><i class="e"></i>방문 전</span></div></section>' +
       C2 + '<section class="todoc blk"><h2>이번 주 할 일 <small>' + todo.filter(function (x) { return !x.done; }).length + "건 남음</small></h2>" + (tl ? '<ul class="todo2">' + tl + "</ul>" : '<p class="mute">이번 주는 다시 볼 집이 없습니다.</p>') + "</section>" +
-      '<section class="week blk" aria-label="이번 주"><h2>이번 주 근무일</h2><div class="wds">' + wd + "</div></section>" +
+      '<section class="week blk" aria-label="이번 주"><h2>이번 주 근무일</h2><div class="wds" tabindex="0" role="group" aria-label="이번 주 근무일 — 옆으로 넘겨 보기">' + wd + "</div></section>" +
       C3 + '<section class="wtrend blk" aria-label="주별 방문 기록"><h2>주별 방문 기록 <small>지난 6주 ' + wsum + "건 · 상담 " + wmet + '건</small></h2><div class="wbars">' + wbars + '</div><div class="mlg"><span><i class="a"></i>만남·상담</span><span><i class="c"></i>부재</span><span><i class="d"></i>거절</span></div></section>' +
       qcards("이 탭의 다른 기능", [
         ["chart", "읍면별 진도", "만남·부재·거절·방문 전", 'data-qto=".areac"'],
@@ -1674,7 +1701,7 @@
       return '<div class="hdoc' + (d.stale ? " stale" : "") + '"><span class="di h">HWP</span><span class="nm"><b>' + d.nm + (d.stale ? '<span class="stale">다시 만들기</span>' : "") + "</b><small>" + (d.stale ? "기록이 바뀌었습니다" : d.edited ? "본문 고침 " + HRX.when(d.edited) : "기록과 같음") + "</small></span>" +
         (ed ? '<textarea class="hrec-memo" id="hrDocTxt" rows="7" aria-label="' + d.nm + ' 본문 고치기">' + esc(d.text) + '</textarea><div class="acts"><button type="button" class="pr" data-act="hcancel">취소</button><button type="button" class="pr" data-act="hsave" data-k="' + key + '">' + I.check + "저장</button></div>"
           : '<div class="acts">' + (d.stale ? '<button type="button" class="re pr" data-act="hre" data-k="' + key + '">' + I.sync + "다시 만들기</button>" : "") +
-            '<button type="button" class="pr" data-act="hdoc" data-k="hwpx" data-d="' + key + '">' + I.down + 'hwpx</button><button type="button" class="pr" data-act="hdoc" data-k="인쇄" data-d="' + key + '">' + I.print + '인쇄</button><button type="button" class="pr" data-act="hdoc" data-k="복사" data-d="' + key + '">' + I.copy + '복사</button><button type="button" class="pr" data-act="hdoc" data-k="보내기" data-d="' + key + '">' + I.send + '보내기</button><button type="button" class="pr" data-act="hdoc" data-k="고치기" data-d="' + key + '">' + I.pen + "본문</button></div>") + "</div>";
+            '<button type="button" class="pr" data-act="hdoc" data-k="hwpx" data-d="' + key + '">' + I.down + 'hwpx</button><button type="button" class="pr" data-act="hdoc" data-k="인쇄" data-d="' + key + '">' + I.print + '인쇄</button><button type="button" class="pr" data-act="hdoc" data-k="복사" data-d="' + key + '">' + I.copy + '복사</button><button type="button" class="pr" data-act="hdoc" data-k="고치기" data-d="' + key + '">' + I.pen + "본문 고치기</button></div>") + "</div>"; // 84회차 ⑧ «보내기»(실제로 보내지 않음) 삭제 — 연동 상태는 머리 연동 점 · ㉖ 글자 «본문 고치기»
     }).join("");
     return '<section class="card hrec-view" aria-label="' + g.hid + ' 기록">' +
       '<div class="hrec-head">' + (hrPhone() ? '<button type="button" class="evb pr" data-act="hclose" aria-label="목록으로">' + I.x + "</button>" : "") + '<span class="hrec-no">' + g.hid + '</span><span class="t"><b>' + esc(g.area) + "</b><small>방문 " + HRX.md(v.at) + " · 고침 " + HRX.when(g.touched) + "</small></span>" + hrTag(g, docs) + "</div>" +
@@ -1739,7 +1766,6 @@
           else if (k === "인쇄") hrPrint(d, key.split("|")[0]);
           else if (k === "복사") copy(d.text);
           else if (k === "고치기") { HR.edit = key; redraw(); var tx = box.querySelector("#hrDocTxt"); if (tx) tx.focus(); }
-          else if (SY.state().mode === "live") toast("같은 계정 PC·폰에 이미 반영됐습니다(기록 실시간 연동)"); else { toast("로그인하면 같은 계정 PC·폰에 바로 반영됩니다"); accountPanel(); }
           return;
         }
         default: return;
@@ -2116,7 +2142,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z85")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z85"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z86")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z86"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -2248,7 +2274,7 @@
       '<ol class="hsteps">' + steps + "</ol>" + C3 + // S12-x 66회차: 첫 칸 큰 그림·처음 한 번 | 둘째 칸 단계 | 셋째 칸 색·하지 않는 것
       '<section class="hleg blk"><h2>문서 미리보기의 색</h2>' + LEG + '<p>남색 칸은 한국사회보장정보원 명단·공공데이터에서, 회색은 규칙으로 센 숫자, 노랑은 자동으로 다듬은 문장(확인 필요), 빨강은 직접 넣어야 하는 빈칸입니다. 빨강이 0이 되어야 «받기»가 켜집니다.</p></section>' +
       '<section class="card flat hnot"><b>이 도우미가 하지 않는 것</b><span>지원 대상 판정 · 위험 점수 매기기 · 성명·주민등록번호·연락처·주소 받기 · 행복이음 입력 대신하기(입력·전자서명은 행복이음에서)</span></section>' +
-      '<p class="demo"><span class="samp">가상 데이터</span><span>화면의 가구는 모두 시연용 가상입니다</span><a href="shared/data.html">활용 데이터</a><a href="?demo=reset#today">시연 처음 상태로</a></p></main>';
+      '<p class="demo"><span class="samp">가상 데이터</span><span>화면의 가구는 모두 시연용 가상입니다</span><a href="shared/data.html">활용 데이터</a><a href="?demo=reset#today" data-reset="1">시연 처음 상태로</a></p></main>';
   }
 
   // ── 계정·연동 창(같은 계정 로그인 → PC·폰 실시간. 코드·QR 넘김 없음) ──
@@ -2258,9 +2284,9 @@
     // 74회차 ⓪-1(11-13 호창님 «시연을 위한 로그인 기능만»): 이메일 가입·로그인·확인 메일·계정 지우기 흐름 전면 제거 — «시연 1·2·3으로 둘러보기»만 · 로그인 뒤 = 내 계정·로그아웃(시연 바꾸기)
     //   class(.lg73 아래): brand mk demo k sub who wk first n alt lk drules local ttl flat acct me av outb dock row pri · id: aWipe·aDemoMsg · data-act: out · data-demo
     var OBD = window.DaeumOnboard || null, IC2 = (OBD && OBD.IC) || {}, ic = function (k) { return IC2[k] || I[k] || ""; };
-    var d = document.createElement("dialog"); d.className = "dob dob-acct " + (window.innerWidth >= 1024 ? "o-m-pc" : "o-m-phone"); d.setAttribute("aria-label", s.user ? "내 계정" : "닿음 들어가기");
-    var st = '<p class="o-acct-st">' + (function (c) { return '<span class="sync ' + c.cls + '"><i></i>' + esc(c.txt) + "</span>"; })(syncChip()) + " " + esc(s.mode === "live" ? "실시간 연동 중" : why[s.why] || "") + "</p>";
-    var foot = '<p class="o-foot"><span class="o-samp">가상 데이터</span>모든 가구·메모는 가상입니다 <a href="?demo=reset#today">시연 처음 상태로</a> <a href="shared/data.html">활용 데이터</a></p>';
+    var d = document.createElement("dialog"); d.className = "dob dob-acct " + (/^(tab|pc)$/.test(modeNow()) ? "o-m-pc" : "o-m-phone"); d.setAttribute("aria-label", s.user ? "내 계정" : "닿음 들어가기");
+    var st = '<p class="o-acct-st">' + (function (c) { return '<span class="sync ' + c.cls + '"><i></i>' + esc(c.txt) + "</span>"; })(syncChip()) + " " + esc(s.mode === "live" ? "실시간 연동 중" : why[s.why] || "") + "</p>" + (s.failed ? '<p class="o-acct-warn" role="status">서버가 받지 않은 기록 ' + s.failed + "건은 이 기기에 따로 보관했습니다 — 나머지 기록은 계속 보냅니다.</p>" : ""); // 84회차 ⑦
+    var foot = '<p class="o-foot"><span class="o-samp">가상 데이터</span>모든 가구·메모는 가상입니다 <a href="?demo=reset#today" data-reset="1">시연 처음 상태로</a> <a href="shared/data.html">활용 데이터</a></p>';
     var arrow = ic("arrow"), body;
     if (s.user) {
       body = '<section class="lg-v" data-v="me">' +
@@ -2278,11 +2304,11 @@
     d.addEventListener("close", function () { d.remove(); });
     d.addEventListener("click", function (e) { if (e.target === d) d.close(); }); // 판 바깥(어두운 곳)을 누르면 닫힘
     var bo = d.querySelector('[data-act="out"]');
-    // S12-w «시연으로 둘러보기» — 시연 1~3 중 하나를 고르면 가입·메일 확인 없이 바로(서버 시연 팀: 1→2→3→1 이 1차 안부 짝, 2차는 가상 김팀장)
+    // S12-w «시연으로 둘러보기» — 시연 1~3 중 하나를 고르면 가입·메일 확인 없이 바로(서버 시연 팀 3묶음: 1↔2·3↔4·5↔6 이 1차 안부 짝, 2차는 묶음마다 가상 김팀장 — supabase/migration_s12x_demo6.sql)
     [].forEach.call(d.querySelectorAll("[data-demo]"), function (b) { b.addEventListener("click", function () {
-      var n = +b.getAttribute("data-demo"), m = d.querySelector("#aDemoMsg"); if (m) m.textContent = "시연 " + n + "로 들어가는 중…";
+      var big = b.hasAttribute("data-slot"), n = big ? demoSlot() : +b.getAttribute("data-demo"), m = d.querySelector("#aDemoMsg"); if (m) m.textContent = "시연 " + n + "로 들어가는 중…";
       var w = d.querySelector("#aWipe"), wipe = !!(s.user && w && w.checked); // 74회차 ⓪-1b 시연 바꾸기: 다른 번호 기록이 섞이지 않게 기본은 이 기기 기록 지우고 다시 받기
-      (s.user ? SY.signOut({ wipe: wipe }) : Promise.resolve()).then(function () { return SY.signIn(DEMO_MAIL(n), DEMO_PW); }).then(function () { d.close(); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); return; } render(); toast("시연 " + n + " · " + DEMO_WHO[n - 1][0] + "(으)로 들어왔습니다 · 다른 기기에서 다른 번호를 고르면 동료 안부가 오갑니다"); },
+      (s.user ? SY.signOut({ wipe: wipe }) : Promise.resolve()).then(function () { return SY.signIn(DEMO_MAIL(n), DEMO_PW).catch(function (er) { if (!big || n === 1) throw er; n = 1; return SY.signIn(DEMO_MAIL(1), DEMO_PW); }); }).then(function () { /* 몫 계정이 아직 서버에 없으면 시연 1로 */ d.close(); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); return; } render(); toast("시연 " + n + " · " + whoOf(n)[0] + "(으)로 들어왔습니다 · 다른 기기에서 다른 번호를 고르면 동료 안부가 오갑니다"); },
         function (er) { if (m) m.textContent = "시연 계정에 들어가지 못했습니다 — " + authMsg(er) + " · 로그인 없이도 모든 기능을 이 기기에서 쓸 수 있습니다"; });
     }); });
     if (bo) bo.addEventListener("click", function () { var w = d.querySelector("#aWipe"), wipe = !!(w && w.checked); SY.signOut({ wipe: wipe }).then(function () { d.close(); toast("로그아웃했습니다"); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); } else render(); }); });
@@ -2299,18 +2325,29 @@
      화면 코드에 있으므로 사실상 공개 — 방어선은 서버 쪽 매일 03:30 원복(비밀번호·이메일) + 계정당 행 상한. 실제 개인정보를 넣지 말라는 안내를 같이 띄운다 */
   var DEMO_PW = "daeum-judge-2026";
   function DEMO_MAIL(n) { return "daeum.judge" + n + "@example.com"; }
+  /** 84회차 ③: 큰 단추 «시연으로 둘러보기»는 시연 1~6 가운데 이 브라우저 몫으로(처음 한 번 무작위, 이후 같은 번호) — 심사위원 여럿이 한 계정을 함께 써
+      서로의 계획·동료 짝을 지우던 것 방지. 키는 daeum.* 밖(로그아웃 «기기 기록 지우기»·시연 초기화에도 유지). 서버 계정 2~6·짝은 줄B(supabase/*.sql)가 같은 규칙으로 */
+  var DEMO_SLOTS = 6, SLOT_KEY = "daeumDemoSlot";
+  function demoSlot() {
+    var n = 0; try { n = +localStorage.getItem(SLOT_KEY) || 0; } catch (e) { n = 0; }
+    if (!(n >= 1 && n <= DEMO_SLOTS)) { n = 1 + Math.floor(Math.random() * DEMO_SLOTS); try { localStorage.setItem(SLOT_KEY, String(n)); } catch (e) { /* 저장 불가 — 이번만 */ } }
+    return n;
+  }
+  function whoOf(n) { return DEMO_WHO[n - 1] || ["담당 주무관", "방문 계획부터 현장 기록·보고서까지"]; }
   // 73회차 🔐 시연 1·2·3 이름표 — 서버 시연 팀(supabase/migration_s12z4_team.sql daeum_team_demo_seed)과 맞춤:
-  //   심사1→1차 심사2 · 심사2→1차 심사3 · 심사3→1차 심사1, 2차는 모두 가상 «김팀장»(시연 계정 중 팀장 없음)
-  var DEMO_WHO = [["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 2에게 알림"], ["동료 주무관", "시연 1의 1차 안부 짝 · 늦어지면 알림을 받는 쪽"], ["동료 주무관", "시연 2의 1차 안부 짝 · 2차 확인은 가상 김팀장"]];
+  //   84회차: 시연 1~6 · 팀 3묶음(심사N) — 1↔2 · 3↔4 · 5↔6 이 서로 1차 짝, 2차는 묶음마다 가상 «김팀장»(시연 계정 중 팀장 없음)
+  var DEMO_WHO = [["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 2에게 알림"], ["동료 주무관", "시연 1의 1차 안부 짝 · 2차 확인은 가상 김팀장"], ["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 4에게 알림"], ["동료 주무관", "시연 3의 1차 안부 짝 · 2차 확인은 가상 김팀장"], ["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 6에게 알림"], ["동료 주무관", "시연 5의 1차 안부 짝 · 2차 확인은 가상 김팀장"]];
   function demoNo(u) { var m = /^daeum\.judge(\d)@/i.exec(u && u.email || ""); return m ? +m[1] : 0; }
   // 74회차 ⓪-1b(11-13 호창님 «큰 단추 하나 + 작은 링크»): 큰 단추 = 시연 1(담당 주무관) · 그 아래 옅은 링크 «동료 계정으로 보기 2 · 3»(동료 안부 시연용, 보이되 조용하게)
   //   cur = 지금 들어와 있는 시연 번호(로그인 전 0) — «시연 바꾸기»도 같은 구조: 지금 번호는 빼고, 1이면 큰 단추 대신 링크만
   function demoBox(ic, cur) {
     ic = ic || function () { return ""; }; cur = cur || 0;
-    var big = cur === 1 ? 0 : 1, rest = [1, 2, 3].filter(function (n) { return n !== big && n !== cur; }), w1 = DEMO_WHO[0];
-    return '<section class="demo' + (cur ? " sw" : "") + '" aria-label="' + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '"><span class="k">' + (cur ? "지금 시연 " + cur + " · " + DEMO_WHO[cur - 1][0] : "심사위원·처음 보는 분") + "</span><h4>" + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '</h4><p class="sub">누구나 한 번에 · 가상 48가구가 채워져 있습니다</p>' +
-      (big ? '<div class="who"><button class="wk first" type="button" data-demo="1" aria-label="시연 1 ' + w1[0] + ' 계정으로 둘러보기"><span class="n">1</span><span><b>' + (cur ? "시연 1로 바꾸기" : "시연으로 둘러보기") + "</b><small>" + w1[0] + " · " + w1[1] + "</small></span>" + ic("arrow") + "</button></div>" : "") +
-      '<p class="alt">' + (rest.every(function (n) { return n > 1; }) ? "동료 계정으로 보기" : "다른 번호로 보기") + " " + rest.map(function (n) { return '<button class="lk" type="button" data-demo="' + n + '" aria-label="시연 ' + n + " " + DEMO_WHO[n - 1][0] + ' 계정 보기">' + n + "</button>"; }).join('<span aria-hidden="true">·</span>') +
+    // 84회차: 큰 단추 = 이 브라우저 몫(demoSlot) · 작은 링크 = 같은 묶음 팀(1·2 / 3·4 / 5·6)의 다른 계정만(짝 하나면 링크 하나)
+    var mine = demoSlot(), big = cur === mine ? 0 : mine, lo = (cur || mine) % 2 ? (cur || mine) : (cur || mine) - 1;
+    var rest = [lo, lo + 1].filter(function (n) { return n !== big && n !== cur; }), w1 = whoOf(big || mine);
+    return '<section class="demo' + (cur ? " sw" : "") + '" aria-label="' + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '"><span class="k">' + (cur ? "지금 시연 " + cur + " · " + whoOf(cur)[0] : "심사위원·처음 보는 분") + "</span><h4>" + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '</h4><p class="sub">누구나 한 번에 · 가상 48가구가 채워져 있습니다</p>' +
+      (big ? '<div class="who"><button class="wk first" type="button" data-demo="' + big + '" data-slot="1" aria-label="시연 ' + big + " " + w1[0] + ' 계정으로 둘러보기"><span class="n">' + big + '</span><span><b>' + (cur ? "시연 " + big + "로 바꾸기" : "시연으로 둘러보기") + "</b><small>" + w1[0] + " · " + w1[1] + "</small></span>" + ic("arrow") + "</button></div>" : "") +
+      '<p class="alt">' + (rest.length ? "동료 계정으로 보기" + " " : "") + rest.map(function (n) { return '<button class="lk" type="button" data-demo="' + n + '" aria-label="시연 ' + n + " " + whoOf(n)[0] + ' 계정 보기">' + n + "</button>"; }).join('<span aria-hidden="true">·</span>') +
         '<small>두 기기에서 <b>다른 번호</b>면 동료 안부가 오가고, <b>같은 번호</b>면 PC·폰 계획·기록이 이어집니다 · 매일 새벽 처음 상태로 · 실제 개인정보는 넣지 마세요</small></p><p class="o-msg" id="aDemoMsg" role="status"></p></section>';
   }
   /* S12-v U25 처리 안내 4줄(11-12 호창님 «추천대로» 확정 문안) — 법률 분류어 없이 무엇이 어디로 가는지만 */
@@ -2467,7 +2504,24 @@
     };
   }
   function bootOpen() { if (BOOT.open) return; BOOT.open = true; render(); }
-  function render(soft) { // soft = 실시간·시계처럼 사람이 누르지 않은 다시 그리기(같으면 건너뜀)
+  /** 84회차 ④: 화면 그리기가 예외로 멈추면 «불러오는 중»에 갇히지 않게 비상 카드 — 오늘로 가기 · 시연 처음 상태로 */
+  var renderFails = 0;
+  function render(soft) {
+    try { renderCore(soft); renderFails = 0; }
+    catch (e) {
+      renderFails++; lastBody = ""; lastChrome = "";
+      try { console.error("[닿음] 화면을 그리지 못했습니다", cur, curArg, e); } catch (x) { /* 무시 */ }
+      try {
+        app.innerHTML = '<main class="wrap"><section class="card" role="alert" style="margin:24px auto;max-width:520px"><h3>이 화면을 그리지 못했습니다</h3>' +
+          '<p>저장된 자료 가운데 읽지 못한 것이 있습니다. 기록은 이 기기에 그대로 있습니다.</p><div class="row2">' +
+          (cur !== "today" || renderFails < 2 ? '<a class="btn sm" href="#today">오늘로 가기</a>' : "") +
+          '<a class="btn sm ghost" href="?demo=reset#today" data-reset="1">시연 처음 상태로</a></div></section></main>';
+      } catch (x) { /* 무시 */ }
+    }
+  }
+  window.addEventListener("error", function (e) { try { console.error("[닿음] 오류", e && (e.error || e.message)); } catch (x) { /* 무시 */ } });
+  window.addEventListener("unhandledrejection", function (e) { try { console.error("[닿음] 처리 안 된 약속 오류", e && e.reason); } catch (x) { /* 무시 */ } });
+  function renderCore(soft) { // soft = 실시간·시계처럼 사람이 누르지 않은 다시 그리기(같으면 건너뜀)
     if (!BOOT.open) { BOOT.want = true; RSTAT.held++; return; }
     var a = parse(); if (!a) { toToday(); a = parse(); if (!a) return; } // 75회차: 해시만 바꾸고(hashchange 없음) 그대로 그린다
     var chg = a.s !== cur || a.h !== curArg; cur = a.s; curArg = a.h;
@@ -2511,7 +2565,7 @@
     if (OV.on) { if (OV.kind === "safety") safetyPanel(); else app.appendChild(OV.el); } // 더 보기 시트가 열려 있으면 다시 붙인다(실시간 다시 그리기) · 76회차: 안전 화면은 새 상태로 다시
   }
   // 폭(폰·폴드·태블릿·PC)이 바뀌면 머리 글자(PC 연동 글자·폰 탭 이름)만 다시 그린다 — app/s12x_bg.js 가 html[data-mode] 와 함께 알림
-  window.addEventListener("daeum:mode", function () { var ae = document.activeElement; if (!micRec && !(ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName))) { render(); return; } var t = app.querySelector(".hdw > .top"); if (t) { t.innerHTML = topHTML(); t.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); }); t.querySelectorAll('[data-act="more"]').forEach(function (b) { b.addEventListener("click", morePanel); }); t.querySelectorAll('[data-act="safety"]').forEach(function (b) { b.addEventListener("click", safetyKey); }); } });
+  window.addEventListener("daeum:mode", function () { if (!isTyping()) { render(); return; } var t = app.querySelector(".hdw > .top"); if (t) { t.innerHTML = topHTML(); t.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); }); t.querySelectorAll('[data-act="more"]').forEach(function (b) { b.addEventListener("click", morePanel); }); t.querySelectorAll('[data-act="safety"]').forEach(function (b) { b.addEventListener("click", safetyKey); }); } });
   // 탭·레일·머리 «사용 방법» = <button data-go="#화면"> (시안처럼 단추) → 주소(#)로 길잡이
   app.addEventListener("click", function (e) { var g = e.target && e.target.closest ? e.target.closest("[data-go]") : null; if (!g || !app.contains(g)) return; e.preventDefault(); var h = g.getAttribute("data-go"); if (location.hash !== h) location.hash = h; else render(); });
   window.addEventListener("hashchange", function () { if (micRec) micRec.stop(); var a = parse(); if (fixHid && !(a && a.h === fixHid && /^(record|check|talk)$/.test(a.s))) fixHid = null; render(); });
@@ -2534,9 +2588,7 @@
     if (fx) { e.preventDefault(); reopenRec(fx.dataset.fix, false); }
   });
   SY.on(function (what) {
-    var ae = document.activeElement;
-    if (ae && (ae.id === "memo" || ae.id === "refuseWhy" || /^h(r|q)/.test(ae.id) || ae.hasAttribute && ae.hasAttribute("data-fill"))) return; // 쓰는 중에는 다시 그리지 않는다
-    if (micRec) return;
+    if (isTyping()) return; // 쓰는 중(글자 칸 초점·받아쓰기)에는 다시 그리지 않는다 — 84회차 ① 판정 하나로
     if (what === "safety-ask") { resendOwn(); return; }
     if (what === "safety") { safeAdopt(); dayNote(); }
     if (what === "mode" && SY.state().mode === "live") resendOwn();
@@ -2548,12 +2600,12 @@
   function resendOwn() { var sf = lsGet(LS_SAFE, null); if (sf && ownTab(sf) && SY.safety) { var a = SY.safety.list()[sf.id]; safePush(sf, a && a.state === "ok" ? "ok" : "on"); } }
   setInterval(function () {
     if (++safeTick % 3 === 0 && SY.state().mode === "live") resendOwn();
-    var ae = document.activeElement, typing = micRec || (ae && (ae.id === "memo" || ae.id === "refuseWhy" || /^h(r|q)/.test(ae.id) || ae.hasAttribute && ae.hasAttribute("data-fill")));
+    var typing = isTyping();
     if (sigNow() !== safeSig && !typing) { render(true); return; }
     var all = SY.safety ? SY.safety.list() : {};
     app.querySelectorAll("[data-sfid]").forEach(function (el) { var a = all[el.dataset.sfid], n = el.querySelector("[data-sfel]"); if (a && n) n.textContent = elMin(a.at); });
   }, 20000);
-  setInterval(function () { if (/^(check|talk|record)$/.test(cur) && !micRec && !(document.activeElement && /^(memo|refuseWhy)$/.test(document.activeElement.id))) render(); }, 60000); // 안전 모드 분 표시
+  setInterval(function () { if (/^(check|talk|record)$/.test(cur) && !isTyping()) render(true); }, 60000); // 안전 모드 분 표시
   if (navBack()) { /* 길안내에서 돌아옴 → 동선 화면 */ }
   window.DaeumApp = { days: days, statusOf: statusOf, docModel: docModel, render: render };
   // 72회차 ⑥: 첫 화면 문 — 연동이 자리 잡으면(로컬 판정·서버 첫 받기 끝·오류) 또는 1.5초가 지나면 그때 한 번 그린다. 글꼴도 같이 기다린다(바뀌며 글자가 출렁이지 않게)

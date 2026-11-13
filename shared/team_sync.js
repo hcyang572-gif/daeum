@@ -112,9 +112,21 @@
   // ═════ 서버 ═════
   function rpc(name, args) {
     var L = sy() && sy().live && sy().live(); if (!L) return Promise.reject(new Error("로그인하고 연동이 켜져야 팀을 쓸 수 있습니다"));
-    return L.client.rpc(name, args || {}).then(function (r) { if (r.error) throw new Error(String(r.error.message || "서버 오류").replace(/^daeum:\s*/, "")); return r.data; });
+    return L.client.rpc(name, args || {}).then(function (r) { if (r.error) throw new Error(koErr(r.error)); return r.data; }, function (e) { throw new Error(koErr(e)); });
   }
-  var WHY = { login: "로그인이 필요합니다", demo: "시연 계정은 시연 팀에 이미 들어 있습니다(매일 새벽 처음 상태로)", already: "이미 팀에 들어 있습니다", arg: "입력을 확인해 주세요",
+  // 84회차 ⑰: 서버 오류 원문(영어일 수 있음)을 그대로 띄우지 않고 한국어 문구로 바꾼다. «daeum:» 으로 시작하는 서버 자체 문구(한국어)만 그대로 쓴다.
+  function koErr(e) {
+    var m = String(e && (e.message || e.error_description || e) || ""), c = String(e && e.code || "");
+    if (/^daeum:\s*/.test(m)) return m.replace(/^daeum:\s*/, "");
+    if (/로그인|연동/.test(m) && !/[A-Za-z]{4,}/.test(m)) return m;
+    if (/Failed to fetch|NetworkError|network|timeout/i.test(m) || (typeof navigator !== "undefined" && navigator.onLine === false)) return "연결이 끊겼습니다 — 연결되면 다시 해 주세요";
+    if (/JWT|token|expired|401|not authenticated/i.test(m) || c === "PGRST301") return "로그인이 끝났습니다 — 다시 로그인해 주세요";
+    if (c === "42501" || /permission denied/i.test(m)) return "이 계정으로는 할 수 없는 일입니다";
+    if (/rate limit|too many|429/i.test(m)) return "잠깐 사이 요청이 많았습니다 — 조금 뒤 다시 해 주세요";
+    if (c === "PGRST202" || /Could not find the function/i.test(m)) return "서버 준비가 덜 됐습니다 — 잠시 뒤 다시 해 주세요";
+    return "처리하지 못했습니다 — 잠시 뒤 다시 해 주세요";
+  }
+  var WHY = { login: "로그인이 필요합니다", demo: "시연 계정은 팀·짝 구성을 바꿀 수 없습니다(시연 팀은 미리 짜여 있고 매일 새벽 처음 상태로)", already: "이미 팀에 들어 있습니다", arg: "입력을 확인해 주세요",
     cap: "오늘은 팀을 더 만들 수 없습니다", code: "팀 코드를 찾지 못했습니다", "demo-team": "시연 팀 코드는 시연 계정 전용입니다", full: "팀 인원이 가득 찼습니다(30명)", "no-team": "팀에 들어 있지 않습니다", "not-linked": "나를 안부 짝으로 지정한 사람만 확인할 수 있습니다" };
   function act(name, args) {
     return rpc(name, args).then(function (d) { if (d && d.ok === false) throw new Error(WHY[d.why] || "처리하지 못했습니다"); return refresh().then(function () { return d; }); });

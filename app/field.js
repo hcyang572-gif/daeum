@@ -204,7 +204,22 @@
       return '<li><span><b class="num">' + esc(x.id) + "</b><small>" + esc(x.area + " · " + (x.signs.join("·") || "신호 없음") + " · " + (new Date(x.at).getMonth() + 1) + "." + new Date(x.at).getDate()) + '</small></span><button type="button" class="sbtn" data-nfc="' + esc(x.id) + '">초안 복사</button><button type="button" class="sbtn" data-nfd="' + esc(x.id) + '" aria-label="' + esc(x.id) + ' 지우기">지우기</button></li>';
     }).join("") + "</ul>" : '<p class="fd-why">아직 없습니다.</p>') + '<p class="fd-src">행복이음 신규 상담에 넣은 뒤에는 지워 두세요.</p>', function (dl) {
       dl.querySelectorAll("[data-nfc]").forEach(function (b) { b.addEventListener("click", function () { var x = st().newhh.filter(function (y) { return y.id === b.dataset.nfc; })[0]; if (x) C.copy(F.newFind.draft(x)); }); });
-      dl.querySelectorAll("[data-nfd]").forEach(function (b) { b.addEventListener("click", function () { var s = st(); s.newhh = s.newhh.filter(function (y) { return y.id !== b.dataset.nfd; }); save(s); dl.close(); C.render(); C.toast("지웠습니다"); }); });
+      // 84회차 ⑱: 지우면 그 줄 자리에 «지웠습니다 · 되돌리기»를 남긴다(시트를 닫기 전까지 되돌릴 수 있음). 앱 화면은 시트를 닫을 때 다시 그린다.
+      var gone = false;
+      dl.addEventListener("close", function () { if (gone) C.render(); });
+      dl.querySelectorAll("[data-nfd]").forEach(function (b) { b.addEventListener("click", function () {
+        var s = st(), at = -1, x = null;
+        s.newhh.forEach(function (y, k) { if (y.id === b.dataset.nfd) { at = k; x = y; } });
+        if (!x) return;
+        s.newhh.splice(at, 1); save(s); gone = true;
+        var li = b.closest("li"); if (!li) return;
+        li.innerHTML = '<span><b class="num">' + esc(x.id) + '</b><small>지웠습니다</small></span><button type="button" class="sbtn" data-nfu="1">되돌리기</button>';
+        li.querySelector("[data-nfu]").addEventListener("click", function () {
+          var s2 = st(); if (!s2.newhh.some(function (y) { return y.id === x.id; })) { s2.newhh.splice(Math.min(at, s2.newhh.length), 0, x); save(s2); }
+          C.toast("되돌렸습니다"); nfList(); // 옛 시트가 닫히며 앱 화면을 다시 그린다
+        });
+        li.querySelector("[data-nfu]").focus();
+      }); });
     });
   }
 

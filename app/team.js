@@ -139,7 +139,7 @@
     }
     var c = TM.counts(), inc = TM.incoming();
     var h = '<div class="tm-head"><div><b class="tm-name">' + esc(b.team.name) + '</b><span class="tm-code">팀 코드 <b class="num">' + esc(b.team.code) + "</b></span></div>" +
-      (b.team.demo ? '<p class="tm-demo">시연 팀 · 같은 시연 팀 화면을 함께 보고 있을 수 있습니다 · 매일 새벽 3시 30분 처음 상태로</p>' : "") + "</div>";
+      (b.team.demo ? '<p class="tm-demo">시연 팀 · 다른 분이 같은 시연 팀을 보고 있을 수 있습니다 · 한 시간 넘게 쉬면, 그리고 매일 새벽 3시 30분에 처음 상태로</p>' : "") + "</div>";
     if (inc.length) h += '<section class="tm-sec tm-inc"><h4>나에게 온 짝 요청</h4>' + inc.map(function (x) {
       return '<div class="tm-req"><span><b>' + esc(x.alias) + "</b>님이 나를 " + (x.rank === 1 ? "1차 동료" : "2차 팀장") + "로 지정했습니다</span>" +
         '<button type="button" class="tm-btn pri" data-tmdec="' + esc(x.link) + '" data-yes="1">수락</button><button type="button" class="tm-btn" data-tmdec="' + esc(x.link) + '">거절</button></div>'; }).join("") + "</section>";
@@ -171,9 +171,14 @@
     bd.querySelectorAll("[data-tmdec]").forEach(function (b) { b.addEventListener("click", function () {
       var yes = !!b.dataset.yes; busy(b, TM.decide(b.dataset.tmdec, yes)).then(function () { toast(yes ? "수락했습니다 · 이제 그 사람의 안부 알림이 이 화면에 뜹니다" : "거절했습니다"); drawBody(); }, function () {});
     }); });
+    // 84회차 ⑲: 브라우저 기본 확인 창(window.confirm) 대신 팀 창 안에서 확인한다(앱 시트와 같은 모양의 단추 줄)
     var lv = bd.querySelector("[data-tmleave]"); if (lv) lv.addEventListener("click", function () {
-      if (!window.confirm("팀에서 나갈까요? 내 짝 지정과 오늘 현황도 함께 지워집니다.")) return;
-      busy(lv, TM.leave()).then(function () { toast("팀에서 나왔습니다"); drawBody(); }, function () {});
+      var ft = lv.parentNode;
+      ft.innerHTML = '<span class="tm-ask" role="alertdialog" aria-label="팀 나가기 확인"><b>팀에서 나갈까요?</b> <small>내 짝 지정과 오늘 현황도 함께 지워집니다.</small></span> ' +
+        '<button type="button" class="tm-btn" data-tmgo="1">나가기</button> <button type="button" class="tm-btn ghost" data-tmno="1">취소</button>';
+      ft.querySelector("[data-tmno]").addEventListener("click", function () { drawBody(); });
+      var go = ft.querySelector("[data-tmgo]"); go.focus();
+      go.addEventListener("click", function () { busy(go, TM.leave()).then(function () { toast("팀에서 나왔습니다"); drawBody(); }, function () {}); });
     });
   }
   function open() {

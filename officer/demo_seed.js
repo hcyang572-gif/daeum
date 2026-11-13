@@ -19,7 +19,8 @@
   // S10p-3 F-1 «시연 초기화»: 주소 끝 ?demo=reset → 담기·앞에 두기·특보 선택·시도 기록 등 시연 조작을 지우고 기본값으로(도로 경로 캐시는 남김 — 호출 한도 보호)
   // S12-v U19: 날 바뀜 초기화(DAILY_RE)보다 좁던 범위를 넓힘 — 안전 모드·기록·문서·채운 칸·하루 요약(daeum.s12.*)·방문 계획/결과/초안(daeum.visit.*)·주변 보기(daeum.nearby.on.v1).
   //   남기는 것: 도로 경로 캐시(daeum.officer.road)·로그인 세션(daeum.auth·sb-*)
-  var RESET_RE = /^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import|visit\.|s12\.|nearby\.on\.v1$)/;
+  //   84회차 ⑥: 고친 문서 본문(daeum.s12x.*)도 지운다(기록만 사라지고 고친 문서가 남던 것) · 못 보낸 기록(daeum.visit.queue)은 남긴다(연결되면 보냄)
+  var RESET_RE = /^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import|visit\.(?!queue$)|s12\.|s12x\.|nearby\.on\.v1$)/;
   var DAILY_RE = /^daeum\.(officer\.|requests|demo\.|citizen\.|s11\.import|visit\.(plan|log|queue)|s12\.)/;
   try {
     if (/[?&]demo=reset(?![a-z])/.test(root.location.search)) {

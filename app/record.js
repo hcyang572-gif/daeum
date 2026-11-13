@@ -274,10 +274,10 @@
     o = o || {};
     var waves = ""; for (var i = 0; i < 22; i++) waves += '<i style="animation-delay:' + ((i * 53) % 600) + 'ms"></i>';
     return '<section class="rc-sub blk"><div class="rc-sh"><b>덧붙이기</b><small>선택 · 시간 제한 없음</small></div>' +
-      '<div class="rc-btns"><span class="rc-bi"><button type="button" class="rc-micb" data-act="mic" aria-label="말하기"' + (o.sr ? "" : " disabled") + ">" + DI("record") + "</button><b>말하기</b></span>" +
+      '<div class="rc-btns"><span class="rc-bi"><button type="button" class="rc-micb" data-act="mic" aria-label="말하기"' + (o.sr ? "" : ' disabled aria-describedby="rcNoSr" title="이 브라우저는 받아쓰기를 지원하지 않습니다"') + ">" + DI("record") + "</button><b>말하기</b></span>" +
       '<span class="rc-bi"><button type="button" class="rc-pen" data-act="typing" aria-label="글로 쓰기" aria-controls="memo">' + DI("pen") + "</button><b>글로 쓰기</b></span>" +
       '<span class="rc-mt"><b id="mict">' + clock(0) + '</b><span class="rc-wave" aria-hidden="true">' + waves + "</span><small>" +
-      (o.sr ? "누르면 듣고, 다시 누르면 멈춥니다. 음성 원본은 남기지 않고 받아쓴 글만 씁니다." : "이 브라우저는 받아쓰기를 지원하지 않습니다 · 글로 남겨 주세요.") + "</small></span></div>" +
+      (o.sr ? "누르면 듣고, 다시 누르면 멈춥니다. 음성 원본은 남기지 않고 받아쓴 글만 씁니다." : '<span id="rcNoSr">이 브라우저는 받아쓰기 미지원 · 크롬·삼성 인터넷에서 됩니다 · 지금은 «글로 쓰기»로 남겨 주세요.</span>') + "</small></span></div>" +
       (o.ex || "") + "</section>";
   }
 

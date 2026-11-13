@@ -40,11 +40,19 @@
     if (t) { try { t.focus({ preventScroll: true }); } catch (e) { t.focus(); } }
   }
   doc.addEventListener("focusin", function (e) { var s = sig(e.target); if (s) last = s; });
+  // S12-w(83회차 웹품질 실측): 화면마다 h1 하나(KWCAG 6.4.2 제목 제공) — 동선·현장·기록 화면은 h3 카드 제목만 있어 화면 이름을 낭독기용 h1로 넣는다(보이는 모양 변화 없음)
+  function ensureH1() {
+    var app = doc.getElementById("app"); if (!app) return;
+    var f = app.querySelector("main"); if (f && !f.id && !doc.getElementById("daeum-main")) f.id = "daeum-main"; // 바로가기 링크 대상이 늘 있게
+    if (app.querySelector("h1")) return;
+    var ms = app.querySelectorAll("main"), m = ms[ms.length - 1]; if (!m) return;
+    var h = doc.createElement("h1"); h.className = "a11y-h1"; h.textContent = (doc.title || "닿음").split(" · ")[0]; m.insertBefore(h, m.firstChild);
+  }
   function watch() {
     var app = doc.getElementById("app"); if (!app || !window.MutationObserver) return;
-    new MutationObserver(function () { setTimeout(restore, 0); }).observe(app, { childList: true });
+    new MutationObserver(function () { setTimeout(restore, 0); setTimeout(ensureH1, 0); }).observe(app, { childList: true, subtree: false });
   }
   if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", function () { addSkip(); watch(); }); else { addSkip(); watch(); }
-  window.addEventListener("hashchange", function () { hashMoved = true; last = null; setTimeout(function () { focusMain(); hashMoved = false; }, 0); });
+  window.addEventListener("hashchange", function () { hashMoved = true; last = null; setTimeout(function () { ensureH1(); focusMain(); hashMoved = false; }, 0); });
   window.DaeumA11y = { focusMain: focusMain };
 })();

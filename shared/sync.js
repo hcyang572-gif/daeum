@@ -7,7 +7,7 @@
 (function (root) {
   "use strict";
   var C = root.DAEUM_CONFIG || {}, F = root.DaeumFeatures || {};
-  var K = { plan: "daeum.visit.plan", log: "daeum.visit.log", queue: "daeum.visit.queue", safe: "daeum.s12.safeAlerts", doc: "daeum.s12x.hdoc" };
+  var K = { plan: "daeum.visit.plan", log: "daeum.visit.log", queue: "daeum.visit.queue", failed: "daeum.visit.failed", safe: "daeum.s12.safeAlerts", doc: "daeum.s12x.hdoc" };
   // S12-y(70회차): doc = 가구별 문서 본문 직접 고침 { "가구번호|문서종류": { text, at, base, sv } } — 서버 표 doc_edit(본인 행만). sv = 서버에서 받은 것
   var DOCK = /^(log|bok|ref|sms)$/;
   // S12-v U30(5-5): 같은 출처 사본(shared/vendor) — 이 파일 주소 기준으로 풀어 사무 화면(officer/)에서도 같은 파일을 가리킨다
@@ -195,10 +195,28 @@
       dropSent(op); S.at = new Date(); S.fails = 0; emit("sent");
       return flush1();
     }).catch(function (e) {
+      // 84회차 ⑦: 영구 오류(권한 42501·제약 23xxx·형식 22xxx·없는 칸 42703·PGRST204)는 다시 보내도 같다 → «보내지 못한 기록»(failed)으로 옮기고 다음 것을 보낸다
+      if (permanentErr(e)) {
+        var fl = get(K.failed, []) || []; fl.push({ op: op, at: new Date().toISOString(), code: String(e.code || ""), msg: String(e.message || "").slice(0, 120) }); set(K.failed, fl.slice(-50));
+        dropSent(op); S.fails = 0; S.lastErr = String(e.code || e.message || "").slice(0, 80);
+        if (root.console) console.warn("[닿음 연동] 서버가 받지 않는 기록 — 보내지 못한 기록으로 옮김", e.code, e.message);
+        emit("sent"); return flush1();
+      }
       if (root.console) console.warn("[닿음 연동] 보내기 실패 — 이 기기에 남겨 둠", e && e.message);
       // S12-v U1: 맨 앞이 3번 넘게 실패하면 «막힘»으로 알린다(화면이 S.why === "stuck" 으로 안내)
       S.fails = (S.fails || 0) + 1; S.lastErr = String(e && (e.message || e.code) || "").slice(0, 80);
-      mode("offline", S.fails >= 3 ? "stuck" : "send"); });
+      mode("offline", S.fails >= 3 ? "stuck" : "send");
+      retryLater(); });
+  }
+  function permanentErr(e) { var c = String(e && e.code || ""); return /^(42501|23\d{3}|22[0-9A-Z]{3}|42703|PGRST204)$/.test(c); }
+  /** 일시 오류(네트워크·5xx·429)는 간격을 늘려 가며(4·8·16·32·60초) 다시 보낸다 — 실시간 채널이 살아 있을 때만 «연동됨»으로 되돌려 보낸다 */
+  var retryT = null;
+  function retryLater() {
+    if (retryT) return;
+    var ms = Math.min(60000, 2000 * Math.pow(2, Math.min(S.fails || 1, 5)));
+    retryT = setTimeout(function () { retryT = null;
+      if (S.user && S.ch && S.mode === "offline" && (S.why === "send" || S.why === "stuck") && queue().length) { mode("live"); flush(); } }, ms);
+    if (retryT && retryT.unref) retryT.unref(); // 시험(node)에서 시계가 프로세스를 붙잡지 않게
   }
   function connect() {
     var c = S.client, g = ++S.gen; // 새로 붙을 때마다 세대 번호 — 늦게 끝난 옛 시도는 무시
@@ -227,7 +245,7 @@
   // ── 바깥에서 부르는 것 ──
   var api = {
     keys: K,
-    state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email, demo: api.isDemoUser(S.user) } : null, at: S.at, pending: queue().length, enabled: enabled(), fails: S.fails || 0, lastErr: S.lastErr || "" }; },
+    state: function () { return { mode: S.mode, why: S.why, user: S.user ? { id: S.user.id, email: S.user.email, demo: api.isDemoUser(S.user) } : null, at: S.at, pending: queue().length, failed: (get(K.failed, []) || []).length, enabled: enabled(), fails: S.fails || 0, lastErr: S.lastErr || "" }; },
     on: function (f) { S.subs.push(f); },
     /** 68회차 S12-z4 팀 연동(shared/team_sync.js)이 같은 연결·같은 로그인으로 서버 함수·팀 채널을 쓰게 — 로그인 전이면 null */
     live: function () { return S.client && S.user && S.mode === "live" ? { client: S.client, uid: S.user.id } : null; },
