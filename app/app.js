@@ -208,7 +208,7 @@
     sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\">" + (ba || "") + "</i></button>"; // 78회차 ⓪-1: 확인할 것 수(점·숫자)
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z87" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z88" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +
@@ -262,11 +262,11 @@
     var su = SY.state().user; // 73회차 🔐: 맨 위 = 로그아웃(로그인 때, 이 기기 기록 지우기 선택 창) / 들어가기(로그인 전) — 옛 «계정 · 연동» 줄을 합침
     sheetOpen("<h3>더 보기</h3><div class=\"list\">" +
       (su ? li("button", 'type="button" data-ov="account" data-out="1"', I.logout, "로그아웃 · 시연 바꾸기", (demoNo(su) ? "지금 시연 " + demoNo(su) + " · " : "") + esc(si.txt)) // 75회차: 이메일 주소는 보이지 않게
-        : li("button", 'type="button" data-ov="account"', I.user, "시연으로 둘러보기", "누구나 시연 1·2·3 · 같은 번호면 PC·폰 실시간")) +
+        : li("button", 'type="button" data-ov="account"', I.user, "시연으로 둘러보기", "누구나 시연 1~6 · 같은 번호면 PC·폰 실시간")) +
       li("a", 'href="#help" data-ov="go"', I.help, "사용 방법", "닿음이 맡는 구간 · 처음 3단계 · 동료 안부") +
       li("button", 'type="button" data-ov="pick"', I.upload || I.db, "발굴대상자 명단 불러오기", "행복이음에서 받은 한국사회보장정보원 조회 서식 엑셀") +
       li("a", 'href="shared/data.html"', I.db, "쓰는 데이터와 출처", "한국사회보장정보원 공공데이터 · 공공 보조") +
-      li("a", 'href="shared/ai_check.html"', I.aichk, "AI 문장 점검", "규칙 문장과 AI 요약 견주기") +
+      li("a", 'href="shared/ai_check.html"', I.aichk, "AI 추천 검증", "가상 사연 20건 · 추천 정확도") +
       (window.DaeumOnboard ? li("button", 'type="button" data-ov="ob"', I.replay, "처음 안내 다시 보기", "명단 → 동선 → 현장 → 기록 → 보고 · 그림 다섯 장") : "") + // S12-z3 추천안(가): 자동은 처음 한 번, 다시 보기는 여기 // 69회차: 떠 있던 «팀» 단추 → 메뉴(PC 레일·폰 머리 모두 같은 «더 보기»)
       pwaLi(li) +
       li("button", 'type="button" data-ov="nudge" aria-pressed="' + (nudgeOn() ? "true" : "false") + '"', I.bell || I.help, "다음 할 일 안내 · " + (nudgeOn() ? "켜짐" : "꺼짐"), nudgeOn() ? "주 단추 위 한 줄 안내 · 누르면 끕니다" : "꺼져 있음 · 누르면 다시 켭니다") +
@@ -889,7 +889,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z87"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z88"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -1371,7 +1371,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z87"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z88"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -2142,7 +2142,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z87")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z87"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z88")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z88"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -2307,6 +2307,7 @@
     // S12-w «시연으로 둘러보기» — 시연 1~3 중 하나를 고르면 가입·메일 확인 없이 바로(서버 시연 팀 3묶음: 1↔2·3↔4·5↔6 이 1차 안부 짝, 2차는 묶음마다 가상 김팀장 — supabase/migration_s12x_demo6.sql)
     [].forEach.call(d.querySelectorAll("[data-demo]"), function (b) { b.addEventListener("click", function () {
       var big = b.hasAttribute("data-slot"), n = big ? demoSlot() : +b.getAttribute("data-demo"), m = d.querySelector("#aDemoMsg"); if (m) m.textContent = "시연 " + n + "로 들어가는 중…";
+      if (s.user && !big && n >= 1 && n <= DEMO_SLOTS) { try { localStorage.setItem(SLOT_KEY, String(n)); } catch (e) { /* 저장 불가 — 이번만 */ } } // 90회차: 시연 바꾸기로 고른 번호를 이 기기 몫으로(짝 번호 2·4·6은 demoSlot이 같은 묶음 담당으로 읽음)
       var w = d.querySelector("#aWipe"), wipe = !!(s.user && w && w.checked); // 74회차 ⓪-1b 시연 바꾸기: 다른 번호 기록이 섞이지 않게 기본은 이 기기 기록 지우고 다시 받기
       (s.user ? SY.signOut({ wipe: wipe }) : Promise.resolve()).then(function () { return SY.signIn(DEMO_MAIL(n), DEMO_PW).catch(function (er) { if (!big || n === 1) throw er; n = 1; return SY.signIn(DEMO_MAIL(1), DEMO_PW); }); }).then(function () { /* 몫 계정이 아직 서버에 없으면 시연 1로 */ d.close(); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); return; } render(); toast("시연 " + n + " · " + whoOf(n)[0] + "(으)로 들어왔습니다 · 다른 기기에서 다른 번호를 고르면 동료 안부가 오갑니다"); },
         function (er) { if (m) m.textContent = "시연 계정에 들어가지 못했습니다 — " + authMsg(er) + " · 로그인 없이도 모든 기능을 이 기기에서 쓸 수 있습니다"; });
@@ -2346,11 +2347,12 @@
     ic = ic || function () { return ""; }; cur = cur || 0;
     // 84회차: 큰 단추 = 이 브라우저 몫(demoSlot) · 작은 링크 = 같은 묶음 팀(1·2 / 3·4 / 5·6)의 다른 계정만(짝 하나면 링크 하나)
     var mine = demoSlot(), big = cur === mine ? 0 : mine, lo = (cur || mine) % 2 ? (cur || mine) : (cur || mine) - 1;
-    var rest = [lo, lo + 1].filter(function (n) { return n !== big && n !== cur; }), w1 = whoOf(big || mine);
+    // 90회차(호창님 승인): 시연 바꾸기(로그인 뒤)는 1~6 모두 — PC와 다른 묶음 번호를 받은 폰도 PC와 같은 번호를 고를 수 있게. 로그인 전 화면은 짝 링크 그대로
+    var rest = (cur ? [1, 2, 3, 4, 5, 6] : [lo, lo + 1]).filter(function (n) { return n !== big && n !== cur; }), w1 = whoOf(big || mine);
     return '<section class="demo' + (cur ? " sw" : "") + '" aria-label="' + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '"><span class="k">' + (cur ? "지금 시연 " + cur + " · " + whoOf(cur)[0] : "심사위원·처음 보는 분") + "</span><h4>" + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '</h4><p class="sub">누구나 한 번에 · 가상 48가구가 채워져 있습니다</p>' +
       (big ? '<div class="who"><button class="wk first" type="button" data-demo="' + big + '" data-slot="1" aria-label="시연 ' + big + " " + w1[0] + ' 계정으로 둘러보기"><span class="n">' + big + '</span><span><b>' + (cur ? "시연 " + big + "로 바꾸기" : "시연으로 둘러보기") + "</b><small>" + w1[0] + " · " + w1[1] + "</small></span>" + ic("arrow") + "</button></div>" : "") +
-      '<p class="alt">' + (rest.length ? "동료 계정으로 보기" + " " : "") + rest.map(function (n) { return '<button class="lk" type="button" data-demo="' + n + '" aria-label="시연 ' + n + " " + whoOf(n)[0] + ' 계정 보기">' + n + "</button>"; }).join('<span aria-hidden="true">·</span>') +
-        '<small>두 기기에서 <b>다른 번호</b>면 동료 안부가 오가고, <b>같은 번호</b>면 PC·폰 계획·기록이 이어집니다 · 매일 새벽 처음 상태로 · 실제 개인정보는 넣지 마세요</small></p><p class="o-msg" id="aDemoMsg" role="status"></p></section>';
+      '<p class="alt">' + (rest.length ? (cur ? "다른 번호로 바꾸기" : "동료 계정으로 보기") + " " : "") + rest.map(function (n) { return '<button class="lk" type="button" data-demo="' + n + '" aria-label="시연 ' + n + " " + whoOf(n)[0] + ' 계정 보기">' + n + "</button>"; }).join('<span aria-hidden="true">·</span>') +
+        '<small>' + (cur ? "PC와 <b>같은 번호</b>를 고르면 PC·폰 계획·기록이 이어지고, <b>짝 번호</b>(1·2 / 3·4 / 5·6)면 동료 안부가 오갑니다" : "두 기기에서 <b>다른 번호</b>면 동료 안부가 오가고, <b>같은 번호</b>면 PC·폰 계획·기록이 이어집니다") + ' · 매일 새벽 처음 상태로 · 실제 개인정보는 넣지 마세요</small></p><p class="o-msg" id="aDemoMsg" role="status"></p></section>';
   }
   /* S12-v U25 처리 안내 4줄(11-12 호창님 «추천대로» 확정 문안) — 법률 분류어 없이 무엇이 어디로 가는지만 */
   var PP = '<details class="acct-pp"><summary>개인정보는 이렇게 다룹니다</summary><ol>' +
