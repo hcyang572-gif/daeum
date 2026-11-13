@@ -208,7 +208,7 @@
     sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\">" + (ba || "") + "</i></button>"; // 78회차 ⓪-1: 확인할 것 수(점·숫자)
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z86" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z87" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +
@@ -604,7 +604,7 @@
     var on = (sf.help || 0) > (sf.hok || 0);
     var to = reachTo();
     return '<span class="sf-t"><button type="button" class="sf-q' + (on ? " on" : "") + '" data-act="safehelp" aria-label="' + (on ? "도움 요청을 보냈습니다 · " + to + "에 떠 있습니다" : "조용한 도움 요청 · 누르면 " + to + "에 가구 번호·읍면이 갑니다") + '"><i></i><span class="sos-lbl">도움 요청</span></button>' + // 84회차 ⑪ 아이콘 옆 글자(모양은 미르)
-      (teamLive() ? "" : '<a class="sf-call" href="tel:" data-act="sfcall" aria-label="' + esc(peerWho().replace(/에게$/, "")) + ' 직접 전화 · 전화 앱을 엽니다(번호는 직접)">' + esc(peerWho().replace(/에게$/, "")) + "에게 전화 <small>전화 앱 열기</small></a>") + // 84회차 ⑩: 번호 없는 tel: 이라 문구를 «전화 앱 열기»로 · PC·태블릿은 안내 토스트(기능 동일) // 팀 연동 꺼짐이면 동료가 모르니 전화 앱을 바로 연다(69회차: 1차 동료 이름)
+      (teamLive() ? "" : '<a class="sf-call" href="tel:" data-act="sfcall" aria-label="' + esc(peerWho().replace(/에게$/, "")) + ' 직접 전화 · 전화 앱을 엽니다(번호는 직접)">' + esc(peerWho().replace(/에게$/, "")) + "에게 전화 <small>번호는 직접</small></a>") + // 84회차 ⑩: 번호 없는 tel: 이라 문구를 «전화 앱 열기»로 · PC·태블릿은 안내 토스트(기능 동일) // 팀 연동 꺼짐이면 동료가 모르니 전화 앱을 바로 연다(69회차: 1차 동료 이름)
 
       '<button type="button" class="sf-end" data-act="safeend">무사히 끝남</button></span>';
   }
@@ -889,7 +889,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z86"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z87"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -1371,7 +1371,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z86"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z87"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -2142,7 +2142,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z86")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z86"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z87")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z87"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -2330,7 +2330,9 @@
   var DEMO_SLOTS = 6, SLOT_KEY = "daeumDemoSlot";
   function demoSlot() {
     var n = 0; try { n = +localStorage.getItem(SLOT_KEY) || 0; } catch (e) { n = 0; }
-    if (!(n >= 1 && n <= DEMO_SLOTS)) { n = 1 + Math.floor(Math.random() * DEMO_SLOTS); try { localStorage.setItem(SLOT_KEY, String(n)); } catch (e) { /* 저장 불가 — 이번만 */ } }
+    // 84회차: 몫은 묶음 단위(1·3·5 = 담당 주무관) — 모두 담당으로 시작하고 작은 링크가 짝(2·4·6). 옛 2·4·6 몫은 같은 묶음의 1·3·5로 옮긴다
+    if (n >= 2 && n <= DEMO_SLOTS && n % 2 === 0) { n = n - 1; try { localStorage.setItem(SLOT_KEY, String(n)); } catch (e) { /* 무시 */ } }
+    if (!(n >= 1 && n <= DEMO_SLOTS)) { n = 1 + 2 * Math.floor(Math.random() * (DEMO_SLOTS / 2)); try { localStorage.setItem(SLOT_KEY, String(n)); } catch (e) { /* 저장 불가 — 이번만 */ } }
     return n;
   }
   function whoOf(n) { return DEMO_WHO[n - 1] || ["담당 주무관", "방문 계획부터 현장 기록·보고서까지"]; }
