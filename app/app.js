@@ -12,7 +12,7 @@
   var SH = window.DaeumShell || { links: function () { return ""; }, tabsHTML: function () { return ""; }, railHTML: function () { return ""; }, tabOf: function () { return 0; }, TABS: [], after: function () {}, busy: function (p) { return p; } }, IM = window.DaeumImport, CH = window.DaeumChips; // S12-i1 셸·명단 불러오기·예시 칩
   var U = F.util;
   var D = window.__DAEUM_HOUSEHOLDS__ || { households: [], meta: { office: { x: 0, y: 0 } }, indicators: [] };
-  var AL = window.__DAEUM_ALERTS__ || null, RCP = window.__DAEUM_RECIPIENTS__ || null, RES = window.__DAEUM_RESOURCES__ || null;
+  var AL = window.__DAEUM_ALERTS__ || null, RCP = window.__DAEUM_RECIPIENTS__ || null, RES = window.__DAEUM_RESOURCES__ || null, BP = window.__DAEUM_BASE_PENSION__ || null; // 94회차: 기초연금 수급률(보건복지부 15161618, 시군구 단위 — 상주 전체 한 줄 비교만, 방문 순서 점수엔 안 씀)
   if (OH && window.__DAEUM_OLDHOUSE__) OH.set(window.__DAEUM_OLDHOUSE__);
   var BY = {}; D.households.forEach(function (h) { BY[h.id] = h; });
   var OFFICE = D.meta.office || { x: 0, y: 0 };
@@ -208,7 +208,7 @@
     sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\">" + (ba || "") + "</i></button>"; // 78회차 ⓪-1: 확인할 것 수(점·숫자)
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z88" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z94" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc(si.txt) + "</button>" : "") +
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +
@@ -889,7 +889,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z88"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z94"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -1371,7 +1371,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z88"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z94"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -1893,6 +1893,7 @@
       B.push({ t: "tbl2", title: "<표 2> 상주시 수급권자 현황", unit: "(단위: 명·가구)", head: ["사업명", "수급권자(명)", "수급가구(가구)"], widths: [Math.round(TW * .46), Math.round(TW * .27), TW - Math.round(TW * .46) - Math.round(TW * .27)],
         rows: w.rcpRows.concat([["이번 달 상담 가구 비율", "", (w.cmp.match(/([\d.]+%)/) || ["", "—"])[1]]]), src: "※ 출처: 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448, 2025-12) · 비율 = 상담 " + w.met + "가구 ÷ 기초생활보장 수급가구(백분율)" });
     } else B.push({ t: "ci", lv: 2, text: w.rcp + " — 한국사회보장정보원 복지사업 시군구별 수급권자 현황(15062448)" });
+    if (w.bp) B.push({ t: "ci", lv: 2, text: w.bp + " — 보건복지부 기초연금 인구 수급율 현황(15161618)" });
     B.push({ t: "p", kind: "small", text: "※ 숫자는 현장 기록 규칙 집계 · 담당자 확인 후 확정" }, { t: "p", kind: "end", text: "끝." }, { t: "p", kind: "tail", text: "닿음 · 시연용 가상 데이터 · 개인정보 4칸 미기재" });
     return { plain: true, title: w.name + " 추진 실적 보고", blocks: B };
   }
@@ -2065,9 +2066,9 @@
       var w = periodModel(docPer), mo = docPer === "mo", fs5 = [{ k: "기간", src: "rule", v: mdDot(w.from) + " ~ " + mdDot(w.to) }, { k: "방문", src: "rule", v: "만남 " + w.met + " · 부재 " + w.absent + " · 거절 " + w.refuse + " (총 " + w.total + "곳)" },
         { k: "읍면별", src: "rule", v: w.areas.map(function (a) { return a[0] + " " + a[1]; }).join(" · ") || "—" }, { k: "처리 완료", src: "rule", v: "명단 " + w.listN + "가구 중 " + w.doneN + "가구 확인" }]
         .concat(mo ? [{ k: "주차별 추세", src: "rule", v: w.weeks.map(function (x) { return x[0] + " " + x[1] + "곳"; }).join(" · ") || "—" }, { k: "수급권자 현황 비교", src: "data", v: w.cmp }] : [])
-        .concat([{ k: "지역 배경", src: "data", v: w.rcp }, { k: "한 줄 결론", src: "ai", v: w.concl }]);
+        .concat([{ k: "지역 배경", src: "data", v: w.rcp }]).concat(w.bp ? [{ k: "기초연금", src: "data", v: w.bp }] : []).concat([{ k: "한 줄 결론", src: "ai", v: w.concl }]);
       var perSw = '<div class="hh-pick" role="group" aria-label="보고 기간">' + [["wk", "주간"], ["mo", "월간"]].map(function (p) { return '<button type="button" data-per="' + p[0] + '" aria-pressed="' + (p[0] === docPer) + '">' + p[1] + "</button>"; }).join("") + "</div>";
-      var lg5 = [["방문 곳 수", "기간 안에 방문 기록이 있는 가구 수 — 한 가구를 여러 번 가도 1곳(마지막 결과로 셈)"], ["처리 완료", "이번 차수 명단 가구 중 «만남·상담»까지 끝낸 가구"], ["기준", (mo ? "그달 1일~말일" : "월~금 한 주") + " · " + mdDot(w.from) + " ~ " + mdDot(w.to)], ["출처", "현장 기록 규칙 집계 · 지역 배경 = 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448, 기준 2025-12)"]];
+      var lg5 = [["방문 곳 수", "기간 안에 방문 기록이 있는 가구 수 — 한 가구를 여러 번 가도 1곳(마지막 결과로 셈)"], ["처리 완료", "이번 차수 명단 가구 중 «만남·상담»까지 끝낸 가구"], ["기준", (mo ? "그달 1일~말일" : "월~금 한 주") + " · " + mdDot(w.from) + " ~ " + mdDot(w.to)], ["출처", "현장 기록 규칙 집계 · 지역 배경 = 한국사회보장정보원 «복지사업 시군구별 수급권자 현황»(15062448, 기준 2025-12)" + (w.bp ? " · 기초연금 = 보건복지부 «기초연금 인구 수급율 현황»(15161618, 시군구 단위)" : "")]];
       return ctl(perSw + flowBtns("d5:" + docPer, true, "hwpx 받기")) + sheet("d5", w.name + " 추진 실적 보고", "기간 " + dotDate(w.from) + " ~ " + dotDate(w.to), legendBox(lg5, serSw(["met", "absent", "refuse"].concat(mo ? ["visit"] : [])) + srcSw(["data", "rule", "ai"])),
         stackFig((mo ? "그달" : "그 주") + " 방문 결과", [["met", w.met], ["absent", w.absent], ["refuse", w.refuse]]) + (mo && w.weeks.length ? colFig("주차별 방문 곳 수", w.weeks, "visit") : "") +
         paper(w.name + " 추진 실적 보고", "상주시청 · " + area + " 맞춤형복지팀", fs5) + (mo && w.rcpRows.length ? '<table class="doc-t doc-rcp pg-keep"><caption>상주시 수급권자 현황(한국사회보장정보원 15062448, 2025-12)</caption><thead><tr><th>사업명</th><th>수급권자</th><th>수급가구</th></tr></thead><tbody>' + w.rcpRows.map(function (r) { return "<tr><td>" + esc(r[0]) + '</td><td data-src="data">' + esc(r[1]) + '</td><td data-src="data">' + esc(r[2]) + "</td></tr>"; }).join("") + "</tbody></table>" : ""));
@@ -2109,8 +2110,10 @@
       cmp: b ? "이번 달 상담 " + met + "가구 = 상주 기초생활보장 수급가구 " + b["수급가구수"].toLocaleString() + "의 " + (met / b["수급가구수"] * 100).toFixed(2) + "%(" + b["기준년월"] + " 기준)" : "수급권자 현황 자료 없음",
       // 79회차 SPEC §4 D5: 전 주(월) 대비 · 연계 건수 · 수급가구 수(비교 표 한 줄)
       prev: prevCounts(mo, w), links: ids.filter(function (i) { return last[i].result === "met" && F.referral.suggest({ text: last[i].memo, needs: F.askGuide.detect(last[i].memo) }).filter(function (x) { return x !== "emergency"; }).length; }).length,
-      rcpN: b ? b["수급가구수"] : 0 };
+      rcpN: b ? b["수급가구수"] : 0, bp: bpLine() };
   }
+  /** 94회차: «상주시 기초연금 수급률 76.26%(2025-12) · 경북 22개 시군 중 8위» — 자료 없으면 빈 문자열(줄 자체를 안 그림) */
+  function bpLine() { return BP && BP.rate ? "상주시 기초연금 수급률 " + BP.rate.toFixed(2) + "%(" + BP.ym + ") · 경북 " + BP.of + "개 시군 중 " + BP.rank + "위" : ""; }
   /** 바로 앞 기간(전 주 월~금 · 전 달) 방문 결과 — 같은 규칙(가구마다 마지막 결과)으로 센다 */
   function prevCounts(mo, w) {
     var p = mo ? monthRange(new Date(w.from.getFullYear(), w.from.getMonth() - 1, 15)) : weekRange(new Date(w.from.getTime() - 7 * 864e5)), to2 = new Date(p.to.getTime() + 864e5), last = {};
@@ -2142,7 +2145,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z88")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z88"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z94")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z94"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }

@@ -3,10 +3,11 @@
    데이터: data/public_extra.js(🔵 소라 상주 공공데이터 712건 정적 스냅샷) + data/public_extra_geo.js(주소정보누리집 좌표 692/708, 실패 16 = 2018 경로당).
    거리: 가구 기준 직선거리 «약 n km»(S12-m e338989 linkcard 방식 그대로 — 하버사인). 좌표 없는 곳은 뒤로.
    표지를 누르면 이름·전화(tel: 바로 걸기)·출처 아이콘. 지도 키 실패·지도 못 그림 → 같은 목록이 열려 대신 보인다(빈 화면 없음).
+   94회차: 통합돌봄 연계처(국민건강보험공단 15173720, data/integrated_care.js) — 연계처 층에 같은 규칙(18px·방문 가구 아래층)으로. 가구마다 가까운 3곳 + 같은 동네 전부.
    ⛔ 가구 정보는 화면 안에서만 · 서버 전송 0 · 판단은 담당 공무원(점수·추천 없음). */
 (function (root) {
   "use strict";
-  var KEY = "daeum.nearby.on.v1", SENIOR_PER_HH = 3;
+  var KEY = "daeum.nearby.on.v1", SENIOR_PER_HH = 3, IC_PER_HH = 3, IC_ID = "15173720";
   var DEF = { hh: true, link: true, senior: false }; // 경로당은 2018 명단·수가 많아 처음엔 끔
   var CARE_WORD = { "방문 돌봄": 1, "요양원": 1, "요양원(소규모)": 1, "어르신 복지관": 1, "어르신 복지": 1 };
   var L = function () { return root.DaeumLink || {}; };
@@ -17,11 +18,12 @@
   function km(a, b) { var R = 6371, r = Math.PI / 180, dl = (b.lat - a.lat) * r, dn = (b.lng - a.lng) * r, q = Math.sin(dl / 2) * Math.sin(dl / 2) + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dn / 2) * Math.sin(dn / 2); return 2 * R * Math.asin(Math.sqrt(q)); }
   function telNo(t) { return String(t || "").replace(/[^0-9]/g, ""); }
   function srcOf(d, id) { var s = (d.sources || []).filter(function (x) { return x.id === id; })[0]; return s ? s.name : id; }
-  function cat(x) { return /^치매안심센터/.test(x.k) ? "치매" : x.k === "정신건강복지센터" ? "마음건강" : x.k === "경로당" ? "경로당" : "돌봄"; }
+  function cat(x) { return x.src === IC_ID ? "통합돌봄" : /^치매안심센터/.test(x.k) ? "치매" : x.k === "정신건강복지센터" ? "마음건강" : x.k === "경로당" ? "경로당" : "돌봄"; }
 
   /** 순수 계산. hhs=[{id,area,lat,lng}], px=공공데이터, geo=좌표 → { link:[], senior:[], seniorTotal, hasGeo } (가까운 순) */
   function model(hhs, px, geo) {
     var d = px || root.__DAEUM_PUBLIC_EXTRA__, g = geo || root.__DAEUM_PUBLIC_GEO__;
+    if (L().merge) d = L().merge(d);
     if (!d || !d.items || !d.items.length || !hhs || !hhs.length) return null;
     var it = d.items, byIx = g && g.by_index ? g.by_index : {};
     function ll(i) { var x = it[i]; if (x.la != null && x.ln != null) return { lat: x.la, lng: x.ln }; var v = byIx[String(i)]; return v ? { lat: v[0], lng: v[1] } : null; }
@@ -35,24 +37,25 @@
       return list.map(function (i) { var p = ll(i); return { i: i, k: p && h.lat != null ? km(h, p) : null }; })
         .sort(function (a, b) { return (a.k == null) - (b.k == null) || (a.k || 0) - (b.k || 0); });
     }
-    var dem = [], mind = [], care = [];
-    it.forEach(function (x, i) { if (/^치매안심센터/.test(x.k)) dem.push(i); else if (x.k === "정신건강복지센터") mind.push(i); else if (x.src === "15004317") care.push(i); });
+    var dem = [], mind = [], care = [], ic = [];
+    it.forEach(function (x, i) { if (/^치매안심센터/.test(x.k)) dem.push(i); else if (x.k === "정신건강복지센터") mind.push(i); else if (x.src === "15004317") care.push(i); else if (x.src === IC_ID) ic.push(i); });
     hhs.forEach(function (h) {
       var emd = normEmd(h.area);
       var dn = nearest(dem, h)[0]; if (dn) take(dn.i, "link", h);
       var mn = nearest(mind, h)[0]; if (mn) take(mn.i, "link", h);
       care.forEach(function (i) { take(i, "link", h); });
+      nearest(ic, h).filter(function (o) { return o.k != null; }).slice(0, IC_PER_HH).forEach(function (o) { take(o.i, "link", h); });
       var same = [], sc = [];
       it.forEach(function (x, i) { if (normEmd(x.emd) !== emd) return; if (x.k === "경로당") sc.push(i); else if (CARE_WORD[word(x.k)] || /재가|돌봄/.test(x.k)) same.push(i); });
       same.forEach(function (i) { take(i, "link", h); });
       sc.forEach(function (i) { seniorEmd[i] = 1; });
       nearest(sc, h).slice(0, SENIOR_PER_HH).forEach(function (o) { take(o.i, "senior", h); });
     });
-    var out = { link: [], senior: [], seniorTotal: Object.keys(seniorEmd).length, hasGeo: !!g, fetched: d.fetched || "", geoSrc: g ? g.source : "" };
+    var out = { link: [], senior: [], icLabel: d.icLabel || "", seniorTotal: Object.keys(seniorEmd).length, hasGeo: !!g, fetched: d.fetched || "", geoSrc: g ? g.source : "" };
     Object.keys(picked).forEach(function (k) {
       var c = picked[k], x = it[c.i];
       out[c.layer].push({ ix: c.i, n: x.n, k: x.k, cat: cat(x), w: word(x.k), a: String(x.a || "").replace(/^경상북도\s*|^경북\s*/, ""), emd: x.emd,
-        tel: x.tel || "", src: x.src, srcName: srcOf(d, x.src), base: x.base || "", stale: !!x.stale,
+        tel: x.tel || "", src: x.src, srcName: srcOf(d, x.src), pg: L().pgOf ? L().pgOf(d, x) : "", base: x.base || "", stale: !!x.stale,
         lat: c.p ? c.p.lat : null, lng: c.p ? c.p.lng : null, km: c.km == null ? null : Math.round(c.km * 10) / 10, hid: c.hid });
     });
     var by = function (a, b) { return (a.km == null) - (b.km == null) || (a.km || 0) - (b.km || 0) || (a.n < b.n ? -1 : 1); };
@@ -74,7 +77,7 @@
       '<span class="nb-k">' + esc(x.cat === "돌봄" ? x.w : x.cat) + "</span>" +
       '<div class="nb-tx"><b class="nb-name" title="' + esc(x.n) + '">' + esc(x.n) + '</b><small class="nb-addr" title="' + esc(x.a) + '">' + esc(x.a) + "</small>" + // 73회차: 띄어쓰기 없는 긴 기관 이름 — 말줄임은 미르 CSS(.nb-name·.nb-addr), 전체 이름은 title
       '<span class="nb-meta"><em class="nb-km">' + kmTxt(x) + "</em>" + (x.km != null ? "<span>" + esc(x.hid) + " 기준</span>" : "") +
-      (x.stale ? '<em class="nb-chk">방문 전 확인 · ' + esc(x.base) + " 명단</em>" : "") + "</span>" +
+      (x.pg ? '<small class="nb-pg">' + esc(x.pg) + "</small>" : "") + (x.stale ? '<em class="nb-chk">방문 전 확인 · ' + esc(x.base) + " 명단</em>" : "") + "</span>" +
       '<span class="nb-src"><i class="src-ico" aria-hidden="true"></i>' + esc(x.srcName) + "(" + esc(x.src) + ")</span></div>" +
       (x.tel ? '<a class="nb-tel" href="tel:' + esc(telNo(x.tel)) + '" aria-label="' + esc(x.n) + " 전화 걸기 " + esc(x.tel) + '">' + ico("tel") + '<span>' + esc(x.tel) + "</span></a>" : "") +
       "</li>";
@@ -87,12 +90,12 @@
       tg("hh", "방문 가구", nHh) + tg("link", "연계처", nL) + tg("senior", "경로당", nS) + '<span class="na">AED — 활용 승인 뒤 같은 층에 추가</span></div>' + // S12-x #97: 연계처·경로당·특보만 · AED는 승인 뒤(회색 한 줄) · 119·무더위쉼터 없음
       (m ? '<details class="nb-list"><summary><span>가까운 순 목록</span><small>' + (on.link ? "연계처 " + nL + "곳" : "") + (on.link && on.senior ? " · " : "") + (on.senior ? "경로당 " + nS + "곳(같은 동네 " + m.seniorTotal + "곳 중 가구마다 가까운 " + SENIOR_PER_HH + "곳)" : "") + (!on.link && !on.senior ? "켜진 층 없음" : "") + "</small></summary>" +
         (rows ? '<ul class="nb-ul">' + rows + "</ul>" : '<p class="nb-none">위 단추로 연계처·경로당을 켜면 여기에 가까운 순으로 나옵니다.</p>') +
-        '<p class="srcline nb-foot">거리: 방문 가구에서 직선거리 «약»(도로 거리 아님) · 위치: ' + esc(m.geoSrc || "자료 원본 좌표") + " · 자료: " + esc(m.fetched) + " 수집 정적 스냅샷 · 경로당은 2018년 명단이라 문을 닫았거나 옮겼을 수 있어 방문 전 확인 · 가구 위치는 가상(시연용) · 연계 여부는 담당 공무원 판단</p></details>" :
+        '<p class="srcline nb-foot">거리: 방문 가구에서 직선거리 «약»(도로 거리 아님) · 위치: ' + esc(m.geoSrc || "자료 원본 좌표") + " · 자료: " + esc(m.fetched) + " 수집 정적 스냅샷" + (m.icLabel ? " · 통합돌봄: " + esc(m.icLabel) : "") + " · 경로당은 2018년 명단이라 문을 닫았거나 옮겼을 수 있어 방문 전 확인 · 가구 위치는 가상(시연용) · 연계 여부는 담당 공무원 판단</p></details>" :
         '<p class="nb-none">주변 정보 자료를 불러오지 못했습니다. 동선 지도는 그대로 씁니다.</p>');
   }
   function iwHtml(x) {
     return '<div class="nb-iw ' + (x.stale ? "stale" : "") + '"><span class="nb-k">' + esc(x.cat === "돌봄" ? x.w : x.cat) + "</span><b>" + esc(x.n) + "</b>" +
-      "<small>" + esc(x.a) + "</small><span class=\"nb-meta\"><em class=\"nb-km\">" + kmTxt(x) + "</em>" + (x.km != null ? "<span>" + esc(x.hid) + " 기준</span>" : "") + "</span>" +
+      "<small>" + esc(x.a) + "</small>" + (x.pg ? '<small class="nb-pg">' + esc(x.pg) + "</small>" : "") + "<span class=\"nb-meta\"><em class=\"nb-km\">" + kmTxt(x) + "</em>" + (x.km != null ? "<span>" + esc(x.hid) + " 기준</span>" : "") + "</span>" +
       (x.stale ? '<em class="nb-chk">방문 전 확인 · ' + esc(x.base) + " 명단</em>" : "") +
       (x.tel ? '<a class="nb-tel" href="tel:' + esc(telNo(x.tel)) + '">전화 ' + esc(x.tel) + "</a>" : "") +
       '<span class="nb-src"><i class="src-ico" aria-hidden="true"></i>' + esc(x.srcName) + "(" + esc(x.src) + ")</span></div>";

@@ -28,15 +28,16 @@
   /* S12-v U5: 연계처·좌표 숫자의 원천 = 데이터 파일 머리말(meta) 한 곳.
      data/public_extra.js(count·sources) + data/resources.js(total) + data/public_extra_geo.js(tried·ok·fail).
      파일을 안 불러온 화면(ai_check 등)은 아래 대체값을 쓰고, guide.test.js 가 대체값 = meta 를 확인한다(갈라지면 시험 실패). */
-  var LINK_FALLBACK = { extra: 712, res: 23, total: 735, sources: 10, orgs: 7, geoTried: 708, geoOk: 692, geoFail: 16 };
+  var LINK_FALLBACK = { extra: 712, res: 23, total: 735, sources: 10, orgs: 7, geoTried: 708, geoOk: 692, geoFail: 16, ic: 73 }; // ic = 94회차 통합돌봄 연계처(15173720, 기존 연계처와 겹친 곳 뺀 수 — total 735 와 따로 셈)
   function links() {
-    var X = window.__DAEUM_PUBLIC_EXTRA__, R = window.__DAEUM_RESOURCES__, Q = window.__DAEUM_PUBLIC_GEO__, o = {}, k;
+    var X = window.__DAEUM_PUBLIC_EXTRA__, R = window.__DAEUM_RESOURCES__, Q = window.__DAEUM_PUBLIC_GEO__, IC = window.__DAEUM_ICARE__, o = {}, k;
     for (k in LINK_FALLBACK) o[k] = LINK_FALLBACK[k];
     if (X) {
       o.extra = X.count != null ? X.count : (X.items || []).length;
       if (X.sources) { var g = {}; X.sources.forEach(function (s) { g[String(s.name).split("_")[0]] = 1; }); o.sources = X.sources.length; o.orgs = Object.keys(g).length; }
     }
     if (R && R.total != null) o.res = R.total;
+    if (IC && IC.count != null) o.ic = IC.count;
     if (Q && Q.tried != null) { o.geoTried = Q.tried; o.geoOk = Q.ok; o.geoFail = Q.fail; }
     o.total = o.extra + o.res;
     o.fromMeta = !!(X && R && Q);
@@ -116,6 +117,12 @@
     { id: "P22", kind: "pub", org: "국토교통부", name: "전국 법정동 코드", no: "15063424", url: "https://www.data.go.kr/data/15063424/fileData.do",
       how: "파일 · 상주 법정동·리 236개", cycle: "정적", base: "코드표",
       screens: [["공무원", "(화면 없음) 건축물대장 수집용"]], does: "건축물대장(D15)을 읍면별로 모으기 위한 코드표" },
+    { id: "P23", kind: "pub", org: "국민건강보험공단", name: "통합돌봄 서비스 자원", no: "15173720", url: "https://www.data.go.kr/data/15173720/fileData.do",
+      how: "파일 · 상주 224행 → 기관 단위로 묶고 기존 연계처와 겹친 곳 뺀 " + LK.ic + "곳(겹친 곳은 기존 줄에 프로그램만)", cycle: "포털 갱신 때", base: "2026-06-30 발췌",
+      screens: [["공무원", "연계 카드 › 통합돌봄"], ["공무원", "지도 › 연계처"]], does: "방문요양·주야간보호·방문진료·식사·이동지원 등 통합돌봄 제공기관과 프로그램" },
+    { id: "P24", kind: "pub", org: "보건복지부", name: "기초연금 인구 수급율 현황", no: "15161618", url: "https://www.data.go.kr/data/15161618/fileData.do",
+      how: "파일 · 시군구 단위(읍면 값 없음) · 2025-12 상주 1행 + 경북 22개 시군 순위", cycle: "포털 갱신 때", base: "기준 2025-12",
+      screens: [["공무원", "보고 › 지역 현황"]], does: "상주시 기초연금 수급률 한 줄 비교(방문 순서 점수엔 안 씀)" },
 
     { id: "V1", kind: "virt", org: "닿음(시연)", name: "가상 가구 300곳 · 가상 발굴 명단", no: "", url: "",
       how: "생성기 data/tools/make_households.py(시드 고정)", cycle: "고정", base: "2026-10-29 생성",
@@ -201,7 +208,7 @@
     [/15108347|지자체복지서비스/, "D2"], [/15090532|중앙부처복지서비스/, "D1"], [/서비스 목록/, "D1"],
     [/Directions|도로 경로/, "N1"], [/Web Dynamic Map|네이버 지도/, "N2"], [/네이버/, "N1"], [/실시간 동기화/, "L1"], [/주소정보누리집/, "K1"], [/15001839|자원정보/, "P3"],
     [/15160109|사회복지시설 정보/, "P11"], [/15005238|경로당/, "P12"], [/15005324|장애인복지시설/, "P13"], [/15138421|15145246|치매안심센터/, "P14"], [/15167096|정신건강복지센터/, "P16"],
-    [/15004317|노인돌봄서비스 기관/, "P17"], [/15070368|우체국/, "P18"], [/15010814|국민연금공단/, "P19"], [/15142232|건강보험공단/, "P20"], [/15063424|법정동 코드/, "P22"],
+    [/15004317|노인돌봄서비스 기관/, "P17"], [/15070368|우체국/, "P18"], [/15010814|국민연금공단/, "P19"], [/15173720|통합돌봄/, "P23"], [/15161618|기초연금 인구 수급율/, "P24"], [/15142232|건강보험공단/, "P20"], [/15063424|법정동 코드/, "P22"],
     [/15084084|단기예보|초단기실황/, "F1"], [/15000652|AED/, "F3"], [/15059029|장기요양기관/, "F4"], [/AI 스피커|무반응|협약 기관|가상 신호/, "V2"], [/지난 차수|동네 미신청/, "V3"], [/가상 사연/, "V4"],
     [/발굴 명단|가상 가구|가구 수는 가상|명단은 가상|가상 명단|가구는 가상/, "V1"],
     [/자체 측정/, "S1"], [/담당자 표시 기록|담당자 기록/, "S2"],

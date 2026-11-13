@@ -4,6 +4,8 @@
      좌표 못 받은 곳·가구 좌표 없을 때는 읍면동 묶음 그대로(뒤로).
    · 경로당 581곳은 2018-06-30 기준(stale) → 늘 «방문 전 확인» 표시.
    · 판단은 담당 공무원 — 점수·추천 없음, 가구 사정에 맞는 칸만 눈에 띄게(나이 65세 이상·혼자 사심).
+   · 94회차: data/integrated_care.js(window.__DAEUM_ICARE__, 국민건강보험공단 통합돌봄 서비스 자원 15173720, 2026-06-30 발췌) — 기존 연계처와 겹치지 않는 73곳을
+     «통합돌봄» 칸으로 이어 붙인다(merge). 겹친 기관은 also(이름 → 통합돌봄 프로그램)로 기존 줄에 한 줄만 붙인다. 좌표는 같은 K1 방식으로 미리 계산(la/ln).
    ⛔ 주민 화면·신고 접수 없음 · 서버 전송 0 · 가구 개인정보는 화면 안에서만 씀. */
 (function (root) {
   "use strict";
@@ -11,8 +13,28 @@
     "치매안심센터": "치매", "치매안심센터 분소": "치매", "정신건강복지센터": "마음건강",
     "재가노인복지시설": "방문 돌봄", "노인돌봄 · 재가노인복지시설": "방문 돌봄", "노인돌봄 · 노인여가복지시설": "어르신 복지관",
     "노인의료복지시설 · 노인요양시설": "요양원", "노인의료복지시설 · 노인요양공동생활가정": "요양원(소규모)", "노인의료복지시설 · 노인전문병원": "요양원",
-    "우체국": "우체국", "다함께돌봄센터": "아이 돌봄", "아동복지시설 · 지역아동센터": "아이 돌봄", "경로당": "경로당"
+    "우체국": "우체국", "다함께돌봄센터": "아이 돌봄", "아동복지시설 · 지역아동센터": "아이 돌봄", "경로당": "경로당", "통합돌봄": "통합돌봄"
   };
+  var IC_ID = "15173720", IC_NEAR = 5;
+  /** 공공데이터 712건 + 통합돌봄 연계처를 한 목록으로(기존 순번은 그대로 — 좌표 by_index 가 순번을 씀, 통합돌봄은 뒤에 붙고 la/ln 을 가짐) */
+  var mc = { px: null, ic: null, out: null };
+  function merge(d, ic) {
+    ic = ic || root.__DAEUM_ICARE__;
+    if (!d || !d.items || d.__ic || !ic || !ic.items || !ic.items.length) return d;
+    if (mc.px === d && mc.ic === ic) return mc.out;
+    var o = Object.assign({}, d, { items: d.items.concat(ic.items), sources: (d.sources || []).concat([{ id: ic.source.id, name: ic.source.name, base: ic.source.base, label: ic.source.label }]),
+      also: ic.also || {}, icCount: ic.items.length, icLabel: ic.source.label, __ic: true });
+    mc = { px: d, ic: ic, out: o };
+    return o;
+  }
+  /** 통합돌봄 프로그램 한 줄(중분류 · 프로그램 앞 두 개) — 통합돌봄 기관이면 그 자체, 기존 연계처면 also */
+  function pgOf(d, x) {
+    var r = x.src === IC_ID ? x : d && d.also ? d.also[x.n] : null;
+    if (!r || !(r.mid || []).length) return "";
+    var pg = (r.pg || []).slice(0, 2).join(", ") + ((r.pg || []).length > 2 ? " 외 " + (r.pg.length - 2) : "");
+    return (x.src === IC_ID ? "" : "통합돌봄 · ") + r.mid.join(" · ") + (pg ? " — " + pg : "");
+  }
+  function isCare(x) { return x.src === IC_ID ? (x.big || []).some(function (b) { return /장기요양|일상생활돌봄/.test(b); }) : /재가|돌봄/.test(x.k); }
   function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   /** 읍면동 이름 맞추기 — 2020년 «사벌면 → 사벌국면» 개칭 반영, 공백 제거 */
   function normEmd(s) { s = String(s || "").replace(/\s+/g, ""); return s === "사벌면" ? "사벌국면" : s; }
@@ -24,7 +46,7 @@
     if (/노인/.test(k)) return "어르신 복지";
     return String(k || "복지시설").split(" · ")[0];
   }
-  function data(px) { var d = px || root.__DAEUM_PUBLIC_EXTRA__; return d && d.items && d.items.length ? d : null; }
+  function data(px) { var d = merge(px || root.__DAEUM_PUBLIC_EXTRA__); return d && d.items && d.items.length ? d : null; }
   function geoOf(g) { return g || root.__DAEUM_PUBLIC_GEO__ || null; }
   /** 항목 좌표: 원본(la/ln) 우선, 없으면 주소정보누리집 변환본 */
   function ll(d, x, g) { if (x.la != null && x.ln != null) return { lat: x.la, lng: x.ln }; var i = d.items.indexOf(x), v = g && g.by_index ? g.by_index[String(i)] : null; return v ? { lat: v[0], lng: v[1] } : null; }
@@ -55,9 +77,11 @@
     var care = near(it.filter(function (x) { return x.src === "15004317"; }));
     var same = near(it.filter(function (x) { return normEmd(x.emd) === emd && !/^치매안심센터/.test(x.k); }));
     var others = same.filter(function (x) { return x.k !== "경로당"; });
+    var inSame = {}; others.forEach(function (x) { inSame[x.n + "|" + x.a] = 1; });
+    var icNear = me ? near(it.filter(function (x) { return x.src === IC_ID && !inSame[x.n + "|" + x.a]; })).filter(function (x) { return x.km != null; }).slice(0, IC_NEAR) : [];
     var senior = same.filter(function (x) { return x.k === "경로당"; });
     return { emd: emd, need: needOf(h), dementia: demNear || demMain, dementiaNear: !!demNear, dementiaMain: demMain,
-      mind: mind, care: care, others: others, seniorCtr: senior, fetched: d.fetched, geo: !!(me && g), geoSrc: g ? g.source : "" };
+      mind: mind, care: care, others: others, icNear: icNear, icTotal: d.icCount || 0, seniorCtr: senior, fetched: d.fetched, geo: !!(me && g), geoSrc: g ? g.source : "" };
   }
 
   function chip(cls, lb, name, sub, on) {
@@ -66,6 +90,7 @@
   function row(x, d) {
     var stale = !!x.stale;
     return '<li class="' + (stale ? "stale" : "") + '"><span class="lk-k">' + esc(word(x.k)) + "</span><div><b>" + esc(x.n) + "</b><small>" + esc(String(x.a || "").replace(/^경상북도\s*|^경북\s*/, "")) + "</small>" +
+      (pgOf(d, x) ? '<small class="lk-pg">' + esc(pgOf(d, x)) + "</small>" : "") +
       (x.km != null ? '<span class="lk-km">약 ' + x.km + " km</span>" : "") + (stale ? '<em class="lk-stale">방문 전 확인 · ' + esc(x.base) + " 명단</em>" : "") + "</div>" + (x.tel ? tel(x.tel) : "") + "</li>";
   }
 
@@ -73,29 +98,31 @@
   function html(h, px, geo) {
     var d = data(px), p = pick(h, d, geo); if (!p) return "";
     var n = p.need, dm = p.dementia;
-    var careNear = p.others.filter(function (x) { return /재가|돌봄/.test(x.k); }).length;
+    var careNear = p.others.filter(isCare).length;
     var line = '<div class="lk-line" role="list">' +
       (dm ? chip("dem", "치매", dm.n.replace(/^(경상북도)?상주시치매안심센터\s*/, "치매안심센터 ").trim() + (dm.km != null ? " · 약 " + dm.km + "km" : ""), tel(dm.tel), n.dementia) : "") +
       (p.mind ? chip("mind", "마음건강", "정신건강복지센터", tel(p.mind.tel), n.mind) : "") +
       chip("care", "돌봄", careNear ? "같은 동네 방문 돌봄 " + careNear + "곳" : "어르신 돌봄 기관 " + p.care.length + "곳", "", n.care) +
       "</div>";
     var ids = {}; p.others.concat(p.seniorCtr).forEach(function (x) { ids[x.src] = 1; });
-    if (dm) ids[dm.src] = 1; if (p.mind) ids[p.mind.src] = 1; p.care.forEach(function (x) { ids[x.src] = 1; });
-    var srcs = Object.keys(ids).map(function (id) { return srcName(d, id) + "(" + id + ")"; });
+    if (dm) ids[dm.src] = 1; if (p.mind) ids[p.mind.src] = 1; p.care.forEach(function (x) { ids[x.src] = 1; }); p.icNear.forEach(function (x) { ids[x.src] = 1; });
+    var srcs = Object.keys(ids).map(function (id) { return id === IC_ID && d.icLabel ? d.icLabel : srcName(d, id) + "(" + id + ")"; });
+    var icSame = p.others.filter(function (x) { return x.src === IC_ID; }).length, icList = p.icNear.map(function (x) { return row(x, d); }).join("");
     var careList = p.care.map(function (x) { return row(x, d); }).join("");
     var list = p.others.map(function (x) { return row(x, d); }).join("");
     var sc = p.seniorCtr;
     return '<section class="lkc blk" aria-label="연계처">' +
       '<div class="lk-h"><b>연계처 · ' + esc(p.emd) + "</b><span>판단은 담당자</span></div>" + line +
-      '<details class="lk-more"><summary>같은 동네 연계처 ' + p.others.length + "곳 · 경로당 " + sc.length + "곳</summary>" +
+      '<details class="lk-more"><summary>같은 동네 연계처 ' + p.others.length + "곳" + (icSame + p.icNear.length ? " · 통합돌봄 " + (icSame + p.icNear.length) + "곳" : "") + " · 경로당 " + sc.length + "곳</summary>" +
       (list ? '<ul class="lk-l">' + list + "</ul>" : '<p class="lk-none">같은 읍면동에 등록된 시설이 없습니다. 위의 시 전체 기관으로 연결합니다.</p>') +
+      (icList ? '<p class="lk-sub">통합돌봄 연계처 — 가까운 ' + p.icNear.length + "곳(시 전체 " + p.icTotal + "곳 중)</p>" + '<ul class="lk-l">' + icList + "</ul>" : "") +
       (careList ? '<p class="lk-sub">어르신 돌봄 기관(시 전체)</p><ul class="lk-l">' + careList + "</ul>" : "") +
       (sc.length ? '<p class="lk-sub">경로당 — 2018년 명단이라 문을 닫았거나 옮겼을 수 있습니다. 방문 전 확인</p><ul class="lk-l">' + sc.map(function (x) { return row(x, d); }).join("") + "</ul>" : "") +
       "</details>" +
       '<p class="srcline">출처: <i class="src-ico" aria-hidden="true"></i>' + esc(srcs.join(" · ")) + " · " + esc(p.fetched || "") + " 수집 · " + (p.geo ? "위치: 주소정보누리집(행정안전부) 좌표 · 거리는 직선거리 «약» · 위치를 못 찾은 곳은 읍면동으로 묶어 뒤에" : "자료에 위치가 없는 곳은 읍면동으로 묶었습니다") + "</p></section>";
   }
 
-  var api = { pick: pick, html: html, normEmd: normEmd, word: word, needOf: needOf };
+  var api = { pick: pick, html: html, normEmd: normEmd, word: word, needOf: needOf, merge: merge, pgOf: pgOf, IC_ID: IC_ID };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.DaeumLink = api;
 })(typeof window !== "undefined" ? window : globalThis);

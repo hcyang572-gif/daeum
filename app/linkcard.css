@@ -20,4 +20,5 @@
 .lk-k { font-size: var(--fs-1); font-weight: 900; padding: 3px 7px; border-radius: 6px; background: var(--well); white-space: nowrap; margin-top: 1px; }
 .lk-stale { display: inline-block; margin-top: 3px; font-style: normal; font-size: var(--fs-1); font-weight: 800; color: #7A4B00; background: #FFF1D6; padding: 2px 6px; border-radius: 5px; }
 @media print { .lk-more { display: none; } }
+.lk-l li small.lk-pg { color: var(--ink); opacity: .78; margin-top: 2px; } /* 94회차 통합돌봄 프로그램 한 줄 — 조용하게 */
 .lk-km { display: inline-block; margin: 3px 6px 0 0; font-size: var(--fs-1); font-weight: 800; color: var(--ink); }
