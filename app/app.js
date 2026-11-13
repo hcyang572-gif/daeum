@@ -208,7 +208,7 @@
     sk = '<button class="ky pr bud' + (ba ? " alarm" : "") + (sf && sf.hid ? " on" : "") + '" data-act="safety" aria-label="' + skl + '">' + I.shield + '<span class="bt">' + skt + "</span><i class=\"bd\" aria-hidden=\"true\">" + (ba || "") + "</i></button>"; // 78회차 ⓪-1: 확인할 것 수(점·숫자)
     var veil = document.body.classList.contains("fd-veil");
     var title = cur === "today" || !T || wide ? "<b>닿음</b><small>" + NAME + "</small>" : "<b>" + T[1] + "</b><small>" + (D_[T[0]] || "") + "</small>";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z95" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z97" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc((demoNo(SY.state().user) ? "시연 " + demoNo(SY.state().user) + " · " : "") + si.txt) + "</button>" : "") + // 95회차 ⑤: PC 머리에 지금 시연 번호 — 설명서 «PC에 보이는 번호를 폰 «시연 바꾸기»에서 고름»
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +
@@ -889,7 +889,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z95"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z97"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -1371,7 +1371,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z95"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z97"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -2145,7 +2145,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z95")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z95"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z97")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z97"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -2510,7 +2510,7 @@
       try { n.focus({ preventScroll: true }); } catch (e) { /* 무시 */ }
     };
   }
-  function bootOpen() { if (BOOT.open) return; BOOT.open = true; render(); }
+  function bootOpen() { if (BOOT.open) return; BOOT.open = true; render(); if (window.__daeumBoot) window.__daeumBoot.done(); } // 97회차: 첫 화면을 그렸으면 진척 100% → 핀이 집에 닿고 로딩 층이 사라짐(index.html #dboot)
   /** 84회차 ④: 화면 그리기가 예외로 멈추면 «불러오는 중»에 갇히지 않게 비상 카드 — 오늘로 가기 · 시연 처음 상태로 */
   var renderFails = 0;
   function render(soft) {
@@ -2621,7 +2621,8 @@
     //   화면 전체를 한 번 더 그렸다(full 2). 이제 연동 상태가 끝까지 정해질 때(live·local·offline) 연다. 로그인 기록이 없으면 기다리지 않는다.
     //   상한: 로그인 기록 있음 4초(라이브러리·채널 붙기) · 없음 1.5초(글꼴만)
     var authed = false; try { authed = !!(SY.state().enabled && localStorage.getItem("daeum.auth")); } catch (e) { authed = false; }
-    var syncOk = !authed, fontOk = false, go = function () { if (syncOk && fontOk) bootOpen(); };
+    var syncOk = !authed, fontOk = false, DB = window.__daeumBoot, go = function () { if (DB) { if (fontOk) DB.mark("font"); if (syncOk) DB.mark("sync"); } if (syncOk && fontOk) bootOpen(); }; // 97회차: 글꼴·연동도 진척에 반영
+    if (DB) DB.need(authed);
     SY.on(function (what) { if (syncOk || what !== "mode") return; if (/^(live|local|offline)$/.test(SY.state().mode)) { syncOk = true; go(); } });
     try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fontOk = true; go(); }, function () { fontOk = true; go(); }); else fontOk = true; } catch (e) { fontOk = true; }
     setTimeout(bootOpen, authed ? 4000 : 1500);

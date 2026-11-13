@@ -6,8 +6,8 @@
 <!-- S12-v U29(보안 5-4): GitHub Pages 는 헤더를 못 달아 meta CSP. 허용 = 같은 출처 + 닿음 Supabase(https·wss) + 글꼴(jsdelivr·Google) + xlsx(cdnjs) + 네이버 지도(*.naver.com·*.naver.net·*.pstatic.net).
      script 'unsafe-inline' 은 네이버 지도·설문 글꼴 onload 가 깨지지 않게 남김(지도 실동작 확인 뒤 조일 것). jsdelivr 스크립트 허용은 sync.js 가 shared/vendor/ 로 바뀌면 뺄 수 있음. 문제 생기면 이 meta 한 줄만 지우면 원상. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.naver.com https://*.naver.net https://*.pstatic.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://*.naver.com https://*.naver.net https://*.pstatic.net; font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data: blob: https://*.naver.com https://*.naver.net https://*.pstatic.net; connect-src 'self' https://gicjzrxgktpovnphtjhi.supabase.co wss://gicjzrxgktpovnphtjhi.supabase.co https://*.naver.com https://*.naver.net https://*.pstatic.net https://*.navercorp.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
-<link rel="manifest" href="manifest.webmanifest?v=s12z95">
-<link rel="apple-touch-icon" href="shared/icons/apple-touch-icon.png?v=s12z95">
+<link rel="manifest" href="manifest.webmanifest?v=s12z97">
+<link rel="apple-touch-icon" href="shared/icons/apple-touch-icon.png?v=s12z97">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,7 +16,7 @@
 <meta name="description" content="복지 사각지대 현장 업무 도우미(닿음) — 한국사회보장정보원 발굴 명단을 받은 날부터 방문·기록·보고까지, 같은 내용을 두 번 쓰지 않는 공무원 전용 시제품(상주시 적용 예시, 가구는 모두 가상)">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#F3F1EC">
-<link rel="icon" href="shared/icons/daeum.svg?v=s12z95" type="image/svg+xml">
+<link rel="icon" href="shared/icons/daeum.svg?v=s12z97" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="복지 사각지대 현장 업무 도우미 — 닿음">
 <meta property="og:url" content="https://hcyang572-gif.github.io/daeum/">
@@ -33,19 +33,19 @@
 <!-- 84회차 ⑮: Noto Sans KR 내려받기 뺌(대체 글꼴일 뿐 — Pretendard·시스템 글꼴이 받음). IBM Plex Sans KR(문서 미리보기 --f-doc 한 곳)은 첫 화면을 막지 않게 따로·늦게 -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="shared/chips.css?v=s12z95">
-<link rel="stylesheet" href="shared/datasrc.css?v=s12z95">
-<link rel="stylesheet" href="app/linkcard.css?v=s12z95">
-<link rel="stylesheet" href="shared/scope_map.css?v=s12z95">
-<link rel="stylesheet" href="shared/a11y.css?v=s12z95">
-<link rel="stylesheet" href="officer/nearby_layer.css?v=s12z95">
-<link rel="stylesheet" href="app/weather.css?v=s12z95">
+<link rel="stylesheet" href="shared/chips.css?v=s12z97">
+<link rel="stylesheet" href="shared/datasrc.css?v=s12z97">
+<link rel="stylesheet" href="app/linkcard.css?v=s12z97">
+<link rel="stylesheet" href="shared/scope_map.css?v=s12z97">
+<link rel="stylesheet" href="shared/a11y.css?v=s12z97">
+<link rel="stylesheet" href="officer/nearby_layer.css?v=s12z97">
+<link rel="stylesheet" href="app/weather.css?v=s12z97">
 <!-- S12-x 65회차 새 셸: 옛 화면 CSS 5개(app·shell·record·field·s12x)는 빼고, 내용 규칙만 옮긴 보충(v3_live.css, _design/build_v3_live.py) → 맨 끝에 시안 v3 겉모습(v3.css, 🩵 미르) -->
-<link rel="stylesheet" href="app/fix72.css?v=s12z95"><!-- 72회차 ⚙️ 파로: 일차 날짜·로딩 표시·설치 띠 (v3.css 를 맨 끝에 두는 규칙 때문에 여기, 덮을 곳은 #pwa-install 로 우선)-->
-<link rel="stylesheet" href="app/team.css?v=s12z95"><!-- 68회차 S12-z4 팀 화면(⚙️ 파로) -->
-<link rel="stylesheet" href="app/onboard.css?v=s12z95"><!-- 69회차 S12-z3 첫 실행 안내·로그인 창(⚙️ 파로, 미르 시안 2판) -->
-<link rel="stylesheet" href="app/v3_live.css?v=s12z95">
-<link rel="stylesheet" href="app/v3.css?v=s12z95">
+<link rel="stylesheet" href="app/fix72.css?v=s12z97"><!-- 72회차 ⚙️ 파로: 일차 날짜·로딩 표시·설치 띠 (v3.css 를 맨 끝에 두는 규칙 때문에 여기, 덮을 곳은 #pwa-install 로 우선)-->
+<link rel="stylesheet" href="app/team.css?v=s12z97"><!-- 68회차 S12-z4 팀 화면(⚙️ 파로) -->
+<link rel="stylesheet" href="app/onboard.css?v=s12z97"><!-- 69회차 S12-z3 첫 실행 안내·로그인 창(⚙️ 파로, 미르 시안 2판) -->
+<link rel="stylesheet" href="app/v3_live.css?v=s12z97">
+<link rel="stylesheet" href="app/v3.css?v=s12z97">
 <style>
   .pwa { max-width: 460px; margin: 0 auto 120px; padding: 0 16px; font-size: 13px; color: #47535B; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .pwa[hidden], .pwa [hidden] { display: none; }
@@ -55,7 +55,121 @@
 </style>
 </head>
 <body>
-<div class="app" id="app"><div class="boot" role="status" aria-live="polite"><span class="boot-mark" aria-hidden="true"><i></i></span><b>닿음</b><span>불러오는 중…</span><span class="boot-bar" aria-hidden="true"><i></i></span></div></div>
+<div class="app" id="app"></div>
+<!-- 97회차(11-14 호창님 «얼마나 진행됐고 얼마나 남은지 깜찍하고 멋지게», 🩵 미르): 첫 로딩 진척 — 닿음 아이콘처럼 접힌 지도 위 길을 핀이 걸어가 집에 닿는다.
+     진척 = 아래 <script src> 가 실제로 하나씩 받아져 실행된 수(80%) + 글꼴·연동(10%) + 첫 화면 그리기(나머지). 가짜로 차오르지 않는다.
+     DBOOT_PLAN = "화면 틀 끝 번호, 가구 명단 끝 번호, 전체 스크립트 수" — 스크립트를 넣고 빼면 이 숫자를 고친다(시험 app/boot97.test.js 가 맞춰 봄). -->
+<div id="dboot" role="progressbar" aria-label="닿음 불러오는 중" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div class="db-card">
+    <div class="db-brand"><b>닿음</b><small>복지 사각지대 현장 업무 도우미</small></div>
+    <svg class="db-scene" viewBox="0 0 320 134" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="dbRun" gradientUnits="userSpaceOnUse" x1="34" y1="0" x2="273" y2="0"><stop offset="0" stop-color="#3A97A6"/><stop offset=".6" stop-color="#1F6676"/><stop offset="1" stop-color="#174F5B"/></linearGradient>
+        <radialGradient id="dbPinG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#3FA0AE"/><stop offset=".55" stop-color="#1F6676"/><stop offset="1" stop-color="#103C46"/></radialGradient>
+        <radialGradient id="dbGlow"><stop offset="0" stop-color="#F7CF7A" stop-opacity=".85"/><stop offset="1" stop-color="#F7CF7A" stop-opacity="0"/></radialGradient>
+        <radialGradient id="dbFloor"><stop offset="0" stop-color="#11181C" stop-opacity=".13"/><stop offset="1" stop-color="#11181C" stop-opacity="0"/></radialGradient>
+      </defs>
+      <ellipse cx="160" cy="124" rx="158" ry="9" fill="url(#dbFloor)"/>
+      <path d="M8 56 84 49V117L8 121Z" fill="#FBFAF7"/><path d="M84 49 160 56V121L84 117Z" fill="#ECE8E1"/>
+      <path d="M160 56 236 49V117L160 121Z" fill="#FBFAF7"/><path d="M236 49 312 56V121L236 117Z" fill="#ECE8E1"/>
+      <path d="M8 56 84 49 160 56 236 49 312 56" fill="none" stroke="#FFFFFF" stroke-width="1.2" opacity=".9"/>
+      <path class="trk" d="M34 96C78 64 112 116 160 92S236 70 273 95"/>
+      <path class="run" id="dbPath" d="M34 96C78 64 112 116 160 92S236 70 273 95" pathLength="100" stroke-dasharray="0 100"/>
+      <circle cx="34" cy="96" r="5.5" fill="#FBFAF7" stroke="#1F6676" stroke-width="2.4"/>
+      <g class="db-house">
+        <circle class="glow" cx="293" cy="74" r="22" fill="url(#dbGlow)"/>
+        <rect x="296" y="42" width="7" height="14" rx="1.5" fill="#B9B3A8"/>
+        <path d="M262 62h44v33h-44z" fill="#FFFFFF" stroke="#D6D1C8" stroke-width="1"/>
+        <path d="M259 63 284 42 309 63Z" fill="#E7E1D6"/>
+        <path d="M255 64 284 40 313 64" fill="none" stroke="#5E6B72" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="267" y="76" width="12" height="19" rx="2" fill="#D9D4CB"/>
+        <rect class="win" x="286" y="68" width="14" height="12" rx="2"/>
+        <path d="M293 68v12M286 74h14" stroke="#FFFFFF" stroke-width="1.4"/>
+      </g>
+      <g class="db-pin" id="dbPin" transform="translate(34 96)">
+        <ellipse class="sh" cx="0" cy="0" rx="8" ry="2.6" fill="#11181C" opacity=".32"/>
+        <g class="bob">
+          <path d="M0 0C-3-8-14-16-14-27a14 14 0 1 1 28 0C14-16 3-8 0 0Z" fill="url(#dbPinG)"/>
+          <circle cx="0" cy="-27" r="6.5" fill="#F7F3EA" stroke="#B99B63" stroke-width="3"/>
+          <ellipse cx="-6" cy="-33" rx="3" ry="5" fill="#FFFFFF" opacity=".28" transform="rotate(28 -6 -33)"/>
+        </g>
+      </g>
+    </svg>
+    <div class="db-num"><span id="dbPct">0</span><small>%</small></div>
+    <div class="db-now" id="dbNow" aria-live="polite">화면 틀 세우는 중</div>
+    <ol class="db-steps" aria-hidden="true"><li class="on"><span><i></i></span>화면</li><li><span><i></i></span>가구 명단</li><li><span><i></i></span>업무 도구</li><li><span><i></i></span>연동·마무리</li></ol>
+    <div class="db-left" id="dbLeft">&nbsp;</div>
+    <div class="db-retry" id="dbRetry"><p id="dbWhy">연결이 느립니다. 조금 더 기다리거나 다시 시도해 보세요.</p><button type="button" id="dbAgain">다시 시도</button></div>
+  </div>
+</div>
+<script>
+(function () {
+  var DBOOT_PLAN = "3,12,38"; // 화면 틀 끝 · 가구 명단 끝 · 전체 <script src> 수
+  var P = DBOOT_PLAN.split(",").map(Number), N = P[2], el = document.getElementById("dboot");
+  if (!el) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var path = $("dbPath"), pin = $("dbPin"), pctEl = $("dbPct"), nowEl = $("dbNow"), leftEl = $("dbLeft"), steps = el.querySelectorAll(".db-steps li");
+  var RM = false; try { RM = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { RM = false; }
+  var len = 0; try { len = path.getTotalLength(); } catch (e) { len = 0; }
+  var k = 0, font = false, sync = false, needSync = false, finished = false, target = 6, shown = 0, raf = 0, lastNow = "";
+  var NOW = ["화면 틀 세우는 중", "가구 명단 불러오는 중", "방문 순서·업무 도구 준비 중"];
+  function stepOf() { return k < P[0] ? 0 : k < P[1] ? 1 : k < N ? 2 : 3; }
+  function calc() {
+    var t = 6 + 80 * Math.min(k, N) / N + (k >= N ? (font ? 5 : 0) + (sync || !needSync ? 5 : 0) : 0);
+    target = finished ? 100 : Math.min(97, t);
+  }
+  function paint() {
+    var p = Math.max(0, Math.min(100, shown)), s = stepOf(), b = [0, P[0], P[1], N], i;
+    pctEl.textContent = Math.floor(p + .001);
+    el.setAttribute("aria-valuenow", Math.floor(p));
+    path.setAttribute("stroke-dasharray", p.toFixed(2) + " 100");
+    if (len) { var pt = path.getPointAtLength(len * p / 100); pin.setAttribute("transform", "translate(" + pt.x.toFixed(1) + " " + pt.y.toFixed(1) + ")"); }
+    for (i = 0; i < 4; i++) {
+      var f = i < 3 ? Math.max(0, Math.min(1, (k - b[i]) / (b[i + 1] - b[i]))) : (finished ? 1 : k >= N ? ((font ? .5 : 0) + (sync || !needSync ? .5 : 0)) * .9 : 0);
+      steps[i].style.setProperty("--f", f.toFixed(3));
+      steps[i].className = f >= 1 ? "ok" : (i === s ? "on" : "");
+    }
+    var now = finished ? "준비 끝" : s < 3 ? NOW[s] : (needSync && !sync ? "연동 확인하는 중" : "첫 화면 그리는 중");
+    if (now !== lastNow && !el.classList.contains("err")) { nowEl.textContent = now; lastNow = now; }
+    leftEl.textContent = finished ? "곧 열립니다" : k < N ? "남은 자료 " + (N - k) + "개" : "거의 다 왔습니다";
+  }
+  function close() {
+    if (el.classList.contains("reach")) return;
+    el.classList.add("reach");
+    setTimeout(function () { el.classList.add("out"); setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 480); }, RM ? 60 : 520);
+  }
+  function tick() {
+    raf = 0;
+    var d = target - shown;
+    shown = RM || Math.abs(d) < .3 ? target : shown + d * .16 + (d > 0 ? .15 : -.15);
+    paint();
+    if (shown !== target) raf = requestAnimationFrame(tick); else if (finished) close();
+  }
+  function kick() { calc(); if (!raf) raf = requestAnimationFrame(tick); }
+  function stall(err) {
+    if (finished) return;
+    el.classList.add("slow");
+    if (err) { el.classList.add("err"); nowEl.textContent = "일부 자료를 받지 못했습니다"; $("dbWhy").textContent = "인터넷 연결을 확인한 뒤 다시 시도해 주세요."; }
+  }
+  // 문서에 적힌 스크립트만 센다(나중에 끼워 넣는 스크립트는 async 라 빠짐 — 연동 라이브러리·지도 등)
+  function onLoad(e) { var t = e.target; if (t && t.tagName === "SCRIPT" && t.src && !t.async && !finished) { k++; kick(); } }
+  function onErr(e) { var t = e.target; if (t && t.tagName === "SCRIPT" && !t.async && !finished) { k++; kick(); stall(true); } }
+  document.addEventListener("load", onLoad, true);
+  document.addEventListener("error", onErr, true);
+  $("dbAgain").addEventListener("click", function () { location.reload(); });
+  var slowT = setTimeout(function () { stall(false); }, 15000);
+  window.__daeumBoot = {
+    need: function (v) { needSync = !!v; kick(); },                 // app.js: 로그인 기록이 있어 연동을 기다리는가
+    mark: function (what) { if (what === "font") font = true; if (what === "sync") sync = true; kick(); },
+    done: function () {                                              // app.js bootOpen: 첫 화면을 그렸다
+      if (finished) return; finished = true; k = Math.max(k, N); clearTimeout(slowT);
+      document.removeEventListener("load", onLoad, true); document.removeEventListener("error", onErr, true);
+      el.classList.remove("slow", "err"); kick();
+    }
+  };
+  kick();
+})();
+</script>
 <div id="pwa-install" class="pwa" hidden>
   <i class="pwa-ic" aria-hidden="true"></i><span><b>홈 화면에 설치</b> · 앱처럼 전체 화면으로 열립니다</span>
   <button type="button" data-pwa="btn" hidden>설치하기</button>
@@ -68,43 +182,43 @@
 </div>
 <noscript><p style="padding:24px">이 화면은 자바스크립트가 켜져 있어야 합니다.</p></noscript>
 <!-- S12-x 65회차: 바탕·폭 판정(html[data-mode])을 앱보다 먼저 → 시안 v3 아이콘 묶음 → 앱 -->
-<script src="app/s12x_bg.js?v=s12z95"></script>
-<script src="shared/icons_s12x.js?v=s12z95"></script>
-<script src="shared/config.js?v=s12z95"></script>
-<script src="data/households.js?v=s12z95"></script>
-<script src="data/alerts_demo.js?v=s12z95"></script>
-<script src="data/old_house.js?v=s12z95"></script>
-<script src="data/recipients_sangju.js?v=s12z95"></script>
-<script src="data/resources.js?v=s12z95"></script>
-<script src="data/public_extra.js?v=s12z95"></script>
-<script src="data/public_extra_geo.js?v=s12z95"></script>
-<script src="data/integrated_care.js?v=s12z95"></script><!-- 94회차: 통합돌봄 연계처(15173720) -->
-<script src="data/base_pension.js?v=s12z95"></script><!-- 94회차: 기초연금 수급률(15161618) -->
-<script src="officer/features.js?v=s12z95"></script>
-<script src="officer/fieldwork.js?v=s12z95"></script>
-<script src="officer/priority.js?v=s12z95"></script>
-<script src="officer/route_plan.js?v=s12z95"></script>
-<script src="officer/old_house.js?v=s12z95"></script>
-<script src="officer/notify.js?v=s12z95"></script>
-<script src="data/demo_list_full.js?v=s12z95"></script>
-<script src="officer/import_list.js?v=s12z95"></script>
-<script src="officer/demo_seed.js?v=s12z95"></script>
-<script src="shared/sync.js?v=s12z95"></script>
-<script src="shared/chips.js?v=s12z95"></script>
-<script src="app/shell.js?v=s12z95"></script>
-<script src="app/record.js?v=s12z95"></script>
-<script src="app/field.js?v=s12z95"></script>
-<script src="app/linkcard.js?v=s12z95"></script>
-<script src="officer/nearby_layer.js?v=s12z95"></script>
-<script src="shared/scope_map.js?v=s12z95"></script>
-<script src="app/hrec.js?v=s12z95"></script>
-<script src="app/onboard.js?v=s12z95"></script><!-- 69회차 S12-z3 -->
-<script src="app/app.js?v=s12z95"></script>
-<script src="shared/team_sync.js?v=s12z95"></script><!-- 68회차 S12-z4 팀 연동·팀 현황(⚙️ 파로) -->
-<script src="app/team.js?v=s12z95"></script>
-<script src="app/weather.js?v=s12z95"></script>
-<script src="app/motion.js?v=s12z95"></script>
-<script src="shared/pwa.js?v=s12z95"></script>
-<script src="shared/a11y.js?v=s12z95"></script>
+<script src="app/s12x_bg.js?v=s12z97"></script>
+<script src="shared/icons_s12x.js?v=s12z97"></script>
+<script src="shared/config.js?v=s12z97"></script>
+<script src="data/households.js?v=s12z97"></script>
+<script src="data/alerts_demo.js?v=s12z97"></script>
+<script src="data/old_house.js?v=s12z97"></script>
+<script src="data/recipients_sangju.js?v=s12z97"></script>
+<script src="data/resources.js?v=s12z97"></script>
+<script src="data/public_extra.js?v=s12z97"></script>
+<script src="data/public_extra_geo.js?v=s12z97"></script>
+<script src="data/integrated_care.js?v=s12z97"></script><!-- 94회차: 통합돌봄 연계처(15173720) -->
+<script src="data/base_pension.js?v=s12z97"></script><!-- 94회차: 기초연금 수급률(15161618) -->
+<script src="officer/features.js?v=s12z97"></script>
+<script src="officer/fieldwork.js?v=s12z97"></script>
+<script src="officer/priority.js?v=s12z97"></script>
+<script src="officer/route_plan.js?v=s12z97"></script>
+<script src="officer/old_house.js?v=s12z97"></script>
+<script src="officer/notify.js?v=s12z97"></script>
+<script src="data/demo_list_full.js?v=s12z97"></script>
+<script src="officer/import_list.js?v=s12z97"></script>
+<script src="officer/demo_seed.js?v=s12z97"></script>
+<script src="shared/sync.js?v=s12z97"></script>
+<script src="shared/chips.js?v=s12z97"></script>
+<script src="app/shell.js?v=s12z97"></script>
+<script src="app/record.js?v=s12z97"></script>
+<script src="app/field.js?v=s12z97"></script>
+<script src="app/linkcard.js?v=s12z97"></script>
+<script src="officer/nearby_layer.js?v=s12z97"></script>
+<script src="shared/scope_map.js?v=s12z97"></script>
+<script src="app/hrec.js?v=s12z97"></script>
+<script src="app/onboard.js?v=s12z97"></script><!-- 69회차 S12-z3 -->
+<script src="app/app.js?v=s12z97"></script>
+<script src="shared/team_sync.js?v=s12z97"></script><!-- 68회차 S12-z4 팀 연동·팀 현황(⚙️ 파로) -->
+<script src="app/team.js?v=s12z97"></script>
+<script src="app/weather.js?v=s12z97"></script>
+<script src="app/motion.js?v=s12z97"></script>
+<script src="shared/pwa.js?v=s12z97"></script>
+<script src="shared/a11y.js?v=s12z97"></script>
 </body>
 </html>

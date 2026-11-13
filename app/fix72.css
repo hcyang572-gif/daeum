@@ -1,5 +1,5 @@
 /* 72회차 기능 보충(⚙️ 파로, 2026-11-12) — 미르 CSS 4개 파일과 겹치지 않게 따로 둔다.
-   ① 방문 계획 «일차 방문 날짜» 칸 · ③ 첫 실행 로딩 표시 · ④ 설치 띠(폰에서 눈에 띄게) */
+   ① 방문 계획 «일차 방문 날짜» 칸 · ③ 첫 실행 로딩 표시(97회차 진척 표시로 새로) · ④ 설치 띠(폰에서 눈에 띄게) */
 
 /* ① 일차 방문 날짜 — PC·폰 같은 칸, 좁으면 글이 아래로 */
 .ddate { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 14px; padding: 10px 14px; border-radius: var(--r-md); background: var(--accSoft, rgba(31,102,118,.10)); box-shadow: inset 0 0 0 1px rgba(31,102,118,.18); }
@@ -8,33 +8,63 @@
 .ddate small { font-size: var(--fs-0); color: var(--ink2, #47535B); }
 @media (max-width: 599px) { .ddate input[type="date"] { flex: 1 1 160px; } .ddate small { flex-basis: 100%; } }
 
-/* ③ 첫 실행 «불러오는 중» — 닿음 청록 고리 + 가는 막대, 움직임 줄이기면 멈춘 표시 */
-.boot { min-height: 70vh; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px; color: var(--ink2, #47535B); font: 600 var(--fs-2)/1.4 "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif; background: #F3F1EC; }
-.boot-mark { position: relative; width: 56px; height: 56px; }
-.boot-mark::before, .boot-mark::after { content: ""; position: absolute; inset: 0; border-radius: 50%; }
-.boot-mark::before { border: 5px solid rgba(31,102,118,.14); }
-.boot-mark::after { border: 5px solid transparent; border-top-color: var(--acc); border-right-color: #2E8270; animation: bootSpin .9s linear infinite; }
-.boot-mark i { position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #4FA79A, var(--acc)); animation: bootPulse 1.6s ease-in-out infinite; }
-.boot b { font-size: var(--fs-4); font-weight: 900; letter-spacing: -.02em; color: var(--ink); }
-.boot-bar { width: 140px; height: 4px; border-radius: 2px; background: rgba(31,102,118,.14); overflow: hidden; }
-.boot-bar i { display: block; width: 40%; height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--acc), #2E8270); animation: bootSlide 1.2s ease-in-out infinite; }
-/* 77회차(11-13 호창님 «PC 첫 실행 불러오는 화면이 한쪽에 쪼끄맣게»): .boot 가 .app(PC는 레일 232px + 본문 격자) 첫 칸에 갇혀 있었다
-   → 화면 전체를 덮는 고정 층으로 꺼내고, 넓은 화면에선 표시를 키운다(폰은 그대로) */
-#app > .boot { position: fixed; inset: 0; z-index: 60; min-height: 100vh; min-height: 100dvh; width: 100%; }
+/* ③ 첫 실행 «불러오는 중» — 97회차(11-14 호창님 «얼마나 진행됐고 얼마나 남은지 깜찍하고 멋지게», 🩵 미르)
+   닿음 아이콘 그대로: 접힌 지도 위 점선 길을 청록 핀이 통통 걸어가 집에 «닿으면» 창에 불이 켜진다.
+   진척 = 실제로 받은 파일 수 + 연동·글꼴 단계(index.html 바로 아래 인라인 스크립트). 가짜로 차오르지 않는다. */
+#dboot { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow: hidden;
+  font: 600 15px/1.45 "Pretendard Variable", Pretendard, system-ui, sans-serif; color: #47535B; letter-spacing: -.01em;
+  background: radial-gradient(90% 60% at 50% 38%, #FFFFFF 0%, rgba(255,255,255,0) 70%), radial-gradient(70% 50% at 85% 100%, rgba(185,155,99,.14), transparent 70%), #F3F1EC;
+  transition: opacity .42s cubic-bezier(.4,0,.2,1), visibility 0s linear .42s; }
+#dboot.out { opacity: 0; visibility: hidden; pointer-events: none; }
+#dboot.out .db-card { transform: translateY(-10px) scale(.985); }
+.db-card { width: min(420px, 100%); display: grid; justify-items: center; gap: 0; text-align: center; transition: transform .42s cubic-bezier(.4,0,.2,1); }
+.db-brand { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.db-brand b { font: 800 22px/1 "Pretendard Variable", Pretendard, system-ui, sans-serif; color: #11181C; letter-spacing: -.04em; }
+.db-brand small { font-size: 12.5px; font-weight: 600; color: #6B767D; letter-spacing: -.02em; }
+.db-scene { width: 100%; height: auto; display: block; overflow: visible; }
+.db-scene .trk { fill: none; stroke: #CBD1CE; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 0 7.5; }
+.db-scene .run { fill: none; stroke: url(#dbRun); stroke-width: 4; stroke-linecap: round; }
+.db-pin .bob { transform-box: fill-box; transform-origin: 50% 100%; animation: dbHop .62s cubic-bezier(.45,0,.55,1) infinite; }
+.db-pin .sh { transform-box: fill-box; transform-origin: 50% 50%; animation: dbShadow .62s cubic-bezier(.45,0,.55,1) infinite; }
+#dboot.idle .db-pin .bob, #dboot.idle .db-pin .sh { animation-play-state: paused; }
+.db-house .win { fill: #C9CFCC; transition: fill .35s ease; }
+.db-house .glow { opacity: 0; transition: opacity .45s ease; }
+#dboot.reach .db-house .win { fill: #F2C46A; }
+#dboot.reach .db-house .glow { opacity: 1; }
+#dboot.reach .db-house { animation: dbPop .5s cubic-bezier(.34,1.56,.64,1); transform-box: fill-box; transform-origin: 50% 100%; }
+.db-num { margin-top: 2px; font: 700 46px/1 "Space Grotesk", "Pretendard Variable", system-ui, sans-serif; color: #11181C; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.db-num small { margin-left: 2px; font-size: 22px; font-weight: 600; color: #1F6676; letter-spacing: 0; }
+.db-now { min-height: 22px; margin-top: 8px; font-size: 15px; font-weight: 700; color: #1F2A30; }
+.db-now i { display: inline-block; width: 1.2em; text-align: left; font-style: normal; color: #1F6676; }
+.db-steps { width: 100%; margin: 16px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.db-steps li { display: grid; gap: 7px; font-size: 12px; font-weight: 600; color: #8A949A; }
+.db-steps li > span { position: relative; height: 6px; border-radius: 3px; background: #E2DED6; overflow: hidden; box-shadow: inset 0 1px 1px rgba(17,24,28,.06); }
+.db-steps li > span > i { position: absolute; inset: 0; border-radius: inherit; transform: scaleX(var(--f, 0)); transform-origin: 0 50%;
+  background: linear-gradient(90deg, #2C8597, #1F6676); transition: transform .3s cubic-bezier(.4,0,.2,1); }
+.db-steps li.on { color: #1F6676; }
+.db-steps li.ok { color: #47535B; }
+.db-steps li.ok > span > i { background: linear-gradient(90deg, #1F6676, #174F5B); }
+.db-left { margin-top: 12px; font-size: 12.5px; font-weight: 600; color: #6B767D; font-variant-numeric: tabular-nums; }
+.db-retry { display: none; margin-top: 14px; justify-items: center; gap: 10px; }
+.db-retry p { margin: 0; font-size: 13.5px; color: #47535B; }
+.db-retry button { min-height: 46px; padding: 0 22px; border: 0; border-radius: 14px; font: 800 15px/1 "Pretendard Variable", Pretendard, system-ui, sans-serif; color: #fff; cursor: pointer;
+  background: radial-gradient(120% 90% at 30% 0%, rgba(255,255,255,.22), transparent 55%), linear-gradient(180deg, #257A8C, #174F5B);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 0 0 1px rgba(10,50,60,.45), 0 10px 18px -10px rgba(23,79,91,.8); }
+.db-retry button:focus-visible { outline: 3px solid #F2C46A; outline-offset: 3px; }
+#dboot.slow .db-retry { display: grid; }
+#dboot.err .db-num small, #dboot.err .db-now { color: #A4503A; }
 @media (min-width: 900px) {
-  #app > .boot { gap: 18px; font-size: var(--fs-3); }
-  #app > .boot .boot-mark { width: 76px; height: 76px; }
-  #app > .boot .boot-mark i { inset: 24px; }
-  #app > .boot b { font-size: 28px; }
-  #app > .boot .boot-bar { width: 200px; height: 5px; }
+  .db-card { width: 500px; }
+  .db-brand b { font-size: 26px; } .db-brand small { font-size: 14px; }
+  .db-num { font-size: 56px; } .db-num small { font-size: 26px; }
+  .db-now { font-size: 16px; } .db-steps li { font-size: 13px; }
 }
-@keyframes bootSpin { to { transform: rotate(360deg); } }
-@keyframes bootPulse { 0%, 100% { transform: scale(.85); opacity: .8; } 50% { transform: scale(1); opacity: 1; } }
-@keyframes bootSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+@keyframes dbHop { 0%, 100% { transform: translateY(0) scale(1, 1); } 12% { transform: translateY(0) scale(1.06, .92); } 50% { transform: translateY(-7px) scale(.97, 1.04); } 88% { transform: translateY(0) scale(1.04, .95); } }
+@keyframes dbShadow { 0%, 100% { transform: scale(1); opacity: .32; } 50% { transform: scale(.62); opacity: .16; } }
+@keyframes dbPop { 0% { transform: scale(1); } 40% { transform: scale(1.12, .94); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
-  .boot-mark::after, .boot-mark i, .boot-bar i { animation: none; }
-  .boot-mark::after { transform: rotate(45deg); }
-  .boot-bar i { width: 60%; }
+  .db-pin .bob, .db-pin .sh, #dboot.reach .db-house { animation: none; }
+  #dboot, .db-card, .db-steps li > span > i, .db-house .win, .db-house .glow { transition-duration: .01s; }
 }
 
 /* ④ 설치 띠 — 폰(폭 599 이하)에서는 더 굵고 진하게, 앱 아이콘 자리 */
