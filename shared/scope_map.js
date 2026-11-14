@@ -190,6 +190,9 @@
     [].forEach.call((root || document).querySelectorAll("[data-scope-map]"), function (el) { if (el._dsm) return; el._dsm = 1; mount(el, { card: el.getAttribute("data-scope-map") === "card" }); });
   }
 
+  // 단계 핀 그림 = 닿음 선 아이콘 체계(시안 STEPS6: 오늘·동선·집 앞·방패·기록·연계). 아이콘이 없으면 예전 도자기 오브제
+  var PIN = { plan: "today", route: "route", visit: "door", safety: "shield", record: "record", link: "link" };
+  function pin(k) { var D = window.DaeumIcons, s = D && D.I && D.I[PIN[k]]; return s ? s.replace('class="ic"', 'class="ic dsm-mart"') : obj(k, "dsm-mart"); }
   // ── 작은 위치 띠: 오목한 도자기 홈 + 점 6개, 렌즈가 지금 단계로 미끄러짐 ──
   var miniLast = {}; // 띠 묶음별로 앞 화면에서 켜져 있던 단계(미끄러짐 출발점)
   function mini(el, key, group) {
@@ -197,15 +200,14 @@
     plantDefs();
     var gk = group || "app", last = gk in miniLast ? miniLast[gk] : -1;
     var idx = -1; STEPS.forEach(function (x, i) { if (x.k === key) idx = i; });
+    // 102회차 ⚙️ 파로C(시안 v3 V8 hbar .smini): 점은 표시 전용(눌리지 않음·aria-hidden) — 이동은 탭·레일로. 렌즈 = 그 단계 선 아이콘
     var dots = STEPS.map(function (x, i) {
-      // S12-x(64회차): 점마다 누르면 그 단계 화면으로 가는 단추(지금 단계도 눌러 맨 위로) · 접근성 이름 «n단계 이름 — 화면으로 가기»
-      var on = i === idx, tag = x.h ? "a" : "span";
-      return "<" + tag + ' class="dsm-md' + (on ? " on" : "") + (i < idx ? " past" : "") + '"' + (tag === "a" ? ' href="' + x.h + '"' : "") + (on ? ' aria-current="step"' : "") + ' title="' + esc(x.t) + '" aria-label="' + (i + 1) + "단계 " + esc(x.t) + (tag === "a" ? " — 화면으로 가기" : "") + '"></' + tag + ">";
+      return '<span class="dsm-md' + (i === idx ? " on" : "") + (i < idx ? " past" : "") + '" aria-hidden="true"></span>';
     }).join("");
     var cur = idx >= 0 ? STEPS[idx] : null;
     el.innerHTML = '<nav class="dsm-mini' + (idx < 0 ? " none" : "") + '" aria-label="발굴 업무 중 지금 위치: ' + (cur ? esc(cur.t) : "닿음 구간") + '">' +
       '<img class="dsm-mlogo" src="' + LOGO + '" alt="닿음 구간" title="닿음이 돕는 구간 — 앞(발굴 명단·배정)과 뒤(행복이음·사후 관리)는 기존 체계">' +
-      '<span class="dsm-mline">' + dots + '<i class="dsm-mk" aria-hidden="true">' + (cur ? obj(cur.k, "dsm-mart") : "") + "</i></span>" +
+      '<span class="dsm-mline">' + dots + '<i class="dsm-mk" aria-hidden="true">' + (cur ? pin(cur.k) : "") + "</i></span>" +
       '<span class="dsm-mc">' + (cur ? '<i>' + (idx + 1) + "/6</i><b>" + esc(cur.t) + "</b>" : "") + "</span></nav>";
     var nav = el.firstChild, kn = nav.querySelector(".dsm-mk");
     if (idx < 0) { miniLast[gk] = -1; return; }

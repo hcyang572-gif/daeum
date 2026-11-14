@@ -57,8 +57,11 @@ html[data-mode="pc"] .app .sbar,html[data-mode="tab"] .app .sbar{display:none}
 .mark svg{width:26px;height:26px}
 .brand b{display:block;font:800 var(--fs-4)/1.15 var(--ff);letter-spacing:-.04em}
 .brand small{display:block;font:500 var(--fs-0) var(--ff);color:var(--ink2);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-mode="phone"] .top .brand{container:brand / inline-size}@container brand (max-width:260px){.brand small{display:none}} /* 106회차 ⑧-2: 시안 V16 .hdr 규칙 그대로 — 좁은 머리에선 부제 숨김(앱은 «복…»으로 잘려 보였음) */
 .ky{min-width:44px;height:44px;flex:none;border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;color:var(--ink);background:linear-gradient(180deg,var(--card0),var(--card1));box-shadow:var(--edge),var(--hl),var(--e1);font-size:var(--fs-1);font-weight:700}
 .ky svg{width:21px;height:21px}
+.top .ky .hdot{position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%;background:var(--sos0);box-shadow:0 0 0 2px var(--card0,#fff);pointer-events:none} /* 107회차: 시안 V16 머리 작은 붉은 점(«…» 단추) */
+.top{container:hdr / inline-size}@container hdr (max-width:420px){.top .ky.help{display:none}} /* 107회차 ⚙️ 파로A ⑧-2b②: 시안 V16 .hdr 규칙 그대로 — 좁은 머리(폰)는 단추 3개(가림·안전·더 보기), «사용 방법»은 «…» 더 보기 안 */
 .ky.safe-on{color:#fff;background:linear-gradient(180deg,#2B7A6A,#1C5A4D);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 0 0 1px rgba(10,40,34,.5),var(--e1)}
 .ky.safe-on .num{font-size:var(--fs-1)}
 .ky.safe-warn{color:#fff;background:linear-gradient(180deg,var(--sos0),var(--sos1));animation:throb 1.2s var(--e-out) infinite}
@@ -88,6 +91,7 @@ html[data-mode="phone"] .app .col>.foot{bottom:84px}
 .card.flat{background:none;box-shadow:inset 0 0 0 1px var(--line);border-radius:var(--r-lg)}
 .card h3{margin:0;font:700 var(--fs-2)/1.3 var(--ff);letter-spacing:-.03em;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .card h3>span{font:600 var(--fs-0) var(--ff);color:var(--ink2);letter-spacing:0;white-space:nowrap}
+.card h3{flex-wrap:wrap}.card .srcline{overflow-wrap:anywhere}:where(.card>*){min-width:0} /* 106회차 ⑧-2: 폰 360·큰 글자에서 제목 옆 작은 글(«고른 것 0개 → 의뢰서로»)·긴 출처 낱말이 카드 밖으로 잘려 — 넘칠 때만 다음 줄로 · 카드 격자 칸이 자식 최소 폭(319)에 밀려 카드보다 넓어지던 것(:where = 다른 규칙이 언제나 이김) */
 .well{border-radius:var(--r-lg);background:var(--well);box-shadow:inset 0 1px 2px rgba(70,56,36,.12),inset 0 0 0 1px var(--line);padding:12px}
 .pr{transition:transform var(--t-up) var(--e-up),box-shadow var(--t-up)}
 .pr:active{transform:translateY(1px) scale(.975);transition-duration:var(--t-down)}
@@ -869,9 +873,9 @@ svg.ic.i16,svg.ic.i20{flex:none;display:inline-block;vertical-align:-.2em}
 .hrec-row.on{background:linear-gradient(180deg,#DCE9EA,#E9F0EF);box-shadow:var(--eng,none),inset 0 0 0 2px var(--acc,#1F6676)}
 .hrec-no{grid-area:no;min-width:62px;height:40px;padding:0 8px;border-radius:var(--r-md);display:grid;place-items:center;font:700 var(--fs-2) var(--fn,inherit);color:var(--acc2,#174F5B);
   background:linear-gradient(180deg,#FFFFFF,#EEEAE3);box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(60,46,28,.12),0 3px 5px -3px rgba(60,46,28,.35)}
-.hrec-mid{grid-area:mid;min-width:0;display:flex;align-items:baseline;gap:8px}
+.hrec-mid{grid-area:mid;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px} /* 106회차 ⑧-2: 좁은 칸에서 «방문 11.13.»이 «방…»으로 잘려 — 날짜는 다음 줄로 */
 .hrec-mid b{font-size:var(--fs-2);font-weight:700;letter-spacing:-.025em;white-space:nowrap}
-.hrec-mid small{font-size:var(--fs-0);color:var(--ink2,#47535B);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hrec-mid small{font-size:var(--fs-0);color:var(--ink2,#47535B);white-space:normal;word-break:keep-all;overflow:hidden;text-overflow:ellipsis}
 .hrec-row>.tag{grid-area:res;justify-self:end}
 .hrec-mod{grid-area:mod;font-size:var(--fs-0);color:var(--ink2,#47535B);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hrec-mod b{font-weight:600;color:var(--ink2,#47535B)}
@@ -1147,7 +1151,7 @@ html[data-mode="phone"] .app:has(>.dock:not([hidden])) .toast,html[data-mode="fo
   animation:rise .24s var(--e-out) both;transition:opacity .24s var(--e-out),transform .24s var(--e-out)}
 .dock .nx.out{opacity:0;transform:translateY(6px);pointer-events:none}
 .dock .pill{flex:none;font:700 var(--fs-0)/1 var(--ff);color:var(--gold);background:var(--goldSoft);box-shadow:inset 0 0 0 1px rgba(185,155,99,.5);border-radius:var(--r-pill);padding:4px 9px}
-.dock .nx .tx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dock .nx .tx{min-width:0;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;word-break:keep-all} /* 106회차 ⑧-2: 한 줄 말줄임이 폰 360~430에서 «집 앞에 도착하면 누르세요»를 잘라 두 줄까지(위로만 늘어남 — .nx 는 dock 위 absolute) */
 .dock .nx .ar{flex:none;margin-left:auto;display:grid;place-items:center;color:var(--acc);animation:nudge 1.2s ease-in-out 3}
 .dock .nx .ar svg{width:16px;height:16px}
 @keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
@@ -1216,7 +1220,7 @@ html[data-mode="tab"] .app .qg,html[data-mode="pc"] .app .qg{grid-template-colum
    아이콘은 글 덩어리 세로 가운데 · 제목 한 줄 · 부제 최대 두 줄(낱말 단위로 줄바꿈, 넘치면 …) · 한 줄의 칸 높이 같게 · 홀수 개면 마지막 칸은 한 줄 전체 */
 .qg{grid-auto-rows:1fr}
 .qf{align-items:center}
-.qf b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qf b{overflow:hidden;text-overflow:ellipsis;word-break:keep-all;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2} /* 106회차 ⑧-2: 한 줄 고정이 폰 360~750에서 «빠른 순서로 다시…»처럼 이름을 잘라 두 줄까지(칸 높이는 위 1fr로 같게) */
 .qf small{word-break:keep-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
 html[data-mode="phone"] .qg>.qf:last-child:nth-child(odd),html[data-mode="fold"] .qg>.qf:last-child:nth-child(odd){grid-column:1/-1}
 .qcs{display:flex;flex-wrap:wrap;gap:4px 14px}

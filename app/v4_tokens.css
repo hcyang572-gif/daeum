@@ -1,0 +1,98 @@
+/* 닿음 디자인 골격 v4 — 승인 시안 v3 Version 8(커밋 47227ed, _design/S12-z98_고도화시안/v3/index.html)만 근거 · 🩵 미르 101회차(⑧-1①)
+   맡는 것: ① 색·재질 토큰(v3-5) ② 글자 크게 보기 --tz(COMMON-A3) ③ 아이콘 한 체계 크기 3단·선 굵기 한 값(v3-7)
+            ④ 머리 아래 «날씨 + 진행 단계» 한 줄 띠 28px 골격(V3-3, v3-1) ⑤ 시트 종이결(v3-5 재질)
+   ⛔ 탭 안 카드 배치는 ⑧-2·⑧-3 몫. 라이트 고정(다크 없음). 불러오는 순서: v3.css «뒤», 맨 끝.
+   선택자 html[data-mode] = 폭 판정(app/s12x_bg.js)이 언제나 붙이는 속성 — v3.css 의 같은 무게 규칙을 순서로 이긴다. */
+
+/* ① 토큰 — 시안 .app 토큰 그대로(옛 값과 다른 것만 덮음) */
+html:root{
+  --ink2:#435058;--ink3:#505B62;                                   /* 보조 글자 대비 올림(ink3 6B767D → 505B62) */
+  --card0:#FDFCFA;--card1:#F5F2ED;--well:#EAE6DF;--well2:#E2DDD4;
+  --acc3:#0E3740;--rain:#2F5E8F;--rainBg:#E3ECF5;
+  --e-exit:cubic-bezier(.32,0,.67,0);
+  --acc0:#257A8C;                                                  /* 청록 법랑 윗빛 */
+  --cer1:#F2EEE7;                                                  /* 세라믹 판 */
+  --well0:#E6E1D8;--well1:#F1EDE6;                                 /* 홈(파인 자리) */
+  --gold0:#D6B67A;--gold1:#9C7838;                                 /* 금빛 테두리 — «지금»에만 */
+  --ring:rgba(60,46,28,.12);                                       /* 하드코딩 테두리 한 값 */
+  --tap:44px;                                                      /* 누름 영역 최소 */
+  /* ③ 아이콘: 크기 3단 + 선 굵기 한 값(옛 16→2.0·20→1.8·24→1.6·28→1.5·40→1.4 를 하나로) */
+  --ic-s:16px;--ic-m:20px;--ic-l:24px;--ic-sw:1.7;
+  --ic-sw16:var(--ic-sw);--ic-sw20:var(--ic-sw);--ic-sw24:var(--ic-sw);--ic-sw28:var(--ic-sw);--ic-sw40:var(--ic-sw);
+  /* ② 글자 크게 보기 — shell.js 가 <html> 에 --tz(1 · 1.15 · 1.3)를 붙인다. 글자 토큰만 곱하고 틀(높이·폭)은 그대로 */
+  --tz:1;
+  --fs-0:calc(12px * var(--tz));--fs-1:calc(13px * var(--tz));--fs-2:calc(15px * var(--tz));--fs-3:calc(17px * var(--tz));
+  --fs-4:calc(20px * var(--tz));--fs-5:calc(22px * var(--tz));--fs-6:calc(28px * var(--tz));--fs-7:calc(34px * var(--tz));
+}
+
+/* 바탕 글자·초점 — 시안 .app 값 그대로(15px×tz · 줄간격 1.5 · 자간 -.012em · 초점 2.5px) */
+html[data-mode] .app{font-size:calc(15px * var(--tz));line-height:1.5;letter-spacing:-.012em;font-feature-settings:"ss06","tnum" 0}
+html[data-mode] .app :focus-visible{outline:2.5px solid var(--acc);outline-offset:2px;border-radius:10px}
+
+/* ③ 아이콘 한 체계 — 크기는 세 단계 토큰만. 28px 무리(결과 단추·방패·빈 칸 머리)는 큰 단계(24)로 모은다.
+   그림 성격(빈 화면 그림·잠금·마이크 큰 원)은 아이콘이 아니라 제 크기 유지 */
+html[data-mode] .app svg.ic{stroke-width:var(--ic-sw)}
+html[data-mode] .app svg.ic.i16{width:var(--ic-s);height:var(--ic-s)}
+html[data-mode] .app svg.ic.i20{width:var(--ic-m);height:var(--ic-m)}
+html[data-mode] .app svg.ic.i24,html[data-mode] .app svg.ic.i28,
+html[data-mode] .app .res button svg,html[data-mode] .app .shieldo svg,html[data-mode] .app .eic svg{width:var(--ic-l);height:var(--ic-l)}
+
+/* ④ 머리 아래 한 줄 띠 28px — [날씨·특보 칩] | [6단계 홈 + 렌즈] [n/6 단계명] … [가]
+   마크업은 app.js(.hbar > .wx#dwx + .hbar-scope > nav.dsm-mini) 그대로, 글자 크게 단추(.tzb)는 shell.js 가 끝에 붙인다 */
+html[data-mode] .app .hbar{
+  display:flex;align-items:center;gap:8px;height:28px;margin:0 14px 5px;padding:0 4px 0 9px;border-radius:14px;
+  white-space:nowrap;font-size:var(--fs-0);color:var(--ink2);container:hbar / inline-size;
+  background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.38));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.6),0 1px 2px rgba(60,46,28,.06)}
+/* 날씨: 좁으면 아이콘·기온·특보 칩만, 넓으면(520↑) 지역·기상청 시각까지 */
+html[data-mode] .app .hbar>.wx{flex:none;min-width:0;max-width:46%;height:28px;min-height:0;padding:0;gap:5px;border-radius:0;background:none;box-shadow:none;font-size:var(--fs-0);font-weight:600;overflow:hidden}
+html[data-mode] .app .hbar>.wx b{color:var(--ink);font-family:var(--fn);font-weight:800}
+html[data-mode] .app .hbar>.wx>svg{width:var(--ic-s);height:var(--ic-s);color:#C2862C}
+html[data-mode] .app .hbar>.wx .wx-pl{display:none}
+/* 출처: 좁으면 5px 초록 점만(시안 .src), 넓으면 «기상청 hh:mm» 글자(시안 .srct) */
+html[data-mode] .app .hbar>.wx .src-tag{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:0;margin:0}
+html[data-mode] .app .hbar>.wx .src-ico{width:5px;height:5px;border-radius:50%;background:#7FA88E;flex:none;display:block}
+html[data-mode] .app .hbar>.wx .al{flex:none;border-radius:8px;padding:0 6px;font-size:calc(11px * var(--tz));line-height:17px;font-weight:700;color:#fff;background:var(--rain)}
+html[data-mode] .app .hbar>.wx .al.pre{color:var(--rain);background:var(--rainBg)}
+@container hbar (min-width:520px){
+  html[data-mode] .app .hbar>.wx .wx-pl{display:inline}
+  html[data-mode] .app .hbar>.wx .src-tag{font-size:var(--fs-0);color:var(--ink3);font-weight:500}
+}
+/* 가는 칸막이(날씨가 있을 때만) */
+html[data-mode] .app .hbar>.hbar-scope{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;container:hscope / inline-size}
+html[data-mode] .app .hbar>.wx:not([hidden])+.hbar-scope::before{content:"";flex:none;width:1px;height:14px;background:rgba(60,46,28,.14)}
+html[data-mode] .app .hbar>.wx[hidden]+.hbar-scope{grid-column:auto}
+/* 6단계 홈 + 미끄러지는 렌즈 */
+html[data-mode] .app .hbar .dsm-mini{flex:1;min-width:0;height:28px;min-height:0;gap:7px;max-width:none;width:auto;font-size:var(--fs-0);overflow:hidden}
+html[data-mode] .app .hbar .dsm-mline{flex:1;min-width:40px;height:12px;padding:0;border-radius:6px;
+  background:linear-gradient(180deg,var(--well0),var(--well1));box-shadow:inset 0 1px 2px rgba(60,46,28,.18),0 0 0 1px rgba(60,46,28,.07)}
+html[data-mode] .app .hbar .dsm-md{height:28px;border-radius:6px}
+html[data-mode] .app .hbar .dsm-md::before{width:4px;height:4px;background:#C5BEB2}
+html[data-mode] .app .hbar .dsm-md.past::before{background:var(--acc);opacity:.6}
+html[data-mode] .app .hbar .dsm-md.on::before{opacity:0}
+html[data-mode] .app .hbar .dsm-md::after{top:-8px;bottom:-8px}  /* 점 누름 영역 44 */
+html[data-mode] .app .hbar .dsm-mk{width:20px;height:20px;margin-top:-10px;left:calc((100% / 6) * var(--x, 0) + (100% / 12) - 10px);
+  transition:left .5s var(--e-spring);color:var(--acc2);
+  background:radial-gradient(70% 60% at 35% 25%,#fff,rgba(255,255,255,.8) 45%,rgba(205,222,224,.85));
+  box-shadow:inset 0 -2px 3px rgba(31,102,118,.18),0 0 0 1px rgba(31,102,118,.3),0 0 0 2px rgba(185,155,99,.3),0 3px 6px -3px rgba(23,79,91,.45)}
+html[data-mode] .app .hbar .dsm-mk.still{transition:none}
+html[data-mode] .app .hbar .dsm-mart{width:var(--ic-s);height:var(--ic-s)}
+html[data-mode] .app .hbar .dsm-mc{flex:none;min-width:0;display:flex;align-items:baseline;gap:4px;line-height:1;color:var(--ink3)}
+html[data-mode] .app .hbar .dsm-mc i{font:600 calc(11px * var(--tz))/1 var(--fn);font-style:normal;color:var(--ink3)}
+html[data-mode] .app .hbar .dsm-mc b{font-size:calc(12.5px * var(--tz));font-weight:800;color:var(--ink);letter-spacing:-.01em}
+@container hscope (max-width:230px){html[data-mode] .app .hbar .dsm-mc b{display:none}}
+/* 태블릿·PC: 단계 덩어리 폭 고정, «가»는 오른쪽 끝 */
+html[data-mode="tab"] .app .hbar>.hbar-scope,html[data-mode="pc"] .app .hbar>.hbar-scope{flex:none;width:420px}
+html[data-mode="tab"] .app .hbar .dsm-mline,html[data-mode="pc"] .app .hbar .dsm-mline{flex:none;width:240px}
+html[data-mode="tab"] .app .hbar>.tzb,html[data-mode="pc"] .app .hbar>.tzb{margin-left:auto}
+/* «가» 글자 크게 단추 — 띠 안에선 22px, 누름 영역은 위아래로 44 */
+html[data-mode] .app .hbar>.tzb{all:unset;box-sizing:border-box;cursor:pointer;flex:none;position:relative;height:22px;min-width:var(--tap);padding:0 5px;border-radius:11px;
+  display:grid;place-items:center;font:800 calc(12px * var(--tz))/1 var(--f);color:var(--ink);
+  background:linear-gradient(180deg,#fff,var(--cer1));box-shadow:0 0 0 1px var(--ring),0 1px 2px rgba(60,46,28,.1)}
+html[data-mode] .app .hbar>.tzb::after{content:"";position:absolute;left:0;right:0;top:50%;height:var(--tap);transform:translateY(-50%)}
+
+/* ⑤ 재질 — 시트에도 앱과 같은 흑사 알갱이(--tex 는 shell.js 가 한 번 만든다, 없으면 그냥 무늬 없음) */
+html[data-mode] .app .sheet::before{content:"";position:absolute;inset:0;border-radius:inherit;background-image:var(--tex,none);background-size:180px 180px;mix-blend-mode:multiply;opacity:.42;pointer-events:none}
+
+@media (prefers-reduced-motion:reduce){html[data-mode] .app .hbar .dsm-mk{transition:none}}
+@media print{html[data-mode] .app .hbar{display:none!important}.app .sheet::before{display:none}}

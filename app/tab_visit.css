@@ -1,0 +1,132 @@
+/* 닿음 방문 탭 102회차 추가분 — ⚙️ 파로B(2026-11-14). 근거 = 정본 시안 v3 Version 8(_design/S12-z98_고도화시안/v3/index.html) «방문» plan·route 의 값 그대로.
+   맡는 것: 출발 카드(날짜 앞뒤·달력·출발 3칸·시각 칩) · 일차 머리 줄(다른 일차와 날짜 바꾸기) · 부재 시간대 한 줄 · 일차 카드 특보·비 배지 ·
+            실제 시각 재계산 카드 · 찾아가는 길 · 가구 넣기 시트 목록 · 내 위치 점 · 날씨 띠 예보 조각(.fc).
+   불러오는 순서: v4_tokens.css «뒤»(맨 끝). 선택자 앞 html[data-mode] .app = 골격(v4_tokens)과 같은 무게 → 순서로 이긴다. 라이트 고정. */
+
+/* 시안 .chip(알약 단추) — 앱의 옛 .chip(칸 카드)과 이름이 겹쳐 vx-chip 으로 */
+html[data-mode] .app .vx-chip{all:unset;box-sizing:border-box;cursor:pointer;min-height:var(--tap);min-width:var(--tap);justify-content:center;white-space:nowrap;padding:0 15px;border-radius:22px;font-size:calc(14.5px * var(--tz));font-weight:600;display:inline-flex;align-items:center;gap:6px;color:var(--ink);
+  background:radial-gradient(100% 80% at 35% 10%,#FFFFFF,var(--cer1) 75%);box-shadow:inset 0 1px 0 #fff,0 0 0 1px var(--ring),0 3px 6px -4px rgba(60,46,28,.4);transition:transform .07s}
+html[data-mode] .app .vx-chip:active{transform:scale(.97)}
+html[data-mode] .app .vx-chip svg.ic{width:var(--ic-s);height:var(--ic-s);color:var(--acc)}
+html[data-mode] .app .vx-chip[aria-pressed="true"]{color:#fff;background:radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.22),transparent 55%),linear-gradient(180deg,var(--acc0),var(--acc2));box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 0 0 1px rgba(10,50,60,.45),0 6px 12px -6px rgba(23,79,91,.7)}
+html[data-mode] .app .vx-chip[aria-pressed="true"] svg.ic{color:#fff}
+html[data-mode] .app .vx-chip:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}
+
+/* 출발 카드 — 시안 card.flat padding 12px 14px */
+html[data-mode] .app .vx-dep{position:relative;border-radius:22px;padding:12px 14px;margin:0 0 14px;background:linear-gradient(170deg,var(--card0),var(--card1));box-shadow:inset 0 0 0 1px rgba(17,24,28,.06),inset 0 1px 0 #fff,var(--e1)}
+html[data-mode] .app .vx-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+html[data-mode] .app .vx-row.vx-tm{margin:8px 0 0;flex-wrap:wrap}
+html[data-mode] .app .vx-k{font-size:14px;width:44px;flex:none}
+html[data-mode] .app .vx-k2{display:block;font-size:14px;margin-bottom:6px}
+html[data-mode] .app .vx-ar{width:var(--tap);height:var(--tap);min-width:var(--tap);padding:0;border-radius:50%}
+html[data-mode] .app .vx-ar:disabled{opacity:.4;cursor:default}
+html[data-mode] .app .vx-dt{flex:1;text-align:center;font-size:15px;font-variant-numeric:tabular-nums}
+html[data-mode] .app .vx-cal{position:relative}
+html[data-mode] .app .vx-cal input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:0;padding:0}
+html[data-mode] .app .vx-deps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+html[data-mode] .app .vx-deps .vx-chip{padding:0 8px;min-width:0}
+html[data-mode] .app .vx-inp{display:block;margin:8px 0 0;width:100%;box-sizing:border-box;min-height:var(--tap);border-radius:12px;border:1px solid rgba(60,46,28,.18);padding:0 12px;font:inherit;font-size:14px;background:#fff;color:var(--ink)}
+html[data-mode] .app .vx-note{font-size:calc(12.5px * var(--tz));color:var(--ink3);display:flex;gap:6px;align-items:flex-start;line-height:1.5;margin:6px 0 0;text-align:left;justify-content:flex-start}
+html[data-mode] .app .vx-note svg.ic{width:var(--ic-s);height:var(--ic-s);flex:none;margin-top:2px}
+html[data-mode] .app .vx-note.r{margin:0 0 0 auto}
+
+/* 일차 머리 줄 — 시안 .sec-t + .lk */
+html[data-mode] .app .vx-sect{display:flex;align-items:baseline;gap:8px;margin:2px 4px 6px}
+html[data-mode] .app .vx-sect h2{margin:0;font-size:calc(16px * var(--tz));font-weight:800;letter-spacing:-.03em;flex:1}
+html[data-mode] .app .vx-lk{all:unset;cursor:pointer;font-size:calc(13px * var(--tz));color:var(--acc);font-weight:700;min-height:var(--tap);display:inline-flex;align-items:center;gap:4px}
+html[data-mode] .app .vx-lk svg.ic{width:var(--ic-s);height:var(--ic-s)}
+html[data-mode] .app .vx-lk.sm{min-height:32px;margin-left:auto;flex:none}
+
+/* 시간줄 — 부재 시간대 한 줄(시안 .sub.hint) · 출발·복귀 축 아이콘 */
+html[data-mode] .app .vx-hint{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:5px;color:var(--warnInk);font-weight:700;font-size:calc(12.5px * var(--tz));margin-top:3px}
+html[data-mode] .app .vx-hint svg.ic{width:var(--ic-s);height:var(--ic-s);margin-top:1px;flex:none}
+html[data-mode] .app .tline .ax b.o svg.ic{width:16px;height:16px;color:#fff}
+html[data-mode] .app .warnline .sbtn{margin-left:6px;vertical-align:middle}
+html[data-mode] .app .tline .outs li .sbtn+.sbtn{margin-left:6px}
+
+/* 일차 카드 배지 — 시안 tag t(오후 비 60% · 한파주의보) */
+html[data-mode] .app .dcard .vx-wxb{justify-self:start;margin-top:4px;min-height:22px;padding:0 8px;gap:4px;border-radius:8px;font-size:calc(11.5px * var(--tz))}
+html[data-mode] .app .dcard .vx-wxb.rain{background:var(--rainBg);color:var(--rain)}
+html[data-mode] .app .dcard .vx-wxb.snow,html[data-mode] .app .dcard .vx-wxb.warn{background:var(--accSoft);color:var(--acc2)}
+html[data-mode] .app .dcard.on .vx-wxb{background:rgba(255,255,255,.92)}
+
+/* 실제 시각 재계산 카드 — 시안 «일정 밀림» card(주황 테두리) */
+html[data-mode] .app .vx-late{position:relative;border-radius:22px;padding:16px;margin:0 0 14px;background:linear-gradient(170deg,var(--card0),var(--card1));box-shadow:inset 0 0 0 1.5px rgba(154,52,18,.35),var(--e2)}
+html[data-mode] .app .vx-kick{font-size:calc(12px * var(--tz));font-weight:800;letter-spacing:.02em;color:var(--warnInk)}
+html[data-mode] .app .vx-lt{display:block;font-weight:700;margin-top:4px;font-size:calc(15px * var(--tz))}
+html[data-mode] .app .vx-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+html[data-mode] .app .vx-btns .btn{flex:none}
+
+/* 찾아가는 길 — 시안 .info */
+html[data-mode] .app .nextc .vx-way{grid-column:1/-1;margin-top:12px;display:flex;gap:8px;align-items:center;border-radius:16px;padding:10px 12px;background:var(--accSoft);color:var(--acc2);font-size:calc(13px * var(--tz));line-height:1.5;box-shadow:inset 0 0 0 1px rgba(31,102,118,.12)}
+html[data-mode] .app .nextc .vx-way>svg.ic{width:var(--ic-s);height:var(--ic-s);flex:none}
+html[data-mode] .app .nextc .vx-wt{flex:1;min-width:0}
+html[data-mode] .app .nextc .vx-way .samp{margin-left:6px}
+html[data-mode] .app .nextc .vx-way .vx-inp{margin:0;flex:1}
+
+/* 가구 넣기·날짜 바꾸기 시트 — 시안 .lst/.li/.ico */
+html[data-mode] .app .vx-ov .vx-shd{display:flex;align-items:center;gap:8px}
+html[data-mode] .app .vx-ov .vx-shd h3{flex:1}
+html[data-mode] .app .vx-lst .li{width:100%;cursor:pointer;border:0;font:inherit;color:var(--ink)}
+html[data-mode] .app .vx-lst .lc{flex:1;min-width:0}
+html[data-mode] .app .vx-lst .ico{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;flex:none;color:var(--acc);background:linear-gradient(165deg,#FFFFFF,var(--cer1));box-shadow:inset 0 1px 0 #fff,0 0 0 1px var(--ring),0 4px 8px -5px rgba(60,46,28,.45)}
+html[data-mode] .app .vx-lst .li>svg.ic:last-child{color:#A39C90}
+html[data-mode] .app .vx-all{justify-self:stretch}
+
+/* 내 위치 점(네이버 지도 표지) — 위치 허용 때만 */
+.vx-me{display:block;width:22px;height:22px;border-radius:50%;background:rgba(47,111,219,.18);position:relative}
+.vx-me i{position:absolute;left:5px;top:5px;width:12px;height:12px;border-radius:50%;background:#2F6FDB;box-shadow:0 0 0 3px #fff,0 2px 6px rgba(0,0,0,.35)}
+
+/* 날씨 띠 예보 조각 «15시 비 60%» — 시안 .wx .fc */
+html[data-mode] .app .hbar>.wx .fc{flex:none;border-radius:8px;padding:0 6px;font-size:calc(11px * var(--tz));font-weight:700;line-height:17px;color:var(--rain);background:var(--rainBg)}
+
+/* ── 103회차 V4-4 큰 화면 배열(정본 시안 v4 Version 15) — 방문 탭(계획·동선)만, 폰은 그대로 ──
+   폴드·태블릿 세로 2단 · 태블릿 가로(1100↑)·PC 3단(계획 4·4·4, 동선 5·4·3) · 머리(.dhead)는 칸 위 한 줄(.hdrow, app.js colsOf <!--hd-->)
+   단 첫 카드 윗선 = tab_visit.js vxAlign(지도·일차 카드도 «첫 카드»). */
+html[data-mode]:not([data-mode="phone"]) .app .main.vx-main>.col{padding-inline:10px}
+html[data-mode="fold"] .app .main.vx-main{padding:0 8px;column-gap:20px}   /* 바깥 18 · 단 사이 40 = 접힘선(355│375│395) — 오늘 탭과 같은 틀 */
+html[data-mode="tab"] .app .main.vx-main{padding:0 14px;column-gap:0}
+html[data-mode="pc"] .app .main.vx-main{padding:0 18px;column-gap:0}
+html[data-mode]:not([data-mode="phone"]) .app .main.vx-main:has(>.hdrow:not(:empty)){grid-auto-flow:row;grid-template-rows:auto minmax(0,1fr)}
+html[data-mode] .app .main.vx-main[data-cols="2"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html[data-mode] .app .main.vx-plan[data-cols="3"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}   /* 계획 4·4·4 */
+html[data-mode] .app .main.vx-route[data-cols="3"]{grid-template-columns:5fr 4fr 3fr!important}             /* 동선 5·4·3 */
+html[data-mode] .app .main.vx-main>.hdrow{grid-column:1/-1;min-width:0;padding:6px 10px 0}
+html[data-mode] .app .main.vx-main>.hdrow>.dhead{margin:0 0 6px}
+html[data-mode] .app .main.vx-main>.hdrow{display:flex;flex-direction:column;gap:14px;padding-bottom:14px}
+html[data-mode] .app .main.vx-main>.hdrow:empty{display:none}
+html[data-mode="fold"] .app .main.vx-main>.hdrow.fh2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:40px;align-items:end}  /* 폴드: 제목 왼쪽 반 | 작은 칸 오른쪽 반(시안 fhr) */
+html[data-mode="fold"] .app .main.vx-main>.hdrow.fh2>.subseg:only-child{grid-column:1}
+html[data-mode] .app .main.vx-main>.hdrow>.dhead h1{text-wrap:balance}
+/* 일정 카드 — «N일차 · 날짜» 소제목이 카드 안 머리(Version 15 #2, 문구 그대로) */
+html[data-mode] .app .vx-tlc{padding:12px 0 0;overflow:hidden}
+html[data-mode] .app .vx-tlc>.vx-sect.in{margin:0 16px 2px}
+html[data-mode] .app .vx-tlc>.warnline{margin:6px 16px 0}
+html[data-mode] .app .vx-tlc>.tline{background:none;box-shadow:none;border-radius:0}
+/* PC 3단 일정 칸(약 370px)도 태블릿·폴드와 같은 3칸 줄(이동 단추는 둘째 줄) — v3.css 1070행 규칙을 PC 일정 카드에 */
+html[data-mode="pc"] .app .vx-tlc .tline .stop{grid-template-columns:minmax(46px,auto) 30px minmax(0,1fr)}
+html[data-mode] .app .tline .stop{grid-template-columns:minmax(46px,auto) 30px minmax(0,1fr)} /* 108회차 ⚙️ 파로(⑧-4): 폰도 시각 칸이 «09:48» 폭만큼(46px 고정에서 2px 잘림) — 시안 .tli 48px */
+html[data-mode="pc"] .app .vx-tlc .tline .stop .t,html[data-mode="pc"] .app .vx-tlc .tline .stop .ax{grid-row:1/span 2}
+html[data-mode="pc"] .app .vx-tlc .tline .stop .mv{grid-column:3;justify-content:end}
+/* PC «넣을 만한 가구»·«N일차 요약» — 소제목 카드 안 */
+html[data-mode] .app .vx-near,html[data-mode] .app .vx-sum{padding:12px 14px}
+html[data-mode] .app .vx-sect.in{margin:0 2px 8px;align-items:center}
+html[data-mode] .app .vx-sect .vx-mt{font-size:calc(12.5px * var(--tz));color:var(--ink3);font-weight:600;flex:none}
+html[data-mode] .app .vx-near .vx-lst,html[data-mode] .app .vx-sum .vx-lst{display:grid;gap:8px}
+html[data-mode] .app .vx-sum .vx-wxr{display:flex;padding:2px 2px 0}
+/* 거리 숫자 «약 1.2 km» 한 줄(Version 15 #4) — 방문 탭 목록·가구 넣기 시트·주변 정보 */
+html[data-mode] .app .vx-km,html[data-mode] .app .vx-km .num{white-space:nowrap}
+html[data-mode] .app .vx-lst .lc .num{display:inline}
+html[data-mode] .app .nbl .nb-km{white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){html[data-mode] .app .vx-chip{transition:none}}
+@media print{html[data-mode] .app .vx-dep,html[data-mode] .app .vx-late .vx-btns,html[data-mode] .app .vx-lk{display:none!important}}
+/* 104회차 ⚙️ 파로B — 전 화면 공통(이 파일이 맨 끝 쪽이라 여기에)
+   ① 폰·폴드 아래 행동줄 주 단추: 이름이 «…»로 잘리던 것(360·390·큰 글자 1.3배) → 시안 v4 .dock .btn.p span.lb 처럼 두 줄까지 감싸 균형(text-wrap:balance)
+   ② 태블릿 행동줄 폭 = 시안 dockHTML(태블릿 max-width 600, 오른쪽 붙임)
+   ③ colsOf 정규식을 고쳐 폰에서 안쪽 <main> 이 없어져도 «앞 카드에 붙는 한 줄»(warnline·navnote) 간격은 전과 같게 */
+html[data-mode="phone"] .app .dock .pri b,html[data-mode="fold"] .app .dock .pri b{white-space:normal;overflow:visible;text-overflow:clip;text-wrap:balance;word-break:keep-all;overflow-wrap:anywhere;line-height:1.2}
+html[data-mode="phone"] .app .dock .pri,html[data-mode="fold"] .app .dock .pri{height:auto;padding-top:8px;padding-bottom:8px}
+html[data-mode="phone"] .app .dock .sbt{white-space:nowrap}
+html[data-mode="tab"] .app>.dock{width:min(600px,calc(100% - 92px - 40px))}
+html[data-mode="phone"] .app .main>.col>[class~=warnline],html[data-mode="phone"] .app .main>.col>[class~=navnote]{margin-top:calc(var(--sp-2) - var(--gap-sec))}

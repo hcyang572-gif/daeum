@@ -1,5 +1,5 @@
 /* 닿음 기록 탭 — «상황 고르기 → 상담일지 문장 자동 조립»(S12-i2 ⚙️ 파로, 2026-11-12 · 승인 시안 S12-h v2.2)
-   ① 상황 고르기: 6줄(함께 사는 사람·위기 유형·현장 상황·본인 의사·대응·다음 확인)을 하단 시트에서 고른다.
+   ① 상황 고르기: 7줄(함께 사는 사람·위기 유형·현장 상황·본인 의사·대응·다음 확인·약속 — 105회차 시안 v4 V16 기록 7번 줄)을 하단 시트에서 고른다.
       앞 단계(현장 점검에서 고른 징후·상담에서 고른 서비스·명단 위기정보)는 미리 반영 — 글자 입력 0, 목표 누름 10번 안팎.
       맞는 것이 없으면 시트 아래 «직접 입력»으로 보탠다. 문장은 정해진 규칙으로 이어 붙인다(문장 생성 모델 없음).
    ② 덧붙이기: 말하기(시간 제한 없음) · 글로 쓰기 — 칸 위 «예시로 채우기» 칩(위기 유형별 2~3문장, 자주 쓴 것 앞으로)은
@@ -18,11 +18,11 @@
   var CRI = ["생계", "주거", "건강", "고립", "돌봄", "체납·채무", "실직·소득 감소", "정신건강"];
   var SIT = {
     "생계": ["식사 1일 1~2끼", "냉장고가 거의 비어 있음", "공과금 고지서 쌓임", "소득 감소 진술", "받던 급여 끊김"],
-    "주거": ["난방이 안 됨", "전기·가스·물 끊김 흔적", "누수·곰팡이", "임차료 체납", "관리비 체납", "퇴거 예고 받음"],
-    "건강": ["만성질환 약 복용", "약을 제때 못 챙김", "거동 불편", "진료 중단", "약값·병원비 부담 진술"],
-    "고립": ["최근 1주 대화 상대 없음", "가족과 연락 끊김", "우편물·신문 쌓임", "외출을 거의 안 함"],
-    "돌봄": ["끼니·씻기를 도와줄 사람 없음", "아동이 혼자 있는 시간이 김", "장애 가족 돌봄 부담", "노부모 돌봄 부담"],
-    "체납·채무": ["건강보험료 체납", "통신비 연체", "대출 독촉 진술"],
+    "주거": ["난방이 안 됨", "보일러 고장으로 난방을 못 함", "난방 대신 전기장판만 씀", "단전 예고장 확인", "전기·가스·물 끊김 흔적", "누수·곰팡이", "임차료 체납", "관리비 체납", "퇴거 예고 받음"],
+    "건강": ["만성질환 약 복용", "약을 제때 못 챙김", "복용 약이 떨어져 있음", "거동 불편", "진료 중단", "약값·병원비 부담 진술"],
+    "고립": ["최근 1주 대화 상대 없음", "하루 종일 말할 사람이 없다고 함", "가족과 연락 끊김", "우편물·신문 쌓임", "외출을 거의 안 함"],
+    "돌봄": ["끼니·씻기를 도와줄 사람 없음", "혼자 씻기 어려움", "아동이 혼자 있는 시간이 김", "장애 가족 돌봄 부담", "노부모 돌봄 부담"],
+    "체납·채무": ["건강보험료 체납", "통신비 연체", "연체·독촉 문자를 받고 있음", "대출 독촉 진술"],
     "실직·소득 감소": ["최근 실직", "일용직 일감 끊김", "폐업 뒤 소득 없음"],
     "정신건강": ["우울감 진술", "잠을 못 잠", "음주 문제 의심"]
   };
@@ -38,8 +38,10 @@
   };
   var WILL = ["도움을 원함", "일부만 원함", "원하지 않음", "판단 어려움"];
   var NEXT = ["1주 뒤 전화", "2주 뒤 방문", "한 달 뒤 전화", "회신 오면 연락"];
+  // 105회차 ⚙️ 파로B(⑧-3b 기록-추3): «약속» 줄 — 시안 v4 V16 자주 쓰는 4개 먼저 + 그 밖에 6개. 고른 약속은 저장 때 약속(promises)으로 들어가 다음 방문 집 앞 «지난 약속»·실적 할 일에 나온다
+  var PROM = ["서류 갖다 드리기", "전화 드리기", "동행 신청", "결과 알려 드리기", "신청서 대신 접수", "다음 방문 날짜 약속", "병원·보건소 동행", "필요한 서류 알려 드리기", "가족에게 연락(본인 동의)", "이웃·통장에게 안부 부탁"];
   // [열쇠, 이름, 여러 개 고르기]
-  var ROWS = [["live", "함께 사는 사람", false], ["cri", "위기 유형", true], ["sit", "현장 상황", true], ["will", "본인 의사", false], ["act", "대응", true], ["next", "다음 확인", false]];
+  var ROWS = [["live", "함께 사는 사람", false], ["cri", "위기 유형", true], ["sit", "현장 상황", true], ["will", "본인 의사", false], ["act", "대응", true], ["next", "다음 확인", false], ["prom", "약속", true]];
   // 현장 점검 징후·명단 위기정보 낱말(app.js SIGN_OF·CHECKS) → 현장 상황 · 위기 유형
   var SIGN_SIT = {
     "끼니 거름": "식사 1일 1~2끼", "고지서 쌓임": "공과금 고지서 쌓임", "우편물 쌓임": "우편물·신문 쌓임", "복약 관리 어려움": "약을 제때 못 챙김",
@@ -47,7 +49,12 @@
     "돌볼 사람 없음": "끼니·씻기를 도와줄 사람 없음", "전기·가스 끊긴 흔적": "전기·가스·물 끊김 흔적", "전기 끊김": "전기·가스·물 끊김 흔적",
     "물 끊김": "전기·가스·물 끊김 흔적", "가스·난방 끊김": "전기·가스·물 끊김 흔적", "월세 밀림": "임차료 체납", "관리비 밀림": "관리비 체납",
     "건강보험료 밀림": "건강보험료 체납", "통신비 밀림": "통신비 연체", "빚 독촉": "대출 독촉 진술", "일자리 잃음": "최근 실직",
-    "병원비 부담": "약값·병원비 부담 진술", "받던 급여 끊김": "받던 급여 끊김"
+    "병원비 부담": "약값·병원비 부담 진술", "받던 급여 끊김": "받던 급여 끊김",
+    // 104회차 ⚙️ 파로C(⑧-3): 현장 «문제 있음» 새 칩 10개(시안 v4 V16 CK·SENT) → 현장 상황 문장
+    "냉장고 비어 있음": "냉장고가 거의 비어 있음", "단전 예고장": "단전 예고장 확인", "연체 문자": "연체·독촉 문자를 받고 있음",
+    "전기장판만 씀": "난방 대신 전기장판만 씀", "연락 끊김": "가족과 연락 끊김", "말벗 없음": "하루 종일 말할 사람이 없다고 함",
+    "도와줄 사람 없음": "끼니·씻기를 도와줄 사람 없음", "씻기 어려움": "혼자 씻기 어려움", "보일러 고장": "보일러 고장으로 난방을 못 함",
+    "약 떨어짐": "복용 약이 떨어져 있음"
   };
   function criOfSit(s) { var out = null; Object.keys(SIT).some(function (k) { if (SIT[k].indexOf(s) >= 0) { out = k; return true; } return false; }); return out; }
   /** 고른 서비스 이름 → 대응 문구(한국사회보장정보원 복지서비스 이름 그대로) */
@@ -72,7 +79,7 @@
   /** 상태 만들기·맞추기: 미리 반영한 값은 담당자가 뺀 것(off)만 빼고 다시 채운다 → 현장 점검을 나중에 고쳐도 따라온다 */
   function sync(c, ctx) {
     c = c || { live: "", cri: {}, sit: {}, act: {}, will: "", next: "", cus: {}, off: {}, taps: 0 };
-    ["cri", "sit", "act"].forEach(function (k) { c[k] = c[k] || {}; }); c.cus = c.cus || {}; c.off = c.off || {};
+    ["cri", "sit", "act", "prom"].forEach(function (k) { c[k] = c[k] || {}; }); c.cus = c.cus || {}; c.off = c.off || {};
     var d = derive(ctx), pre = 0;
     if (d.live && !c.live && !c.off["live|" + d.live]) c.live = d.live;
     if (d.live && c.live === d.live) pre++;
@@ -86,7 +93,7 @@
   /** 고를 거리: 위기 유형에 맞춰 현장 상황·대응을 보여 주고, 이미 고른 것·직접 넣은 것을 붙인다 */
   function opts(c, k) {
     var base;
-    if (k === "live") base = LIVE; else if (k === "cri") base = CRI; else if (k === "will") base = WILL; else if (k === "next") base = NEXT;
+    if (k === "live") base = LIVE; else if (k === "cri") base = CRI; else if (k === "will") base = WILL; else if (k === "next") base = NEXT; else if (k === "prom") base = PROM;
     else {
       var sel = vals(c, "cri"), src = k === "sit" ? SIT : ACT; base = [];
       (sel.length ? sel : ["생계", "고립"]).forEach(function (x) { base = base.concat(src[x] || []); });
@@ -96,7 +103,7 @@
   /** 한 번 누름: 여러 개면 넣고/빼기, 하나면 바꿔 넣기(같은 것을 다시 누르면 비움). 미리 반영한 것을 빼면 기억(off) */
   function tap(c, k, v) {
     c.taps = (c.taps || 0) + 1;
-    if (multi(k)) { if (c[k][v]) { delete c[k][v]; c.off[k + "|" + v] = 1; } else { c[k][v] = 1; delete c.off[k + "|" + v]; } return c; }
+    if (multi(k)) { c[k] = c[k] || {}; if (c[k][v]) { delete c[k][v]; c.off[k + "|" + v] = 1; } else { c[k][v] = 1; delete c.off[k + "|" + v]; } return c; }
     if (c[k] === v) { c[k] = ""; c.off[k + "|" + v] = 1; } else { c[k] = v; delete c.off[k + "|" + v]; }
     return c;
   }
@@ -104,7 +111,7 @@
   function add(c, k, v) {
     v = String(v || "").replace(/\s+/g, " ").trim().slice(0, 40); if (!v) return c;
     c.cus[k] = uniq((c.cus[k] || []).concat([v]));
-    if (multi(k)) c[k][v] = 1; else c[k] = v;
+    if (multi(k)) { c[k] = c[k] || {}; c[k][v] = 1; } else c[k] = v;
     c.taps = (c.taps || 0) + 1; delete c.off[k + "|" + v];
     return c;
   }
@@ -135,7 +142,7 @@
     if (lv || cri.length) L.push((lv ? lv + " 가구로, " : "") + (ok.length ? ok.join("·") + " 위기가 확인됨" : fl.length ? "" : "위기 유형은 확인 중") + (fl.length ? (ok.length ? ", " : "") + "명단 위기정보 " + fl.join("·") + "(명단에서 가져옴 · 현장 확인 전)" : ""));
     if (ctx.checkN) L.push("현장 점검 " + ctx.checkN + "항목 중 문제 " + (ctx.badN || 0) + "항목");
     if (sit.length) L.push("현장 상황: " + sit.join(", "));
-    if (c.live === "혼자" && (cri.indexOf("고립") >= 0 || sit.some(function (s) { return /대화 상대|연락 끊김|외출/.test(s); }))) L.push("혼자 살며 고립 신호가 겹쳐 안부 확인 주기를 짧게 잡음");
+    if (c.live === "혼자" && (cri.indexOf("고립") >= 0 || sit.some(function (s) { return /대화 상대|말할 사람|연락 끊김|외출/.test(s); }))) L.push("혼자 살며 고립 신호가 겹쳐 안부 확인 주기를 짧게 잡음");
     if (cri.indexOf("정신건강") >= 0 || sit.some(function (s) { return /우울|잠을/.test(s); })) L.push("정서 상태를 살피며 상담했고, 어려울 때 연락할 곳을 안내함");
     if (sit.indexOf("아동이 혼자 있는 시간이 김") >= 0) L.push("아동 돌봄 공백이 있어 돌봄 연계를 먼저 진행함");
     if (sit.some(function (s) { return /난방|끊김 흔적/.test(s); })) L.push("겨울철에 대비해 다음 확인 때 난방 상태를 다시 봄");
@@ -144,6 +151,7 @@
     if (will) L.push(W[will] || "본인 의사: " + will);
     if (act.length) L.push(will === "원하지 않음" ? "안내만 함: " + act.join(", ") : "대응: " + act.join(", ") + "(안내·의뢰이며 선정 결정 아님)");
     var nx = nextOf(c.next, ctx.now); if (nx) L.push("다음 확인: " + nx.text);
+    var pm = vals(c, "prom"); if (pm.length) L.push("약속: " + pm.join(", "));
     return L.map(function (x) { return /[.。]$/.test(x) ? x : x + "."; });
   }
 
@@ -161,16 +169,30 @@
         return '<button type="button" class="rc-row' + (v.length ? " has" : "") + '" data-cf="' + r[0] + '"><i>' + (i + 1) + '</i><span class="rc-rn">' + r[1] + '</span><span class="rc-rv">' +
           (v.length ? v.slice(0, 3).map(function (x) { return "<em>" + esc(x) + "</em>"; }).join("") + (v.length > 3 ? '<em class="m">+' + (v.length - 3) + "</em>" : "") : "<small>고르기</small>") + "</span>" + DI("chevR", "rc-chev") + "</button>";
       }).join("") + "</div></div>" +
-      '<div class="rc-lines" aria-live="polite"><div class="rc-lh"><b>자동 문장</b><small>미리 반영 ' + (c.pre || 0) + "개 · 직접 누름 " + (c.taps || 0) + "번 · 글자 0</small></div>" +
+      '<div class="rc-lines" aria-live="polite"><div class="rc-lh"><b>자동 문장</b></div>' + // 104회차 ⑧-3 기록-개1(시안 V16): «미리 반영·직접 누름 n번·글자 0» 수치 삭제
       (L.length ? L.map(function (l) { return "<p>· " + esc(l) + "</p>"; }).join("") : '<p class="rc-why">고르면 여기에 문장이 생깁니다.</p>') + "</div></section>";
   }
-  function sheetHtml(c, k, ctx) {
+  // 107회차 ⚙️ 파로B(⑧-2b 차이 8): «약속» 시트 = 시안 v4 V16처럼 자주 쓰는 4개 먼저 + «다른 상황 6개 더 보기»(누르면 «그 밖에» 묶음 펼침)
+  var PROM_MAIN = 4;
+  /** 약속 칩 나누기: 접힘이면 자주 쓰는 4개 + 고른 것·직접 넣은 것, 펼침이면 나머지를 «그 밖에» 묶음으로 */
+  function promSplit(c, open) {
+    var all = opts(c, "prom"), v = vals(c, "prom"), main = PROM.slice(0, PROM_MAIN), more = PROM.slice(PROM_MAIN);
+    var own = all.filter(function (x) { return main.indexOf(x) < 0 && (more.indexOf(x) < 0 || (!open && v.indexOf(x) >= 0)); });
+    return { main: main.concat(own), more: open ? more : [], moreN: more.length, open: !!open };
+  }
+  function sheetHtml(c, k, ctx, ui) {
     var i = 0; ROWS.forEach(function (r, j) { if (r[0] === k) i = j; });
     var r = ROWS[i], o = opts(c, k), v = vals(c, k), L = lines(c, ctx);
+    var chip = function (x) { return '<button type="button" data-cv="' + esc(x) + '" aria-pressed="' + (v.indexOf(x) >= 0) + '">' + esc(x) + "</button>"; };
+    var pm = k === "prom" ? promSplit(c, ui && ui.pmore) : null;
     return '<div class="rc-grab" aria-hidden="true"></div><div class="rc-sh-h"><h3 id="rcShT">' + r[1] + '</h3><span class="rc-num">' + (i + 1) + "/" + ROWS.length + "</span></div>" +
       '<div class="rc-steps" aria-hidden="true">' + ROWS.map(function (x, j) { return '<i class="' + (j === i ? "on" : vals(c, x[0]).length ? "dn" : "") + '"></i>'; }).join("") + "</div>" +
       '<p class="rc-why">' + (r[2] ? "여러 개 고를 수 있습니다" : "하나만 고르면 다음으로 넘어갑니다") + (k === "sit" || k === "act" ? " · 고른 위기 유형에 맞춰 보여 줍니다" : "") + "</p>" +
-      '<div class="rc-opts" role="group" aria-label="' + r[1] + '">' + o.map(function (x) { return '<button type="button" data-cv="' + esc(x) + '" aria-pressed="' + (v.indexOf(x) >= 0) + '">' + esc(x) + "</button>"; }).join("") + "</div>" +
+      (k === "prom" ? '<p class="rc-why rc-promnote">' + DI("calendar") + "<span>고른 약속은 다음 방문 때 집 앞 화면 «지난 약속»에 나옵니다</span></p>" : "") +
+      (pm ? '<div class="rc-opts" role="group" aria-label="' + r[1] + ' · 자주 쓰는 것">' + pm.main.map(chip).join("") + "</div>" +
+        (pm.open ? '<div class="rc-pgrp"><small>그 밖에</small><div class="rc-opts" role="group" aria-label="' + r[1] + ' · 그 밖에">' + pm.more.map(chip).join("") + "</div></div>" : "") +
+        '<button type="button" class="rc-pmore" data-cmore="1" aria-expanded="' + pm.open + '">' + (pm.open ? "자주 쓰는 것만 보기" : "다른 상황 " + pm.moreN + "개 더 보기") + DI("chevD", "rc-chev") + "</button>"
+        : '<div class="rc-opts" role="group" aria-label="' + r[1] + '">' + o.map(chip).join("") + "</div>") +
       '<div class="rc-di"><input class="in1" id="rcIn" maxlength="40" placeholder="맞는 게 없으면 직접 입력" aria-label="' + r[1] + ' 직접 입력" autocomplete="off"><button type="button" class="sbtn" data-cadd="1">추가</button></div>' +
       '<div class="rc-lines rc-mini"><div class="rc-lh"><b>지금 문장</b><small>' + L.length + "줄</small></div>" + (L.length ? L.map(function (l) { return "<p>· " + esc(l) + "</p>"; }).join("") : '<p class="rc-why">고르면 문장이 생깁니다.</p>') + "</div>" +
       '<div class="rc-nav">' + (i > 0 ? '<button type="button" class="sbtn" data-cgo="' + ROWS[i - 1][0] + '">이전</button>' : "") +
@@ -185,14 +207,16 @@
     ov.innerHTML = '<div class="rc-scrim" data-cclose="1"></div><div class="rc-sheet" role="dialog" aria-modal="true" aria-labelledby="rcShT"></div>';
     document.body.appendChild(ov);
     var box = ov.querySelector(".rc-sheet");
-    SH = { ov: ov, hooks: hooks || {}, prev: document.activeElement };
+    SH = { ov: ov, hooks: hooks || {}, prev: document.activeElement, pmore: false };
     function draw(key, focus) {
-      k = key; var st = box.scrollTop; box.innerHTML = sheetHtml(c, k, ctx); box.scrollTop = st;
+      if (key !== k) SH.pmore = false; // 다른 줄로 가면 다시 접힘
+      k = key; var st = box.scrollTop; box.innerHTML = sheetHtml(c, k, ctx, { pmore: SH.pmore }); box.scrollTop = st;
       if (focus) { var f = box.querySelector("[data-cv]"); if (f) f.focus(); }
     }
     ov.addEventListener("click", function (e) {
-      var t = e.target.closest ? e.target.closest("[data-cv],[data-cgo],[data-cclose],[data-cadd]") : null; if (!t) return;
+      var t = e.target.closest ? e.target.closest("[data-cv],[data-cgo],[data-cclose],[data-cadd],[data-cmore]") : null; if (!t) return;
       if (t.hasAttribute("data-cclose")) { closeSheet(); return; }
+      if (t.hasAttribute("data-cmore")) { SH.pmore = !SH.pmore; draw(k); var mb = box.querySelector("[data-cmore]"); if (mb) mb.focus(); return; }
       if (t.hasAttribute("data-cgo")) { draw(t.getAttribute("data-cgo"), true); return; }
       if (t.hasAttribute("data-cadd")) { var inp = box.querySelector("#rcIn"); if (inp && inp.value.trim()) { add(c, k, inp.value); if (SH.hooks.save) SH.hooks.save(c); draw(k); } return; }
       tap(c, k, t.getAttribute("data-cv")); try { navigator.vibrate && navigator.vibrate(8); } catch (er) { /* 없음 */ }
@@ -282,7 +306,7 @@
   }
 
   // ── 실제 보고서 형태로 보기(상담일지 한 장) ──
-  /** m = { hid, area, date, reasons:[], checks:"", lines:[], memo, act:[], will, next } */
+  /** m = { hid, area, date, reasons:[], checks:"", lines:[], memo, act:[], will, next, prom:[] } */
   function paperHtml(m) {
     function E(t) { return '<span class="empty">' + esc(t) + "</span>"; }
     return '<section class="rc-paperw rc-open" tabindex="-1" aria-label="상담일지 한 장 미리보기"><div class="rc-sum">실제 보고서 형태로 보기 <small>상담일지 한 장</small></div>' +
@@ -296,13 +320,14 @@
       "<tr><th>본인 의사</th><td>" + (m.will ? esc(m.will) : E("고르기")) + "</td></tr>" +
       "<tr><th>연계</th><td>" + (m.act && m.act.length ? esc(m.act.join(", ")) + " <small>(안내·의뢰, 선정 결정 아님)</small>" : E("대응 고르기")) + "</td></tr>" +
       "<tr><th>다음 확인</th><td>" + (m.next ? '<span class="rule">' + esc(m.next) + "</span>" : E("고르기")) + "</td></tr>" +
+      "<tr><th>약속</th><td>" + (m.prom && m.prom.length ? '<span class="ai">' + esc(m.prom.join(", ")) + "</span>" : "—") + "</td></tr>" + // 105회차: 시안 V16 상담일지 «약속» 칸(없으면 —)
       "<tr><th>담당</th><td>" + E("담당자 확인 후 서명") + "</td></tr></table></div></section>";
   }
 
   var api = {
-    LIVE: LIVE, CRI: CRI, SIT: SIT, ACT: ACT, WILL: WILL, NEXT: NEXT, ROWS: ROWS, EX: EX, SIGN_SIT: SIGN_SIT,
+    LIVE: LIVE, CRI: CRI, SIT: SIT, ACT: ACT, WILL: WILL, NEXT: NEXT, PROM: PROM, ROWS: ROWS, EX: EX, SIGN_SIT: SIGN_SIT,
     derive: derive, sync: sync, vals: vals, opts: opts, tap: tap, add: add, lines: lines, nextOf: nextOf, svcAct: svcAct,
-    composerHtml: composerHtml, sheetHtml: sheetHtml, openSheet: openSheet, closeSheet: closeSheet,
+    composerHtml: composerHtml, sheetHtml: sheetHtml, promSplit: promSplit, PROM_MAIN: PROM_MAIN, openSheet: openSheet, closeSheet: closeSheet,
     groups: groups, sorted: sorted, toArea: toArea, exHtml: exHtml, bindEx: bindEx, useBump: useBump,
     subHtml: subHtml, clock: clock, paperHtml: paperHtml
   };

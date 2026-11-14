@@ -1,0 +1,182 @@
+/* 104회차 ⚙️ 파로C — 보고 탭 «실적·사후관리» 8칸(정본 시안 v4 Version 16 perf · V4-3a~c)
+   칸 = 작은 이름표(px-kick) + 굵은 한 줄 결론(px-ccl) + 그래프 + 근거 각주(px-ft, 바닥 맞춤).
+   배열: 폰 1단 · 폴드·태블릿 두 칸 줄 격자(px-row) · PC 12칸 줄 격자(px-row.p12, span 은 tab_report.js).
+   이름은 모두 px- 로 시작(app.css·v3.css 의 .week·.legend·.pt 와 겹치지 않게).
+   지금은 tab_report.js pxCss() 가 이 파일을 붙인다 — 연결 지점: index.html 에 <link> 한 줄(v3.css 뒤) */
+.px-perf .px-b{display:flex;flex-direction:column;gap:0;min-height:100%;margin:0}
+.px-kick{font-size:calc(12.5px * var(--tz,1));font-weight:700;color:var(--gold,#8A6A2E);letter-spacing:.04em}
+.px-kick.t{color:var(--acc,#1F6676)}
+.px-ccl{display:block;font-size:calc(16px * var(--tz,1));font-weight:800;letter-spacing:-.03em;line-height:1.42;margin:4px 0 12px;word-break:keep-all;text-wrap:pretty}
+.px-ft{margin-top:auto;padding-top:12px;font-size:calc(12.5px * var(--tz,1));color:var(--ink3,#6B6458);display:flex;gap:6px;align-items:flex-start;line-height:1.5}
+.px-ft svg.ic{width:16px;height:16px;flex:none;margin-top:2px}
+.px-nw{white-space:nowrap}
+/* 줄 격자 — 같은 줄 칸 높이 같음 */
+.px-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+.px-row.p12{grid-template-columns:repeat(12,minmax(0,1fr))}
+.px-rc{min-width:0;display:flex;flex-direction:column;gap:14px}
+.px-rc>.px-b{flex:1}
+html[data-mode="fold"] .px-row{column-gap:40px}
+/* A 도넛 + 숫자 4칸 */
+.px-don{display:flex;gap:16px;align-items:center}
+.px-dn{position:relative;flex:none;width:calc(132px * var(--tz,1));height:calc(132px * var(--tz,1))}
+.px-dn svg{width:100%;height:100%;transform:rotate(-90deg)}
+.px-dn>span{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1.1;align-content:center}
+.px-dn b{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;display:block;margin-bottom:3px}
+.px-dn small{font-size:12px;color:var(--ink3,#6B6458)}
+.px-led{flex:1;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 0}
+.px-led>div{display:flex;flex-direction:column;gap:2px;padding:0 10px;box-shadow:inset 1px 0 0 var(--line,rgba(17,24,28,.09));min-width:0}
+.px-led>div:nth-child(odd){box-shadow:none;padding-left:2px}
+.px-led b{font-size:calc(20px * var(--tz,1));font-weight:800;font-variant-numeric:tabular-nums}
+.px-led span{font-size:calc(12.5px * var(--tz,1));color:var(--ink3,#6B6458)}
+.px-led em{font-style:normal;font-size:12px;color:var(--warnInk,#8A5A12)}
+/* 막대 */
+.px-bars{display:flex;flex-direction:column;gap:9px}
+.px-bar{display:grid;grid-template-columns:minmax(64px,auto) minmax(0,1fr) auto;gap:10px;align-items:center;font-size:calc(13.5px * var(--tz,1))}
+.px-bar.fn{grid-template-columns:calc(76px * var(--tz,1)) minmax(0,1fr) calc(64px * var(--tz,1))}
+.px-bar.wl{grid-template-columns:calc(104px * var(--tz,1)) minmax(0,1fr) auto}
+.px-bar>span:first-child{min-width:0;word-break:keep-all}
+.px-tr{height:12px;border-radius:6px;background:linear-gradient(180deg,var(--well0,#E9E4DA),var(--well1,#F3EFE7));box-shadow:inset 0 1px 2px rgba(60,46,28,.18);overflow:hidden;display:flex}
+.px-tr i{display:block;height:100%;border-radius:6px;background:linear-gradient(180deg,var(--acc0,#2E7F90),var(--acc2,#174F5B));box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transform-origin:left;animation:pxGrow .9s cubic-bezier(.2,.8,.2,1) both}
+.px-tr i.l{background:linear-gradient(180deg,#8DB9C1,#6FA4AE)}
+.px-tr i.g{background:linear-gradient(180deg,var(--gold0,#C9A869),var(--gold1,#9C7A3C))}
+.px-tr i.r{background:linear-gradient(180deg,#D28A7E,#A9483B)}
+.px-tr i.n{background:linear-gradient(180deg,#A3ABAE,#7F898C)}
+.px-tr.stk{background:none;box-shadow:none}
+.px-tr.stk>span{display:flex;height:100%;gap:2px;border-radius:6px;overflow:hidden}
+.px-tr.stk>span i{border-radius:0}
+.px-bar .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink2,#3E3A33);white-space:nowrap}
+.px-ridge{height:1px;margin:14px -16px 12px;background:linear-gradient(90deg,transparent,rgba(17,24,28,.09) 12%,rgba(17,24,28,.09) 88%,transparent)}
+/* 범례 */
+.px-lg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:calc(12.5px * var(--tz,1));color:var(--ink2,#3E3A33)}
+.px-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.px-lg i.ok,.px-strip i.ok{background:linear-gradient(180deg,#5F9A6E,#2F6B3F)}
+.px-lg i.pl,.px-strip i.pl,.px-lg i.s0{background:#1F6676}
+.px-strip i.pl{background:linear-gradient(180deg,var(--acc0,#2E7F90),var(--acc2,#174F5B))}
+.px-lg i.lt,.px-strip i.lt,.px-lg i.s2{background:#A9483B}
+.px-strip i.lt{background:linear-gradient(180deg,#D28A7E,#A9483B)}
+.px-lg i.s1{background:#6FA4AE}.px-lg i.s3{background:#7F898C}.px-lg i.cu{background:#B48C4C}
+/* C 사후관리 */
+.px-strip{display:flex;gap:3px;height:14px;border-radius:7px;overflow:hidden}
+.px-strip i{display:block;height:100%;min-width:0}
+.px-lst{display:flex;flex-direction:column;margin-top:6px}
+.px-li{display:flex;align-items:flex-start;gap:12px;padding:12px 2px;min-height:56px}
+.px-li+.px-li{box-shadow:inset 0 1px 0 var(--line,rgba(17,24,28,.09))}
+.px-li .tag{margin-top:2px;flex:none}
+.px-ck{all:unset;box-sizing:border-box;cursor:pointer;flex:none;width:var(--tap,44px);height:var(--tap,44px);margin:-10px -8px -10px -10px;position:relative}
+.px-ck::before{content:"";position:absolute;inset:12px;border-radius:7px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--ring,rgba(60,46,28,.3))}
+.px-ck:focus-visible::before{box-shadow:inset 0 0 0 2px var(--acc,#1F6676)}
+.px-pt td .px-ck{margin:-12px 0 -12px -12px;vertical-align:middle}
+.px-li .lc{flex:1;min-width:0}
+.px-li .lc b{display:block;font-weight:700;font-size:calc(15px * var(--tz,1));word-break:keep-all}
+.px-li .lc>span{display:block;color:var(--ink3,#6B6458);font-size:calc(12.5px * var(--tz,1));line-height:1.4}
+.px-li .rk{white-space:nowrap;font-size:calc(12.5px * var(--tz,1));color:var(--ink3,#6B6458);font-variant-numeric:tabular-nums}
+.px-li.late .rk,.px-pt tr.late td.n{color:var(--sos1,#A9483B);font-weight:700}
+.px-chips{display:flex!important;flex-wrap:wrap;gap:5px;margin-top:6px}
+.px-chips .chip{min-height:var(--tap,44px);padding:0 10px;font-size:12.5px}
+/* 106회차 ⑧-2: 옛 .chip(초록 점 ::after + 공용 «넘치면 말줄임»)이 남아 «받음◖»처럼 잘려 보였음 → 시안 V16 .chip 모양 그대로(알약·눌림 청록) */
+.px-chips .chip{all:unset;box-sizing:border-box;cursor:pointer;min-height:var(--tap,44px);min-width:var(--tap,44px);max-width:none;overflow:visible;justify-content:center;white-space:nowrap;padding:0 10px;border-radius:22px;font-size:calc(12.5px * var(--tz,1));font-weight:600;display:inline-flex;align-items:center;flex:none;
+  background:radial-gradient(100% 80% at 35% 10%,#FFFFFF,var(--cer1,#F2EEE7) 75%);box-shadow:inset 0 1px 0 #fff,0 0 0 1px var(--ring,rgba(60,46,28,.12)),0 3px 6px -4px rgba(60,46,28,.4)}
+.px-chips .chip::after{content:none}
+.px-chips .chip:focus-visible{outline:3px solid var(--acc,#1F6676);outline-offset:2px}
+.px-chips .chip[aria-pressed="true"]{color:#fff;background:radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.22),transparent 55%),linear-gradient(180deg,var(--acc0,#257A8C),var(--acc2,#174F5B));box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 0 0 1px rgba(10,50,60,.45),0 6px 12px -6px rgba(23,79,91,.7)}
+.px-perf .btn.t.full{width:100%}
+.px-pt{width:100%;border-collapse:collapse;margin-top:8px;font-size:calc(13.5px * var(--tz,1))}
+.px-pt th{text-align:left;font-size:12px;font-weight:700;color:var(--ink3,#6B6458);padding:6px 8px;box-shadow:inset 0 -1px 0 var(--line,rgba(17,24,28,.09))}
+.px-pt td{padding:10px 8px;vertical-align:top;box-shadow:inset 0 -1px 0 var(--line,rgba(17,24,28,.09))}
+.px-pt td small{display:block;font-size:12.5px;color:var(--ink3,#6B6458)}
+.px-pt td.n{white-space:nowrap;font-variant-numeric:tabular-nums}
+.px-pt .px-chips{margin-top:0}
+/* H 이번 주 */
+.px-week{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.px-week>div{border-radius:14px;padding:8px 6px;min-height:72px;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px var(--line,rgba(17,24,28,.09));font-size:12px;color:var(--ink3,#6B6458);display:flex;flex-direction:column;gap:4px;min-width:0}
+.px-week>div b{font-size:13px;font-weight:700;color:var(--ink,#11181C);font-variant-numeric:tabular-nums}
+.px-week>div.td{background:linear-gradient(180deg,#FFFFFF,var(--cer1,#F7F3EA));box-shadow:inset 0 0 0 1px var(--ring,rgba(60,46,28,.14)),0 0 0 2px rgba(185,155,99,.45)}
+.px-week>div.past{opacity:.7}
+.px-week .ev{font-size:11.5px;line-height:1.3;color:var(--ink2,#3E3A33);background:var(--goldSoft,#F4E7C8);border-radius:6px;padding:2px 4px;word-break:keep-all;white-space:normal;overflow:visible;text-overflow:clip} /* 106회차 ⑧-2: 옛 v3_live .ev(한 줄 말줄임)가 «Q-017…»로 잘라 — 시안 .week .ev 처럼 줄바꿈 */
+.px-week .evm{font-size:11px;color:var(--ink3,#6B6458)}
+/* F 주별 짝 기둥 */
+.px-cols{display:flex;align-items:flex-end;gap:10px;height:120px;padding-top:6px}
+.px-cols>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;font-size:12px;color:var(--ink3,#6B6458);min-width:0}
+.px-cols b{font-size:12.5px;font-weight:700;color:var(--ink2,#3E3A33);font-variant-numeric:tabular-nums}
+.px-cols .pp{flex:1;width:100%;max-width:40px;display:flex;align-items:flex-end;gap:3px}
+.px-cols .pp i{flex:1;display:block;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--acc0,#2E7F90),var(--acc2,#174F5B));transform-origin:bottom;animation:pxGrowY .9s cubic-bezier(.2,.8,.2,1) both}
+.px-cols .pp i.l{background:linear-gradient(180deg,#8DB9C1,#6FA4AE)}
+.px-cols .cur .pp i:first-child{background:linear-gradient(180deg,var(--gold0,#C9A869),var(--gold1,#9C7A3C))}
+@keyframes pxGrow{from{transform:scaleX(0)}}
+@keyframes pxGrowY{from{transform:scaleY(0)}}
+@media (prefers-reduced-motion:reduce){.px-tr i,.px-cols .pp i{animation:none}}
+@media (max-width:380px){.px-don{flex-direction:column;align-items:stretch}.px-dn{align-self:center}}
+
+/* 105회차 ⚙️ 파로B — ⑧-3b 보고 탭(정본 시안 v4 Version 16 · v4-1 «보기» 단추 · v3-6 «보고서 보기»)
+   문서 줄 = 대기 수 | 이름·설명·채운 칸 막대 | «보기»(주) + «만들기/받기/인쇄·PDF»(보조) — 높이 44·같은 둥글기
+   좁은 칸(소형 360·폴드 반쪽·글자 아주 크게)이면 두 단추가 제목 아래 한 줄 */
+.rv-dep{container:rvdep/inline-size}
+html .dep .row.dv[data-doc]{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px 12px;align-items:center;cursor:pointer;padding:12px 14px}
+.dep .row.dv .nm{min-width:0}
+.dep .row.dv .nm b{word-break:keep-all;text-wrap:pretty}
+.dep .row.dv .nm small{display:block;word-break:keep-all}
+.dep .row.dv .dmeter{margin-top:6px;max-width:220px}
+.dep .row.dv:focus-visible{outline:2px solid var(--acc,#1F6676);outline-offset:-2px;border-radius:14px}
+.rv-acts{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex:none}
+.rv-acts .rv-mk{min-height:var(--tap,44px);height:auto;padding:0 12px;border-radius:22px;font-size:calc(13px * var(--tz,1));gap:4px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+.rv-acts .rv-mk svg.ic{width:var(--ic-s,16px);height:var(--ic-s,16px)}
+html[data-mode="phone"] .rv-acts .rv-mk{padding:0 10px}
+.rv-acts .rv-mk.btn{flex:none} /* 108회차 ⚙️ 파로(⑧-4): .btn 의 flex:1 1 0 탓에 «보기» 글자가 3~5px 잘림 — 글자 폭만큼 */
+@container rvdep (max-width:330px){html .dep .row.dv[data-doc]{grid-template-columns:44px minmax(0,1fr);row-gap:8px}.dep .row.dv .rv-acts{grid-column:2;justify-content:flex-start}}
+
+/* 보고서 보기 — 화면 전체(시안 .pv.full) · 종이는 A4 595×842 기준을 통째로 줄이고 늘림(pvLayout 이 배율·쪽 나누기) */
+.rvw{position:fixed;inset:0;z-index:1200;display:flex;flex-direction:column;min-height:0;background:linear-gradient(180deg,#F3EFE8,#E9E4DB);animation:rvwUp .32s var(--e-out,cubic-bezier(.2,.8,.2,1)) both}
+@keyframes rvwUp{from{transform:translateY(100%)}}
+@media (prefers-reduced-motion:reduce){.rvw{animation:none}}
+.rvw-t{flex:none;display:flex;flex-direction:column;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(250,248,244,.86));box-shadow:0 1px 0 rgba(60,46,28,.1),0 10px 20px -16px rgba(16,40,48,.5);position:relative;z-index:2}
+.rvw-t .r1{display:flex;align-items:center;gap:8px;min-width:0}
+.rvw-t .r1 .ti{flex:1;min-width:0;display:flex;flex-direction:column}
+.rvw-t .r1 .ti b{font-size:calc(16px * var(--tz,1));font-weight:800;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rvw-t .r1 .ti small{font-size:calc(12px * var(--tz,1));color:var(--ink3,#6B767D);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rvw-t .pgn{flex:none;font-weight:700;font-size:calc(14px * var(--tz,1));line-height:1;font-variant-numeric:tabular-nums;color:var(--acc2,#174F5B);padding:0 12px;height:32px;display:inline-flex;align-items:center;border-radius:16px;background:var(--accSoft,rgba(31,102,118,.10));box-shadow:inset 0 0 0 1px rgba(31,102,118,.14)}
+.rvw-t .r2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:640px;width:100%;margin:0 auto}
+.rvw-t .r2 .btn{min-height:44px;padding:0 8px;font-size:calc(13.5px * var(--tz,1));white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.rvw-t .r2 .btn svg.ic{width:var(--ic-s,16px);height:var(--ic-s,16px)}
+.rvw-s{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:16px 12px 84px;display:flex;flex-direction:column;align-items:center;gap:16px;position:relative}
+.rvw-pg{flex:none;width:595px;position:relative}
+.rvw-paper{position:absolute;left:0;top:0;width:595px;min-height:842px;box-sizing:border-box;padding:46px 50px 52px;transform-origin:0 0;background:#fff;border-radius:2px;box-shadow:0 0 0 1px rgba(60,46,28,.10),0 14px 28px -16px rgba(16,40,48,.45);font-size:12.5px;line-height:1.65}
+.rvw-none .rvw-paper{position:static;min-height:0}
+.rvw .print-doc{margin:0;padding:0;box-shadow:none;border-radius:0;background:none;max-width:none;width:auto}
+.rvw .print-doc input[data-fill]{display:none}
+.rvw .print-doc .pr-val{display:inline}
+.rvw .print-doc .no-print,.rvw .print-doc .only-screen{display:none}
+.rvw-pf{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:10.5px;color:#5E5E5E}
+.rvw.clean mark,.rvw.clean .rule{background:none!important;color:inherit!important;box-shadow:none!important}
+.rvw.clean td[data-src]{background:none!important;outline:0!important;box-shadow:none!important}
+.rvw.clean .dmeter,.rvw.clean .ruler{display:none}
+.rvw-z{position:absolute;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:2px;padding:4px;border-radius:26px;background:rgba(255,255,255,.94);box-shadow:0 0 0 1px var(--ring,rgba(17,24,28,.12)),0 12px 24px -12px rgba(16,40,48,.6)}
+.rvw-z button{all:unset;box-sizing:border-box;cursor:pointer;min-width:44px;height:44px;padding:0 10px;border-radius:22px;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-weight:700;font-size:calc(13.5px * var(--tz,1));color:var(--ink,#11181C);white-space:nowrap}
+.rvw-z button:focus-visible{outline:2px solid var(--acc,#1F6676)}
+.rvw-z button[aria-pressed="true"]{background:var(--accSoft,rgba(31,102,118,.10));color:var(--acc2,#174F5B)}
+.rvw-z button svg.ic{width:var(--ic-m,20px);height:var(--ic-m,20px)}
+.rvw-z i{width:1px;height:22px;background:rgba(60,46,28,.14)}
+.rvw-minus{display:block;width:14px;height:2px;border-radius:1px;background:currentColor}
+@media print{.rvw{display:none!important}}
+
+/* 107회차 ⚙️ 파로B(⑧-2b 차이 6): 큰 화면 오른쪽 칸 = 시안 V16 .pv.inl — 큰 A4 + HWPX·PDF·인쇄 + 쪽 n/N · 빈칸은 A4 위에서 바로 채움 */
+.rvw.inl{position:relative;inset:auto;z-index:auto;animation:none;border-radius:22px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--ring,rgba(17,24,28,.10)),0 18px 34px -24px rgba(16,40,48,.55);height:var(--pvh,640px)}
+.rvw.inl .rvw-t{padding:10px 12px}
+.rvw.inl .rvw-s{padding-bottom:76px}
+.rvw.inl .rvw-z{position:absolute;bottom:12px}
+.rvw.inl .print-doc input[data-fill]{display:inline-block;width:100%;min-height:28px;box-sizing:border-box;border:0;border-radius:6px;padding:0 8px;font:inherit;background:rgba(200,64,64,.10);box-shadow:inset 0 0 0 1.5px rgba(180,52,52,.55)}
+.rvw.inl .print-doc input[data-fill].ok{background:none;box-shadow:inset 0 -1px 0 rgba(60,46,28,.25)}
+.rvw.inl .print-doc .pr-val{display:none}
+.rvw-why{all:unset;box-sizing:border-box;cursor:pointer;min-height:var(--tap,44px);display:flex;align-items:center;justify-content:center;padding:0 12px;border-radius:12px;font-size:calc(13px * var(--tz,1));font-weight:700;color:#A33A3A;background:rgba(200,64,64,.08);text-align:center;word-break:keep-all}
+.rvw-why:focus-visible{outline:2px solid var(--acc,#1F6676)}
+@media screen{.prev>.print-doc.rv-src{display:none}}
+
+/* 107회차 ⚙️ 파로B(⑧-2b 차이 8): «약속» 시트 — 자주 쓰는 4개 + «다른 상황 6개 더 보기»(시안 V16 .pmore·.pgrp) */
+/* (record.css 는 index.html 에 연결돼 있지 않아 — v3_live.css 빌드 대상 — 늘 실리는 이 파일에 둔다 · 105회차 약속 안내 줄 규칙도 함께) */
+.rc-promnote{display:flex;gap:6px;align-items:flex-start}
+.rc-promnote svg.ic{width:16px;height:16px;flex:none;margin-top:2px;color:var(--gold1,#8A6A2E)}
+.rc-pgrp{display:grid;gap:6px;margin-top:2px}
+.rc-pgrp>small{font-size:var(--fs-1);font-weight:700;color:var(--rc-mute,#47535B)}
+.rc-pmore{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--tap,44px);padding:0 14px;border:0;border-radius:12px;background:transparent;font:inherit;font-size:var(--fs-2);font-weight:700;color:var(--go,#2E8270);cursor:pointer;justify-self:start}
+.rc-pmore svg.ic{width:16px;height:16px;transition:transform .2s}
+.rc-pmore[aria-expanded="true"] svg.ic{transform:rotate(180deg)}
+@media (prefers-reduced-motion: reduce){.rc-pmore svg.ic{transition:none}}

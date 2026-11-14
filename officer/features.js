@@ -879,5 +879,172 @@
       .sort(function (a, b) { return (b.stalled || 0) - (a.stalled || 0) || (b.demand || 0) - (a.demand || 0) || String(a.name).localeCompare(String(b.name), "ko"); });
   };
 
+  /* ── 계정 저장(101회차 ⚙️ 파로-서버A, 공통 개선1 — docs/APP_COMMON_98.md) ─────────────────────────
+     문서함 대기·연계·결과 확인·약속·사후관리·하루 순서 등 «업무 기록»을 같은 계정이면 PC·폰이 같은 값으로 본다.
+     - 서버: 닿음 전용 Supabase 표 acct_kv(키 하나 = 행 하나, RLS 본인 행만) — supabase/migration_101_acct_kv.sql.
+       연결·로그인은 shared/sync.js(DaeumSync.live())를 그대로 빌려 쓴다(새 로그인·새 클라이언트 없음).
+     - 화면 코드는 지금처럼 localStorage 를 읽고 쓴다. 이 층이 허용 키를 지켜보다(3초마다·F.store.set 직후) 바뀐 키만 올리고,
+       서버에서 바뀐 키는 이 기기 localStorage 에 써 넣은 뒤 F.acct.on(fn) 구독자에게 «data» 를 알린다.
+     - 로그인 전·표 없음·끊김: 이 기기에만 두고 «보낼 키»로 쌓아 둔다 → 다시 붙으면 받기 → 보내기.
+     - 충돌: 키 단위 «나중에 고친 쪽»(updated_at). 처음 받기 전 바뀐 것(시연 시드·옛 판 기록)은 «바탕»으로 쳐서 서버 값이 있으면 서버가 이긴다.
+     - 시연 계정: sync.js 와 같은 규칙 — 서버 행도 «오늘 고친 것»만 받는다(어제 것은 그날 시연 시드로, 빈 화면 없음).
+     ⛔ 올리지 않는 것: 발굴 명단 원본·명단 밖 가구 등록·도로 경로 결과(네이버 약관 §7.3 서버 저장 금지)·화면 상태.
+        글자는 F.mask(개인정보 가림) 뒤에만 보낸다. */
+  var ACCT_KEYS = [
+    // features.js KEYS
+    "daeum.officer.attempts", "daeum.officer.tips", "daeum.officer.order", "daeum.officer.picked", "daeum.officer.links",
+    "daeum.officer.consults", "daeum.officer.entry", "daeum.officer.outcomes", "daeum.officer.handoff", "daeum.officer.followups",
+    // fieldwork.js 키
+    "daeum.officer.rounds", "daeum.officer.neighborLog", "daeum.officer.afterThree", "daeum.officer.askChecked",
+    "daeum.officer.homeNotes", "daeum.officer.promises",
+    // app/app.js·officer/flow.js 키(문서함 대기·마감·보고 완료·하루 순서·미룸·기록 중·서식 채움)
+    "daeum.s12.docs", "daeum.s12.fill", "daeum.s12.rec", "daeum.officer.deadline", "daeum.officer.reportDone",
+    "daeum.officer.dayOrder", "daeum.officer.dayOut", "daeum.officer.dayMove", "daeum.officer.dayDate", "daeum.officer.deferred",
+    // 102회차 방문 탭(출발 설정·찾아가는 길 메모·오늘 다시 들르기)
+    "daeum.officer.depart", "daeum.officer.ways", "daeum.officer.again"
+  ];
+  var ACCT_META = "daeum.acct.meta", ACCT_DIRTY = "daeum.acct.dirty", ACCT_TABLE = "acct_kv";
+  var A = { live: null, settled: false, noTable: false, subs: [], ch: null, sync: null, timer: null, pulling: null, pushing: null, fails: 0, at: null, err: "" };
+  function acctLs() { try { return root.localStorage || null; } catch (e) { return null; } }
+  function rawGet(k) { var s = acctLs(); try { return s ? s.getItem(k) : null; } catch (e) { return null; } }
+  function rawSet(k, v) { var s = acctLs(); if (!s) return; try { if (v == null) { if (s.removeItem) s.removeItem(k); else s.setItem(k, "null"); } else s.setItem(k, v); } catch (e) { /* 저장 불가 */ } }
+  function hashOf(s) { s = s == null ? "∅" : String(s); var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + ":" + s.length; }
+  function meta() { return lsGet(ACCT_META, {}) || {}; }
+  function dirty() { return lsGet(ACCT_DIRTY, []) || []; }
+  function acctEmit(what) { A.subs.forEach(function (f) { try { f(what); } catch (e) { if (root.console) root.console.warn("[닿음 계정 저장]", e); } }); }
+  function maskDeep(v) {
+    var m = F.mask || function (x) { return x; };
+    if (typeof v === "string") return m(v);
+    if (Array.isArray(v)) return v.map(maskDeep);
+    if (v && typeof v === "object") { var o = {}; Object.keys(v).forEach(function (k) { o[k] = maskDeep(v[k]); }); return o; }
+    return v;
+  }
+  function permanent(e) { var c = String(e && e.code || ""); return /^(42501|23\d{3}|22[0-9A-Z]{3}|42703|PGRST204|P0001)$/.test(c); }
+  function noTableErr(e) { return /does not exist|42P01|schema cache|PGRST205/.test(String(e && e.code || "") + " " + String(e && e.message || "")); }
+  /** 허용 키를 훑어 바뀐 것을 «보낼 키»로 표시. 처음 받기 전 바뀐 것은 at=0(바탕) — 서버 값이 있으면 서버가 이긴다 */
+  function scan(now) {
+    var M = meta(), D = dirty(), n = 0, t = now || Date.now();
+    ACCT_KEYS.forEach(function (k) {
+      var h = hashOf(rawGet(k)), m = M[k];
+      if (m && m.h === h) return;
+      M[k] = { h: h, at: A.settled ? t : 0, sv: m ? m.sv || 0 : 0 };
+      if (D.indexOf(k) < 0) D.push(k);
+      n++;
+    });
+    if (n) { lsSet(ACCT_META, M); lsSet(ACCT_DIRTY, D); }
+    return n;
+  }
+  function freshCut() {
+    var daily = true, C = root.DAEUM_CONFIG || {};
+    if (C.demoDailyReset === false || C.demoSeed === false) daily = false;
+    try { if (/[?&]demo=off\b/.test(root.location.search)) daily = false; } catch (e) { /* 주소 없음(시험) */ }
+    if (!daily) return 0;
+    var t0 = new Date(); t0.setHours(0, 0, 0, 0); return t0.getTime();
+  }
+  /** 서버 → 이 기기. 반환: 바꿔 쓴 키 개수 */
+  function acctPull() {
+    if (A.pulling) return A.pulling;
+    var L = A.live; if (!L || A.noTable) return Promise.resolve(0);
+    A.pulling = Promise.resolve(L.client.from(ACCT_TABLE).select("key,value,updated_at")).then(function (r) {
+      A.pulling = null;
+      if (r && r.error) { if (noTableErr(r.error)) A.noTable = true; throw r.error; }
+      scan(); // 받기 직전 이 기기 변화를 먼저 잡아 둔다
+      var M = meta(), D = dirty(), cut = freshCut(), n = 0;
+      (r && r.data || []).forEach(function (row) {
+        if (!row || ACCT_KEYS.indexOf(row.key) < 0) return;
+        var ts = new Date(row.updated_at).getTime() || 0, m = M[row.key] || {};
+        if (cut && ts < cut) return;                         // 시연: 어제 것은 받지 않는다(그날 시드 유지)
+        if (D.indexOf(row.key) >= 0 && (m.at || 0) > ts) return; // 이 기기에서 더 나중에 고침 → 보내기가 이긴다
+        if (m.sv && m.sv >= ts && D.indexOf(row.key) < 0) return; // 이미 받은 값
+        var raw = row.value == null ? null : JSON.stringify(row.value);
+        if (rawGet(row.key) !== raw) { rawSet(row.key, raw); n++; }
+        M[row.key] = { h: hashOf(rawGet(row.key)), at: ts, sv: ts };
+        D = D.filter(function (x) { return x !== row.key; });
+      });
+      A.settled = true; lsSet(ACCT_META, M); lsSet(ACCT_DIRTY, D); A.at = new Date();
+      if (n) acctEmit("data");
+      return n;
+    }, function (e) { A.pulling = null; throw e; });
+    return A.pulling;
+  }
+  /** 이 기기 → 서버. 받기를 한 번 마친 뒤에만 보낸다(바탕 값이 서버의 새 값을 덮지 않게) */
+  function acctPush() {
+    if (A.pushing) return A.pushing;
+    var L = A.live; if (!L || A.noTable || !A.settled) return Promise.resolve(0);
+    scan();
+    var D = dirty(); if (!D.length) return Promise.resolve(0);
+    var M = meta(), nowIso = new Date().toISOString(), rows = [], bad = [];
+    D.forEach(function (k) {
+      if (ACCT_KEYS.indexOf(k) < 0) { bad.push(k); return; }
+      var raw = rawGet(k), v = null;
+      if (raw != null) { try { v = maskDeep(JSON.parse(raw)); } catch (e) { bad.push(k); return; } }
+      var at = M[k] && M[k].at ? new Date(M[k].at).toISOString() : nowIso;
+      rows.push({ owner_id: L.uid, key: k, value: v, updated_at: at });
+    });
+    if (!rows.length) { lsSet(ACCT_DIRTY, D.filter(function (k) { return bad.indexOf(k) < 0; })); return Promise.resolve(0); }
+    A.pushing = Promise.resolve(L.client.from(ACCT_TABLE).upsert(rows, { onConflict: "owner_id,key" })).then(function (r) {
+      A.pushing = null;
+      if (r && r.error) throw r.error;
+      var M2 = meta(), sent = rows.map(function (x) { return x.key; });
+      rows.forEach(function (x) { var ts = new Date(x.updated_at).getTime(); M2[x.key] = M2[x.key] || {}; M2[x.key].sv = ts; if (!M2[x.key].at) M2[x.key].at = ts; });
+      // 보내는 사이 또 고친 키는 남긴다(해시가 바뀌었으면 다음 훑기에서 다시 표시)
+      lsSet(ACCT_META, M2); lsSet(ACCT_DIRTY, dirty().filter(function (k) { return sent.indexOf(k) < 0 && bad.indexOf(k) < 0; }));
+      A.fails = 0; A.err = ""; A.at = new Date(); acctEmit("sent");
+      return rows.length;
+    }).catch(function (e) { // 서버가 돌려준 오류(r.error)도 여기로 — then 의 둘째 인자는 첫째 안에서 던진 것을 못 받는다
+      A.pushing = null; A.err = String(e && (e.code || e.message) || "").slice(0, 80);
+      if (noTableErr(e)) { A.noTable = true; return 0; }          // 표 없음(적용 전) — 이 기기에만, 쌓아 둔 표시는 지키고 다음 연결에서 다시
+      if (permanent(e)) { lsSet(ACCT_DIRTY, []); return 0; }       // 권한·제약 — 다시 보내도 같다
+      A.fails++; return 0;                                         // 끊김·5xx — 다음 훑기(3초)에서 다시
+    });
+    return A.pushing;
+  }
+  function acctDetach() {
+    if (A.ch && A.live) { try { A.live.client.removeChannel(A.ch); } catch (e) { /* 무시 */ } }
+    A.ch = null; A.live = null; A.settled = false;
+  }
+  /** DaeumSync.live() 가 바뀌면(로그인·로그아웃·끊김) 다시 붙는다 */
+  function acctAttach(L) {
+    if (!L) { if (A.live) acctDetach(); return Promise.resolve(); }
+    if (A.live && A.live.uid === L.uid && A.live.client === L.client) return Promise.resolve();
+    acctDetach(); A.live = L; A.noTable = false;
+    return acctPull().then(function () {
+      if (A.live !== L) return;
+      try {
+        A.ch = L.client.channel("daeum-kv-" + L.uid)
+          .on("postgres_changes", { event: "*", schema: "public", table: ACCT_TABLE, filter: "owner_id=eq." + L.uid }, function () { setTimeout(function () { acctPull().catch(function () {}); }, 0); });
+        A.ch.subscribe(function (st) { if (st === "SUBSCRIBED") acctPull().catch(function () {}); });
+      } catch (e) { A.ch = null; }
+      return acctPush();
+    }).catch(function () { /* 표 없음·끊김 — 이 기기 저장으로 */ });
+  }
+  function tick() { if (scan() && A.live) acctPush(); }
+  F.acct = {
+    keys: ACCT_KEYS, table: ACCT_TABLE,
+    on: function (f) { A.subs.push(f); },
+    state: function () { return { live: !!A.live, settled: A.settled, noTable: A.noTable, pending: dirty().length, fails: A.fails, at: A.at, lastErr: A.err }; },
+    scan: scan, pull: acctPull, push: acctPush, attach: acctAttach, detach: acctDetach,
+    /** sync = window.DaeumSync. 연결 상태가 바뀔 때마다 붙고 떨어진다. 3초마다 허용 키를 훑는다(node 시험에선 o.noTimer) */
+    bind: function (sync, o) {
+      o = o || {};
+      if (!sync || A.sync === sync) return;
+      A.sync = sync;
+      var follow = function () { return acctAttach(sync.live ? sync.live() : null); };
+      if (sync.on) sync.on(function (what) { if (what === "mode") follow(); });
+      if (!o.noTimer && !A.timer) { A.timer = setInterval(tick, 3000); if (A.timer && A.timer.unref) A.timer.unref(); }
+      scan();
+      return follow();
+    }
+  };
+  // F.store.set 으로 쓴 것은 기다리지 않고 바로 훑는다(3초 훑기는 화면이 localStorage 를 직접 쓴 것을 잡는다)
+  var storeSet0 = F.store.set;
+  F.store.set = function (name, v) { var r = storeSet0(name, v); setTimeout(tick, 0); return r; }; // 로그인 전에도 «보낼 키»로 표시(보내기는 붙은 뒤)
+  // 화면(브라우저)에서는 모든 스크립트가 읽힌 뒤 DaeumSync 에 스스로 붙는다 — app.js 수정 없이 동작
+  if (root.document && root.addEventListener) {
+    var autoBind = function () { if (root.DaeumSync && root.DAEUM_CONFIG && root.DAEUM_CONFIG.acctSync !== false) F.acct.bind(root.DaeumSync); };
+    if (root.document.readyState && root.document.readyState !== "loading") setTimeout(autoBind, 0);
+    else root.document.addEventListener("DOMContentLoaded", autoBind);
+  }
+
   return F;
 });

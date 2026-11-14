@@ -59,6 +59,7 @@
 .nb-foot { margin: 10px 4px 0; }
 .nbl.nb-solo .nb-tg.hh { display: none; } /* 지도 없이 목록만일 때 «방문 가구» 핀 단추는 뜻이 없어 숨김 */
 .nbl.nb-solo .nb-bar { grid-template-columns: auto repeat(2, minmax(0, 1fr)); }
+@container (max-width: 380px) { .nbl.nb-solo .nb-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); } } /* 106회차 ⑧-2: 좁은 칸(태블릿 가로·PC 셋째 칸)에서 위 줄이 «주변 정보»를 한 줄에 다시 넣어 «경로당»이 «…»로 잘려 — 380 아래는 이름표 윗줄 */
 
 /* 지도 위 표지 — 유약 구슬(연계처 초록) · 돌빛 원판(경로당, 점선 테 = 방문 전 확인) */
 .nb-pin { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: #fff; cursor: pointer;

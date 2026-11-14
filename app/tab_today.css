@@ -1,0 +1,205 @@
+/* 닿음 오늘 탭(#today) + 발굴 명단 엑셀 올리기 — 103회차 ⚙️ 파로(2026-11-14)
+   근거 = 정본 시안 v4 Version 16(_design/S12-z98_고도화시안/v4/index.html)의 <style> 규칙을 그대로 옮기고 클래스 이름만 tx- 로 바꿈 — 104회차 ⚙️ 파로A: V16 명단 줄(.tx-lstrip) 추가
+   (.card → .tx-card, .tile → .tx-tile …, .app.m-fold → html[data-mode="fold"] .app). 값(색·크기·간격·그림자·둥글기·움직임)은 시안과 같다.
+   글꼴 토큰: 시안 --f-num → 앱 --fn(Space Grotesk), --f-ui → --f(Pretendard).
+   맨 위 «배열» 절만 손으로 씀: 큰 화면(V4-4) 단·머리 줄·간격 토큰 --g·폴드 접힘선 40px. 불러오는 순서: tab_visit.css·tab_field.css 뒤(맨 끝). 라이트 고정. */
+
+/* ── 배열(V4-4) — 앱 셸은 단(.col)마다 따로 스크롤. 시안 바깥 여백·단 사이를 같은 값으로 ── */
+html[data-mode] .app .main.tx-main{--g:16px;--goldSoft:rgba(185,155,99,.20);word-break:keep-all;overflow-wrap:anywhere;text-wrap:pretty}
+html[data-mode="tab"] .app .main.tx-main,html[data-mode="pc"] .app .main.tx-main{--g:20px}
+html[data-mode] .app .main.tx-main>.col{gap:var(--g)}
+html[data-mode]:not([data-mode="phone"]) .app .main.tx-main>.col{padding-inline:10px}
+html[data-mode="fold"] .app .main.tx-main{padding:0 8px;column-gap:20px;grid-template-columns:repeat(2,minmax(0,1fr))}  /* 바깥 18 · 단 사이 40 = 접힘선(355│375│395) */
+html[data-mode="tab"] .app .main.tx-main{padding:0 14px;column-gap:0}                                                     /* 바깥 24 · 단 사이 20 */
+html[data-mode="pc"] .app .main.tx-main{padding:0 18px;column-gap:0}                                                      /* 바깥 28 · 단 사이 20 */
+html[data-mode="tab"] .app .main.tx-main,html[data-mode="pc"] .app .main.tx-main{grid-auto-flow:row;grid-template-rows:auto minmax(0,1fr)}
+html[data-mode] .app .main.tx-main[data-cols="2"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html[data-mode] .app .main.tx-main[data-cols="3"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}        /* 12칸 4·4·4 */
+html[data-mode] .app .main.tx-main.tx-s543[data-cols="3"]{grid-template-columns:5fr 4fr 3fr!important}            /* 명단 고르기 5·4·3 */
+html[data-mode] .app .main.tx-main>.hdrow{grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:14px;padding:6px 10px 14px}
+html[data-mode] .app .main.tx-main .tx-top{display:flex;flex-direction:column;gap:14px;min-width:0;max-width:100%}
+html[data-mode] .app .main.tx-main>.col>.tx-sec-t{margin:2px 4px -6px}
+html[data-mode] .app .main.tx-main>.col>.tx-sec-t:first-child{margin-top:0}
+html[data-mode] .app .main.tx-main>.col>.tx-ph{padding:8px 2px 0}
+html[data-mode] .app .tx-dk[hidden]{display:none}
+html[data-mode] .app :where(.main.tx-main) svg.ic{width:var(--ic-m);height:var(--ic-m);flex:none}
+html[data-mode] .app a.tx-tli{color:inherit;text-decoration:none}
+html[data-mode] .app .tx-btn.tx-in{display:inline-flex;min-height:var(--tap);padding:0 4px;color:inherit;text-decoration:underline;font-size:inherit;vertical-align:middle}
+@media (prefers-reduced-motion:reduce){html[data-mode] .app .main.tx-main *,html[data-mode] .app .main.tx-main *::before{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ── 시안 규칙(그대로 옮김) ── */
+html[data-mode] .app .tx-lc b,html[data-mode] .app .tx-ph .tx-tt p{text-wrap:balance}
+html[data-mode] .app .tx-num{font-family:var(--fn);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+html[data-mode] .app .tx-nw,html[data-mode] .app .tx-hid{white-space:nowrap}
+html[data-mode] .app .tx-ky{all:unset;cursor:pointer;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--ink2);position:relative;flex:none;  background:radial-gradient(100% 80% at 35% 15%,#FFFFFF,var(--well1) 70%);box-shadow:inset 0 1px 0 #fff,inset 0 -2px 3px rgba(80,60,30,.08),0 0 0 1px var(--ring),0 5px 10px -5px rgba(60,46,28,.45);transition:transform .07s}
+html[data-mode] .app .tx-ky:active{transform:translateY(1px) scale(.96)}
+html[data-mode] .app .tx-ky svg.ic{width:var(--ic-m);height:var(--ic-m)}
+html[data-mode] .app .tx-ph{display:flex;align-items:flex-end;gap:12px;padding:8px 2px 0}
+html[data-mode] .app .tx-ph .tx-tt{flex:1;min-width:0}
+html[data-mode] .app .tx-ph h1{margin:0;font-size:calc(26px * var(--tz));line-height:1.12;letter-spacing:-.045em;font-weight:800;text-wrap:balance}
+html[data-mode] .app .tx-ph p{margin:4px 0 0;color:var(--ink3);font-size:calc(13.5px * var(--tz))}
+html[data-mode] .app .tx-ph .tx-dt{flex:none;text-align:right;font-size:calc(13px * var(--tz));color:var(--ink2);font-weight:600}
+html[data-mode] .app .tx-ph .tx-dt .tx-num{font-size:calc(14px * var(--tz))}
+html[data-mode] .app .tx-prog{white-space:nowrap;display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px 0 6px;border-radius:15px;font-size:calc(13px * var(--tz));font-weight:700;color:var(--ink);  background:linear-gradient(180deg,#FFFFFF,var(--cer1));box-shadow:var(--hl),0 0 0 1px var(--ring),0 4px 8px -5px rgba(60,46,28,.4)}
+html[data-mode] .app .tx-prog .tx-pr{width:20px;height:20px}
+html[data-mode] .app .tx-prog .tx-ab{color:var(--warnInk)}
+html[data-mode] .app .tx-card{position:relative;border-radius:22px;padding:16px;background:linear-gradient(170deg,var(--card0),var(--card1));  box-shadow:inset 0 0 0 1px rgba(17,24,28,.06),inset 0 1px 0 rgba(255,255,255,.98),inset 0 -2px 4px rgba(120,100,70,.07),var(--e2);overflow:hidden}
+html[data-mode] .app .tx-card::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.55),rgba(255,255,255,0) 32%);border-radius:inherit}
+html[data-mode] .app .tx-card>*{position:relative}
+html[data-mode] .app .tx-card.tx-flat{box-shadow:inset 0 0 0 1px rgba(17,24,28,.06),inset 0 1px 0 #fff,var(--e1)}
+html[data-mode] .app .tx-sec-t{display:flex;align-items:baseline;gap:8px;margin:2px 4px -6px}
+html[data-mode] .app .tx-sec-t h2{margin:0;font-size:calc(16px * var(--tz));font-weight:800;letter-spacing:-.03em;flex:1}
+html[data-mode] .app .tx-sec-t .tx-mt{font-size:calc(12.5px * var(--tz));color:var(--ink3)}
+html[data-mode] .app .tx-sec-t .tx-lk{all:unset;cursor:pointer;font-size:calc(13px * var(--tz));color:var(--acc);font-weight:700;min-height:var(--tap);display:inline-flex;align-items:center;gap:2px}
+html[data-mode] .app .tx-kick{font-size:calc(12.5px * var(--tz));font-weight:700;color:var(--gold);letter-spacing:.04em}
+html[data-mode] .app .tx-kick.tx-t{color:var(--acc)}
+html[data-mode] .app .tx-tile{width:54px;height:58px;border-radius:16px;flex:none;display:grid;place-items:center;font:700 calc(28px * var(--tz))/1 var(--fn);color:var(--acc2);letter-spacing:-.04em;  background:linear-gradient(165deg,#FFFFFF,var(--cer1));box-shadow:inset 0 1px 0 #fff,inset 0 -3px 0 rgba(120,100,70,.12),0 0 0 1px var(--ring),0 8px 14px -8px rgba(60,46,28,.5)}
+html[data-mode] .app .tx-tile.tx-sm{width:34px;height:36px;border-radius:11px;font-size:calc(17px * var(--tz))}
+html[data-mode] .app .tx-tile.tx-now{color:#fff;background:radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.25),transparent 55%),linear-gradient(180deg,var(--acc0),var(--acc2));box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -3px 0 rgba(0,0,0,.2),0 0 0 1px rgba(10,50,60,.4),0 0 0 3px rgba(185,155,99,.6),0 8px 14px -6px rgba(23,79,91,.6)}
+html[data-mode] .app .tx-tile.tx-done{color:var(--okInk);background:linear-gradient(165deg,#F4FAF5,#E1EEE4)}
+html[data-mode] .app .tx-tile.tx-ab{color:var(--warnInk);background:linear-gradient(165deg,#FFF7F1,#F5E3D6)}
+html[data-mode] .app .tx-tile.tx-ap{color:var(--gold);background:linear-gradient(165deg,#FFFBF2,#F2E7D2)}
+html[data-mode] .app .tx-now .tx-row1{display:flex;gap:14px;align-items:center}
+html[data-mode] .app .tx-now .tx-nm{flex:1;min-width:0}
+html[data-mode] .app .tx-now .tx-nm b{display:block;font-size:calc(21px * var(--tz));letter-spacing:-.04em;font-weight:800;line-height:1.2}
+html[data-mode] .app .tx-now .tx-nm span{color:var(--ink3);font-size:calc(13.5px * var(--tz))}
+html[data-mode] .app .tx-now .tx-tm{text-align:right;flex:none;line-height:1.1}
+html[data-mode] .app .tx-now .tx-tm b{display:block;font:700 calc(28px * var(--tz))/1 var(--fn);letter-spacing:-.04em}
+html[data-mode] .app .tx-now .tx-tm small{font-size:calc(12px * var(--tz));color:var(--ink3)}
+html[data-mode] .app .tx-now .tx-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+html[data-mode] .app .tx-now .tx-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+html[data-mode] .app .tx-now .tx-acts .tx-btn{flex:1 1 auto}
+html[data-mode] .app .tx-ridge{height:1px;margin:14px -16px 12px;background:linear-gradient(90deg,transparent,rgba(17,24,28,.09) 12%,rgba(17,24,28,.09) 88%,transparent);box-shadow:0 1px 0 rgba(255,255,255,.9)}
+html[data-mode] .app .tx-tag{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border-radius:8px;font-size:calc(12.5px * var(--tz));font-weight:700;white-space:nowrap;background:var(--well);color:var(--ink2);box-shadow:inset 0 1px 1px rgba(60,46,28,.10)}
+html[data-mode] .app .tx-tag.tx-w{background:var(--warnBg);color:var(--warnInk)}
+html[data-mode] .app .tx-tag.tx-ok{background:var(--okBg);color:var(--okInk)}
+html[data-mode] .app .tx-tag.tx-g{background:var(--goldSoft);color:#5A4219}
+html[data-mode] .app .tx-tag.tx-t{background:var(--accSoft);color:var(--acc2)}
+html[data-mode] .app .tx-tag.tx-r{background:#F6D9D3;color:#8E2C22}
+html[data-mode] .app .tx-tag svg.ic{width:var(--ic-s);height:var(--ic-s)}
+html[data-mode] .app .tx-rk{font:600 calc(11.5px * var(--tz)) var(--fn);color:var(--ink3);letter-spacing:0}
+html[data-mode] .app .tx-src{font-size:calc(12px * var(--tz));color:var(--ink3);display:inline-flex;gap:5px;align-items:center}
+html[data-mode] .app .tx-src svg.ic{width:var(--ic-s);height:var(--ic-s)}
+html[data-mode] .app .tx-tl{display:flex;flex-direction:column;padding:4px 0}
+html[data-mode] .app .tx-tli{display:grid;grid-template-columns:48px 34px 1fr auto;gap:0 10px;align-items:center;min-height:62px;cursor:pointer;position:relative;padding:4px 14px 4px 0}
+html[data-mode] .app .tx-tli::before{content:"";position:absolute;left:calc(48px + 10px + 17px - 1px);top:0;bottom:0;width:2px;background:repeating-linear-gradient(180deg,rgba(17,24,28,.16) 0 4px,transparent 4px 8px)}
+html[data-mode] .app .tx-tli:first-child::before{top:50%}
+html[data-mode] .app .tx-tli:last-child::before{bottom:50%}
+html[data-mode] .app .tx-tli.tx-past::before{background:var(--acc);opacity:.35}
+html[data-mode] .app .tx-tli>*{position:relative}
+html[data-mode] .app .tx-tli .tx-tm{font:600 calc(14px * var(--tz))/1 var(--fn);color:var(--ink2);text-align:right;font-variant-numeric:tabular-nums}
+html[data-mode] .app .tx-tli .tx-dot{width:12px;height:12px;border-radius:50%;background:var(--bg1);box-shadow:inset 0 0 0 2px #B9B2A6;justify-self:center}
+html[data-mode] .app .tx-tli .tx-bd{min-width:0;padding:6px 0}
+html[data-mode] .app .tx-tli .tx-bd b{font-weight:800;font-size:calc(15.5px * var(--tz));letter-spacing:-.03em;display:block;line-height:1.25}
+html[data-mode] .app .tx-tli .tx-bd .tx-sub{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
+html[data-mode] .app .tx-tli .tx-bd{min-width:0}
+html[data-mode] .app .tx-tli{container-type:inline-size}
+@container (max-width:340px){html[data-mode] .app .tx-tli .tx-st{flex-direction:column;gap:4px!important}html[data-mode] .app .tx-tli .tx-st .tx-ky{margin-left:0!important}}
+html[data-mode] .app .tx-tli .tx-bd .tx-sub em{font-style:normal;color:var(--ink3);font-size:calc(12.5px * var(--tz))}
+html[data-mode] .app .tx-tli.tx-brk{min-height:40px}
+html[data-mode] .app .tx-tli.tx-brk .tx-bd{color:var(--ink3);font-size:calc(13px * var(--tz))}
+html[data-mode] .app .tx-tli.tx-cur{background:linear-gradient(90deg,rgba(31,102,118,.07),rgba(31,102,118,0));border-radius:14px}
+html[data-mode] .app .tx-tli.tx-ap .tx-bd b{color:var(--gold)}
+html[data-mode] .app .tx-tli .tx-st{justify-self:end}
+html[data-mode] .app .tx-offline{display:flex;align-items:center;gap:8px;font-size:calc(12.5px * var(--tz));color:var(--ink3);padding:10px 14px 2px;border-top:1px dashed var(--line2);margin:6px 0 0}
+html[data-mode] .app .tx-offline svg.ic{width:var(--ic-s);height:var(--ic-s);color:var(--okInk)}
+html[data-mode] .app .tx-offline.tx-hot{color:var(--okInk);font-weight:700}
+html[data-mode] .app .tx-btn{all:unset;box-sizing:border-box;cursor:pointer;min-height:48px;padding:0 16px;border-radius:18px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:calc(15px * var(--tz));transition:transform .07s,box-shadow .2s;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.25}
+html[data-mode] .app .tx-btn svg.ic{width:var(--ic-m);height:var(--ic-m)}
+html[data-mode] .app .tx-btn:active{transform:translateY(1px) scale(.97)}
+html[data-mode] .app .tx-btn.tx-s{color:var(--ink);background:radial-gradient(100% 80% at 35% 10%,#FFFFFF,var(--cer1) 75%);box-shadow:inset 0 1px 0 #fff,inset 0 -2px 3px rgba(80,60,30,.08),0 0 0 1px var(--ring),0 6px 12px -7px rgba(60,46,28,.5)}
+html[data-mode] .app .tx-btn.tx-s svg.ic{color:var(--acc)}
+html[data-mode] .app .tx-btn.tx-p{color:#fff;background:radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.22),transparent 55%),linear-gradient(180deg,var(--acc0),var(--acc2));  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -2px 3px rgba(0,0,0,.2),0 0 0 1px rgba(10,50,60,.5),0 10px 18px -8px rgba(23,79,91,.75)}
+html[data-mode] .app .tx-btn.tx-p .ic-d{fill:#fff;opacity:.24}
+html[data-mode] .app .tx-btn.tx-p.tx-go{justify-content:space-between;padding:0 8px 0 20px;font-weight:800}
+html[data-mode] .app .tx-btn.tx-p.tx-go .tx-ar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(100% 80% at 35% 20%,rgba(255,255,255,.3),rgba(255,255,255,.1));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 1px rgba(255,255,255,.18)}
+html[data-mode] .app .tx-btn.tx-p.tx-go .tx-ar svg.ic{width:var(--ic-m);height:var(--ic-m)}
+html[data-mode] .app .tx-btn.tx-t{background:transparent;color:var(--acc);min-height:44px;padding:0 8px}
+html[data-mode] .app .tx-btn.tx-full{width:100%}
+html[data-mode] .app .tx-btn.tx-lg{min-height:58px;border-radius:22px;font-size:calc(16.5px * var(--tz))}
+html[data-mode] .app .tx-btn.tx-glow{animation:tx-glow 3s var(--e-out) infinite}
+@keyframes tx-glow{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -2px 3px rgba(0,0,0,.2),0 0 0 1px rgba(10,50,60,.5),0 10px 18px -8px rgba(23,79,91,.75),0 0 0 0 rgba(185,155,99,0)}50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -2px 3px rgba(0,0,0,.2),0 0 0 1px rgba(10,50,60,.5),0 12px 22px -8px rgba(23,79,91,.85),0 0 0 4px rgba(185,155,99,.35)}}
+html[data-mode] .app .tx-btns{display:flex;gap:8px;flex-wrap:wrap}
+html[data-mode] .app .tx-btns>.tx-btn{flex:1 1 auto}
+html[data-mode] .app .tx-av{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-weight:800;color:#fff;background:linear-gradient(160deg,var(--acc0),#17525E);flex:none;font-size:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+html[data-mode] .app .tx-av.tx-g{background:linear-gradient(160deg,#94703A,#5E451D)}
+html[data-mode] .app .tx-av.tx-n{background:linear-gradient(160deg,#7D8A90,#56636A)}
+html[data-mode] .app .tx-lst{display:flex;flex-direction:column}
+html[data-mode] .app .tx-li{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 2px;min-height:56px;position:relative;width:100%}
+html[data-mode] .app .tx-li+.tx-li{box-shadow:inset 0 1px 0 var(--line)}
+html[data-mode] .app .tx-li .tx-lc{flex:1;min-width:0}
+html[data-mode] .app .tx-li .tx-lc b{display:block;font-weight:700;font-size:calc(15px * var(--tz))}
+html[data-mode] .app .tx-li .tx-lc span{display:block;color:var(--ink3);font-size:calc(12.5px * var(--tz));line-height:1.4}
+html[data-mode] .app .tx-li>svg.ic{color:#A39C90;width:var(--ic-m);height:var(--ic-m)}
+html[data-mode] .app .tx-ico{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;flex:none;color:var(--acc);background:linear-gradient(165deg,#FFFFFF,var(--cer1));box-shadow:inset 0 1px 0 #fff,0 0 0 1px var(--ring),0 4px 8px -5px rgba(60,46,28,.45)}
+html[data-mode] .app .tx-ico.tx-g{color:var(--gold)}
+html[data-mode] .app .tx-ico.tx-r{color:var(--sos0)}
+html[data-mode] .app .tx-bars{display:flex;flex-direction:column;gap:9px}
+html[data-mode] .app .tx-bar-r{display:grid;grid-template-columns:64px 1fr 48px;gap:10px;align-items:center;font-size:calc(13.5px * var(--tz))}
+html[data-mode] .app .tx-bar-r .tx-tr{height:12px;border-radius:6px;background:linear-gradient(180deg,var(--well0),var(--well1));box-shadow:inset 0 1px 2px rgba(60,46,28,.18);overflow:hidden;display:flex}
+html[data-mode] .app .tx-bar-r .tx-tr i{display:block;height:100%;transform-origin:left;animation:tx-grow .9s var(--e-out) both;border-radius:6px;background:linear-gradient(180deg,var(--acc0),var(--acc2));box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+html[data-mode] .app .tx-bar-r .tx-tr i.tx-g{background:linear-gradient(180deg,var(--gold0),var(--gold1))}
+html[data-mode] .app .tx-bar-r .tx-v{text-align:right;font-family:var(--fn);color:var(--ink2)}
+@keyframes tx-grow{from{transform:scaleX(0)}}
+html[data-mode] .app .tx-big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+html[data-mode] .app .tx-big b{font:700 calc(40px * var(--tz))/1 var(--fn);letter-spacing:-.05em}
+html[data-mode] .app .tx-big span{color:var(--ink2);font-size:calc(14px * var(--tz))}
+html[data-mode] .app .tx-note{font-size:calc(12.5px * var(--tz));color:var(--ink3);display:flex;gap:6px;align-items:flex-start;line-height:1.5}
+html[data-mode] .app .tx-note svg.ic{width:var(--ic-s);height:var(--ic-s);flex:none;margin-top:2px}
+html[data-mode] .app .tx-info{border-radius:16px;padding:10px 12px;background:var(--accSoft);color:var(--acc2);font-size:calc(13px * var(--tz));line-height:1.5;box-shadow:inset 0 0 0 1px rgba(31,102,118,.12)}
+html[data-mode] .app .tx-scope{display:flex;flex-direction:column;gap:2px}
+html[data-mode] .app .tx-scope .tx-sr2{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;padding:7px 0;color:var(--ink3);font-size:calc(13px * var(--tz))}
+html[data-mode] .app .tx-scope .tx-sr2 b{display:block;color:var(--ink2);font-size:calc(14px * var(--tz))}
+html[data-mode] .app .tx-scope .tx-sr2 i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:700 11.5px var(--fn);font-style:normal;background:var(--well);color:var(--ink3)}
+html[data-mode] .app .tx-scope .tx-me{color:var(--ink2)}
+html[data-mode] .app .tx-scope .tx-me b{color:var(--ink)}
+html[data-mode] .app .tx-scope .tx-me i{background:linear-gradient(180deg,var(--acc0),var(--acc2));color:#fff}
+html[data-mode] .app .tx-scope .tx-band{border-radius:16px;padding:4px 10px;background:linear-gradient(90deg,rgba(31,102,118,.07),rgba(31,102,118,.02));box-shadow:inset 0 0 0 1px rgba(31,102,118,.12)}
+html[data-mode] .app .tx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+html[data-mode] .app .tx-pb{display:flex;flex-direction:column}
+html[data-mode] .app .tx-pb>.tx-ft{margin-top:auto;padding-top:12px}
+html[data-mode]:not([data-mode="phone"]) .app .tx-card p,html[data-mode]:not([data-mode="phone"]) .app .tx-ph .tx-tt p{max-width:46em}
+html[data-mode] .app .tx-ccl{display:block;font-size:calc(16px * var(--tz));font-weight:800;letter-spacing:-.03em;line-height:1.42;margin:4px 0 12px}
+html[data-mode] .app .tx-led{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 0}
+html[data-mode] .app .tx-led>div{display:flex;flex-direction:column;gap:2px;padding:0 10px;box-shadow:inset 1px 0 0 var(--line);min-width:0}
+html[data-mode] .app .tx-led>div:first-child{box-shadow:none;padding-left:2px}
+html[data-mode] .app .tx-led b{font:700 calc(25px * var(--tz))/1.1 var(--fn);letter-spacing:-.04em;color:var(--ink)}
+html[data-mode] .app .tx-led span{font-size:calc(12.5px * var(--tz));color:var(--ink3)}
+html[data-mode] .app .tx-led em{font-style:normal;font-size:calc(12px * var(--tz));font-weight:700;color:var(--acc2)}
+html[data-mode] .app .tx-bar-r .tx-tr i.tx-n{background:linear-gradient(180deg,#A3ACAF,#7F898C)}
+html[data-mode] .app .tx-bar-r .tx-tr i.tx-r{background:linear-gradient(180deg,#D28A7E,#A9483B)}
+html[data-mode] .app table.tx-pt{width:100%;border-collapse:collapse;font-size:calc(13.5px * var(--tz));line-height:1.45}
+html[data-mode] .app table.tx-pt th{font-size:calc(12px * var(--tz));color:var(--ink3);font-weight:700;text-align:left;padding:6px 8px;box-shadow:inset 0 -1px 0 var(--line);white-space:nowrap}
+html[data-mode] .app table.tx-pt td{padding:9px 8px;box-shadow:inset 0 -1px 0 var(--line);vertical-align:middle}
+html[data-mode] .app table.tx-pt tr:last-child td{box-shadow:none}
+html[data-mode] .app table.tx-pt td.tx-n,html[data-mode] .app table.tx-pt th.tx-n{text-align:right;font-family:var(--fn);white-space:nowrap}
+html[data-mode] .app table.tx-pt td svg.ic{width:16px;height:16px;color:var(--acc);flex:none}
+html[data-mode] .app .tx-isteps{display:flex;flex-wrap:wrap;gap:8px 16px}
+html[data-mode] .app .tx-isteps>div{display:flex;align-items:center;gap:8px;min-width:0;font-size:calc(13.5px * var(--tz));color:var(--ink3)}
+html[data-mode] .app .tx-isteps>div b{font-weight:700;white-space:nowrap}
+html[data-mode] .app .tx-isteps>div.tx-cur,html[data-mode] .app .tx-isteps>div.tx-past{color:var(--ink)}
+html[data-mode] .app .tx-isteps .tx-tile.tx-sm{width:30px;height:32px;font-size:calc(15px * var(--tz))}
+html[data-mode] .app .tx-drop{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:28px 18px;cursor:pointer;outline:1.5px dashed rgba(31,102,118,.45);outline-offset:-9px}
+html[data-mode] .app .tx-drop:hover{outline-color:var(--acc)}
+html[data-mode] .app .tx-drop .tx-dz{width:58px;height:58px;border-radius:19px;display:grid;place-items:center;color:#fff;background:radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.25),transparent 55%),linear-gradient(180deg,var(--acc0),var(--acc2));box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -3px 0 rgba(0,0,0,.2),0 10px 18px -8px rgba(23,79,91,.6)}
+html[data-mode] .app .tx-drop .tx-dz svg.ic{width:28px;height:28px}
+html[data-mode] .app .tx-drop .tx-ccl{margin:4px 0 0}
+html[data-mode] .app .tx-drop .tx-dzs{font-size:calc(13px * var(--tz));color:var(--ink3);max-width:30em}
+html[data-mode] .app .tx-drop .tx-btn.tx-p{pointer-events:none;margin-top:6px}
+html[data-mode] .app .tx-drop>.tx-ft{padding-top:14px}
+html[data-mode] .app .tx-tags{display:flex;flex-wrap:wrap;gap:6px}
+html[data-mode] .app .tx-tag.tx-skp{text-decoration:line-through;text-decoration-color:rgba(142,44,34,.55);color:var(--ink3);background:#F3EEE8}
+html[data-mode] .app .tx-rdbar{height:8px;border-radius:4px;background:linear-gradient(180deg,var(--well0),var(--well1));box-shadow:inset 0 1px 2px rgba(60,46,28,.18);overflow:hidden;margin-top:12px}
+html[data-mode] .app .tx-rdbar i{display:block;height:100%;transform-origin:left;animation:tx-grow 1.2s var(--e-out) both;background:linear-gradient(90deg,var(--acc0),var(--acc2))}
+html[data-mode] .app .tx-imp-in .tx-lead{margin:0 0 14px;color:var(--ink2);font-size:calc(14px * var(--tz));line-height:1.6}
+html[data-mode] .app .tx-ph h1 .tx-nw{display:inline-block;white-space:nowrap}
+/* ── 시안 v4 Version 16: 오늘 탭 평소 — 명단 올리기 입구(첫 화면 안, 첫 단 맨 위). 시안 .lstrip 규칙 그대로 ── */
+html[data-mode] .app .tx-lstrip{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:10px 10px 10px 12px}
+html[data-mode] .app .tx-lstrip .tx-ico{width:38px;height:38px;border-radius:12px}
+html[data-mode] .app .tx-lstrip .tx-lc{flex:1 1 150px;min-width:0}
+html[data-mode] .app .tx-lstrip .tx-lc b{display:block;font-weight:700;font-size:calc(14.5px * var(--tz));letter-spacing:-.02em}
+html[data-mode] .app .tx-lstrip .tx-lc span{display:block;color:var(--ink3);font-size:calc(12.5px * var(--tz));line-height:1.4}
+html[data-mode] .app .tx-lstrip .tx-btn{flex:none;margin-left:auto;min-height:46px;padding:0 15px 0 12px;border-radius:15px;gap:6px;font-size:calc(14.5px * var(--tz))}
+html[data-mode] .app .tx-lstrip .tx-btn.tx-up{color:var(--acc2);background:linear-gradient(180deg,#FFFFFF,#E6F0F1);box-shadow:inset 0 0 0 1.5px var(--acc),inset 0 1px 0 #fff,0 6px 12px -7px rgba(23,79,91,.55)}
+html[data-mode] .app .tx-lstrip .tx-btn.tx-up svg.ic{color:var(--acc)}
+html[data-mode] .app .tx-lstrip.tx-just{box-shadow:inset 0 0 0 1.5px rgba(31,102,118,.35),inset 0 1px 0 #fff,var(--e1)}

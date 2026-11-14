@@ -53,15 +53,22 @@
     return {
       place: place || "상주시", temp: Math.round(w.t * 10) / 10, sky: sky, rain: rain, warn: warn, pre: (w.pre || []).length ? (w.pre || []).slice(0, 2).join("·") + " 예비" : "",
       time: at.length >= 12 ? at.slice(8, 10) + ":" + at.slice(10, 12) : "", safe: safety(w),
+      fc: fcOf(w, at), demo: !!w.demo // 102회차 ⚙️ 파로B(TODAY-I5): 특보·급변 때만 예보 한 조각 «15시 비 60%» · 시연 가짜 값 표시
     };
+  }
+  /** 예보 한 조각 — shared/visit_day.js 의 fcPiece(지금 안 오는데 오늘 안에 옴)만. 기준 시 = 관측 시각(없으면 지금) */
+  function fcOf(w, at) {
+    var VD = root.DaeumVisitDay; if (!VD && typeof require === "function") { try { VD = require("../shared/visit_day.js"); } catch (e) { VD = null; } }
+    var h = at.length >= 10 ? +at.slice(8, 10) : new Date().getHours(), f = VD && VD.fcPiece ? VD.fcPiece(w, h) : null;
+    return f ? f.txt : "";
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   /** S12-x(64회차 · 호창님 11-12 «1줄·얇게»): 한 줄 «함창 3.5℃ 맑음 [특보 배지] 기상청» — 방문 안전 둘째 줄은 없앰(safe 값은 데이터로만 남김) */
   function short(p) { p = String(p || ""); return p.length > 2 ? p.replace(/(읍|면|동)$/, "") : p; }
   function html(v) {
     var warn = v.warn ? '<span class="al">' + esc(v.warn) + "</span>" : v.pre ? '<span class="al pre">' + esc(v.pre) + "</span>" : "";
-    return '<span class="wx-t"><span class="wx-pl">' + esc(short(v.place)) + '</span> <b class="num">' + v.temp + "℃</b>" + (v.sky ? " " + esc(v.sky) : "") + "</span>" + warn +
-      '<span class="src-tag"><i class="src-ico" aria-hidden="true"></i>기상청' + (v.time ? " " + v.time : "") + "</span>";
+    return '<span class="wx-t"><span class="wx-pl">' + esc(short(v.place)) + '</span> <b class="num">' + v.temp + "℃</b>" + (v.sky ? " " + esc(v.sky) : "") + "</span>" + (v.fc ? '<span class="fc">' + esc(v.fc) + "</span>" : "") + warn +
+      '<span class="src-tag"><i class="src-ico" aria-hidden="true"></i>기상청' + (v.time ? " " + v.time : "") + (v.demo ? " · 시연" : "") + "</span>";
   }
   /** S12-v U15(B10): 받은 실제 특보(기상청)만 화면 «주의» 줄·방문 순위의 원천으로 — 없으면 null(시연용 가짜 특보는 쓰지 않음) */
   function alertOf(w) {
@@ -76,6 +83,9 @@
   // ───── 화면(브라우저) ─────
   var C = root.DAEUM_CONFIG || {};
   var EP = C.weatherEndpoint || ""; // S12-v U15(A5): 날씨 주소는 config.js 에 따로(경로 주소에서 만들지 않음)
+  // 102회차 ⚙️ 파로B: 시연 상황 «오후 비 예보»·«한파특보» — 주소 ?wx=rain|cold 일 때만 가짜 값(띠 «기상청 … · 시연»). 서버는 부르지 않는다
+  var DEMO_WX = (function () { try { var m = /[?&]wx=(rain|cold)\b/.exec(location.search); return m && root.DaeumVisitDay ? root.DaeumVisitDay.demoWeather(m[1]) : null; } catch (e) { return null; } })();
+  if (DEMO_WX) { EP = "demo"; }
   if (!EP || C.weatherOff) return;
   var LS = "daeum.s12.wx", band = null, last = "";
   function ymd(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
@@ -88,7 +98,7 @@
   }
   function hide() { if (band) band.hidden = true; }
   function keep(w) { // 받은 값을 기억하고, 특보가 바뀌면 화면에 알린다(집 앞 «주의» 줄·방문 순위가 다시 그려지게)
-    var a = alertOf(w), b = alertOf(cur), ch = (a && a.name) !== (b && b.name); cur = w;
+    var a = alertOf(w), b = alertOf(cur), fk = function (x) { return x && x.fc ? JSON.stringify(x.fc) : ""; }, ch = (a && a.name) !== (b && b.name) || fk(w) !== fk(cur); cur = w; // 102회차: 예보 조각이 바뀌어도(방문 계획 일차 카드 배지)
     if (ch) try { root.dispatchEvent(new CustomEvent("daeum:wx")); } catch (e) { /* 옛 브라우저 */ }
   }
   function show(v) {
@@ -106,6 +116,7 @@
   function setCache(k, w) { try { localStorage.setItem(LS, JSON.stringify({ k: k, at: Date.now(), w: w })); } catch (e) { /* 저장 못 해도 그만 */ } }
   function load(force) {
     var tg = target(), k = tg.nx + "," + tg.ny;
+    if (DEMO_WX) { keep(DEMO_WX); show(view(DEMO_WX, tg.place)); return; }
     if (!force && k === last && band && !band.hidden) return;
     last = k;
     var c = getCache(k); if (c) { keep(c); show(view(c, tg.place)); return; }

@@ -54,12 +54,12 @@
   requestAnimationFrame(loop);
 })();
 
-/* 폭 판정 — 승인 시안 v3 와 같은 문턱(폰<600 · 폴드<900 · 태블릿<1200 · PC)을 <html data-mode> 로 붙인다.
+/* 폭 판정 — 승인 시안 v3 와 같은 문턱(폰<600 · 폴드<800 · 태블릿<1200 · PC — 104회차 900→800)을 <html data-mode> 로 붙인다.
    app/v3.css 의 html[data-mode=x] .app 규칙이 이것을 본다. 기능은 같고 배열만 바뀐다. 🩵 미르 2026-11-12 */
 (function () {
   "use strict";
   var de = document.documentElement, last = "";
-  function modeOf(w) { return w < 600 ? "phone" : w < 900 ? "fold" : w < 1200 ? "tab" : "pc"; }
+  function modeOf(w) { return w < 600 ? "phone" : w < 800 ? "fold" : w < 1200 ? "tab" : "pc"; } // 104회차 파로B: 폴드 문턱 900→800 — 정본 시안 v4 기기표(폴드 750 = fold · 태블릿 세로 820 = tab)와 같게
   function set() {
     var m = modeOf(window.innerWidth || de.clientWidth || 360);
     if (m === last) return; last = m; de.setAttribute("data-mode", m);

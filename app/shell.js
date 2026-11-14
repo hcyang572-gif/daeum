@@ -205,6 +205,8 @@
       }
     }
     lastTab = k;
+    // ⑥ 글자 크게 «가» — 띠(.hbar)는 app.js 가 SH.after 바로 뒤에 놓으므로 한 박자 뒤에 붙인다(한 번 붙으면 띠와 함께 남는다)
+    Promise.resolve().then(function () { tzMount(app); });
   }
   // 75회차 ⓪-3 안내 줄 접기 — 약 4초 뒤 스스로, 스크롤·누름이면 바로(첫 0.4초 스크롤은 무시 — 그리는 중 읽던 자리 되살리기)
   var NX_MS = 4000, nxT = null, nxAt = 0;
@@ -246,7 +248,50 @@
     // ⓪-2 폰 전체화면: 누름(click — 사용자 동작으로 인정되는 때)마다 확인, 이미 전체화면이면 아무것도 안 함
     doc.addEventListener("click", function (e) { if (e.target && e.target.closest && e.target.closest('[data-ov="fs"]')) return; fsEnter(); }, true); // «전체화면» 칸 누름은 그 칸이 처리
   }
+  // ── ⑥ 글자 크게 보기(COMMON-A3, 🩵 미르 101회차 · 시안 v3 Version 8): 보통 1 → 크게 1.15 → 아주 크게 1.3 → 보통
+  //   <html> 의 --tz 만 바꾼다(v4_tokens.css 가 글자 토큰 --fs-* 와 띠 글자에 곱함). 기억 = 이 기기 localStorage.
+  //   단추 = 띠 오른쪽 «가»(.tzb) · 더 보기 줄은 DaeumShell.tz.cycle()/label() 로 같은 값을 쓴다(⑧-2).
+  var TZ = [1, 1.15, 1.3], TZ_TXT = ["가", "가+", "가++"], TZ_NAME = ["보통", "크게", "아주 크게"], LS_TZ = "daeum.tz";
+  function tzIdx() { var v = 1; try { v = parseFloat(root.localStorage.getItem(LS_TZ)) || 1; } catch (e) { /* 저장 못 함 — 보통 */ } var i = TZ.indexOf(v); return i < 0 ? 0 : i; }
+  function tzApply(i) {
+    if (!doc) return;
+    var de = doc.documentElement; de.style.setProperty("--tz", String(TZ[i])); de.setAttribute("data-tz", String(i));
+    Array.prototype.forEach.call(doc.querySelectorAll(".tzb"), function (b) {
+      b.textContent = TZ_TXT[i]; b.setAttribute("aria-pressed", i ? "true" : "false");
+      b.setAttribute("aria-label", "글자 크게 보기 — 지금 " + TZ_NAME[i] + ", 누르면 " + TZ_NAME[(i + 1) % TZ.length]);
+    });
+  }
+  function tzSet(i) { i = ((i % TZ.length) + TZ.length) % TZ.length; try { root.localStorage.setItem(LS_TZ, String(TZ[i])); } catch (e) { /* 이번만 적용 */ } tzApply(i); return TZ[i]; }
+  function tzCycle() { return tzSet(tzIdx() + 1); }
+  function tzMount(app) {
+    var hb = app && app.querySelector(".hbar"); if (!hb || hb.querySelector(":scope > .tzb")) return;
+    var b = doc.createElement("button"); b.type = "button"; b.className = "tzb"; b.setAttribute("data-a", "tz");
+    hb.appendChild(b); tzApply(tzIdx());
+  }
+  // ── ⑦ 재질(v3-5): 시트에도 앱과 같은 흑사 알갱이 — 시안 TEX 와 같은 씨앗·수치로 한 번 그려 <html> 의 --tex 에 둔다
+  function texOnce() {
+    try {
+      var c = doc.createElement("canvas"); c.width = c.height = 360; var x = c.getContext("2d"); if (!x) return;
+      var s = 0x2545F491, r = function () { return (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; };
+      var d = x.createImageData(360, 360);
+      for (var i = 0; i < d.data.length; i += 4) { var v = r(); d.data[i] = 24; d.data[i + 1] = 18; d.data[i + 2] = 52; d.data[i + 3] = v < .55 ? 0 : Math.floor(v * 20); }
+      x.putImageData(d, 0, 0);
+      for (var k = 0; k < 360; k++) {
+        var px = r() * 360, py = r() * 360, rr = (0.55 + r() * .3) * 1.5, a = .5 + r() * .35;
+        x.fillStyle = "rgba(22,22,24," + (a * .35 * .55) + ")"; x.beginPath(); x.arc(px + .5 * rr, py + .7 * rr, rr * 1.4, 0, 7); x.fill();
+        x.fillStyle = "rgba(60,52,44," + (a * .5) + ")"; x.beginPath(); x.arc(px, py, rr, 0, 7); x.fill();
+        x.fillStyle = "rgba(255,255,255," + (.5 + r() * .25) + ")"; x.beginPath(); x.arc(px - .38 * rr, py - .42 * rr, rr * .35, 0, 7); x.fill();
+      }
+      doc.documentElement.style.setProperty("--tex", "url(" + c.toDataURL() + ")");
+    } catch (e) { /* 질감 없이도 화면은 그대로 */ }
+  }
+  if (doc && doc.documentElement) {
+    tzApply(tzIdx()); // 첫 그림 전에 글자 크기부터 — 깜빡임 없게
+    doc.addEventListener("click", function (e) { var b = e.target && e.target.closest && e.target.closest(".tzb"); if (b) { e.preventDefault(); tzCycle(); } });
+    (root.requestIdleCallback || function (f) { return setTimeout(f, 300); })(texOnce);
+  }
   var api = { TABS: TABS, SUB: SUB, tabOf: tabOf, links: links, tabsHTML: tabsHTML, railHTML: railHTML, subtabs: subtabs, after: after, busy: busy, nextStep: nextStep, fresh: fresh, NX_MS: NX_MS,
+    tz: { get: function () { return TZ[tzIdx()]; }, label: function () { return TZ_NAME[tzIdx()]; }, set: function (v) { var i = TZ.indexOf(v); return tzSet(i < 0 ? 0 : i); }, cycle: tzCycle, mount: tzMount, STEPS: TZ },
     fsAble: fsAble, fs: { able: function () { return fsAble(fsEnv()); }, on: fsOn, enter: fsEnter, toggle: fsToggle } };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DaeumShell = api;
