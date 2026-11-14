@@ -180,3 +180,5 @@ html[data-mode="phone"] .rv-acts .rv-mk{padding:0 10px}
 .rc-pmore svg.ic{width:16px;height:16px;transition:transform .2s}
 .rc-pmore[aria-expanded="true"] svg.ic{transform:rotate(180deg)}
 @media (prefers-reduced-motion: reduce){.rc-pmore svg.ic{transition:none}}
+/* 109회차 ⚙️ 파로(실기기·헤드리스 확인): 폰 전체 화면 «보기»(.rvw, z1200)가 main(z-index:1) 쌓임 안에 갇혀 아래 주 단추 줄·탭 줄(z19~20)이 위에 겹쳐 보이던 것 — 보기가 열린 동안만 main 을 위로 */
+main.main:has(.rvw:not(.inl)){z-index:1300}

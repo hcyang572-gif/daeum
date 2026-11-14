@@ -337,6 +337,7 @@ dialog.dob::backdrop{background:transparent}
 .dob .lg73 .demo .k{color:#E7CF9E;font-size:var(--fs-1);font-weight:700}
 .dob .lg73 .demo h4{margin:3px 0 1px;font-size:var(--fs-4);font-weight:800;color:#fff;letter-spacing:-.02em}
 .dob .lg73 .demo .sub{margin:0;font-size:var(--fs-1);color:#BFD9DD}
+.dob .lg73 .demo .brw{margin:3px 0 0;font-size:var(--fs-0);font-weight:500;color:#A9CBD0;opacity:.85} /* 109회차: «Chrome 브라우저에 최적화» 한 줄 — 보이되 조용하게 */
 .dob .lg73 .who{display:grid;gap:8px;margin-top:12px}
 .dob .lg73 .wk{display:grid;grid-template-columns:36px minmax(0,1fr) 18px;gap:10px;align-items:center;min-height:56px;padding:9px 10px;border-radius:var(--r-lg);
   background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;text-align:left;transition:background .18s var(--e-out),transform .18s var(--e-out)}

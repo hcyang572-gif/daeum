@@ -104,8 +104,10 @@ html[data-mode] .app .vx-tlc>.vx-sect.in{margin:0 16px 2px}
 html[data-mode] .app .vx-tlc>.warnline{margin:6px 16px 0}
 html[data-mode] .app .vx-tlc>.tline{background:none;box-shadow:none;border-radius:0}
 /* PC 3단 일정 칸(약 370px)도 태블릿·폴드와 같은 3칸 줄(이동 단추는 둘째 줄) — v3.css 1070행 규칙을 PC 일정 카드에 */
-html[data-mode="pc"] .app .vx-tlc .tline .stop{grid-template-columns:minmax(46px,auto) 30px minmax(0,1fr)}
-html[data-mode] .app .tline .stop{grid-template-columns:minmax(46px,auto) 30px minmax(0,1fr)} /* 108회차 ⚙️ 파로(⑧-4): 폰도 시각 칸이 «09:48» 폭만큼(46px 고정에서 2px 잘림) — 시안 .tli 48px */
+html[data-mode="pc"] .app .vx-tlc .tline .stop{grid-template-columns:var(--tl-t,58px) 30px minmax(0,1fr)}
+html[data-mode] .app .tline .stop{grid-template-columns:var(--tl-t,58px) 30px minmax(0,1fr)}
+/* 109회차 ⚙️ 파로(호창님 11-14 «방문탭 계획 순서 줄이 깨져 보여», Edge·Chrome 둘 다): 시각 칸이 줄마다 «auto»라 가구 줄(09:48·~10:18 폭)과 이동·점심 줄(62px)의 세로 연결선 x가 4~16px씩 어긋나 줄이 끊겨 보였다 → 모든 줄 같은 고정 칸 */
+html[data-mode] .app .tline li{grid-template-columns:var(--tl-t,58px) 30px minmax(0,1fr) auto} /* 108회차 ⚙️ 파로(⑧-4): 폰도 시각 칸이 «09:48» 폭만큼(46px 고정에서 2px 잘림) — 시안 .tli 48px */
 html[data-mode="pc"] .app .vx-tlc .tline .stop .t,html[data-mode="pc"] .app .vx-tlc .tline .stop .ax{grid-row:1/span 2}
 html[data-mode="pc"] .app .vx-tlc .tline .stop .mv{grid-column:3;justify-content:end}
 /* PC «넣을 만한 가구»·«N일차 요약» — 소제목 카드 안 */
@@ -130,3 +132,4 @@ html[data-mode="phone"] .app .dock .pri,html[data-mode="fold"] .app .dock .pri{h
 html[data-mode="phone"] .app .dock .sbt{white-space:nowrap}
 html[data-mode="tab"] .app>.dock{width:min(600px,calc(100% - 92px - 40px))}
 html[data-mode="phone"] .app .main>.col>[class~=warnline],html[data-mode="phone"] .app .main>.col>[class~=navnote]{margin-top:calc(var(--sp-2) - var(--gap-sec))}
+@media (max-width:520px){html[data-mode] .app .tline{--tl-t:50px}} /* 109회차: 폰 시각 글자(fs-3)는 50px면 «09:48» 다 보임 */

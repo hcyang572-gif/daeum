@@ -29,7 +29,7 @@
     warn: '<path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5M12 17v.2"/>'
   };
   if (!VD && typeof document !== "undefined" && document.head) { // index.html 에 줄이 아직 없을 때만 스스로 불러와 다시 그림
-    var vdS = document.createElement("script"); vdS.src = "shared/visit_day.js?v=s12z108"; vdS.onload = function () { VD = window.DaeumVisitDay || null; if (VD && AK.render) AK.render(); }; document.head.appendChild(vdS);
+    var vdS = document.createElement("script"); vdS.src = "shared/visit_day.js?v=s12z109"; vdS.onload = function () { VD = window.DaeumVisitDay || null; if (VD && AK.render) AK.render(); }; document.head.appendChild(vdS);
   }
   function vic(k) { return '<svg class="ic i16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (VXI[k] || "") + "</svg>"; }
   // 105회차 ⚙️ 파로A: 출발 기본값 = «지금 위치»(옛 «근무지 09:30» 기본 폐기, 시안 V16 출발 칩 첫 칸). 저장 전·auto 표시면 «자동»:
@@ -579,7 +579,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z108"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z109"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
