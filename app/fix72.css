@@ -5,14 +5,14 @@
 .ddate { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 14px; padding: 10px 14px; border-radius: var(--r-md); background: var(--accSoft, rgba(31,102,118,.10)); box-shadow: inset 0 0 0 1px rgba(31,102,118,.18); }
 .ddate label b { font-size: var(--fs-2); font-weight: 800; color: var(--acc2, #174F5B); }
 .ddate input[type="date"] { min-height: 44px; padding: 0 10px; border: 1px solid rgba(31,102,118,.35); border-radius: var(--r-md); background: #fff; font-size: var(--fs-2); font-weight: 700; color: var(--ink, #11181C); }
-.ddate small { font-size: var(--fs-0); color: var(--ink2, #47535B); }
+.ddate small { font-size: var(--fs-0); color: var(--ink2, var(--sub,#435058)); }
 @media (max-width: 599px) { .ddate input[type="date"] { flex: 1 1 160px; } .ddate small { flex-basis: 100%; } }
 
 /* ③ 첫 실행 «불러오는 중» — 97회차(11-14 호창님 «얼마나 진행됐고 얼마나 남은지 깜찍하고 멋지게», 🩵 미르)
    닿음 아이콘 그대로: 접힌 지도 위 점선 길을 청록 핀이 통통 걸어가 집에 «닿으면» 창에 불이 켜진다.
    진척 = 실제로 받은 파일 수 + 연동·글꼴 단계(index.html 바로 아래 인라인 스크립트). 가짜로 차오르지 않는다. */
 #dboot { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow: hidden;
-  font: 600 15px/1.45 "Pretendard Variable", Pretendard, system-ui, sans-serif; color: #47535B; letter-spacing: -.01em;
+  font: 600 15px/1.45 "Pretendard Variable", Pretendard, system-ui, sans-serif; color: var(--sub,#435058); letter-spacing: -.01em;
   background: radial-gradient(90% 60% at 50% 38%, #FFFFFF 0%, rgba(255,255,255,0) 70%), radial-gradient(70% 50% at 85% 100%, rgba(185,155,99,.14), transparent 70%), #F3F1EC;
   transition: opacity .42s cubic-bezier(.4,0,.2,1), visibility 0s linear .42s; }
 #dboot.out { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -42,11 +42,11 @@
 .db-steps li > span > i { position: absolute; inset: 0; border-radius: inherit; transform: scaleX(var(--f, 0)); transform-origin: 0 50%;
   background: linear-gradient(90deg, #2C8597, #1F6676); transition: transform .3s cubic-bezier(.4,0,.2,1); }
 .db-steps li.on { color: #1F6676; }
-.db-steps li.ok { color: #47535B; }
+.db-steps li.ok { color: var(--sub,#435058); }
 .db-steps li.ok > span > i { background: linear-gradient(90deg, #1F6676, #174F5B); }
 .db-left { margin-top: 12px; font-size: 12.5px; font-weight: 600; color: #6B767D; font-variant-numeric: tabular-nums; }
 .db-retry { display: none; margin-top: 14px; justify-items: center; gap: 10px; }
-.db-retry p { margin: 0; font-size: 13.5px; color: #47535B; }
+.db-retry p { margin: 0; font-size: 13.5px; color: var(--sub,#435058); }
 .db-retry button { min-height: 46px; padding: 0 22px; border: 0; border-radius: 14px; font: 800 15px/1 "Pretendard Variable", Pretendard, system-ui, sans-serif; color: #fff; cursor: pointer;
   background: radial-gradient(120% 90% at 30% 0%, rgba(255,255,255,.22), transparent 55%), linear-gradient(180deg, #257A8C, #174F5B);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 0 0 1px rgba(10,50,60,.45), 0 10px 18px -10px rgba(23,79,91,.8); }
@@ -139,7 +139,7 @@ html.pwa-app #pwa-install { display: none !important; }
 /* 78회차 ⓪-3(11-13 호창님 «상담일지는 항상 펼친 화면으로»): 상황 고르기·보고서 미리보기 = 접기 없는 머리(.rc-sum), 지금 문장 칸 높이 제한 없음 · PC·폰 같음 */
 #app .rc-fold > .rc-sum { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; }
 #app .rc-paperw > .rc-sum { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 14px; font-size: var(--fs-2); font-weight: 800; color: var(--rail, #1B2328); }
-#app .rc-paperw > .rc-sum small { font-size: var(--fs-1); font-weight: 600; color: var(--mute, #47535B); }
+#app .rc-paperw > .rc-sum small { font-size: var(--fs-1); font-weight: 600; color: var(--mute, var(--sub,#435058)); }
 #app .rc-paperw:focus { outline: none; }
 #app .rc-mini { max-height: none; overflow: visible; }
 /* 78회차 ⓪-6(11-13 호창님 «길안내 버튼이 흰색이라 잘 안보여. 길안내와 도착했어요가 비슷한 크기로»):

@@ -55,7 +55,7 @@
   }
   function railHTML(view, hid, I, o) {
     var k = tabOf(view), x = hid ? ":" + hid : "";
-    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z121" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
+    return '<div class="rbrand"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z122" alt=""></span><span><b>닿음</b><small>복지 사각지대<br>현장 업무 도우미</small></span></div>' +
       TABS.map(function (t, i) {
         return '<button type="button" class="rl pr' + (i === k ? " on" : "") + '" data-go="' + go(t, x) + '" data-tab="' + t[0] + '"' + (i === k ? ' aria-current="page"' : "") + ">" + ((I || {})[IK[t[0]]] || svg(t[0])) + "<span>" + t[1] + "<small>" + DESC[t[0]] + "</small></span>" + dotOf(t, o) + "</button>";
       }).join("") + ((o && o.foot) || "");
@@ -215,9 +215,15 @@
     if (!doc || !app) return;
     var md = doc.documentElement.getAttribute("data-mode"), dk = app.querySelector(":scope > .dock");
     var cols = app.querySelectorAll(".main > .col"), L = dk && dk.offsetHeight ? dk.getBoundingClientRect().left : Infinity;
+    var row = dk && (dk.querySelector(":scope > .row") || dk), T = dk && dk.offsetHeight ? row.getBoundingClientRect().top : Infinity;
     Array.prototype.forEach.call(cols, function (c) {
       var wide = md === "tab" || md === "pc";
-      c.style.paddingBottom = wide && dk && c.getBoundingClientRect().right < L - 4 ? "16px" : "";
+      c.style.marginBottom = ""; c.style.scrollPaddingBottom = "";
+      if (wide && dk && c.getBoundingClientRect().right < L - 4) { c.style.paddingBottom = "16px"; return; }
+      c.style.paddingBottom = "";
+      // 122회차 17번: 독과 겹치는 단(오른쪽 끝)은 칸 바닥을 독 위로 올려 첫 화면부터 마지막 단추가 독에 가리지 않게(칸 안 스크롤은 그대로)
+      var ov = wide && dk && T < Infinity ? Math.round(c.getBoundingClientRect().bottom - T + 10) : 0;
+      if (ov > 0) { c.style.marginBottom = ov + "px"; c.style.paddingBottom = "16px"; c.style.scrollPaddingBottom = "16px"; }
     });
   }
   if (root.addEventListener) { var cpT = 0; root.addEventListener("resize", function () { clearTimeout(cpT); cpT = setTimeout(function () { colPad(doc && doc.getElementById("app")); }, 160); }, { passive: true }); }

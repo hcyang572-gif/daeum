@@ -3,7 +3,7 @@
 .dob,.dob-dlg{--desk:#EEEDEA;--desk2:#E4E2DD;--desk3:#FFFFFF;--dink:#18191B;--dink2:#55585C;--dline:rgba(20,22,26,.10);
   --bg0:#F3F1EC;--bg1:#ECE9E3;--bg2:#E2DED6;--glow:rgba(255,255,255,.75);
   --card0:#FCFBF9;--card1:#F4F2EE;--well:#ECE9E3;
-  --ink:#11181C;--ink2:#47535B;--ink3:#6B767D;--acc:#1F6676;--acc2:#174F5B;--accSoft:rgba(31,102,118,.10);--onAcc:#FFFFFF;
+  --ink:#11181C;--ink2:var(--sub,#435058);--ink3:var(--sub2,#505B62);--acc:#1F6676;--acc2:#174F5B;--accSoft:rgba(31,102,118,.10);--onAcc:#FFFFFF;
   --deep0:#21707F;--deep1:#123C46;--deep2:#0B2A31;--onDeep:#F2F7F7;--onDeep2:rgba(242,247,247,.72);
   --gold:#8A6A35;--goldL:#B99B63;--goldSoft:rgba(185,155,99,.18);--line:rgba(17,24,28,.09);--line2:rgba(17,24,28,.16);
   --warnInk:#9A3412;--warnBg:#F7E6DA;--okInk:#2F6B3F;--okBg:#E2EFE4;--river:#8FC4CF;

@@ -8,17 +8,18 @@
   "use strict";
   var doc = document;
   function mainEl() { var a = doc.getElementById("app"); return (a && a.querySelector("main")) || a; }
-  function focusMain() {
+  function focusMain(vis) {
     var m = mainEl(); if (!m) return;
     if (!m.hasAttribute("tabindex")) m.setAttribute("tabindex", "-1");
     if (!m.id) m.id = "daeum-main";
-    try { m.focus({ preventScroll: true }); } catch (e) { m.focus(); }
+    // S12-122 미르 20: 화면 전환으로 옮긴 초점은 테두리 없이(낭독기만 읽음) — «본문 바로가기»(키보드)로 온 때만 :focus-visible 테두리
+    try { m.focus({ preventScroll: true, focusVisible: !!vis }); } catch (e) { m.focus(); }
   }
   function addSkip() {
     if (doc.querySelector(".skip-link")) return;
     var s = doc.createElement("a");
     s.className = "skip-link"; s.href = "#daeum-main"; s.textContent = "본문 바로가기";
-    s.addEventListener("click", function (e) { e.preventDefault(); focusMain(); });
+    s.addEventListener("click", function (e) { e.preventDefault(); focusMain(true); });
     doc.body.insertBefore(s, doc.body.firstChild);
   }
   // 7.2.1 사용자 요구에 따른 실행 · 6.1.2 초점: 동기화·시계로 화면을 «다시 그릴» 때(주소는 그대로) 키보드 초점을 잃지 않게 되돌린다

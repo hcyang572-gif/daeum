@@ -6,7 +6,7 @@
 
 /* ① 토큰 — 시안 .app 토큰 그대로(옛 값과 다른 것만 덮음) */
 html:root{
-  --ink2:#435058;--ink3:#505B62;                                   /* 보조 글자 대비 올림(ink3 6B767D → 505B62) */
+  --sub:#435058;--sub2:#505B62;--ink2:var(--sub);--ink3:var(--sub2);--mute:var(--sub); /* S12-122 미르 26: 보조 회색 5종 → 토큰 2개(--sub 본문 보조 · --sub2 약한 보조) */                                   /* 보조 글자 대비 올림(ink3 6B767D → 505B62) */
   --card0:#FDFCFA;--card1:#F5F2ED;--well:#EAE6DF;--well2:#E2DDD4;
   --acc3:#0E3740;--rain:#2F5E8F;--rainBg:#E3ECF5;
   --e-exit:cubic-bezier(.32,0,.67,0);

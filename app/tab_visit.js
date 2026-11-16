@@ -31,7 +31,7 @@
     warn: '<path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5M12 17v.2"/>'
   };
   if (!VD && typeof document !== "undefined" && document.head) { // index.html 에 줄이 아직 없을 때만 스스로 불러와 다시 그림
-    var vdS = document.createElement("script"); vdS.src = "shared/visit_day.js?v=s12z121"; vdS.onload = function () { VD = window.DaeumVisitDay || null; if (VD && AK.render) AK.render(); }; document.head.appendChild(vdS);
+    var vdS = document.createElement("script"); vdS.src = "shared/visit_day.js?v=s12z122"; vdS.onload = function () { VD = window.DaeumVisitDay || null; if (VD && AK.render) AK.render(); }; document.head.appendChild(vdS);
   }
   function vic(k) { return '<svg class="ic i16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (VXI[k] || "") + "</svg>"; }
   // 105회차 ⚙️ 파로A: 출발 기본값 = «지금 위치»(옛 «근무지 09:30» 기본 폐기, 시안 V16 출발 칩 첫 칸). 저장 전·auto 표시면 «자동»:
@@ -586,7 +586,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z121"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z122"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }
@@ -645,7 +645,7 @@
       (way ? '<div class="vx-way">' + ii("pin") + '<span class="vx-wt"><b>찾아가는 길</b> · <span data-vxway="t">' + esc(way.t) + "</span>" + (way.demo ? '<small class="samp">가상</small>' : "") + '</span><button type="button" class="vx-lk sm" data-vx="way" data-v="' + esc(hid) + '" aria-label="' + esc(hid) + ' 찾아가는 길 메모 고치기">' + ii("pen") + "고치기</button></div>" : "") + "</section>" +
       '<button type="button" class="btn nav" data-act="nav" data-dock="2" data-dock-lbl="길안내" title="네이버 지도 길안내 — 폰은 지도 앱, PC는 새 창으로 열림">' + (I.nav || "") + '<span>네이버 지도로 길안내</span><small>남은 ' + Math.min(6, left.length || c.d.ids.length) + "곳 경유</small></button>" +
       (segs > 1 ? '<div class="segs">' + Array.apply(null, { length: segs }).map(function (_, kk) { return '<button type="button" class="sbtn" data-seg="' + kk + '">' + (kk * 6 + 1) + "~" + Math.min(left.length, kk * 6 + 6) + "번째</button>"; }).join("") + "</div>" : "") +
-      '<p class="navnote">이름·주소 대신 «방문 1·2…»만 넘깁니다 · 네이버 지도 앱이 없으면 웹 길찾기로 <button type="button" class="sbtn shr" data-act="share" data-sday="' + c.d.n + '">' + (c.isToday ? "오늘" : "이날") + ' 일정 공유<small> 가구번호·읍면·시각만</small></button></p>';
+      '<p class="navnote"><span class="nt">이름·주소 대신 «방문 1·2…»만 넘깁니다 · 네이버 지도 앱이 없으면 웹 길찾기로</span><button type="button" class="sbtn shr" data-act="share" data-sday="' + c.d.n + '">' + (c.isToday ? "오늘" : "이날") + ' 일정 공유<small> 가구번호·읍면·시각만</small></button></p>';
     var LIST = '<div class="rlist blk">' + stops + "</div>", RES0 = resBlock(c.d.ids);
     var QC = qcards("이 탭의 다른 기능", [
         ["nav", "구간 나눠 길안내", "6곳씩 · 네이버 지도 경유 한도", segs > 1 ? 'data-qto=".segs"' : 'data-qto="[data-act=nav]"'],

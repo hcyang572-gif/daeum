@@ -3,7 +3,7 @@
    움직임 = B안 유리 계기: 렌즈(광택 도자기 구슬)가 선을 따라 미끄러지며 지나간 단계가 하나씩 또렷해짐 — 약 3초 한 번.
    렌즈는 흐림 효과에 기대지 않는다(흰 테·그림자·광택으로 캡처·PDF에서도 보임). 움직임 줄이기 설정이면 완성 정지 그림. */
 .dsm, .dsm-mini, .dsm-card {
-  --dsm-go: var(--go-glaze, #1F5F52); --dsm-ink: var(--ink, #1C2420); --dsm-mute: #62635D; --dsm-grey: #A19D94; --dsm-hair: #C9C4B9;
+  --dsm-go: var(--go-glaze, #1F5F52); --dsm-ink: var(--ink, #1C2420); --dsm-mute: var(--sub2,#505B62); --dsm-grey: #A19D94; --dsm-hair: #C9C4B9;
   --dsm-ease: cubic-bezier(.22,.8,.24,1);
 }
 .dsm { container-type: inline-size; position: relative; color: var(--dsm-ink); }
@@ -32,7 +32,7 @@
 .dsm-tx { display: block; min-width: 0; }
 .dsm-tx b { display: block; font-size: 14px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
 .dsm-tx small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.4; color: var(--dsm-mute); }
-.dsm-ext .dsm-tx b { font-size: 13px; font-weight: 600; color: #4A4B46; }
+.dsm-ext .dsm-tx b { font-size: 13px; font-weight: 600; color: var(--sub,#435058); }
 .dsm-tag { display: block; margin-top: 5px; font: 600 12px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; letter-spacing: .05em; color: var(--dsm-mute); }
 .dsm-no { display: block; margin-bottom: 4px; font: 600 12px/1 var(--f-mono, ui-monospace, monospace); font-style: normal; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--dsm-go); }
 

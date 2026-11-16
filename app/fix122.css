@@ -1,0 +1,22 @@
+/* S12-122 ⚙️ 파로(2026-11-16): 검토표(docs/review/S12-121_화면인간공학.md) «남김» 9건 반영 — fix121.css 뒤에 읽어 덮는다. 번호 = 검토표 번호 */
+
+/* 18 동선 안내 문장 사이에 끼던 «오늘 일정 공유» — 문장은 한 덩이, 단추는 그 아래 블록 */
+.navnote .nt { display: block; }
+.navnote .shr { display: flex; width: fit-content; max-width: 100%; }
+
+/* 20 탭 전환 뒤 본문 테두리 — 프로그램이 초점을 옮긴 본문(#app·main·.col 등 tabindex=-1)은 :focus-visible 일 때만 표시 */
+#app:focus:not(:focus-visible), [tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
+main[tabindex="-1"]:focus-visible, #app[tabindex="-1"]:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+
+/* 28 동선·현장·기록 보이는 화면 제목 — 다른 탭 제목(.dhead h1 900·자간 -.04em)과 같은 양식, 현장 압축을 해치지 않게 작게 */
+html[data-mode] .app h1.scr-t { margin: 0 2px; font-size: calc(20px * var(--tz, 1)); font-weight: 900; letter-spacing: -.04em; line-height: 1.15; color: var(--ink); }
+
+/* 27 아이콘 예외 — 크기 19px → 20px(선 굵기 1.6 은 아래 측정 뒤 맞춤) */
+#app .ky.bud > svg, .ci .bx svg { width: 20px; height: 20px; }
+
+/* 25 주 단추(채움) — 같은 역할은 큰 것 52px/r18 · 줄 안 작은 것 44px/r18 */
+html[data-mode] .app .dock .pri, html[data-mode] .app .main .btn.pri:not(.rv-mk), html[data-mode] .app .tx-btn.tx-p.tx-go { min-height: 52px; border-radius: 18px; }
+html[data-mode] .app .tx-lstrip .tx-btn { min-height: 44px; border-radius: 18px; }
+html[data-mode] .app > .dock .pri { padding-top: 3px; padding-bottom: 3px; } /* 두 줄 글자(제목+설명)로 56~57px 로 늘던 것 → 52 */
+html[data-mode] .app > .dock .sbt { min-height: 52px; padding-top: 3px; padding-bottom: 3px; } /* 같은 줄 보조 단추(PC 56)가 줄 높이를 끌어올리던 것 */
+html[data-mode] .app .rv-acts .rv-mk { min-height: 44px; border-radius: 18px; }

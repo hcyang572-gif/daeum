@@ -175,7 +175,7 @@ html[data-mode="phone"] .rv-acts .rv-mk{padding:0 10px}
 .rc-promnote{display:flex;gap:6px;align-items:flex-start}
 .rc-promnote svg.ic{width:16px;height:16px;flex:none;margin-top:2px;color:var(--gold1,#8A6A2E)}
 .rc-pgrp{display:grid;gap:6px;margin-top:2px}
-.rc-pgrp>small{font-size:var(--fs-1);font-weight:700;color:var(--rc-mute,#47535B)}
+.rc-pgrp>small{font-size:var(--fs-1);font-weight:700;color:var(--rc-mute,var(--sub,#435058))}
 .rc-pmore{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--tap,44px);padding:0 14px;border:0;border-radius:12px;background:transparent;font:inherit;font-size:var(--fs-2);font-weight:700;color:var(--go,#2E8270);cursor:pointer;justify-self:start}
 .rc-pmore svg.ic{width:16px;height:16px;transition:transform .2s}
 .rc-pmore[aria-expanded="true"] svg.ic{transform:rotate(180deg)}

@@ -5,7 +5,7 @@
 /* ─── 옮겨 옴: app/app.css ─── */
 :root {color-scheme: light;
   
-  --bg: #ECE9E3; --ink: #11181C; --mute: #47535B; --block: #FCFBF9; --edge: #D3CDC2; --well: #ECE9E3; --absent: #C2862C;
+  --bg: #ECE9E3; --ink: #11181C; --mute: var(--sub,#435058); --block: #FCFBF9; --edge: #D3CDC2; --well: #ECE9E3; --absent: #C2862C;
   --paper-top: #FCFBF9; --paper-bot: #F4F2EE; --line: rgba(33,30,46,.09);
   
   --lift-card: inset 0 1px 0 #fff, 0 0 0 1px rgba(33,30,46,.05), 0 3px 0 var(--edge), 0 4px 1px -1px rgba(33,30,46,.10), 0 18px 30px -18px rgba(33,30,46,.42);
@@ -596,7 +596,7 @@ dialog.acct::backdrop {background: rgba(23,28,38,.42); backdrop-filter: blur(3px
 .rt-opt .rt-h em {font-style: normal; color: var(--go-deep);}
 .rt-bars {display: grid; gap: 6px;}
 .rt-r {display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 8px; font-size: var(--fs-1);}
-.rt-r > span {color: #47535B; font-weight: 600;}
+.rt-r > span {color: var(--sub,#435058); font-weight: 600;}
 .rt-r > i {display: block; height: 10px; border-radius: var(--r-pill); background: #C9D1DA;}
 .rt-r.on > i {background: #2E8270;}
 .rt-r > b {font-variant-numeric: tabular-nums; font-size: var(--fs-1); white-space: nowrap;}
@@ -927,7 +927,7 @@ body.sh-moving::before {animation-play-state: paused !important;}
 }
 
 /* ─── 옮겨 옴: app/record.css ─── */
-.rc-main {--rc-acc: var(--go, #2E8270); --rc-ink: var(--ink, #11181C); --rc-mute: var(--mute, #47535B);}
+.rc-main {--rc-acc: var(--go, #2E8270); --rc-ink: var(--ink, #11181C); --rc-mute: var(--mute, var(--sub,#435058));}
 .rc-cmp {padding: 12px 14px; display: grid; gap: 10px;}
 .rc-fold > summary {list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; cursor: pointer;}
 .rc-fold > summary::-webkit-details-marker {display: none;}
@@ -967,14 +967,14 @@ body.sh-moving::before {animation-play-state: paused !important;}
 .rc-grab {width: 42px; height: 5px; border-radius: 3px; background: rgba(33,30,46,.2); margin: 2px auto 2px;}
 .rc-sh-h {display: flex; align-items: baseline; justify-content: space-between;}
 .rc-sh-h h3 {margin: 0; font-size: var(--fs-3); font-weight: 800; color: var(--rc-ink, #11181C);}
-.rc-num {font-size: var(--fs-1); font-weight: 600; color: var(--mute, #47535B); font-variant-numeric: tabular-nums;}
+.rc-num {font-size: var(--fs-1); font-weight: 600; color: var(--mute, var(--sub,#435058)); font-variant-numeric: tabular-nums;}
 .rc-steps {display: flex; gap: 4px;}
 .rc-steps i {flex: 1; height: 4px; border-radius: 3px; background: rgba(33,30,46,.12);}
 .rc-steps i.dn {background: rgba(46,130,112,.4);}
 .rc-steps i.on {background: var(--go, #2E8270);}
 .rc-sheet .rc-why {font-size: var(--fs-1);}
 .rc-opts {display: flex; flex-wrap: wrap; gap: 6px;}
-.rc-opts button {min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-chip); font: inherit; font-size: var(--fs-2); font-weight: 600; cursor: pointer; color: var(--mute, #47535B);
+.rc-opts button {min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-chip); font: inherit; font-size: var(--fs-2); font-weight: 600; cursor: pointer; color: var(--mute, var(--sub,#435058));
   background: var(--well, #E3E0D9); box-shadow: inset 0 2px 3px rgba(33,30,46,.12), inset 0 -1px 0 rgba(255,255,255,.7); transition: background-color .15s, color .15s, transform .07s;}
 .rc-opts button:active {transform: translateY(1px);}
 .rc-opts button[aria-pressed="true"] {color: #fff; background: linear-gradient(180deg, var(--go-hi, #2E8270), var(--go-lo, #22705F)); box-shadow: 0 2px 0 #1B4D42, inset 0 1px 0 rgba(255,255,255,.25);}
@@ -1008,7 +1008,7 @@ body.sh-moving::before {animation-play-state: paused !important;}
 .rc-ex {display: grid; gap: 8px;}
 .rc-exg {display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px;}
 .rc-exg::-webkit-scrollbar {display: none;}
-.rc-exg button {flex: none; min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-chip); font: inherit; font-size: var(--fs-1); font-weight: 800; cursor: pointer; color: var(--rc-mute, #47535B); background: transparent; box-shadow: inset 0 0 0 1px rgba(33,30,46,.16);}
+.rc-exg button {flex: none; min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-chip); font: inherit; font-size: var(--fs-1); font-weight: 800; cursor: pointer; color: var(--rc-mute, var(--sub,#435058)); background: transparent; box-shadow: inset 0 0 0 1px rgba(33,30,46,.16);}
 .rc-exg button[aria-pressed="true"] {color: #fff; background: var(--rail, #1B2328); box-shadow: none;}
 .rc-ex .chipin-c {text-align: left; line-height: 1.35; padding: 8px 14px;}
 .rc-ex textarea.chipin-i {min-height: 76px; resize: vertical;}
@@ -1016,10 +1016,10 @@ body.sh-moving::before {animation-play-state: paused !important;}
 .rc-paperw {border-radius: var(--r-md); background: #fff; box-shadow: 0 0 0 1px rgba(33,30,46,.1), 0 3px 0 var(--edge, #CDC7BC);}
 .rc-paperw > summary {list-style: none; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 14px; cursor: pointer; font-size: var(--fs-2); font-weight: 800; color: var(--rail, #1B2328);}
 .rc-paperw > summary::-webkit-details-marker {display: none;}
-.rc-paperw > summary small {font-size: var(--fs-1); font-weight: 600; color: var(--mute, #47535B);}
+.rc-paperw > summary small {font-size: var(--fs-1); font-weight: 600; color: var(--mute, var(--sub,#435058));}
 .rc-paperw > summary::after {content: "펼치기"; margin-left: auto; font-size: var(--fs-1); font-weight: 800; color: var(--go, #2E8270);}
 .rc-paperw[open] > summary::after {content: "접기";}
-.rc-legend {display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 14px 10px; padding: 8px 10px; border-radius: var(--r-md); background: var(--well, #E3E0D9); font-size: var(--fs-1); color: var(--mute, #47535B);}
+.rc-legend {display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 14px 10px; padding: 8px 10px; border-radius: var(--r-md); background: var(--well, #E3E0D9); font-size: var(--fs-1); color: var(--mute, var(--sub,#435058));}
 .rc-legend b {color: var(--ink, #11181C); margin-right: 2px;}
 .rc-legend .sw {display: inline-block; width: 14px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: middle;}
 .rc-legend .sw.rule {background: var(--src-rule-soft, #E4E7EC);}
@@ -1051,29 +1051,29 @@ body.sh-moving::before {animation-play-state: paused !important;}
 .fd-card.fd-nf {background: transparent; box-shadow: inset 0 0 0 1px var(--line, rgba(33,30,46,.09)); border-radius: var(--r-md); padding: 12px 14px;}
 .fd-h {display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap;}
 .fd-h b {font-size: var(--fs-3); font-weight: 800; letter-spacing: -.02em;}
-.fd-tag {font-size: var(--fs-1); font-weight: 600; color: var(--mute, #47535B); padding: 2px 8px; border-radius: var(--r-sm); background: var(--well, #E3E0D9);}
+.fd-tag {font-size: var(--fs-1); font-weight: 600; color: var(--mute, var(--sub,#435058)); padding: 2px 8px; border-radius: var(--r-sm); background: var(--well, #E3E0D9);}
 .fd-tag.w {color: #8A3A12; background: #FBE9DD;}
-.fd-why {margin: 0; font-size: var(--fs-3); line-height: 1.5; color: var(--mute, #47535B);}
-.fd-src {margin: 0; font-size: var(--fs-1); line-height: 1.45; color: var(--mute, #47535B);}
+.fd-why {margin: 0; font-size: var(--fs-3); line-height: 1.5; color: var(--mute, var(--sub,#435058));}
+.fd-src {margin: 0; font-size: var(--fs-1); line-height: 1.45; color: var(--mute, var(--sub,#435058));}
 .fd-ok {margin: 0; font-size: var(--fs-1); font-weight: 800; color: var(--go-ink, #1B4D42);}
 .fd-row {display: flex; flex-wrap: wrap; gap: 8px;}
 .fd-row > .sbtn {flex: 1 1 140px; min-height: 48px;}
 .fd-btn, .fd-wide {min-height: 48px; width: 100%;}
 .fd-n3 {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;}
-.fd-n3 span {display: grid; gap: 2px; padding: 8px 10px; border-radius: var(--r-md); background: var(--well, #E3E0D9); font-size: var(--fs-1); color: var(--mute, #47535B); font-weight: 600;}
+.fd-n3 span {display: grid; gap: 2px; padding: 8px 10px; border-radius: var(--r-md); background: var(--well, #E3E0D9); font-size: var(--fs-1); color: var(--mute, var(--sub,#435058)); font-weight: 600;}
 .fd-n3 b {font-size: var(--fs-4); font-weight: 800; color: var(--ink, #11181C);}
 .fd-n3 .w b {color: var(--now-ink, #174F5B);}
 .fd-need {list-style: none; margin: 0; padding: 0; display: grid; gap: 4px;}
 .fd-need li {display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; align-items: center; font-size: var(--fs-1); padding: 6px 0; border-top: 1px solid var(--line, rgba(33,30,46,.09));}
 .fd-need a {display: grid; text-decoration: none; color: inherit; min-height: var(--tap); align-content: center;}
 .fd-need a b {font-size: var(--fs-2);}
-.fd-need a small {font-size: var(--fs-1); color: var(--mute, #47535B);}
+.fd-need a small {font-size: var(--fs-1); color: var(--mute, var(--sub,#435058));}
 .fd-anote {margin: 10px 0 0; padding: 10px 12px; border-radius: var(--r-md); background: #FBF1DC; color: #6A4210; font-size: var(--fs-1); line-height: 1.45; display: grid; gap: 2px;}
 .fd-anote b {font-size: var(--fs-1); color: #8A5410;}
 .fd-next {display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-md); background: var(--go-soft, #DDEDE8);}
 .fd-next small {font-size: var(--fs-1); font-weight: 800; color: var(--go-ink, #1B4D42);}
 .fd-next b {font-size: var(--fs-3); font-weight: 800;}
-.fd-next span {font-size: var(--fs-1); color: var(--mute, #47535B);}
+.fd-next span {font-size: var(--fs-1); color: var(--mute, var(--sub,#435058));}
 .fd-next.w {background: #FBE9DD;}
 .fd-next.w small {color: #8A3A12;}
 .fd-note {text-align: center; padding: 18px 14px; border-radius: var(--r-md); background: #fff; box-shadow: inset 0 0 0 1px rgba(17,26,39,.12);}
@@ -1083,7 +1083,7 @@ body.sh-moving::before {animation-play-state: paused !important;}
 .fd-note .fd-org {font-size: var(--fs-1); color: #666;}
 .fd-bars {display: grid; gap: 6px;}
 .fd-bars > div {display: grid; grid-template-columns: 76px minmax(0, 1fr) 30px; gap: 8px; align-items: center; font-size: var(--fs-1); font-weight: 600;}
-.fd-bars span small {display: block; font-size: var(--fs-1); color: var(--mute, #47535B); font-weight: 600;}
+.fd-bars span small {display: block; font-size: var(--fs-1); color: var(--mute, var(--sub,#435058)); font-weight: 600;}
 .fd-bars i {display: block; height: 10px; border-radius: var(--r-sm); width: var(--w); background: linear-gradient(90deg, var(--go, #2E8270), var(--go-lo, #22705F)); transform-origin: left; animation: fd-grow .8s var(--ease, ease-out) both;}
 .fd-bars i.ab {background: linear-gradient(90deg, var(--go, #2E8270), var(--go-lo, #22705F) 70%, var(--absent, #C2862C));}
 .fd-bars b {text-align: right; font-size: var(--fs-1);}
@@ -1093,12 +1093,12 @@ body.sh-moving::before {animation-play-state: paused !important;}
 .fd-handoff {display: grid; gap: 10px; padding: 14px; border-radius: var(--r-md); background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 14px 26px -18px rgba(33,30,46,.5);}
 .fd-hd2 {display: flex; justify-content: space-between; align-items: baseline; gap: 8px;}
 .fd-hd2 b {font-size: var(--fs-5); font-weight: 800;}
-.fd-hd2 span {font-size: var(--fs-1); color: var(--mute, #47535B);}
+.fd-hd2 span {font-size: var(--fs-1); color: var(--mute, var(--sub,#435058));}
 .fd-handoff ol {margin: 0; padding-left: 20px; display: grid; gap: 5px; font-size: var(--fs-2); line-height: 1.5;}
 .fd-nx {display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-md); background: #F6EEDC;}
 .fd-nx b {font-size: var(--fs-1); color: #8A6528;}
 .fd-nx span {font-size: var(--fs-2); font-weight: 600;}
-.fd-hn {margin: 0; font-size: var(--fs-1); color: var(--mute, #47535B);}
+.fd-hn {margin: 0; font-size: var(--fs-1); color: var(--mute, var(--sub,#435058));}
 dialog.fd-sheet {border: 0; padding: 0; margin: auto auto 0; width: 100%; max-width: 560px; max-height: 88vh; border-radius: 22px 22px 0 0; background: var(--paper-top, #FFFEFB);
   box-shadow: 0 -20px 50px -20px rgba(17,26,39,.55); animation: fd-up .32s var(--ease, ease-out) both;}
 dialog.fd-sheet::backdrop {background: rgba(17,26,39,.42);}
@@ -1106,20 +1106,20 @@ dialog.fd-sheet::backdrop {background: rgba(17,26,39,.42);}
 .fd-sh-in {position: relative; display: grid; gap: 12px; padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px)); overflow: auto; max-height: 88vh;}
 .fd-sh-in h3 {margin: 4px 40px 0 0; font-size: var(--fs-4); letter-spacing: -.03em;}
 .fd-grab {justify-self: center; width: 40px; height: 5px; border-radius: 3px; background: rgba(17,26,39,.18);}
-.fd-x {position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; font-size: var(--fs-5); line-height: 1; color: var(--mute, #47535B); cursor: pointer;}
+.fd-x {position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; font-size: var(--fs-5); line-height: 1; color: var(--mute, var(--sub,#435058)); cursor: pointer;}
 .fd-paper {margin: 0; padding: 12px 14px; border-radius: var(--r-md); background: #fff; box-shadow: inset 0 0 0 1px rgba(17,26,39,.12); font: inherit; font-size: var(--fs-2); line-height: 1.55; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere;}
 .fd-f {display: grid; gap: 6px;}
 .fd-l {font-size: var(--fs-1); font-weight: 800;}
 .fd-opts {display: flex; flex-wrap: wrap; gap: 6px;}
-.fd-opts button {min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-chip); font: inherit; font-size: var(--fs-2); font-weight: 600; color: var(--mute, #47535B); background: var(--well, #E3E0D9); box-shadow: inset 0 2px 3px rgba(33,30,46,.12); cursor: pointer;}
+.fd-opts button {min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-chip); font: inherit; font-size: var(--fs-2); font-weight: 600; color: var(--mute, var(--sub,#435058)); background: var(--well, #E3E0D9); box-shadow: inset 0 2px 3px rgba(33,30,46,.12); cursor: pointer;}
 .fd-opts button[aria-checked="true"], .fd-opts button[aria-pressed="true"] {color: var(--ink, #11181C); background: #fff; box-shadow: 0 0 0 1.5px var(--now, #1F6676), 0 2px 0 var(--edge, #CDC7BC);}
 .fd-nfl {list-style: none; margin: 0; padding: 0; display: grid; gap: 6px;}
 .fd-nfl li {display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line, rgba(33,30,46,.09));}
 .fd-nfl li span {display: grid;}
-.fd-nfl small {font-size: var(--fs-1); color: var(--mute, #47535B);}
+.fd-nfl small {font-size: var(--fs-1); color: var(--mute, var(--sub,#435058));}
 .fd-nfl .sbtn {min-height: 44px;}
 .fd-keys {display: inline-flex; gap: 4px; vertical-align: middle; margin-right: 6px;}
-.fd-k {display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); min-width: var(--tap); padding: 0 10px; border: 0; border-radius: var(--r-md); font: inherit; font-size: var(--fs-1); font-weight: 800; color: var(--mute, #47535B); background: #fff; box-shadow: 0 2px 0 var(--edge, #CDC7BC), inset 0 0 0 1px rgba(17,26,39,.08); cursor: pointer;}
+.fd-k {display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); min-width: var(--tap); padding: 0 10px; border: 0; border-radius: var(--r-md); font: inherit; font-size: var(--fs-1); font-weight: 800; color: var(--mute, var(--sub,#435058)); background: #fff; box-shadow: 0 2px 0 var(--edge, #CDC7BC), inset 0 0 0 1px rgba(17,26,39,.08); cursor: pointer;}
 .fd-k svg {width: 17px; height: 17px; flex: none;}
 .fd-k.on {color: #fff; background: var(--rail, #1B2328); box-shadow: 0 2px 0 #0B121C;}
 @media (max-width: 420px) {
@@ -1133,7 +1133,7 @@ body.fd-veil .who, body.fd-veil .ck-q small, body.fd-veil .paper, body.fd-veil .
 .fd-lk-ic {width: 64px; height: 64px; border-radius: var(--r-lg); display: grid; place-items: center; color: var(--go, #2E8270); background: linear-gradient(180deg, #fff, #EEEAE3); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(60,46,28,.14), 0 12px 20px -12px rgba(60,46,28,.5);}
 .fd-lk-ic svg {width: 30px; height: 30px;}
 .fd-lk-bx h3 {margin: 0; font-size: var(--fs-5);}
-.fd-lk-bx p {margin: 0; color: var(--mute, #47535B); font-size: var(--fs-2);}
+.fd-lk-bx p {margin: 0; color: var(--mute, var(--sub,#435058)); font-size: var(--fs-2);}
 .fd-lk-l {display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;}
 .fd-lk-l span {padding: 4px 10px; border-radius: var(--r-md); background: var(--well, #E3E0D9); font-size: var(--fs-1); font-weight: 600;}
 .fd-lk-al {padding: 10px 14px; border-radius: var(--r-md); background: var(--risk-soft, #F7E6E2); color: var(--risk, #A63D31) !important; font-weight: 600;}
@@ -1155,7 +1155,7 @@ body.fd-veil * {transition: none;}
 /* ─── 옮겨 옴: app/s12x.css ─── */
 :root {--bg0: #F3F1EC; --bg1: #ECE9E3; --bg2: #E2DED6; --glow: rgba(255,255,255,.75);
   --card0: #FCFBF9; --card1: #F4F2EE; --face0: #FBFAF7; --face1: #EEEBE5;
-  --ink2: #47535B; --ink3: #616C73; --acc: #1F6676; --acc2: #174F5B; --accSoft: rgba(31,102,118,.10);
+  --ink2: var(--sub,#435058); --ink3:var(--sub2,#505B62); --acc: #1F6676; --acc2: #174F5B; --accSoft: rgba(31,102,118,.10);
   --gold: #8A6A35; --goldL: #B99B63; --goldSoft: rgba(185,155,99,.18); --track: #D9DCDA;
   --line2: rgba(17,24,28,.16); --warnInk: #9A3412; --warnBg: #F7E6DA; --sos0: #B8473A; --sos1: #7E2A22; --okInk: #2F6B3F; --okBg: #E2EFE4;
   --tBg: #1B2328; --tInk: #F2F5F6; --tAcc: #8FD9E4;

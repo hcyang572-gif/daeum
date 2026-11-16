@@ -23,7 +23,7 @@
   //   숫자 기준 하나: 처리 = 명단 «처리여부»(오늘 탭 listStats 와 같은 규칙) · 방문·상담 = 방문 기록 · 연계 = 연계 저장소(links)·결과(outcomes) + 이 화면 결과 칩.
   //   배열: 폰 1단(진도→사후관리→근무일→흐름→서비스→위기→추이→차수) · 폴드·태블릿 [진도·흐름][사후관리·근무일+추이][위기·서비스][차수·읍면] · PC 12칸 [4·4·4][8·4][4·4·4].
   var LS_LRES = "daeum.s12.linkRes", LRES = [["got", "받음"], ["wait", "기다림"], ["no", "안 됨"], ["lost", "연락 안 됨"]], todoMore = false;
-  function pxCss() { if (typeof document === "undefined" || !document.getElementById || document.getElementById("pxCss")) return; var l = document.createElement("link"); l.id = "pxCss"; l.rel = "stylesheet"; l.href = "app/tab_report.css?v=s12z121"; document.head.appendChild(l); } // 연결 지점: index.html 에 한 줄 넣으면 이 함수는 할 일 없음
+  function pxCss() { if (typeof document === "undefined" || !document.getElementById || document.getElementById("pxCss")) return; var l = document.createElement("link"); l.id = "pxCss"; l.rel = "stylesheet"; l.href = "app/tab_report.css?v=s12z122"; document.head.appendChild(l); } // 연결 지점: index.html 에 한 줄 넣으면 이 함수는 할 일 없음
   function isOffD(d) { return F.util && F.util.isOff ? F.util.isOff(d) : d.getDay() % 6 === 0; }
   function wdCount(a, b) { var n = 0, d = U.startOfDay(a); b = U.startOfDay(b); while (d < b) { d = new Date(d.getTime() + 864e5); if (!isOffD(d)) n++; } return n; }
   function isProc(x) { return /처리\s*완료|완료/.test((x || {}).proc || ""); }
@@ -864,7 +864,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z121")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z121"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z122")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z122"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -883,7 +883,7 @@
   function dayZip() {
     var M = docModel(); if (!M.dd || !M.dd.ids.length) { location.hash = "#docs"; return Promise.resolve(false); }
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    return SH.busy(needLibs().then(function () { return window.DaeumDocZip ? null : load("shared/doczip.js?v=s12z121"); }).then(function () {
+    return SH.busy(needLibs().then(function () { return window.DaeumDocZip ? null : load("shared/doczip.js?v=s12z122"); }).then(function () {
       var inp = dayZipInput(M, window.DaeumHwpx && window.DaeumHwpx.TW);
       return window.DaeumDocZip.download(inp).then(function () { markDone(M, "d2", "day"); inp.d1.forEach(function (x) { markDone(M, "d1", x.hid); }); toast("복명서·상담일지 " + inp.d1.length + "가구를 ZIP 하나로 받았습니다"); return true; });
     }), "복명서 묶는 중").catch(function () { toast("문서 부품을 불러오지 못했습니다 · 문서함에서 하나씩 받아 주세요"); return false; });
@@ -934,10 +934,12 @@
     var old = document.title, M = docModel();
     document.title = fnm(M.dd && M.dd.date ? M.dd.date + "T12:00:00" : new Date(), docHid, a.dataset.docName || "문서"); // S12-z: PDF 저장 이름도 같은 규칙
     document.body.classList.add("printing-doc");
-    var back = function () { document.title = old; document.body.classList.remove("printing-doc"); window.removeEventListener("afterprint", back); };
-    window.addEventListener("afterprint", back);
+    // S12-122 M4: 안드로이드 크롬은 afterprint 를 첫 렌더 직후 보내고 미리보기용으로 한 번 더 그린다 → afterprint·1.5초 떼기면 앱 화면 전체가 인쇄됐다.
+    //   인쇄 클래스는 인쇄 전용 규칙(@media print)이라 화면엔 영향이 없으므로 «돌아와 화면을 누르거나 다시 보일 때» 떼고, 60초 안전망
+    var vis = function () { if (document.visibilityState === "visible") back(); }, t0 = Date.now(), back = function () { if (Date.now() - t0 < 600) return; document.title = old; document.body.classList.remove("printing-doc"); document.removeEventListener("pointerdown", back, true); document.removeEventListener("visibilitychange", vis); clearTimeout(tm); };
+    document.addEventListener("pointerdown", back, true); document.addEventListener("visibilitychange", vis);
     try { window.print(); } catch (e) { /* 인쇄 불가 */ }
-    setTimeout(back, 1500);
+    var tm = setTimeout(function () { t0 = 0; back(); }, 60000);
   }
   /** S12-d 40: 목록에서 문서를 고르면 미리보기로 옮긴다 — 폰(한 줄 배치)에서 미리보기가 목록 아래에 있어 안 보이던 문제. 이미 화면 안이면 포커스만 */
   function toPrev() {

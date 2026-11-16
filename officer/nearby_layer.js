@@ -82,14 +82,17 @@
       (x.tel ? '<a class="nb-tel" href="tel:' + esc(telNo(x.tel)) + '" aria-label="' + esc(x.n) + " 전화 걸기 " + esc(x.tel) + '">' + ico("tel") + '<span>' + esc(x.tel) + "</span></a>" : "") +
       "</li>";
   }
-  function panelHtml(m, on, nHh) {
+  // S12-122 미르 19: 펼친 목록이 화면을 길게 늘이지 않게 첫 5곳만, 나머지는 «더 보기»(이 목록 하나만 — 다른 곳 접기 추가 안 함)
+  var NB_FIRST = 5;
+  function panelHtml(m, on, nHh, more) {
     var nL = m ? m.link.length : 0, nS = m ? m.senior.length : 0;
     function tg(k, lb, n) { return '<button type="button" class="nb-tg ' + k + '" data-nb="' + k + '" aria-pressed="' + (on[k] ? "true" : "false") + '">' + ico(k) + "<span>" + lb + "</span><b>" + n + "</b></button>"; } // S12-121 미르 5: «방문 가구»가 좁은 칸에서 «방문 …»으로 잘려 «방문» 한 낱말로
     var rows = !m ? "" : (on.link ? m.link.map(function (x) { x.layer = "link"; return item(x); }).join("") : "") + (on.senior ? m.senior.map(function (x) { x.layer = "senior"; return item(x); }).join("") : "");
+    var nRow = m ? (on.link ? nL : 0) + (on.senior ? nS : 0) : 0;
     return '<div class="nb-bar" role="group" aria-label="지도 주변 정보 켜고 끄기"><span class="nb-eye">주변 정보</span>' +
       tg("hh", "방문", nHh) + tg("link", "연계처", nL) + tg("senior", "경로당", nS) + '<span class="na">AED — 활용 승인 뒤 같은 층에 추가</span></div>' + // S12-x #97: 연계처·경로당·특보만 · AED는 승인 뒤(회색 한 줄) · 119·무더위쉼터 없음
       (m ? '<details class="nb-list"><summary><span>가까운 순 목록</span><small>' + (on.link ? "연계처 " + nL + "곳" : "") + (on.link && on.senior ? " · " : "") + (on.senior ? "경로당 " + nS + "곳(같은 동네 " + m.seniorTotal + "곳 중 가구마다 가까운 " + SENIOR_PER_HH + "곳)" : "") + (!on.link && !on.senior ? "켜진 층 없음" : "") + "</small></summary>" +
-        (rows ? '<ul class="nb-ul">' + rows + "</ul>" : '<p class="nb-none">위 단추로 연계처·경로당을 켜면 여기에 가까운 순으로 나옵니다.</p>') +
+        (rows ? '<ul class="nb-ul' + (nRow > NB_FIRST && !more ? " nb-cut" : "") + '">' + rows + "</ul>" + (nRow > NB_FIRST ? '<button type="button" class="nb-more" data-nbmore="1" aria-expanded="' + (more ? "true" : "false") + '">' + (more ? "처음 " + NB_FIRST + "곳만 보기" : "더 보기 · " + (nRow - NB_FIRST) + "곳 더") + "</button>" : "") : '<p class="nb-none">위 단추로 연계처·경로당을 켜면 여기에 가까운 순으로 나옵니다.</p>') +
         '<p class="srcline nb-foot">거리: 방문 가구에서 직선거리 «약»(도로 거리 아님) · 위치: ' + esc(m.geoSrc || "자료 원본 좌표") + " · 자료: " + esc(m.fetched) + " 수집 정적 스냅샷" + (m.icLabel ? " · 통합돌봄: " + esc(m.icLabel) : "") + " · 경로당은 2018년 명단이라 문을 닫았거나 옮겼을 수 있어 방문 전 확인 · 가구 위치는 가상(시연용) · 연계 여부는 담당 공무원 판단</p></details>" :
         '<p class="nb-none">주변 정보 자료를 불러오지 못했습니다. 동선 지도는 그대로 씁니다.</p>');
   }
@@ -106,14 +109,15 @@
   /** wrap=지도 칸, hhs=[{id,area,lat,lng}] → { onDrawn(map,N,state), fallback(), model } 또는 null */
   function attach(wrap, hhs, px, geo) {
     if (!wrap || !wrap.parentNode) return null;
-    var m = model(hhs, px, geo), on = loadOn(), mk = [], iw = null, last = null, mapClick = null;
+    var m = model(hhs, px, geo), on = loadOn(), mk = [], iw = null, last = null, mapClick = null, more = false;
     var box = wrap.nextElementSibling && wrap.nextElementSibling.classList && wrap.nextElementSibling.classList.contains("nbl") ? wrap.nextElementSibling : null;
     if (!box) { box = document.createElement("section"); box.className = "nbl blk"; box.setAttribute("aria-label", "지도 주변 정보"); wrap.parentNode.insertBefore(box, wrap.nextSibling); }
     function paint() {
       var wasOpen = !!(box.querySelector(".nb-list") || {}).open;
-      box.innerHTML = panelHtml(m, on, hhs.length);
+      box.innerHTML = panelHtml(m, on, hhs.length, more);
       var dl = box.querySelector(".nb-list"); if (dl && (wasOpen || wrap.classList.contains("no-naver") || !(root.naver && root.naver.maps))) dl.open = true;
       box.querySelectorAll("[data-nb]").forEach(function (b) { b.addEventListener("click", function () { var k = b.dataset.nb; on[k] = !on[k]; saveOn(on); paint(); show(); }); });
+      var mb = box.querySelector("[data-nbmore]"); if (mb) mb.addEventListener("click", function () { more = !more; paint(); var b2 = box.querySelector("[data-nbmore]"); if (b2) b2.focus(); });
     }
     function show() {
       mk.forEach(function (o) { try { o.m.setVisible(!!on[o.layer]); } catch (e) { /* 무시 */ } });

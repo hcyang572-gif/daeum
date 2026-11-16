@@ -7,7 +7,7 @@
 :root {
   --dv-stone-hi: #F8F6F1; --dv-stone: #EDEAE3; --dv-stone-lo: #E2DED6;  /* 판 바탕: 위 → 아래 */
   --dv-paper: #FCFBF8; --dv-paper-lo: #F3F0EA;                         /* 들어 올린 받침 */
-  --dv-ink: #1C2420; --dv-ink2: #4A4B46; --dv-mute: #62635D; --dv-grey: #A19D94; --dv-hair: #C9C4B9;
+  --dv-ink: #1C2420; --dv-ink2: var(--sub,#435058); --dv-mute: var(--sub2,#505B62); --dv-grey: #A19D94; --dv-hair: #C9C4B9;
   --dv-go: var(--go-glaze, #0B6B52); --dv-go-hi: #138A6B; --dv-go-lo: #07513E; --dv-go-soft: #E1EFE9;  /* 닿음 초록 유약 */
   --dv-live: #D9531E; --dv-live-hi: #F08A4B; --dv-live-ink: #A63C19; --dv-live-soft: #FBE9E1;  /* 실시간 불씨 */
   --dv-virt: #8A5410; --dv-virt-soft: #FBF1DC;                         /* 가상(시연) */

@@ -86,9 +86,10 @@
   function printOnly(html) {
     var p = document.getElementById("fdPrint"); if (!p) { p = document.createElement("div"); p.id = "fdPrint"; document.body.appendChild(p); }
     p.innerHTML = html; document.body.classList.add("fd-printing");
-    var off = function () { document.body.classList.remove("fd-printing"); window.removeEventListener("afterprint", off); };
-    window.addEventListener("afterprint", off);
-    setTimeout(function () { window.print(); setTimeout(off, 60000); }, 30); // S12-121 M4: 폰 브라우저는 print()가 기다리지 않음 — 떼기는 afterprint, 시간은 안전망(인쇄 전용 규칙이라 화면엔 영향 없음)
+    // S12-122 M4: 안드로이드 크롬은 afterprint 를 첫 렌더 직후 보내고 미리보기용으로 한 번 더 그린다 → afterprint 떼기면 앱 화면 전체가 인쇄됐다.
+    //   인쇄 전용 규칙(@media print)이라 화면엔 영향 없음 — «돌아와 화면을 누르거나 다시 보일 때» 떼고, 60초 안전망
+    var vis = function () { if (document.visibilityState === "visible") off(); }, t0 = 0, tm = 0, off = function () { if (t0 && Date.now() - t0 < 600) return; document.body.classList.remove("fd-printing"); document.removeEventListener("pointerdown", off, true); document.removeEventListener("visibilitychange", vis); clearTimeout(tm); };
+    setTimeout(function () { t0 = Date.now(); document.addEventListener("pointerdown", off, true); document.addEventListener("visibilitychange", vis); window.print(); tm = setTimeout(function () { t0 = 0; off(); }, 60000); }, 30);
   }
 
   // ═════ ① 도로명주소 자동 정리 ═════

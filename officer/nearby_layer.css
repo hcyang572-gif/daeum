@@ -1,7 +1,7 @@
 /* 닿음 S12-s «주변 정보» 겹층 — ⚙️ 파로(🩵 미르 기준: S12-n2 세라믹 겉모습과 같은 결 — 따뜻한 돌빛 판 + 깊은 초록, 유약 구슬 표지)
    폭에 따라 배열만 바뀐다(PC·폰 같은 기능): 폰 = 단추 3개 한 줄·목록 1단, 넓은 칸(≥620px) = 목록 2단. 터치 44px↑. 인쇄 땐 단추 숨김. */
 .nbl {
-  --nb-go: var(--go-glaze, #1F5F52); --nb-go-hi: #2E9A7C; --nb-stone: #EDEAE3; --nb-ink: var(--ink, #1C2420); --nb-mute: #62635D; --nb-chk: #9A5B12; --nb-chk-soft: #FBEFD9;
+  --nb-go: var(--go-glaze, #1F5F52); --nb-go-hi: #2E9A7C; --nb-stone: #EDEAE3; --nb-ink: var(--ink, #1C2420); --nb-mute: var(--sub2,#505B62); --nb-chk: #9A5B12; --nb-chk-soft: #FBEFD9;
   container-type: inline-size; margin-top: 10px; padding: 12px; border-radius: 18px; color: var(--nb-ink);
   background: radial-gradient(120% 100% at 15% 0%, #F8F6F1 0%, var(--nb-stone) 75%);
   box-shadow: inset 0 0 0 1px rgba(60,52,38,.07), inset 0 1px 0 #fff, 0 10px 24px -18px rgba(60,52,38,.45);
@@ -13,7 +13,7 @@
 .nb-eye { padding: 0 4px 0 2px; font: 600 12px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .08em; color: var(--nb-mute); white-space: nowrap; }
 .nb-tg {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; padding: 0 10px; border: 0; border-radius: 22px;
-  font: 600 13px/1.1 var(--f, inherit); letter-spacing: -.01em; color: #4A4B46; cursor: pointer;
+  font: 600 13px/1.1 var(--f, inherit); letter-spacing: -.01em; color: var(--sub,#435058); cursor: pointer;
   background: linear-gradient(180deg, #FFFFFF, #F1EEE8);
   box-shadow: 0 0 0 1px rgba(60,52,38,.09), inset 0 1px 0 rgba(255,255,255,.95), 0 6px 14px -9px rgba(60,52,38,.4);
   transition: background .25s var(--ease, ease), color .25s, box-shadow .25s, transform .12s;
@@ -39,6 +39,10 @@
 .nb-list > summary small { font-size: 12px; color: var(--nb-mute); }
 .nb-ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 @container (min-width: 620px) { .nb-ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* S12-122 미르 19: 첫 5곳만 · «더 보기»는 조용한 글자 단추(누름 44px) */
+.nb-ul.nb-cut > li:nth-child(n+6) { display: none; }
+.nb-more { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; margin-top: 8px; padding: 0 12px; border: 1px solid rgba(60,52,38,.12); border-radius: 14px; background: transparent; color: var(--nb-go); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.nb-more:focus-visible { outline: 2px solid var(--nb-go); outline-offset: 3px; }
 .nb-it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 11px 11px 10px; border-radius: 14px;
   background: linear-gradient(180deg, #FFFEFB, #F8F6F1); box-shadow: 0 0 0 1px rgba(60,52,38,.07), 0 4px 10px -8px rgba(60,52,38,.35); }
 .nb-k { display: inline-grid; place-items: center; min-width: 52px; height: 24px; padding: 0 7px; border-radius: 12px; font-size: 12px; font-weight: 600; color: var(--nb-go); background: rgba(11,107,82,.09); white-space: nowrap; }
@@ -75,13 +79,14 @@
   background: linear-gradient(180deg, #FFFEFB, #F6F3EC); box-shadow: 0 0 0 1px rgba(60,52,38,.1), 0 18px 32px -14px rgba(30,26,18,.55); }
 .nb-iw .nb-k { margin-bottom: 7px; color: var(--nb-go, #1F5F52); background: rgba(11,107,82,.09); }
 .nb-iw.stale .nb-k { color: #9A5B12; background: #FBEFD9; }
-.nb-iw .nb-meta, .nb-iw .nb-src { color: var(--nb-mute, #62635D); }
+.nb-iw .nb-meta, .nb-iw .nb-src { color: var(--nb-mute, var(--sub2,#505B62)); }
 .nb-iw .nb-tel { margin-top: 9px; width: 100%; color: var(--nb-go, #1F5F52); }
 .nb-iw .nb-chk { color: #9A5B12; background: #FBEFD9; }
 
 @media (prefers-reduced-motion: reduce) { .nb-tg, .nb-list > summary span::after { transition: none; } }
 @media print {
-  .nb-bar, .nb-tel svg, .nb-list > summary span::after { display: none !important; }
+  .nb-bar, .nb-tel svg, .nb-list > summary span::after, .nb-more { display: none !important; }
+  .nb-ul.nb-cut > li { display: grid !important; }
   .rt-nbox button, .rt-nbox [role="button"] { display: none !important; } /* 지도 확대·축소 단추 */
   .nbl { box-shadow: none; background: #fff; border: 1px solid #ccc; break-inside: avoid; }
   .nb-it { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }

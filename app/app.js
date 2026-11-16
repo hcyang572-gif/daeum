@@ -212,7 +212,7 @@
     //   시안 조건 «하루 마무리(저장 안 된 기록)·연동 꺼짐(연동 대기)» → 앱 = 오늘 방문이 끝났는데 저장 안 한 기록이 있음 · 연동 끊김 · 보낼 것 대기
     var hd = 0; try { hd = AK.dayEndUnsaved ? AK.dayEndUnsaved() : 0; } catch (e) { hd = 0; }
     var ss_ = SY.state(), hdot = hd > 0 || ss_.mode === "offline" || !!ss_.pending, hdl = hdot ? " · " + (hd > 0 ? "저장 안 한 기록 " + hd + "가구" : "연동 대기") : "";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z121" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z122" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc((demoNo(SY.state().user) ? "시연 " + demoNo(SY.state().user) + " · " : "") + si.txt) + "</button>" : "") + // 95회차 ⑤: PC 머리에 지금 시연 번호 — 설명서 «PC에 보이는 번호를 폰 «시연 바꾸기»에서 고름»
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +
@@ -704,7 +704,7 @@
   function DEMO_MAIL(n) { return "daeum.judge" + n + "@example.com"; }
   /** 84회차 ③: 큰 단추 «시연으로 둘러보기»는 시연 1~6 가운데 이 브라우저 몫으로(처음 한 번 무작위, 이후 같은 번호) — 심사위원 여럿이 한 계정을 함께 써
       서로의 계획·동료 짝을 지우던 것 방지. 키는 daeum.* 밖(로그아웃 «기기 기록 지우기»·시연 초기화에도 유지). 서버 계정 2~6·짝은 줄B(supabase/*.sql)가 같은 규칙으로 */
-  var DEMO_SLOTS = 6, SLOT_KEY = "daeumDemoSlot";
+  var DEMO_SLOTS = 12, SLOT_KEY = "daeumDemoSlot";
   function demoSlot() {
     var n = 0; try { n = +localStorage.getItem(SLOT_KEY) || 0; } catch (e) { n = 0; }
     // 84회차: 몫은 묶음 단위(1·3·5 = 담당 주무관) — 모두 담당으로 시작하고 작은 링크가 짝(2·4·6). 옛 2·4·6 몫은 같은 묶음의 1·3·5로 옮긴다
@@ -716,7 +716,9 @@
   // 73회차 🔐 시연 1·2·3 이름표 — 서버 시연 팀(supabase/migration_s12z4_team.sql daeum_team_demo_seed)과 맞춤:
   //   84회차: 시연 1~6 · 팀 3묶음(시연 N) — 1↔2 · 3↔4 · 5↔6 이 서로 1차 짝, 2차는 묶음마다 가상 «김팀장»(시연 계정 중 팀장 없음)
   var DEMO_WHO = [["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 2에게 알림"], ["동료 주무관", "시연 1의 1차 안부 짝 · 2차 확인은 가상 김팀장"], ["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 4에게 알림"], ["동료 주무관", "시연 3의 1차 안부 짝 · 2차 확인은 가상 김팀장"], ["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 6에게 알림"], ["동료 주무관", "시연 5의 1차 안부 짝 · 2차 확인은 가상 김팀장"]];
-  function demoNo(u) { var m = /^daeum\.judge(\d)@/i.exec(u && u.email || ""); return m ? +m[1] : 0; }
+  // 122회차 M2: 심사위원 4명 이상 동시 접속 대비 시연 7~12(묶음 4~6, supabase/migration_s12_122_demo12.sql) — 큰 단추 몫 1·3·5·7·9·11 여섯 개
+  for (var dw = 7; dw <= DEMO_SLOTS; dw += 2) DEMO_WHO.push(["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 " + (dw + 1) + "에게 알림"], ["동료 주무관", "시연 " + dw + "의 1차 안부 짝 · 2차 확인은 가상 김팀장"]);
+  function demoNo(u) { var m = /^daeum\.judge(\d+)@/i.exec(u && u.email || ""); return m ? +m[1] : 0; }
   // 74회차 ⓪-1b(11-13 호창님 «큰 단추 하나 + 작은 링크»): 큰 단추 = 시연 1(담당 주무관) · 그 아래 옅은 링크 «동료 계정으로 보기 2 · 3»(동료 안부 시연용, 보이되 조용하게)
   //   cur = 지금 들어와 있는 시연 번호(로그인 전 0) — «시연 바꾸기»도 같은 구조: 지금 번호는 빼고, 1이면 큰 단추 대신 링크만
   function demoBox(ic, cur) {
@@ -724,9 +726,9 @@
     // 84회차: 큰 단추 = 이 브라우저 몫(demoSlot) · 작은 링크 = 같은 묶음 팀(1·2 / 3·4 / 5·6)의 다른 계정만(짝 하나면 링크 하나)
     var mine = demoSlot(), big = cur === mine ? 0 : mine, lo = (cur || mine) % 2 ? (cur || mine) : (cur || mine) - 1;
     // 90회차(호창님 승인): 시연 바꾸기(로그인 뒤)는 1~6 모두 — PC와 다른 묶음 번호를 받은 폰도 PC와 같은 번호를 고를 수 있게. 로그인 전 화면은 짝 링크 그대로
-    var rest = (cur ? [1, 2, 3, 4, 5, 6] : [lo, lo + 1]).filter(function (n) { return n !== big && n !== cur; }), w1 = whoOf(big || mine);
+    var rest = (cur ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] : [lo, lo + 1]).filter(function (n) { return n !== big && n !== cur; }), w1 = whoOf(big || mine);
     return '<section class="demo' + (cur ? " sw" : "") + '" aria-label="' + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '"><span class="k">' + (cur ? "지금 시연 " + cur + " · " + whoOf(cur)[0] : "심사위원·처음 보는 분") + "</span><h4>" + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '</h4><p class="sub">누구나 한 번에 · 가상 48가구가 채워져 있습니다</p><p class="brw">Chrome 브라우저 최적화</p>' + // 109회차 ⚙️ 파로: 호창님 11-14 «크롬에 최적화» — 작고 조용한 한 줄(폰·PC 같은 자리)
-      (big ? '<div class="who"><button class="wk first" type="button" data-demo="' + big + '" data-slot="1" aria-label="시연 ' + big + " " + w1[0] + ' 계정으로 둘러보기"><span class="n">' + big + '</span><span><b>' + (cur ? "시연 " + big + "로 바꾸기" : "시연으로 둘러보기") + "</b><small>" + w1[0] + " · " + w1[1] + "</small></span>" + ic("arrow") + "</button></div>" : "") +
+      (big ? '<div class="who"><button class="wk first" type="button" data-demo="' + big + '" data-slot="1" aria-label="시연 ' + big + " " + w1[0] + ' 계정으로 둘러보기"><span class="n">' + big + '</span><span><b>' + (cur ? "시연 " + big + "번으로 바꾸기" : "시연으로 둘러보기") + "</b><small>" + w1[0] + " · " + w1[1] + "</small></span>" + ic("arrow") + "</button></div>" : "") +
       '<p class="alt">' + (rest.length ? (cur ? "다른 번호로 바꾸기" : "동료 계정으로 보기") + " " : "") + rest.map(function (n) { return '<button class="lk" type="button" data-demo="' + n + '" aria-label="시연 ' + n + " " + whoOf(n)[0] + ' 계정 보기">' + n + "</button>"; }).join('<span aria-hidden="true">·</span>') +
         '<small>' + (cur ? "PC와 <b>같은 번호</b>를 고르면 PC·폰 계획·기록이 이어지고, <b>짝 번호</b>(1·2 / 3·4 / 5·6)면 동료 안부가 오갑니다" : "두 기기에서 <b>다른 번호</b>면 동료 안부가 오가고, <b>같은 번호</b>면 PC·폰 계획·기록이 이어집니다") + ' · 매일 새벽 처음 상태로 · 실제 개인정보는 넣지 마세요</small></p><p class="o-msg" id="aDemoMsg" role="status"></p></section>';
   }
@@ -936,6 +938,8 @@
       colsOf(html) +
       '<nav class="tabs" aria-label="주 메뉴">' + SH.tabsHTML(cur, curArg, I, { dot: dn }) + "</nav>";
     var cs = app.querySelectorAll(".main > .col"), col = cs[cs.length - 1] || null;
+    // S12-122 미르 28: 동선·현장·기록에도 보이는 화면 제목(다른 탭 26px 제목과 같은 양식 · 현장 압축을 해치지 않게 작게) — 낭독기 전용 h1 대신
+    if (/^(route|home|check|talk|record)$/.test(cur) && cs[0] && !app.querySelector(".main h1")) { var m0 = cs[0].querySelector("main") || cs[0], h0 = document.createElement("h1"); h0.className = "scr-t"; h0.textContent = TITLES[cur]; m0.insertBefore(h0, m0.firstChild); }
     document.title = TITLES[cur] + " · " + NAME + " — " + SUB;
     ({ today: bindToday, plan: bindPlan, route: bindRoute, perf: bindPerf, help: function () {}, home: bindHome, check: bindCheck, talk: bindTalk, record: bindRecord, docs: bindDocs })[cur](curArg);
     app.querySelectorAll('[data-act="account"]').forEach(function (b) { b.addEventListener("click", accountPanel); });
