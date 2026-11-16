@@ -18,5 +18,7 @@ html[data-mode] .app h1.scr-t { margin: 0 2px; font-size: calc(20px * var(--tz, 
 html[data-mode] .app .dock .pri, html[data-mode] .app .main .btn.pri:not(.rv-mk), html[data-mode] .app .tx-btn.tx-p.tx-go { min-height: 52px; border-radius: 18px; }
 html[data-mode] .app .tx-lstrip .tx-btn { min-height: 44px; border-radius: 18px; }
 html[data-mode] .app > .dock .pri { padding-top: 3px; padding-bottom: 3px; } /* 두 줄 글자(제목+설명)로 56~57px 로 늘던 것 → 52 */
-html[data-mode] .app > .dock .sbt { min-height: 52px; padding-top: 3px; padding-bottom: 3px; } /* 같은 줄 보조 단추(PC 56)가 줄 높이를 끌어올리던 것 */
+html[data-mode] .app > .dock .sbt { min-height: 52px; padding-top: 3px; padding-bottom: 3px; gap: 1px; line-height: 1.2; } /* 같은 줄 보조 단추(PC 56)가 줄 높이를 끌어올리던 것 */
 html[data-mode] .app .rv-acts .rv-mk { min-height: 44px; border-radius: 18px; }
+#app .dock .sbt.nav { min-height: 52px; padding-top: 3px; padding-bottom: 3px; border-radius: 18px; } /* 25 길안내(보조, 주 단추와 같은 무게) 56/r17 → 52/r18 */
+#app .dock .sbt.nav svg { width: 20px; height: 20px; } /* 27 길안내 아이콘 22 → 20px */
