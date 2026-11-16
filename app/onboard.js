@@ -230,7 +230,7 @@
       '<button class="o-skip" type="button" data-act="skip">건너뛰기</button></div>' +
       '<p class="o-ob-lead">발굴 명단 다음, <span>현장 업무</span>를 순서대로.</p>' + flow +
       '<div class="o-ob-view"><div class="o-ob-track" style="transform:translateX(' + (pc ? 0 : -i * 100) + '%)">' + slides + "</div></div>" +
-      '<div class="o-ob-foot"><span class="o-demo-note"><span class="o-samp">가상 데이터</span>가상 48가구가 들어 있습니다</span>' +
+      '<div class="o-ob-foot"><span class="o-demo-note"><span class="o-samp">가상 데이터</span>가상 48가구가 들어 있습니다<span class="o-brw">· Chrome 브라우저 최적화</span></span>' +
       '<button class="o-btn o-sec" type="button" data-act="login">' + IC.key + "로그인 · 시연 계정</button>" +
       '<button class="o-btn o-pri" type="button" data-act="' + (last || pc ? "start" : "next") + '"><span class="o-lab">' + (last || pc ? "시연 데이터로 시작" : "다음") + "</span>" + IC.arrow + "</button></div></div></div>";
   }
@@ -252,7 +252,7 @@
   }
   var rzT = null;
   function onRz() { clearTimeout(rzT); rzT = setTimeout(function () { if (OB.d && OB.pc !== isPc()) paint(); }, 150); }
-  /** 안내 열기 — 처음 한 번은 자동(OPT.autoFirst), 다시 보기는 «더 보기» 메뉴 */
+  /** 안내 열기 — 페이지를 열 때마다 자동(OPT.autoFirst, 11-16), 다시 보기는 «더 보기» 메뉴 */
   function open() {
     if (OB.d || typeof document === "undefined") return;
     var d = document.createElement("dialog"); d.setAttribute("aria-label", "처음 안내 — 닿음이 하는 일 다섯 가지"); OB.d = d; OB.i = 0;
@@ -280,7 +280,7 @@
   function shouldAuto(env) {
     env = env || {};
     if (!OPT.autoFirst) return false;
-    if (env.seen != null ? env.seen : seen()) return false;
+    // 11-16 호창님 «처음 들어가면 나오는 팝업은 항상 뜨게»: 본 적 있어도(SEEN) 페이지를 열 때마다 띄운다 — SEEN 은 기록만 남기고 막지 않는다
     var nav = env.nav || root.navigator || {}, q = env.search != null ? env.search : (root.location && root.location.search) || "";
     if (nav.webdriver) return false;
     if (/[?&]ob=0(&|$)/.test(q)) return false;

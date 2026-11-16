@@ -191,7 +191,7 @@
     if (pri) app.appendChild(dockEl(pri, sec, opt || {}));
     hosts.forEach(function (h) { if (h && h !== app && /(^|\s)row2(\s|$)/.test(h.className || "") && !h.children.length && !(h.textContent || "").trim() && h.parentNode) h.parentNode.removeChild(h); }); // 75회차: 단추를 옮기고 빈 .row2 는 지운다(높이 0인데 간격만 남음)
     nxArm(app);
-    glowTab(app, opt && opt.tabGlow);
+    // 120회차(11-16 호창님 «방문·보고를 눌러도 현장 탭에 테두리가 보임»): 다른 탭 단추 고리는 «지금 탭»처럼 보여 혼동 → 탭 빛남은 끈다(주 단추 빛남만 남김). glowTab 함수는 그대로 둔다.
     // ④ 전환(탭이 바뀔 때만)
     var k = tabOf(view);
     if (lastTab !== null && k !== lastTab && !RM.matches) {
@@ -207,7 +207,20 @@
     lastTab = k;
     // ⑥ 글자 크게 «가» — 띠(.hbar)는 app.js 가 SH.after 바로 뒤에 놓으므로 한 박자 뒤에 붙인다(한 번 붙으면 띠와 함께 남는다)
     Promise.resolve().then(function () { tzMount(app); });
+    colPad(app); setTimeout(function () { colPad(app); }, 450);
   }
+  // 120회차(11-16 호창님 «2열 화면 아래쪽 불필요한 여백»): 태블릿·PC에서 주 단추 자리(.dock, 오른쪽 아래)와 가로로 겹치지 않는 단은
+  //   dock 비켜 둘 104px 아래 여백이 필요 없다 → 그 단만 16px. 겹치는 단(오른쪽 끝)은 그대로 비켜 둔다. 폰·폴드는 CSS 그대로.
+  function colPad(app) {
+    if (!doc || !app) return;
+    var md = doc.documentElement.getAttribute("data-mode"), dk = app.querySelector(":scope > .dock");
+    var cols = app.querySelectorAll(".main > .col"), L = dk && dk.offsetHeight ? dk.getBoundingClientRect().left : Infinity;
+    Array.prototype.forEach.call(cols, function (c) {
+      var wide = md === "tab" || md === "pc";
+      c.style.paddingBottom = wide && dk && c.getBoundingClientRect().right < L - 4 ? "16px" : "";
+    });
+  }
+  if (root.addEventListener) { var cpT = 0; root.addEventListener("resize", function () { clearTimeout(cpT); cpT = setTimeout(function () { colPad(doc && doc.getElementById("app")); }, 160); }, { passive: true }); }
   // 75회차 ⓪-3 안내 줄 접기 — 약 4초 뒤 스스로, 스크롤·누름이면 바로(첫 0.4초 스크롤은 무시 — 그리는 중 읽던 자리 되살리기)
   var NX_MS = 4000, nxT = null, nxAt = 0;
   function nxHide() {

@@ -280,7 +280,10 @@
     }
     var dh = col0.querySelector(":scope > .dhead"); if (dh) vxHr(M).appendChild(dh);
     // 104회차 현장(집 앞·확인·상담) 태블릿·PC: 맨 앞 단계 줄 + 가구 카드(시안 fieldTop)는 격자 위 한 줄로, 폭은 첫 단(태블릿)·760 이하(PC) — 폴드는 시안처럼 첫 단 맨 위 그대로
-    if (M.classList.contains("vx-field") && /^(tab|pc)$/.test(vm) && !M.querySelector(":scope > .hdrow > .fx-top")) {
+    // 120회차(11-16 호창님 «현장 탭 2열이 가운데쯤에서 시작»): 단계 줄·가구 카드를 격자 위 한 줄로 올리면 둘째 단이 그 높이(≈280px)만큼 내려가 빈 자리가 생김
+    //   → 태블릿·PC도 첫 단 맨 위에 그대로 둔다(둘째 단은 위에서 바로). 옛 끌어올리기는 FX_HOIST=false 로 멈춤
+    var FX_HOIST = false;
+    if (FX_HOIST && M.classList.contains("vx-field") && /^(tab|pc)$/.test(vm) && !M.querySelector(":scope > .hdrow > .fx-top")) {
       var tops = [];
       for (var x = col0.firstElementChild; x; x = x.nextElementSibling) { if (/(^|\s)(steps|idc)(\s|$)/.test(x.className || "")) tops.push(x); else break; }
       if (tops.length) { var tw = document.createElement("div"); tw.className = "fx-top"; tops.forEach(function (t) { tw.appendChild(t); }); vxHr(M).appendChild(tw); }
@@ -289,7 +292,8 @@
   function vxHr(M) { var hr = M.querySelector(":scope > .hdrow"); if (!hr) { hr = document.createElement("div"); hr.className = "hdrow" + (vxMode() === "fold" ? " fh2" : ""); M.insertBefore(hr, M.querySelector(":scope > .col")); } return hr; } // 머리 줄은 넣을 것이 있을 때만 만든다(빈 줄이 격자 칸을 차지하지 않게)
   /** 머리 줄(.hdrow) = 제목 + 작은 칸 전환(시안 topW·폴드 fhr) — 작은 칸은 shell.js after() 가 그린 뒤 첫 칸 맨 위에 넣으므로 그 뒤에 옮긴다. 태블릿·PC 전환 폭 = 첫 칸 폭 */
   function vxHead(M, cols) {
-    var sg = cols[0] && cols[0].querySelector(":scope > .subseg.subtabs"); if (sg) vxHr(M).appendChild(sg); // 104회차: 셸 작은 칸(nav.subseg.subtabs)만 — 현장 확인 «집 안/문 앞»(div.subseg)은 시안처럼 첫 단에
+    // 120회차(11-16 «방문 2·3열 시작을 1열과 맞춰 위로»): 태블릿·PC는 작은 칸을 첫 단 맨 위에 그대로 둔다 — 머리 줄이 작은 칸 높이만큼 커져 2·3열이 내려가던 것. 폴드만 시안 fhr(머리 줄 오른쪽 반)
+    var sg = vxMode() === "fold" && cols[0] && cols[0].querySelector(":scope > .subseg.subtabs"); if (sg) vxHr(M).appendChild(sg); // 104회차: 셸 작은 칸(nav.subseg.subtabs)만 — 현장 확인 «집 안/문 앞»(div.subseg)은 시안처럼 첫 단에
     var ft = M.querySelector(":scope > .hdrow > .fx-top"); if (ft) ft.style.width = vxMode() === "tab" && cols[0] ? Math.max(280, cols[0].clientWidth - 20) + "px" : "";
     var hr = M.querySelector(":scope > .hdrow"); if (!hr) return;
     var s2 = hr.querySelector(".subseg"); if (s2) s2.style.width = /^(tab|pc)$/.test(vxMode()) && cols[0] ? Math.max(280, cols[0].clientWidth - 20) + "px" : "";
@@ -318,7 +322,8 @@
     if (cols.length < 2 || vxMode() === "phone") return;
     vxHead(M, cols);
     if (M.classList.contains("vx-field") && vxMode() === "fold" && cols[0].querySelector(":scope > .steps")) return; // 104회차: 폴드 현장은 시안처럼 단계 줄·가구 카드가 첫 단 맨 위(시안 .tw 단은 맞춤 제외) — 둘째 단은 위에서 바로
-    var first = function (c) { return Array.prototype.filter.call(c.children, function (x) { return x.offsetHeight > 0 && !(M.classList.contains("vx-field") ? /(^|\s)(dhead|demo|subseg|subtabs|hdrow|steps|idc|fx-info|fx-top)(\s|$)/ : /(^|\s)(dhead|demo|subseg|subtabs|hdrow)(\s|$)/).test(x.className || "") && x.nodeName !== "SCRIPT"; })[0]; };
+    var wideNow = /^(tab|pc)$/.test(vxMode()); // 120회차: 태블릿·PC는 작은 칸·단계 줄이 첫 단에 남으므로 그것을 첫 요소로 — 모든 단이 같은 윗선에서 시작
+    var first = function (c) { return Array.prototype.filter.call(c.children, function (x) { return x.offsetHeight > 0 && !(wideNow ? /(^|\s)(dhead|demo|hdrow)(\s|$)/ : M.classList.contains("vx-field") ? /(^|\s)(dhead|demo|subseg|subtabs|hdrow|steps|idc|fx-info|fx-top)(\s|$)/ : /(^|\s)(dhead|demo|subseg|subtabs|hdrow)(\s|$)/).test(x.className || "") && x.nodeName !== "SCRIPT"; })[0]; };
     var tops = cols.map(function (c) { var f = first(c); return f ? f.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop : null; });
     var v = tops.filter(function (x) { return x != null; }); if (v.length < 2) return;
     var mx = Math.max.apply(null, v);

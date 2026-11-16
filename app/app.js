@@ -698,7 +698,7 @@
     if (/Failed to fetch|NetworkError|network/i.test(t) || navigator.onLine === false) return "연결이 끊겼습니다 — 연결되면 다시 해 주세요.";
     return "다시 시도해 주세요" + (er && er.message ? "(" + String(er.message).slice(0, 60) + ")" : "") + ".";
   }
-  /* S12-w 시연 계정(심사1~3). 비밀번호는 서버 db/migration_s12v_hardening.sql §4 의 $env:DEMO_PW 와 같아야 한다.
+  /* S12-w 시연 계정(시연 1~3). 비밀번호는 서버 db/migration_s12v_hardening.sql §4 의 $env:DEMO_PW 와 같아야 한다.
      화면 코드에 있으므로 사실상 공개 — 방어선은 서버 쪽 매일 03:30 원복(비밀번호·이메일) + 계정당 행 상한. 실제 개인정보를 넣지 말라는 안내를 같이 띄운다 */
   var DEMO_PW = "daeum-judge-2026";
   function DEMO_MAIL(n) { return "daeum.judge" + n + "@example.com"; }
@@ -714,7 +714,7 @@
   }
   function whoOf(n) { return DEMO_WHO[n - 1] || ["담당 주무관", "방문 계획부터 현장 기록·보고서까지"]; }
   // 73회차 🔐 시연 1·2·3 이름표 — 서버 시연 팀(supabase/migration_s12z4_team.sql daeum_team_demo_seed)과 맞춤:
-  //   84회차: 시연 1~6 · 팀 3묶음(심사N) — 1↔2 · 3↔4 · 5↔6 이 서로 1차 짝, 2차는 묶음마다 가상 «김팀장»(시연 계정 중 팀장 없음)
+  //   84회차: 시연 1~6 · 팀 3묶음(시연 N) — 1↔2 · 3↔4 · 5↔6 이 서로 1차 짝, 2차는 묶음마다 가상 «김팀장»(시연 계정 중 팀장 없음)
   var DEMO_WHO = [["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 2에게 알림"], ["동료 주무관", "시연 1의 1차 안부 짝 · 2차 확인은 가상 김팀장"], ["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 4에게 알림"], ["동료 주무관", "시연 3의 1차 안부 짝 · 2차 확인은 가상 김팀장"], ["담당 주무관", "방문 계획부터 현장 기록·보고서까지 · 늦어지면 시연 6에게 알림"], ["동료 주무관", "시연 5의 1차 안부 짝 · 2차 확인은 가상 김팀장"]];
   function demoNo(u) { var m = /^daeum\.judge(\d)@/i.exec(u && u.email || ""); return m ? +m[1] : 0; }
   // 74회차 ⓪-1b(11-13 호창님 «큰 단추 하나 + 작은 링크»): 큰 단추 = 시연 1(담당 주무관) · 그 아래 옅은 링크 «동료 계정으로 보기 2 · 3»(동료 안부 시연용, 보이되 조용하게)
@@ -725,7 +725,7 @@
     var mine = demoSlot(), big = cur === mine ? 0 : mine, lo = (cur || mine) % 2 ? (cur || mine) : (cur || mine) - 1;
     // 90회차(호창님 승인): 시연 바꾸기(로그인 뒤)는 1~6 모두 — PC와 다른 묶음 번호를 받은 폰도 PC와 같은 번호를 고를 수 있게. 로그인 전 화면은 짝 링크 그대로
     var rest = (cur ? [1, 2, 3, 4, 5, 6] : [lo, lo + 1]).filter(function (n) { return n !== big && n !== cur; }), w1 = whoOf(big || mine);
-    return '<section class="demo' + (cur ? " sw" : "") + '" aria-label="' + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '"><span class="k">' + (cur ? "지금 시연 " + cur + " · " + whoOf(cur)[0] : "심사위원·처음 보는 분") + "</span><h4>" + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '</h4><p class="sub">누구나 한 번에 · 가상 48가구가 채워져 있습니다</p><p class="brw">Chrome 브라우저에 최적화되어 있습니다</p>' + // 109회차 ⚙️ 파로: 호창님 11-14 «크롬에 최적화» — 작고 조용한 한 줄(폰·PC 같은 자리)
+    return '<section class="demo' + (cur ? " sw" : "") + '" aria-label="' + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '"><span class="k">' + (cur ? "지금 시연 " + cur + " · " + whoOf(cur)[0] : "심사위원·처음 보는 분") + "</span><h4>" + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '</h4><p class="sub">누구나 한 번에 · 가상 48가구가 채워져 있습니다</p><p class="brw">Chrome 브라우저 최적화</p>' + // 109회차 ⚙️ 파로: 호창님 11-14 «크롬에 최적화» — 작고 조용한 한 줄(폰·PC 같은 자리)
       (big ? '<div class="who"><button class="wk first" type="button" data-demo="' + big + '" data-slot="1" aria-label="시연 ' + big + " " + w1[0] + ' 계정으로 둘러보기"><span class="n">' + big + '</span><span><b>' + (cur ? "시연 " + big + "로 바꾸기" : "시연으로 둘러보기") + "</b><small>" + w1[0] + " · " + w1[1] + "</small></span>" + ic("arrow") + "</button></div>" : "") +
       '<p class="alt">' + (rest.length ? (cur ? "다른 번호로 바꾸기" : "동료 계정으로 보기") + " " : "") + rest.map(function (n) { return '<button class="lk" type="button" data-demo="' + n + '" aria-label="시연 ' + n + " " + whoOf(n)[0] + ' 계정 보기">' + n + "</button>"; }).join('<span aria-hidden="true">·</span>') +
         '<small>' + (cur ? "PC와 <b>같은 번호</b>를 고르면 PC·폰 계획·기록이 이어지고, <b>짝 번호</b>(1·2 / 3·4 / 5·6)면 동료 안부가 오갑니다" : "두 기기에서 <b>다른 번호</b>면 동료 안부가 오가고, <b>같은 번호</b>면 PC·폰 계획·기록이 이어집니다") + ' · 매일 새벽 처음 상태로 · 실제 개인정보는 넣지 마세요</small></p><p class="o-msg" id="aDemoMsg" role="status"></p></section>';

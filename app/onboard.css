@@ -402,3 +402,5 @@ dialog.dob::backdrop{background:transparent}
 .dob .lg73 .dock+.o-foot,.dob .lg73 .lg-v+.o-foot{border-top:1px solid var(--line)}
 .dob .lg73 .o-acct-st{font-size:var(--fs-1)}
 .dob .lg73 .flat.acct .outb{width:100%}
+
+.dob .o-demo-note .o-brw{opacity:.8;font-weight:500;white-space:nowrap} /* 120회차(11-16): 첫 안내 창 바닥 «Chrome 브라우저 최적화» — 작고 조용한 한 줄, 상시 띠 아님 */
