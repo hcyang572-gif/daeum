@@ -28,11 +28,6 @@
   function yes(v) { return /^(y|yes|예|o|○|1|대상|해당)$/i.test(String(v == null ? "" : v).trim()); }
   /** 가상 가구 위치 찾기: 주소 «… <읍면동> 가상리 <번호>» → 가구(data/tools/make_demo_list.py 와 같은 규칙). 실제 주소는 찾지 않는다(주소→좌표 변환은 도입 때) */
   function addrKey(a) { var m = String(a || "").match(/(\S+(?:읍|면|동))\s+가상리\s+(\d+)/); return m ? m[1] + "|" + (+m[2]) : ""; }
-  function addrIndex() {
-    var o = O(), D = o && o.data ? o.data() : null, ix = {};
-    ((D && D.households) || []).forEach(function (h) { var n = +String(h.id).split("-")[1]; if (n) ix[h.area + "|" + n] = h.id; });
-    return ix;
-  }
   function parseCSV(text) {
     text = text.replace(/^﻿/, "");
     var delim = (text.split(/\r?\n/)[0].match(/\t/g) || []).length > (text.split(/\r?\n/)[0].match(/,/g) || []).length ? "\t" : ",";

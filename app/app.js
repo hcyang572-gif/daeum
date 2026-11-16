@@ -212,7 +212,7 @@
     //   시안 조건 «하루 마무리(저장 안 된 기록)·연동 꺼짐(연동 대기)» → 앱 = 오늘 방문이 끝났는데 저장 안 한 기록이 있음 · 연동 끊김 · 보낼 것 대기
     var hd = 0; try { hd = AK.dayEndUnsaved ? AK.dayEndUnsaved() : 0; } catch (e) { hd = 0; }
     var ss_ = SY.state(), hdot = hd > 0 || ss_.mode === "offline" || !!ss_.pending, hdl = hdot ? " · " + (hd > 0 ? "저장 안 한 기록 " + hd + "가구" : "연동 대기") : "";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z120" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z121" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc((demoNo(SY.state().user) ? "시연 " + demoNo(SY.state().user) + " · " : "") + si.txt) + "</button>" : "") + // 95회차 ⑤: PC 머리에 지금 시연 번호 — 설명서 «PC에 보이는 번호를 폰 «시연 바꾸기»에서 고름»
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +
@@ -682,13 +682,13 @@
     var bo = d.querySelector('[data-act="out"]');
     // S12-w «시연으로 둘러보기» — 시연 1~3 중 하나를 고르면 가입·메일 확인 없이 바로(서버 시연 팀 3묶음: 1↔2·3↔4·5↔6 이 1차 안부 짝, 2차는 묶음마다 가상 김팀장 — supabase/migration_s12x_demo6.sql)
     [].forEach.call(d.querySelectorAll("[data-demo]"), function (b) { b.addEventListener("click", function () {
-      var big = b.hasAttribute("data-slot"), n = big ? demoSlot() : +b.getAttribute("data-demo"), m = d.querySelector("#aDemoMsg"); if (m) m.textContent = "시연 " + n + "로 들어가는 중…";
+      var big = b.hasAttribute("data-slot"), n = big ? demoSlot() : +b.getAttribute("data-demo"), m = d.querySelector("#aDemoMsg"); if (m) m.textContent = "시연 " + n + "번으로 들어가는 중…";
       if (s.user && !big && n >= 1 && n <= DEMO_SLOTS) { try { localStorage.setItem(SLOT_KEY, String(n)); } catch (e) { /* 저장 불가 — 이번만 */ } } // 90회차: 시연 바꾸기로 고른 번호를 이 기기 몫으로(짝 번호 2·4·6은 demoSlot이 같은 묶음 담당으로 읽음)
-      var w = d.querySelector("#aWipe"), wipe = !!(s.user && w && w.checked); // 74회차 ⓪-1b 시연 바꾸기: 다른 번호 기록이 섞이지 않게 기본은 이 기기 기록 지우고 다시 받기
-      (s.user ? SY.signOut({ wipe: wipe }) : Promise.resolve()).then(function () { return SY.signIn(DEMO_MAIL(n), DEMO_PW).catch(function (er) { if (!big || n === 1) throw er; n = 1; return SY.signIn(DEMO_MAIL(1), DEMO_PW); }); }).then(function () { /* 몫 계정이 아직 서버에 없으면 시연 1로 */ d.close(); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); return; } render(); toast("시연 " + n + " · " + whoOf(n)[0] + "(으)로 들어왔습니다 · 다른 기기에서 다른 번호를 고르면 동료 안부가 오갑니다"); },
+      var w = d.querySelector("#aWipe"), wipe = !!(s.user && w && w.checked), fell = false; // 74회차 ⓪-1b 시연 바꾸기: 다른 번호 기록이 섞이지 않게 기본은 이 기기 기록 지우고 다시 받기
+      (s.user ? SY.signOut({ wipe: wipe }) : Promise.resolve()).then(function () { return SY.signIn(DEMO_MAIL(n), DEMO_PW).catch(function (er) { if (!big || n === 1) throw er; n = 1; fell = true; return SY.signIn(DEMO_MAIL(1), DEMO_PW); }); }).then(function () { /* 몫 계정이 아직 서버에 없으면 시연 1로 */ d.close(); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); return; } render(); toast(fell ? "시연 1 · 담당 주무관으로 들어왔습니다 · 다른 분과 같은 시연 계정이라 방문 계획이 함께 바뀔 수 있습니다" : "시연 " + n + " · " + whoOf(n)[0] + "으로 들어왔습니다 · 다른 기기에서 다른 번호를 고르면 동료 안부가 오갑니다"); },
         function (er) { if (m) m.textContent = "시연 계정에 들어가지 못했습니다 — " + authMsg(er) + " · 로그인 없이도 모든 기능을 이 기기에서 쓸 수 있습니다"; });
     }); });
-    if (bo) bo.addEventListener("click", function () { var w = d.querySelector("#aWipe"), wipe = !!(w && w.checked); SY.signOut({ wipe: wipe }).then(function () { d.close(); toast("로그아웃했습니다"); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); } else render(); }); });
+    if (bo) bo.addEventListener("click", function () { var w = d.querySelector("#aWipe"), wipe = !!(w && w.checked); SY.signOut({ wipe: wipe }).then(function () { d.close(); toast("로그아웃했습니다"); if (wipe) { try { history.replaceState(null, "", location.pathname + "#today"); } catch (e) { /* 무시 */ } location.reload(); } else render(); }, function (er) { toast("로그아웃하지 못했습니다 — " + authMsg(er)); }); });
   }
   /** 67회차 S12-z2: Supabase 인증 오류(영문)를 한국어 안내로 — 없는 계정·틀린 비밀번호는 보안상 같은 문구(서버도 구분하지 않음) */
   function authMsg(er) {

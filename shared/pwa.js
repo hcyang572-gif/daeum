@@ -23,7 +23,7 @@
   // 76회차(11-13 호창님 «홈화면에 설치 안내는 오늘탭에 넣지 말고 … 더보기 안에»): 띠(#pwa-install)는 화면에 붙이지 않고 상태만 판정한다.
   //   «더 보기 › 이 기기 › 홈 화면에 설치» 줄이 window.__daeumPwaApi 로 읽는다(설치 신호 있으면 바로 설치 · 없으면 브라우저별 안내 · 설치돼 있으면 숨김).
   //   옛 닫기(×) 7일 숨김(daeum-pwa-hide)은 띠가 없어졌으므로 판정에서 뺀다.
-  var xb = box.querySelector("[data-pwa=x]"); if (xb) xb.addEventListener("click", function () { try { localStorage.setItem(HIDE, String(Date.now())); } catch (e) {} box.hidden = true; if (box.parentNode) box.parentNode.removeChild(box); window.__daeumPwa = null; });
+  var xb = box.querySelector("[data-pwa=x]"); if (xb) xb.addEventListener("click", function () { try { localStorage.setItem("daeum-pwa-hide", String(Date.now())); } catch (e) {} box.hidden = true; if (box.parentNode) box.parentNode.removeChild(box); window.__daeumPwa = null; });
   var btn = box.querySelector("[data-pwa=btn]"), ios = box.querySelector("[data-pwa=ios]");
   var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   var deferred = null;

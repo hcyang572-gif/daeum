@@ -852,7 +852,7 @@
         if (!h) { unknown.push(id); return; }
         // 지난 비해당: 담당자가 닿음에 남긴 비해당 사유(가장 최근)가 먼저, 없으면 지난 차수(가상)
         var mine = att.filter(function (t) { return t.householdId === id && t.result === "not_eligible"; }).slice(-1)[0];
-        var p = mine ? { round: "닿음 기록 " + String(mine.at).slice(0, 10), reason: mine.reason, crisis: null, source: "담당자 기록" }
+        var p = mine ? { round: "닿음 기록 " + ymd(mine.at), reason: mine.reason, crisis: null, source: "담당자 기록" }
           : prior[id] ? { round: prior[id].round, reason: prior[id].reason, crisis: prior[id].crisis, source: "지난 차수(가상)" } : null;
         var changes = [];
         if (p) {

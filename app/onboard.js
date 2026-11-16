@@ -206,9 +206,9 @@
     { st: "기록", ey: "상황 고르기", ill: ill2, h: '상황을 고르면<br><em>기록 문장</em>이 됩니다', p: "집 앞에서 고른 상황이 상담 기록 문장으로 바로 써집니다.",
       src: '<b>한국사회보장정보원 복지서비스 목록</b>에서 맞는 서비스를 함께 보여 줍니다' },
     { st: "보고", ey: "보고서 자동 생성", ill: ill4, h: '기록이 그대로<br><em>보고서 한 장</em>으로', p: "출장 결과 보고와 서비스 연계 의뢰서가 hwpx 한 쪽으로 만들어집니다.",
-      src: '<b>한국사회보장정보원 복지서비스 목록 · 자원정보 23건</b> · 연계처 712건으로 의뢰' }
+      src: '<b>한국사회보장정보원 복지서비스 목록 · 자원정보</b>를 포함한 연계처 735곳으로 의뢰' }
   ];
-  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z85" alt="">';
+  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z121" alt="">';
   var REDUCE = !!(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches);
   var H = { login: function () {}, start: function () {} }, OB = { d: null, i: 0, pc: false };
 
@@ -284,9 +284,17 @@
     var nav = env.nav || root.navigator || {}, q = env.search != null ? env.search : (root.location && root.location.search) || "";
     if (nav.webdriver) return false;
     if (/[?&]ob=0(&|$)/.test(q)) return false;
+    // S12-121 M1: «새로 열 때» 한 번 — 같은 탭의 새로고침·길안내 복귀·시연 바꾸기(reload)는 다시 안 띄움(탭 세션 표시) · 안전 모드 진행 중이면 «괜찮으세요?» 띠를 가리지 않게 안 띄움
+    var sess = env.sess != null ? env.sess : ssGet(SESS), safe = env.safe != null ? env.safe : safeNow();
+    if (sess) return false;
+    if (safe) return false;
     return true;
   }
-  function maybeAuto() { if (shouldAuto()) { open(); return true; } return false; }
+  var SESS = "daeum.ob.sess";
+  function ssGet(k) { try { return root.sessionStorage ? root.sessionStorage.getItem(k) : null; } catch (e) { return null; } }
+  function ssSet(k, v) { try { if (root.sessionStorage) root.sessionStorage.setItem(k, v); } catch (e) { /* 저장 불가 — 이번만 */ } }
+  function safeNow() { try { var v = root.localStorage && root.localStorage.getItem("daeum.s12.safety"); return !!(v && v !== "null"); } catch (e) { return false; } }
+  function maybeAuto() { if (shouldAuto()) { ssSet(SESS, "1"); open(); return true; } return false; }
 
   var api = { OPT: OPT, SLIDES: SLIDES, SEEN: SEEN, IC: IC, open: open, close: close, maybeAuto: maybeAuto, shouldAuto: shouldAuto, seen: seen, syncArt: syncArt,
     hook: function (h) { if (h && h.login) H.login = h.login; if (h && h.start) H.start = h.start; } };

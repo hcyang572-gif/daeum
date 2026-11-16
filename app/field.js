@@ -88,7 +88,7 @@
     p.innerHTML = html; document.body.classList.add("fd-printing");
     var off = function () { document.body.classList.remove("fd-printing"); window.removeEventListener("afterprint", off); };
     window.addEventListener("afterprint", off);
-    setTimeout(function () { window.print(); setTimeout(off, 1500); }, 30);
+    setTimeout(function () { window.print(); setTimeout(off, 60000); }, 30); // S12-121 M4: 폰 브라우저는 print()가 기다리지 않음 — 떼기는 afterprint, 시간은 안전망(인쇄 전용 규칙이라 화면엔 영향 없음)
   }
 
   // ═════ ① 도로명주소 자동 정리 ═════

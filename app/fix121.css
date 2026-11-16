@@ -1,0 +1,49 @@
+/* S12-121 ⚙️ 파로(2026-11-16): 🩵 미르 화면·인간공학·통일성 검토(docs/review/S12-121_화면인간공학.md) 반영 — 맨 끝에 읽어 덮는다.
+   원칙: 보이는 크기·모양은 그대로, 누름 영역만 44px로 넓히고(::after/::before) · 같은 역할은 같은 값으로. 번호 = 검토표 번호 */
+
+/* 1(상) 연계처·마음건강 전화 걸기 — 글자 그대로, 누름 영역 높이 44px */
+.lk-tel { position: relative; display: inline-block; }
+.lk-tel::after { content: ""; position: absolute; left: -6px; right: -6px; top: 50%; height: 44px; transform: translateY(-50%); }
+
+/* 4 지도 카드 빈칸 — 네이버 지도가 뜨기 전·못 뜰 때 대체 그림이 카드 칸을 채운다(카드 높이는 그대로라 지도가 떠도 출렁이지 않음) */
+.rt-map:not(.has-naver) > .rt-svg { position: absolute; inset: 6px; display: flex; align-items: center; justify-content: center; border-radius: var(--r-md); overflow: hidden;
+  background: radial-gradient(80% 80% at 40% 35%, #F7F9FA, #DDE3E9); }
+.rt-map.rt-plan:not(.has-naver) > .rt-svg { inset: 0; }
+.rt-map:not(.has-naver) > .rt-svg > svg { width: 100%; height: auto; max-height: 100%; }
+
+/* 6 글자 크기 단추 «가» — 보이는 22px 그대로, 누름 44px */
+html[data-mode] .app .hbar > .tzb::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
+
+/* 7 현장 머리 «다음 가구» · 10 «연계 후보로 넣기» · 9 «고치기» · 11 «인쇄·PDF» · 13 첫 안내 «건너뛰기»·«다시 보기» · 14 기한 입력 — 44px */
+html[data-mode] .app section.card.next .hhnav a.evb,
+html[data-mode] .app .fx-svb .svc-t,
+html[data-mode] .app .vx-way .vx-lk.sm,
+.doc-ctl .pr-btn,
+.dob .o-skip, .dob .o-replay,
+.dlrow input, .dlrow select { min-height: 44px; }
+
+/* 8 보고 › 주별 문서 이력 날짜 단추 — PC 32px · 폰 44px, 사이 간격 넓힘 */
+.dh-days button { min-height: 32px; margin: 3px 6px 3px 0; }
+html[data-mode="phone"] .dh-days button { min-height: 44px; }
+
+/* 12 사용 방법 «열어 보기»·«다시 보기» — 누름 44px */
+.hk a { position: relative; display: inline-block; }
+.hk a::after { content: ""; position: absolute; left: -4px; right: -4px; top: 50%; height: 44px; transform: translateY(-50%); }
+.dsm-re { min-height: 44px; }
+
+/* 15 정보 글자 12px 하한(그림 속 장식 글자는 예외) */
+.tx-rk, .px-week .ev, .dsm-mc i, .doc-chart figcaption small { font-size: 12px; }
+
+/* 16 대비 — 금색 막대 위 흰 글자·상담 표지 바탕 한 단계 진하게 */
+.dc-seg.pat-absent { background-color: #A86E1F; } /* 막대 안 흰 글자 대비 4.5:1 이상 */
+
+/* 21 문서 종이 글꼴 하나로 — 실제 내려받는 IBM Plex Sans KR(--f-doc) */
+.paper { font-family: var(--f-doc, "IBM Plex Sans KR", "Malgun Gothic", sans-serif); }
+
+/* 22 같은 단계 소제목 크기 — 다수 17px/800 에 맞춤 */
+.hleg h2 { font-size: 17px; font-weight: 800; }
+.dhist h2 { font-size: 17px; font-weight: 800; }
+
+/* 23 큰 제목 굵기 900 · 24 카드 모서리 18px */
+html[data-mode] .app .tx-ph h1 { font-weight: 900; }
+html[data-mode] .app .tx-card, html[data-mode] .app .vx-dep, html[data-mode] .app .nextc .vx-way { border-radius: 18px; }

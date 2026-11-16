@@ -666,13 +666,14 @@ tr.xrow {display: none;}
 .doc-legend p {margin: 0; font-size: var(--fs-1); color: var(--mute);}
 .sw, .doc-legend i {display: inline-block; width: 14px; height: 10px; border-radius: 2px; flex: none; box-shadow: inset 0 0 0 .5px rgba(17,26,39,.25);}
 @media (max-width: 520px) {
-.doc-legend {grid-template-columns: 1fr;}
-.doc-legend > :is(h4, .dl-t) {grid-row: auto; border-right: 0; padding: 0 0 4px; border-bottom: 1px solid #E2DDD2;}
-.doc-legend > :not(h4):not(.dl-t) {grid-column: 1;}
-.doc-legend dl {grid-template-columns: 1fr; gap: 0;}
-.doc-legend dd {margin-bottom: 4px;}
-.doc-head {grid-template-columns: 1fr 1fr;}
-.doc-head .dh-name {grid-column: 1 / -1; grid-row: 1;}
+/* S12-121 미르 3: 보고서 보기(.rvw-paper)는 A4 595px 종이 — 폰 폭 규칙을 받지 않는다(폰 3쪽 ↔ 태블릿 2쪽 어긋남) */
+.doc-legend:not(.rvw-paper *) {grid-template-columns: 1fr;}
+.doc-legend:not(.rvw-paper *) > :is(h4, .dl-t) {grid-row: auto; border-right: 0; padding: 0 0 4px; border-bottom: 1px solid #E2DDD2;}
+.doc-legend:not(.rvw-paper *) > :not(h4):not(.dl-t) {grid-column: 1;}
+.doc-legend:not(.rvw-paper *) dl {grid-template-columns: 1fr; gap: 0;}
+.doc-legend:not(.rvw-paper *) dd {margin-bottom: 4px;}
+.doc-head:not(.rvw-paper *) {grid-template-columns: 1fr 1fr;}
+.doc-head:not(.rvw-paper *) .dh-name {grid-column: 1 / -1; grid-row: 1;}
 .print-doc {padding: 14px 14px 12px;}
 }
 .doc-chart {margin: 14px 0 0;}

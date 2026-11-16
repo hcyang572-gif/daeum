@@ -23,7 +23,7 @@
   //   숫자 기준 하나: 처리 = 명단 «처리여부»(오늘 탭 listStats 와 같은 규칙) · 방문·상담 = 방문 기록 · 연계 = 연계 저장소(links)·결과(outcomes) + 이 화면 결과 칩.
   //   배열: 폰 1단(진도→사후관리→근무일→흐름→서비스→위기→추이→차수) · 폴드·태블릿 [진도·흐름][사후관리·근무일+추이][위기·서비스][차수·읍면] · PC 12칸 [4·4·4][8·4][4·4·4].
   var LS_LRES = "daeum.s12.linkRes", LRES = [["got", "받음"], ["wait", "기다림"], ["no", "안 됨"], ["lost", "연락 안 됨"]], todoMore = false;
-  function pxCss() { if (typeof document === "undefined" || !document.getElementById || document.getElementById("pxCss")) return; var l = document.createElement("link"); l.id = "pxCss"; l.rel = "stylesheet"; l.href = "app/tab_report.css?v=s12z120"; document.head.appendChild(l); } // 연결 지점: index.html 에 한 줄 넣으면 이 함수는 할 일 없음
+  function pxCss() { if (typeof document === "undefined" || !document.getElementById || document.getElementById("pxCss")) return; var l = document.createElement("link"); l.id = "pxCss"; l.rel = "stylesheet"; l.href = "app/tab_report.css?v=s12z121"; document.head.appendChild(l); } // 연결 지점: index.html 에 한 줄 넣으면 이 함수는 할 일 없음
   function isOffD(d) { return F.util && F.util.isOff ? F.util.isOff(d) : d.getDay() % 6 === 0; }
   function wdCount(a, b) { var n = 0, d = U.startOfDay(a); b = U.startOfDay(b); while (d < b) { d = new Date(d.getTime() + 864e5); if (!isOffD(d)) n++; } return n; }
   function isProc(x) { return /처리\s*완료|완료/.test((x || {}).proc || ""); }
@@ -350,15 +350,21 @@
     var f = document.createElement("iframe"); f.setAttribute("aria-hidden", "true"); f.setAttribute("tabindex", "-1"); f.style.cssText = "position:fixed;width:0;height:0;border:0;right:0;bottom:0";
     document.body.appendChild(f);
     var w = f.contentWindow, dc = w.document; dc.open(); var g0 = hrGroups().filter(function (x) { return x.hid === hid; })[0]; dc.write('<!doctype html><meta charset="utf-8"><title>' + esc(fnm(g0 ? g0.last.at : new Date(), hid, d.nm)) + '</title><style>body{font:14px/1.7 "Noto Sans KR",sans-serif;margin:20mm}pre{white-space:pre-wrap;font:inherit}</style><pre>' + esc(d.text) + "</pre>"); dc.close();
-    setTimeout(function () { try { w.focus(); w.print(); } catch (e) { /* 인쇄 막힘 */ } setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 1000); }, 50);
+    var rm = function () { if (f.parentNode) f.parentNode.removeChild(f); }; // S12-121 M4: 폰 브라우저는 print()가 기다리지 않아 1초 뒤 지우면 미리보기가 끊겼다 — 인쇄 창이 닫힌 뒤(afterprint) 지우고, 시간은 60초 안전망
+    try { w.addEventListener("afterprint", function () { setTimeout(rm, 500); }); } catch (e) { /* 무시 */ }
+    setTimeout(function () { try { w.focus(); w.print(); } catch (e) { /* 인쇄 막힘 */ } setTimeout(rm, 60000); }, 50);
   }
   function bindHrec() {
     var box = app.querySelector("#hrec"); if (!box) return;
     function redraw() { box.innerHTML = hrBody(); }
-    box.addEventListener("input", function (e) {
-      if (e.target.id !== "hq") return;
-      HR.f.q = e.target.value; redraw(); var q = box.querySelector("#hq"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } // 시안: 쓰는 중에도 칸 유지
-    });
+    // S12-121 H1: 찾기 칸은 다시 만들지 않는다 — 입력칸을 새로 그리면 한글 조합(IME)이 끊겨 자모가 흩어졌다. 조합 중엔 기다리고, 목록·개수 부분만 바꾼다
+    function redrawRows() {
+      var t = document.createElement("div"); t.innerHTML = hrBody();
+      [".hrec-rows", ".hrec-sort", ".hrec-bulk"].forEach(function (sel) { var a = box.querySelector(sel), b = t.querySelector(sel); if (a && b) a.parentNode.replaceChild(b, a); else if (a && !b) a.parentNode.removeChild(a); });
+    }
+    function onQ(e) { if (e.target.id !== "hq") return; if (e.isComposing) return; if (HR.f.q === e.target.value) return; HR.f.q = e.target.value; redrawRows(); }
+    box.addEventListener("input", onQ);
+    box.addEventListener("compositionend", onQ);
     box.addEventListener("click", function (e) {
       var t = e.target && e.target.closest ? e.target.closest("[data-act]") : null; if (!t || !box.contains(t)) return;
       var k = t.dataset.k, f = HR.f;
@@ -462,7 +468,8 @@
   function pvFit(v) {
     var col = v.closest(".col"); if (!col) { v.style.setProperty("--pvh", "760px"); return; }
     var top = v.getBoundingClientRect().top - col.getBoundingClientRect().top + col.scrollTop, pb = parseFloat(getComputedStyle(col).paddingBottom) || 0;
-    v.style.setProperty("--pvh", Math.max(420, Math.floor(col.clientHeight - top - Math.max(pb, 12))) + "px");
+    var mb = 0; for (var el = v; el && el !== col; el = el.parentElement) { var cs = getComputedStyle(el); mb += (parseFloat(cs.marginBottom) || 0) + (el !== v ? parseFloat(cs.paddingBottom) || 0 : 0); } // S12-121 미르 2: 감싼 블록(.prev 등) 아래 여백만큼 칸이 넘쳐 16px 스크롤·밑 띠가 보였다
+    v.style.setProperty("--pvh", Math.max(420, Math.floor(col.clientHeight - top - Math.max(pb, 12) - mb)) + "px");
   }
   function pvLayout1(v) {
     if (v.classList.contains("inl")) { pvFit(v); if (typeof requestAnimationFrame === "function") requestAnimationFrame(function () { pvFit(v); }); } // 시안 V16 pvBind --pvh · 108회차: 머리 띠(.hbar)가 붙은 뒤 한 번 더
@@ -857,7 +864,7 @@
     if (window.DaeumHwpx && window.DaeumXlsx) return Promise.resolve();
     if (hwpxP) return hwpxP;
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z120")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z120"); })
+    hwpxP = (window.DaeumXlsx ? Promise.resolve() : load("shared/xlsx.js?v=s12z121")).then(function () { return window.DaeumHwpx ? null : load("shared/hwpx.js?v=s12z121"); })
       .then(function () { libFail = false; }, function (e) { hwpxP = null; libFail = true; throw e; }); // S12-v U13(B8): 실패를 기억하지 않는다
     return hwpxP;
   }
@@ -876,7 +883,7 @@
   function dayZip() {
     var M = docModel(); if (!M.dd || !M.dd.ids.length) { location.hash = "#docs"; return Promise.resolve(false); }
     function load(src) { return new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("lib")); }; document.head.appendChild(s); }); }
-    return SH.busy(needLibs().then(function () { return window.DaeumDocZip ? null : load("shared/doczip.js?v=s12z120"); }).then(function () {
+    return SH.busy(needLibs().then(function () { return window.DaeumDocZip ? null : load("shared/doczip.js?v=s12z121"); }).then(function () {
       var inp = dayZipInput(M, window.DaeumHwpx && window.DaeumHwpx.TW);
       return window.DaeumDocZip.download(inp).then(function () { markDone(M, "d2", "day"); inp.d1.forEach(function (x) { markDone(M, "d1", x.hid); }); toast("복명서·상담일지 " + inp.d1.length + "가구를 ZIP 하나로 받았습니다"); return true; });
     }), "복명서 묶는 중").catch(function () { toast("문서 부품을 불러오지 못했습니다 · 문서함에서 하나씩 받아 주세요"); return false; });

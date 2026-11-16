@@ -7,6 +7,8 @@
    찾아가는 길(A3) · 내 위치 점(A4) · 일차 카드 특보·비 예보(A5, B1b). 계산은 shared/visit_day.js(DaeumVisitDay), 다른 탭은 AK.visitDay·visitResched·visitLater·visitAgain 으로 부른다. */
 (window.DaeumTabs = window.DaeumTabs || {}).visit = function (AK) {
   "use strict";
+  /** S12-121 L8: 가구번호 뒤 조사(받침 판정) — «P-033을»·«A-002를». 끝이 숫자면 읽는 소리(영·일·삼·육·칠·팔 = 받침) */
+  function jo(id, a, b) { id = String(id); var c = id.charAt(id.length - 1), k = c.charCodeAt(0), bat = /[0-9]/.test(c) ? "013678".indexOf(c) >= 0 : (k >= 0xAC00 && k <= 0xD7A3 ? (k - 0xAC00) % 28 > 0 : false); return id + (bat ? a : b); }
   var F, RP, SY, RES, BY, OFFICE, app, I, ii, ckPath, LS_DL, LS_DOUT, LS_DMOVE, LS_DDATE, esc, lsGet, lsSet, ymd, md, hm, clip, vib, meta, listIds,
       roundYm, attempts, plan, neighborLog, deadline, rank, rankBy, indText, ageLine, routeOrder, planDrop, sched, yak, days, statusOf, top, qv,
       qcards, pickHid, phEmpty, copy, toast, C2, render, U, logs, lastLog, sched0, isTyping;
@@ -29,7 +31,7 @@
     warn: '<path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5M12 17v.2"/>'
   };
   if (!VD && typeof document !== "undefined" && document.head) { // index.html 에 줄이 아직 없을 때만 스스로 불러와 다시 그림
-    var vdS = document.createElement("script"); vdS.src = "shared/visit_day.js?v=s12z120"; vdS.onload = function () { VD = window.DaeumVisitDay || null; if (VD && AK.render) AK.render(); }; document.head.appendChild(vdS);
+    var vdS = document.createElement("script"); vdS.src = "shared/visit_day.js?v=s12z121"; vdS.onload = function () { VD = window.DaeumVisitDay || null; if (VD && AK.render) AK.render(); }; document.head.appendChild(vdS);
   }
   function vic(k) { return '<svg class="ic i16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (VXI[k] || "") + "</svg>"; }
   // 105회차 ⚙️ 파로A: 출발 기본값 = «지금 위치»(옛 «근무지 09:30» 기본 폐기, 시안 V16 출발 칩 첫 칸). 저장 전·auto 표시면 «자동»:
@@ -132,7 +134,7 @@
     var D = nextDayOf(n); if (!D) { if (!quiet) toast("다음 일차가 없습니다 · 하루 방문 가구 수를 줄이면 일차가 늘어납니다"); return false; }
     var t0 = toast; toast = function () {}; try { moveIn(D, id); } finally { toast = t0; }
     var m = lsGet(LS_AGAIN, {}) || {}; if (m[id]) { delete m[id]; lsSet(LS_AGAIN, m); }
-    if (!quiet) toast(id + " 을(를) " + D.n + "일차(" + VD.mdShort(D.date) + ")로 보냈습니다");
+    if (!quiet) toast(jo(id, "을", "를") + " " + D.n + "일차(" + VD.mdShort(D.date) + ")로 보냈습니다");
     return D;
   }
   /** TODAY-A2·FIELD-A5 «오늘 다시 들르기»: 오늘 남은 순서에 다시 끼움(추천 시간대가 오후면 맨 끝) — 상태는 기록대로 두고 «다시 들르기» 표시 */
@@ -143,7 +145,7 @@
     var ids = done.concat(left.slice(0, k), [hid], left.slice(k)), row = sched(ids).rows.filter(function (x) { return x.id === hid; })[0];
     var m = lsGet(LS_AGAIN, {}) || {}; m[hid] = ymd(new Date()); lsSet(LS_AGAIN, m);
     reorder(d, ids);
-    toast(hid + " 을(를) 오늘 " + (row ? row.arrive + "에 " : "") + "끼워 넣었습니다"); return true;
+    toast(jo(hid, "을", "를") + " 오늘 " + (row ? row.arrive + "에 " : "") + "끼워 넣었습니다"); return true;
   }
   /** VISIT-A2(B1a 주): 지금 위치·시각에서 남은 집 다시 짜기 → 근무시간 안에 못 가는 집은 다음 근무일로 */
   function replanLeft(d) {
@@ -365,10 +367,10 @@
     app.querySelectorAll("[data-mv]").forEach(function (b) { b.addEventListener("click", function () { var a = b.dataset.mv.split(":"), i = +a[0]; vib(); reorder(D4, RP.move(D4.ids, i, i + +a[1])); }); });
     // 42 편집 — 빼기·되살리기·최적 순서·끌어서 순서(PC). 바꿀 때마다 reorder → 저장(확정 계획이면 실시간) → 다시 그림(지도·비교 카드 재계산)
     app.querySelectorAll(".tline [data-out]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.out;
-      if (b.getAttribute("aria-disabled") === "true" || D4.ids.length < 2) { toast(b.dataset.why === "visited" ? id + " 은(는) 이미 방문 기록이 있어 일정에서 뺄 수 없습니다" : "마지막 한 가구는 뺄 수 없습니다 · 다른 일차로 옮기려면 그 일차의 «가구 넣기»"); return; }
-      vib(); reorder(D4, planDrop(D4.ids, id), (D4.out || []).concat([id])); toast(id + " 을(를) 이 일차에서 뺐습니다 · 아래 «되살리기»로 되돌립니다"); }); }); // 77회차: 최적 순서였으면 남은 가구로 다시 최적화, 직접 바꾼 순서면 그 순서 유지
+      if (b.getAttribute("aria-disabled") === "true" || D4.ids.length < 2) { toast(b.dataset.why === "visited" ? jo(id, "은", "는") + " 이미 방문 기록이 있어 일정에서 뺄 수 없습니다" : "마지막 한 가구는 뺄 수 없습니다 · 다른 일차로 옮기려면 그 일차의 «가구 넣기»"); return; }
+      vib(); reorder(D4, planDrop(D4.ids, id), (D4.out || []).concat([id])); toast(jo(id, "을", "를") + " 이 일차에서 뺐습니다 · 아래 «되살리기»로 되돌립니다"); }); }); // 77회차: 최적 순서였으면 남은 가구로 다시 최적화, 직접 바꾼 순서면 그 순서 유지
     app.querySelectorAll("[data-back]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.back; vib(); var wasOpt = D4.ids.join() === routeOrder(D4.ids).join(); // 최적 순서였으면 되살린 집까지 넣어 다시 잇고, 직접 바꾼 순서면 끝에 붙인다
-      reorder(D4, wasOpt ? routeOrder(D4.ids.concat([id])) : D4.ids.concat([id]),(D4.out || []).filter(function (x) { return x !== id; })); toast(id + " 을(를) 되살렸습니다"); }); });
+      reorder(D4, wasOpt ? routeOrder(D4.ids.concat([id])) : D4.ids.concat([id]),(D4.out || []).filter(function (x) { return x !== id; })); toast(jo(id, "을", "를") + " 되살렸습니다"); }); });
     var ob = app.querySelector('[data-act="opt"]'); if (ob) ob.addEventListener("click", function () { vib(); replan(D4, ob); });
     var po = document.getElementById("pmopt"); if (po) po.addEventListener("click", function (e) { if (e.target.closest('[data-act="reopt"]')) { vib(); reorder(D4, routeOrder(D4.ids)); toast("빠른 순서로 다시 짰습니다"); } }); // 77회차
     bindShare(ds);
@@ -385,7 +387,7 @@
     function setDl() { lsSet(LS_DL, { until: u.value || null, perDay: +pd.value || 5 }); render(); }
     if (u) u.addEventListener("change", setDl); if (pd) pd.addEventListener("change", setDl);
     if (D4) rtMapBind("pmmap", "pmopt", D4.ids, null, "#0B6178", ds.filter(function (d) { return d.n !== planDay; }).map(function (d) { return d.ids; }));
-    if (D4) app.querySelectorAll(".vx-near [data-vxadd]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.vxadd; vib(); moveIn(D4, id); toast(id + " 을(를) " + D4.n + "일차에 넣었습니다 · 도착 시각 다시 셈"); }); }); // 103회차 PC «넣을 만한 가구» = 가구 넣기 시트와 같은 동작
+    if (D4) app.querySelectorAll(".vx-near [data-vxadd]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.vxadd; vib(); moveIn(D4, id); toast(jo(id, "을", "를") + " " + D4.n + "일차에 넣었습니다 · 도착 시각 다시 셈"); }); }); // 103회차 PC «넣을 만한 가구» = 가구 넣기 시트와 같은 동작
     Promise.resolve().then(vxAlign); setTimeout(vxAlign, 400); // 103회차 V4-4 단 첫 카드 윗선(작은 칸 전환이 붙은 뒤·지도 판이 자리 잡은 뒤)
   }
   // ── 102회차 방문 계획 조작 — 출발 카드·다음 일차로·날짜 바꾸기·가구 넣기 시트 ──
@@ -431,7 +433,7 @@
     var li = L.map(function (r) { return '<button type="button" class="li" data-vxadd="' + esc(r.id) + '"><span class="ico">' + ii("plus", 20) + '</span><span class="lc"><b>' + esc(r.id) + " · " + esc(r.area) + '</b><small>동선에서 <span class="vx-km">약 <span class="num">' + r.km.toFixed(1) + "</span>km</span> · " + r.n + "일차에서</small></span>" + ii("chevR", 20) + "</button>"; }).join("");
     vxSheet("가구 넣기 · 가까운 순", '<p class="vx-note">' + ii("route") + "<span>" + (all ? "다른 일차의 남은 가구를 가까운 순으로 모두 보여 줍니다" : "이 일차 동선에서 가까운 집부터 다섯 가구만 먼저 보입니다") + '</span></p><div class="list vx-lst">' + (li || '<p class="vx-note">옮겨 올 가구가 없습니다</p>') + "</div>" +
       (!all && pool.length > L.length ? '<button type="button" class="sbtn vx-all" data-vxall="1">다른 가구 모두 보기 <small>' + pool.length + "가구</small></button>" : ""), function (o) {
-      o.querySelectorAll("[data-vxadd]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.vxadd; vib(); vxClose(); moveIn(D4, id); toast(id + " 을(를) " + D4.n + "일차에 넣었습니다 · 도착 시각 다시 셈"); }); });
+      o.querySelectorAll("[data-vxadd]").forEach(function (b) { b.addEventListener("click", function () { var id = b.dataset.vxadd; vib(); vxClose(); moveIn(D4, id); toast(jo(id, "을", "를") + " " + D4.n + "일차에 넣었습니다 · 도착 시각 다시 셈"); }); });
       var a = o.querySelector("[data-vxall]"); if (a) a.addEventListener("click", function () { addSheet(D4, ds, true); });
     });
   }
@@ -494,11 +496,11 @@
       var row = p.rows.filter(function (r) { return r.household_no === id; })[0]; if (!row) return;
       var from = row.day; row = Object.assign({}, row, { day: D4.n }); if (row.status === "later") row.status = "planned";
       reorder(Object.assign({}, D4, { rows: D4.rows.filter(function (r) { return r.household_no !== id; }).concat([row]) }), ids, (D4.out || []).filter(function (x) { return x !== id; }));
-      toast(id + " 을(를) " + from + "일차에서 " + D4.n + "일차로 옮겼습니다");
+      toast(jo(id, "을", "를") + " " + from + "일차에서 " + D4.n + "일차로 옮겼습니다");
     } else {
       var mv = lsGet(LS_DMOVE, {}) || {}; mv[id] = D4.n; lsSet(LS_DMOVE, mv);
       var ord = lsGet("daeum.officer.dayOrder", {}) || {}; ord[D4.n] = ids; lsSet("daeum.officer.dayOrder", ord);
-      toast(id + " 을(를) " + D4.n + "일차에 넣었습니다"); render();
+      toast(jo(id, "을", "를") + " " + D4.n + "일차에 넣었습니다"); render();
     }
   }
   /** 하루 일정 공유(Web Share, 없으면 복사) — ⛔ 가구번호·읍면·시각만(RP.shareText 가 그 밖은 읽지 않는다) */
@@ -584,7 +586,7 @@
   function rmLoad() {
     if (window.DaeumRouteMap) return Promise.resolve(window.DaeumRouteMap);
     if (rmP) return rmP;
-    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z120"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
+    rmP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "officer/route_map.js?v=s12z121"; s.onload = function () { window.DaeumRouteMap ? ok(window.DaeumRouteMap) : no("no-rm"); }; s.onerror = function () { rmP = null; no("network"); }; document.head.appendChild(s); });
     return rmP;
   }
   function rtStops(ids) { return ids.map(function (id) { return { id: id, x: BY[id].x, y: BY[id].y }; }); }

@@ -57,6 +57,7 @@
     set(K.doc, out);
     if (up && S.mode === "live") later(function () { flush(); });
   }
+  var RT_PRIVATE = false; // S12-121 M3: true = 실시간 채널 비공개(본인만). ⛔ 서버 정책 SQL 적용 전에 켜면 채널이 막혀 실시간 연동이 끊긴다
   function safeAll() { return get(K.safe, {}) || {}; }
   function safeMerge(a) {
     if (!a || !a.id || !a.hid) return false;
@@ -227,7 +228,7 @@
     var uid0 = S.user.id;
     pull().then(function () {
       if (g !== S.gen) return;
-      var ch = c.channel("daeum-" + uid0)
+      var ch = c.channel("daeum-" + uid0, RT_PRIVATE ? { config: { private: true } } : undefined) // S12-121 M3: 서버 정책(supabase/migration_s12_121_rt_private.sql) 적용 뒤 RT_PRIVATE=true
         .on("postgres_changes", { event: "*", schema: "public", table: "visit_plan", filter: "owner_id=eq." + uid0 }, function () { later(pull); })
         .on("postgres_changes", { event: "*", schema: "public", table: "visit_log", filter: "owner_id=eq." + uid0 }, function () { later(pull); })
         .on("broadcast", { event: "safety" }, function (m) { var pl = m && m.payload; if (pl && pl.ask) later(function () { emit("safety-ask"); }); else if (safeMerge(pl)) later(function () { emit("safety"); }); });
