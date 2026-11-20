@@ -22,3 +22,7 @@ html[data-mode] .app > .dock .sbt { min-height: 52px; padding-top: 3px; padding-
 html[data-mode] .app .rv-acts .rv-mk { min-height: 44px; border-radius: 18px; }
 #app .dock .sbt.nav { min-height: 52px; padding-top: 3px; padding-bottom: 3px; border-radius: 18px; } /* 25 길안내(보조, 주 단추와 같은 무게) 56/r17 → 52/r18 */
 #app .dock .sbt.nav svg { width: 20px; height: 20px; } /* 27 길안내 아이콘 22 → 20px */
+/* S12-125 테오 보완: 기록 탭 결과 고르기 전 안내 한 줄 — 잠깐 보이고 사라짐(상시 띠 아님) */
+.res-hint{display:block;margin-top:8px;font-size:var(--fs-1);color:var(--mute);animation:resHint 7s ease forwards}
+@keyframes resHint{0%,75%{opacity:1}100%{opacity:0;visibility:hidden}}
+@media (prefers-reduced-motion:reduce){.res-hint{animation:none}}

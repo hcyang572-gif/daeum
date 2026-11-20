@@ -276,7 +276,8 @@
     if (st === 0) {
       var err = IMPS.err ? '<p class="tx-note" role="status" style="color:var(--warnInk);margin:4px 0 0">' + IMPS.err + "</p>" : "";
       var drop = '<label class="tx-card tx-drop tx-pb"><input type="file" accept=".xlsx,.xls,.csv" class="tx-sr" id="listFile" aria-label="발굴 명단 엑셀 고르기"><span class="tx-dz">' + ic("upload") + '</span><b class="tx-ccl">엑셀 파일을 여기에 놓거나 눌러 고르기</b><span class="tx-dzs">행복이음 «복지사각지대 발굴대상자 조회»에서 받은 파일 · xlsx·xls·csv</span><span class="tx-btn tx-p">' + ic("folder") + "파일 고르기</span>" + err +
-        '<span class="tx-ft" style="width:100%"><button type="button" class="tx-btn tx-s tx-full" data-tx="impdemo">' + ic("aichk") + "시연 명단으로 시작</button></span></label>";
+        '<span class="tx-ft" style="width:100%"><button type="button" class="tx-btn tx-s tx-full" data-tx="impdemo">' + ic("aichk") + "시연 명단으로 시작</button></span></label>" +
+        '<p class="tx-note" style="margin:6px 2px 0">' + ic("folder") + '<a href="data/demo_list_full.xlsx" download>가상 명단 엑셀 받기</a> · 받은 파일을 위 칸에 넣어 보세요(모두 가상)</p>'; // S12-125 테오 보완 ③
       var now = has ? '<section class="tx-card tx-flat"><div class="tx-kick">지금 실린 명단</div><div class="tx-li" style="cursor:default;box-shadow:none;padding-bottom:4px"><span class="tx-ico">' + ic("folder") + '</span><span class="tx-lc"><b>' + esc(roundYm() + " 차수 · " + L.length + "가구") + "</b><span>" + esc(impLabel(imp)) + " · 처리 기록은 그대로 두고 명단만 바꿉니다</span></span></div></section>"
         : nl ? '<section class="tx-card tx-flat"><div class="tx-kick">지난 명단</div><div class="tx-li" style="cursor:default;box-shadow:none;padding-bottom:4px"><span class="tx-ico">' + ic("folder") + '</span><span class="tx-lc"><b>' + esc(roundYm() + " 차수 · " + L.length + "가구") + "</b><span>" + esc((imp.at ? md(new Date(imp.at)) + " 올림 · " : "") + "모두 처리") + "</span></span>" + tag("모두 처리", "ok") + "</div></section>" : "";
       var head0 = ph(has ? "명단 다시 올리기" : "발굴 명단 불러오기", "엑셀 한 파일이면 방문 순서와 동선이 바로 짜입니다");

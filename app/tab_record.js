@@ -88,7 +88,7 @@
   var aiP = null, aiBusy = {};
   function needAI() {
     if (window.DaeumAI) return Promise.resolve(window.DaeumAI);
-    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z122"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
+    if (!aiP) aiP = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = "shared/ai.js?v=s12z125"; s.onload = function () { window.DaeumAI ? ok(window.DaeumAI) : no(new Error("ai")); }; s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); no(new Error("ai")); }; document.head.appendChild(s); })
       .catch(function (e) { aiP = null; throw e; });
     return aiP;
   }
@@ -157,7 +157,7 @@
     var si = c.d.ids.indexOf(hid);
     return '<main class="phx rc-main">' + safe + fixNote +
       '<section class="card next idc"><div class="hh"><span class="no">' + (si + 1) + '</span><span class="t"><b>' + esc(h.area + " " + hid) + "</b><small>" + esc(ageLine(h)) + " · 방금 상담 · 안전 모드 " + (safeOn(hid) ? "켜짐" : "꺼짐") + "</small></span></div></section>" +
-      '<section class="card"><h3>결과 한 번 누르기</h3><div class="res" role="radiogroup" aria-label="만난 결과">' + [["met", "만났어요", I.met], ["absent", "부재", I.away], ["refuse", "거절", I.no]].map(function (x) { return '<button type="button" role="radio" class="pr' + (o.res === x[0] ? " on" : "") + '" data-res="' + x[0] + '" aria-checked="' + (o.res === x[0]) + '">' + (x[2] || "") + x[1] + "</button>"; }).join("") + "</div></section>" +
+      '<section class="card"><h3>결과 한 번 누르기</h3><div class="res" role="radiogroup" aria-label="만난 결과">' + [["met", "만났어요", I.met], ["absent", "부재", I.away], ["refuse", "거절", I.no]].map(function (x) { return '<button type="button" role="radio" class="pr' + (o.res === x[0] ? " on" : "") + '" data-res="' + x[0] + '" aria-checked="' + (o.res === x[0]) + '">' + (x[2] || "") + x[1] + "</button>"; }).join("") + "</div>" + (o.res ? "" : '<small class="res-hint">«만났어요»를 누르면 상담 문장 정리와 AI 요약·추천(누를 때만)을 쓸 수 있습니다</small>') + "</section>" + // S12-125 테오 보완: 결과 고르기 전 잠깐 보이는 조용한 안내(fix122.css .res-hint)
       (o.res === "met" ? met : o.res === "absent" ? absent : refuse) + (o.res === "met" ? "" : C2) +
       '<button class="btn pri" type="button" data-act="save" data-dock="1">' + (I.check || "") + "기록 저장 <small>" + esc(nextLbl) + "</small></button>" +
       '<span class="why">' + (SY.state().mode === "live" ? "저장하면 사무실 PC에 바로 갑니다" : "저장하면 이 기기에 남습니다") + "</span>" +

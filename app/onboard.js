@@ -195,20 +195,20 @@
   function DB_() { return BI("db"); } // 79회차: 묶음 db·replay
   function RE_() { return BI("replay"); }
 
-  // 단계 이름 = 앱 아래 탭 쪽 낱말(명단·동선·현장·기록·보고) · 출처 숫자 = shared/data.html 그대로
+  // 단계 이름 = 앱 탭 이름(오늘·방문·현장·기록·보고, app/shell.js) — S12-125 테오 보완: 오늘(명단)·방문(동선) · 출처 숫자 = shared/data.html 그대로
   var SLIDES = [
-    { st: "명단", ey: "발굴 명단 불러오기", ill: ill0, h: '받은 발굴 명단이<br><em>오늘 볼 가구</em>로', p: "명단 파일을 넣으면 이 기기 안에서 가구 목록으로 정리됩니다.",
+    { st: "오늘(명단)", ey: "발굴 명단 불러오기", ill: ill0, h: '받은 발굴 명단이<br><em>오늘 볼 가구</em>로', p: "명단 파일을 넣으면 이 기기 안에서 가구 목록으로 정리됩니다.",
       src: '<b>한국사회보장정보원 발굴 명단</b> 받은 파일 그대로', key: 1 },
-    { st: "동선", ey: "최적 동선 · 네이버 지도 길안내", ill: ill1, h: '가장 짧은 순서로,<br><em>네이버 지도</em> 길안내까지', p: "정한 방문 순서가 경유지 그대로 네이버 지도 앱 길안내로 이어집니다.",
+    { st: "방문(동선)", ey: "최적 동선 · 네이버 지도 길안내", ill: ill1, h: '가장 짧은 순서로,<br><em>네이버 지도</em> 길안내까지', p: "동선 최적화로 가장 짧은 방문 순서를 정하고, 그 순서가 경유지 그대로 네이버 지도 앱 길안내로 이어집니다.",
       src: '<b>한국사회보장정보원 발굴 명단</b> 우선방문 정보로 순서 · 좌표는 행정안전부 주소정보누리집' },
     { st: "현장", ey: "현장 · 동료 안부", ill: ill3, h: '혼자 방문해도<br><em>동료가 함께</em>', p: "정한 시간이 지나도 소식이 없으면 동료에게 알림이 갑니다.",
       src: '<b>한국사회보장정보원 발굴 명단</b> 위기정보로 집 앞 요약 · 기상청 날씨·특보' },
-    { st: "기록", ey: "상황 고르기", ill: ill2, h: '상황을 고르면<br><em>기록 문장</em>이 됩니다', p: "집 앞에서 고른 상황이 상담 기록 문장으로 바로 써집니다.",
+    { st: "기록", ey: "상황 고르기", ill: ill2, h: '상황을 고르면<br><em>기록 문장</em>이 됩니다', p: "집 앞에서 고른 상황이 상담 기록 문장으로 바로 써집니다. AI 요약·연계 추천은 누를 때만 받습니다.",
       src: '<b>한국사회보장정보원 복지서비스 목록</b>에서 맞는 서비스를 함께 보여 줍니다' },
-    { st: "보고", ey: "보고서 자동 생성", ill: ill4, h: '기록이 그대로<br><em>보고서 한 장</em>으로', p: "출장 결과 보고와 서비스 연계 의뢰서가 hwpx 한 쪽으로 만들어집니다.",
+    { st: "보고", ey: "보고서 자동 생성", ill: ill4, h: '기록이 그대로<br><em>보고서 한 장</em>으로', p: "복명서·상담일지 등 문서 8종(선택 2종 포함)이 hwpx·xlsx로 만들어집니다.",
       src: '<b>한국사회보장정보원 복지서비스 목록 · 자원정보</b>를 포함한 연계처 735곳으로 의뢰' }
   ];
-  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z122" alt="">';
+  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z125" alt="">';
   var REDUCE = !!(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches);
   var H = { login: function () {}, start: function () {} }, OB = { d: null, i: 0, pc: false };
 
@@ -231,7 +231,7 @@
       '<p class="o-ob-lead">발굴 명단 다음, <span>현장 업무</span>를 순서대로.</p>' + flow +
       '<div class="o-ob-view"><div class="o-ob-track" style="transform:translateX(' + (pc ? 0 : -i * 100) + '%)">' + slides + "</div></div>" +
       '<div class="o-ob-foot"><span class="o-demo-note"><span class="o-samp">가상 데이터</span>가상 48가구가 들어 있습니다<span class="o-brw">· Chrome 브라우저 최적화</span></span>' +
-      '<button class="o-btn o-sec" type="button" data-act="login">' + IC.key + "로그인 · 시연 계정</button>" +
+      '<button class="o-btn o-sec" type="button" data-act="login">' + IC.key + "시연으로 둘러보기(PC·폰 연동)</button>" +
       '<button class="o-btn o-pri" type="button" data-act="' + (last || pc ? "start" : "next") + '"><span class="o-lab">' + (last || pc ? "시연 데이터로 시작" : "다음") + "</span>" + IC.arrow + "</button></div></div></div>";
   }
   function play(sl) { if (!sl || REDUCE) return; sl.classList.remove("o-play"); void sl.getBoundingClientRect(); sl.classList.add("o-play"); }

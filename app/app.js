@@ -212,7 +212,7 @@
     //   시안 조건 «하루 마무리(저장 안 된 기록)·연동 꺼짐(연동 대기)» → 앱 = 오늘 방문이 끝났는데 저장 안 한 기록이 있음 · 연동 끊김 · 보낼 것 대기
     var hd = 0; try { hd = AK.dayEndUnsaved ? AK.dayEndUnsaved() : 0; } catch (e) { hd = 0; }
     var ss_ = SY.state(), hdot = hd > 0 || ss_.mode === "offline" || !!ss_.pending, hdl = hdot ? " · " + (hd > 0 ? "저장 안 한 기록 " + hd + "가구" : "연동 대기") : "";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z122" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z125" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc((demoNo(SY.state().user) ? "시연 " + demoNo(SY.state().user) + " · " : "") + si.txt) + "</button>" : "") + // 95회차 ⑤: PC 머리에 지금 시연 번호 — 설명서 «PC에 보이는 번호를 폰 «시연 바꾸기»에서 고름»
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +
@@ -266,7 +266,7 @@
     var su = SY.state().user; // 73회차 🔐: 맨 위 = 로그아웃(로그인 때, 이 기기 기록 지우기 선택 창) / 들어가기(로그인 전) — 옛 «계정 · 연동» 줄을 합침
     sheetOpen("<h3>더 보기</h3><div class=\"list\">" +
       (su ? li("button", 'type="button" data-ov="account" data-out="1"', I.logout, "로그아웃 · 시연 바꾸기", (demoNo(su) ? "지금 시연 " + demoNo(su) + " · " : "") + esc(si.txt)) // 75회차: 이메일 주소는 보이지 않게
-        : li("button", 'type="button" data-ov="account"', I.user, "시연으로 둘러보기", "누구나 시연 1~6 · 같은 번호면 PC·폰 실시간")) +
+        : li("button", 'type="button" data-ov="account"', I.user, "시연으로 둘러보기", "누구나 시연 1~12 · 같은 번호면 PC·폰 실시간")) +
       li("a", 'href="#help" data-ov="go"', I.help, "사용 방법", "닿음이 맡는 구간 · 처음 3단계 · 동료 안부") +
       li("button", 'type="button" data-ov="pick"', I.upload || I.db, "발굴대상자 명단 불러오기", "행복이음에서 받은 한국사회보장정보원 조회 서식 엑셀") +
       li("a", 'href="shared/data.html"', I.db, "쓰는 데이터와 출처", "한국사회보장정보원 공공데이터 · 공공 보조") +
@@ -702,7 +702,7 @@
      화면 코드에 있으므로 사실상 공개 — 방어선은 서버 쪽 매일 03:30 원복(비밀번호·이메일) + 계정당 행 상한. 실제 개인정보를 넣지 말라는 안내를 같이 띄운다 */
   var DEMO_PW = "daeum-judge-2026";
   function DEMO_MAIL(n) { return "daeum.judge" + n + "@example.com"; }
-  /** 84회차 ③: 큰 단추 «시연으로 둘러보기»는 시연 1~6 가운데 이 브라우저 몫으로(처음 한 번 무작위, 이후 같은 번호) — 심사위원 여럿이 한 계정을 함께 써
+  /** 84회차 ③(122회차 M2부터 1~12): 큰 단추 «시연으로 둘러보기»는 시연 1~12 가운데 이 브라우저 몫으로(처음 한 번 무작위, 이후 같은 번호) — 심사위원 여럿이 한 계정을 함께 써
       서로의 계획·동료 짝을 지우던 것 방지. 키는 daeum.* 밖(로그아웃 «기기 기록 지우기»·시연 초기화에도 유지). 서버 계정 2~6·짝은 줄B(supabase/*.sql)가 같은 규칙으로 */
   var DEMO_SLOTS = 12, SLOT_KEY = "daeumDemoSlot";
   function demoSlot() {
@@ -723,14 +723,14 @@
   //   cur = 지금 들어와 있는 시연 번호(로그인 전 0) — «시연 바꾸기»도 같은 구조: 지금 번호는 빼고, 1이면 큰 단추 대신 링크만
   function demoBox(ic, cur) {
     ic = ic || function () { return ""; }; cur = cur || 0;
-    // 84회차: 큰 단추 = 이 브라우저 몫(demoSlot) · 작은 링크 = 같은 묶음 팀(1·2 / 3·4 / 5·6)의 다른 계정만(짝 하나면 링크 하나)
+    // 84회차: 큰 단추 = 이 브라우저 몫(demoSlot) · 작은 링크 = 같은 묶음 팀(1·2 / 3·4 / … / 11·12, S12-125)의 다른 계정만(짝 하나면 링크 하나)
     var mine = demoSlot(), big = cur === mine ? 0 : mine, lo = (cur || mine) % 2 ? (cur || mine) : (cur || mine) - 1;
     // 90회차(호창님 승인): 시연 바꾸기(로그인 뒤)는 1~6 모두 — PC와 다른 묶음 번호를 받은 폰도 PC와 같은 번호를 고를 수 있게. 로그인 전 화면은 짝 링크 그대로
     var rest = (cur ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] : [lo, lo + 1]).filter(function (n) { return n !== big && n !== cur; }), w1 = whoOf(big || mine);
     return '<section class="demo' + (cur ? " sw" : "") + '" aria-label="' + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '"><span class="k">' + (cur ? "지금 시연 " + cur + " · " + whoOf(cur)[0] : "심사위원·처음 보는 분") + "</span><h4>" + (cur ? "시연 바꾸기" : "시연으로 둘러보기") + '</h4><p class="sub">누구나 한 번에 · 가상 48가구가 채워져 있습니다</p><p class="brw">Chrome 브라우저 최적화</p>' + // 109회차 ⚙️ 파로: 호창님 11-14 «크롬에 최적화» — 작고 조용한 한 줄(폰·PC 같은 자리)
       (big ? '<div class="who"><button class="wk first" type="button" data-demo="' + big + '" data-slot="1" aria-label="시연 ' + big + " " + w1[0] + ' 계정으로 둘러보기"><span class="n">' + big + '</span><span><b>' + (cur ? "시연 " + big + "번으로 바꾸기" : "시연으로 둘러보기") + "</b><small>" + w1[0] + " · " + w1[1] + "</small></span>" + ic("arrow") + "</button></div>" : "") +
       '<p class="alt">' + (rest.length ? (cur ? "다른 번호로 바꾸기" : "동료 계정으로 보기") + " " : "") + rest.map(function (n) { return '<button class="lk" type="button" data-demo="' + n + '" aria-label="시연 ' + n + " " + whoOf(n)[0] + ' 계정 보기">' + n + "</button>"; }).join('<span aria-hidden="true">·</span>') +
-        '<small>' + (cur ? "PC와 <b>같은 번호</b>를 고르면 PC·폰 계획·기록이 이어지고, <b>짝 번호</b>(1·2 / 3·4 / 5·6)면 동료 안부가 오갑니다" : "두 기기에서 <b>다른 번호</b>면 동료 안부가 오가고, <b>같은 번호</b>면 PC·폰 계획·기록이 이어집니다") + ' · 매일 새벽 처음 상태로 · 실제 개인정보는 넣지 마세요</small></p><p class="o-msg" id="aDemoMsg" role="status"></p></section>';
+        '<small>' + (cur ? "PC와 <b>같은 번호</b>를 고르면 PC·폰 계획·기록이 이어지고, <b>짝 번호</b>(지금 묶음 " + lo + "·" + (lo + 1) + ")면 동료 안부가 오갑니다" : "두 기기에서 <b>짝 번호</b>(" + lo + "·" + (lo + 1) + ")면 동료 안부가 오가고, <b>같은 번호</b>면 PC·폰 계획·기록이 이어집니다 · PC 번호와 맞추려면 들어간 뒤 «시연 바꾸기»") + ' · 매일 새벽 처음 상태로 · 실제 개인정보는 넣지 마세요</small></p><p class="o-msg" id="aDemoMsg" role="status"></p></section>';
   }
   /* S12-v U25 처리 안내 4줄(11-12 호창님 «추천대로» 확정 문안) — 법률 분류어 없이 무엇이 어디로 가는지만 */
   var PP = '<details class="acct-pp"><summary>개인정보는 이렇게 다룹니다</summary><ol>' +

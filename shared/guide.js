@@ -124,7 +124,7 @@
       how: "파일 · 시군구 단위(읍면 값 없음) · 2025-12 상주 1행 + 경북 22개 시군 순위", cycle: "포털 갱신 때", base: "기준 2025-12",
       screens: [["공무원", "보고 › 지역 현황"]], does: "상주시 기초연금 수급률 한 줄 비교(방문 순서 점수엔 안 씀)" },
 
-    { id: "V1", kind: "virt", org: "닿음(시연)", name: "가상 가구 300곳 · 가상 발굴 명단", no: "", url: "",
+    { id: "V1", kind: "virt", org: "닿음(시연)", name: "가상 발굴 명단 48가구(바탕 가상 가구 300곳에서 추림)", no: "", url: "",
       how: "생성기 data/tools/make_households.py(시드 고정)", cycle: "고정", base: "2026-10-29 생성",
       screens: [["공무원", "오늘 · 방문 · 다시 찾을 집 · 연계가 멈춘 가구 · 가구 명단"]],
       does: "한국사회보장정보원 발굴 명단(행복이음 통보) 모양을 본뜬 시연 가구. 실제 주민·개인정보 0건. 위기정보(비공개·행정망)는 항목 구조만 본뜸" },
@@ -178,11 +178,11 @@
     { id: "R6", kind: "ref", org: "보건복지부", name: "복지 사각지대 발굴 차수 일정(정책브리핑 보도)", no: "", url: "https://www.korea.kr/news/policyNewsView.do?newsId=148973765",
       how: "보도 자료", cycle: "차수마다", base: "2026-10-19", screens: [["공무원", "보고 › 마감 역산"]], does: "이번 차수 기간·마감까지 남은 날" },
 
-    { id: "F1", kind: "pub", plan: true, org: "기상청", name: "단기예보 · 초단기실황", no: "15084084", url: "https://www.data.go.kr/data/15084084/openapi.do",
-      how: "OpenAPI · 서버 함수 또는 주기 저장(키 비노출)", cycle: "시간 단위", base: "개발 중",
+    { id: "F1", kind: "pub", extra: true, org: "기상청", name: "단기예보 · 초단기실황", no: "15084084", url: "https://www.data.go.kr/data/15084084/openapi.do",
+      how: "OpenAPI · 서버 함수 daeum-weather(키 비노출)", cycle: "시간 단위", base: "구현 완료",
       screens: [["공무원", "화면 위 날씨 띠 · 방문 안전 한 줄"]], does: "방문 가구 읍면동의 기온·하늘·강수" },
-    { id: "F2", kind: "svc", plan: true, org: "네이버클라우드플랫폼 지도 + 위 연계처 좌표", name: "지도 «주변 정보» 겹층", no: "", url: "",
-      how: "새 데이터 아님 — 연계처·경로당 좌표를 지도 층으로", cycle: "정적", base: "개발 중",
+    { id: "F2", kind: "svc", extra: true, org: "네이버클라우드플랫폼 지도 + 위 연계처 좌표", name: "지도 «주변 정보» 겹층", no: "", url: "",
+      how: "새 데이터 아님 — 연계처·경로당 좌표를 지도 층으로", cycle: "정적", base: "구현 완료",
       screens: [["공무원", "방문 › 지도"]], does: "오늘 방문 가구 곁 연계처·경로당을 켜고 끄기" },
     { id: "F3", kind: "pub", plan: true, org: "국립중앙의료원", name: "AED(자동심장충격기) 위치", no: "15000652", url: "https://www.data.go.kr/data/15000652/openapi.do",
       how: "OpenAPI · 활용신청 중", cycle: "수시", base: "승인 뒤 추가",
@@ -193,9 +193,10 @@
   ];
   var BY = {}; DATA.forEach(function (d) { BY[d.id] = d; });
   var KIND = { pub: "공공데이터", svc: "업무 연결 — 명단 올리기·지도·길찾기·동기화·AI", virt: "가상 데이터(시연)", self: "닿음 자체 측정·기록", ref: "참고 자료", plan: "예정 — 개발·활용신청 중" };
-  /* S12-r: 셈 — 공공데이터포털 번호 수(예정 제외) · 실시간 줄 · 예정 줄. data.html 흐름 그림 범례도 이 값을 쓴다 */
+  /* S12-125: F1 날씨·F2 주변 정보는 구현 완료라 «예정»을 뗐지만, 제출서류 집계(43종·포털 23종)에는 없던 것이라 extra 로 셈에서 뺀다
+     S12-r: 셈 — 공공데이터포털 번호 수(예정 제외) · 실시간 줄 · 예정 줄. data.html 흐름 그림 범례도 이 값을 쓴다 */
   function counts() {
-    var nos = {}; DATA.forEach(function (d) { if (d.kind === "pub" && !d.plan && d.no) d.no.split("·").forEach(function (x) { nos[x.trim()] = 1; }); });
+    var nos = {}; DATA.forEach(function (d) { if (d.kind === "pub" && !d.plan && !d.extra && d.no) d.no.split("·").forEach(function (x) { nos[x.trim()] = 1; }); });
     return { portal: Object.keys(nos).length, live: DATA.filter(function (d) { return d.live; }).length, plan: DATA.filter(function (d) { return d.plan; }).length,
       virt: DATA.filter(function (d) { return d.kind === "virt"; }).length };
   }
