@@ -212,7 +212,7 @@
     //   시안 조건 «하루 마무리(저장 안 된 기록)·연동 꺼짐(연동 대기)» → 앱 = 오늘 방문이 끝났는데 저장 안 한 기록이 있음 · 연동 끊김 · 보낼 것 대기
     var hd = 0; try { hd = AK.dayEndUnsaved ? AK.dayEndUnsaved() : 0; } catch (e) { hd = 0; }
     var ss_ = SY.state(), hdot = hd > 0 || ss_.mode === "offline" || !!ss_.pending, hdl = hdot ? " · " + (hd > 0 ? "저장 안 한 기록 " + hd + "가구" : "연동 대기") : "";
-    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z127" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
+    return '<button class="brand brandb pr" data-act="account" aria-label="계정·연동 — ' + esc(si.txt) + '"><span class="markw"><span class="mark logo"><img src="shared/icons/daeum.svg?v=s12z128" alt=""></span><i class="sd ' + si.cls + '"></i></span><span style="min-width:0">' + title + "</span></button>" +
       (wide ? '<button class="sync pcs pr ' + si.cls + '" data-act="account"><i></i>' + esc((demoNo(SY.state().user) ? "시연 " + demoNo(SY.state().user) + " · " : "") + si.txt) + "</button>" : "") + // 95회차 ⑤: PC 머리에 지금 시연 번호 — 설명서 «PC에 보이는 번호를 폰 «시연 바꾸기»에서 고름»
       (wide && SY.state().user ? '<button class="ky pr outk" data-act="account" aria-label="로그아웃 — ' + esc(SY.state().user.email || "") + '">' + I.logout + "<span>로그아웃</span></button>" : "") + // 73회차 🔐
       '<button class="ky pr" data-fd-veil="1" aria-pressed="' + veil + '" aria-label="화면 가림">' + I.eyeOff + "</button>" +

@@ -159,3 +159,5 @@
   .dv-band { break-inside: avoid-page; }
   .dv-do, .dv-nums li { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+/* S12-125: 폰 폭에서 구성도(svg 최소 720px)가 main 격자를 넓혀 페이지 전체가 가로로 넘치던 것 — 상자 안에서만 가로 스크롤 */
+.dv-sys, .dv-sys-box { min-width: 0; max-width: 100%; }
