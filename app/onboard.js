@@ -208,7 +208,7 @@
     { st: "보고", ey: "보고서 자동 생성", ill: ill4, h: '기록이 그대로<br><em>보고서 한 장</em>으로', p: "복명서·상담일지 등 문서 8종(선택 2종 포함)이 hwpx·xlsx로 만들어집니다.",
       src: '<b>한국사회보장정보원 복지서비스 목록 · 자원정보</b>를 포함한 연계처 735곳으로 의뢰' }
   ];
-  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z126" alt="">';
+  var LOGO = '<img src="shared/icons/daeum.svg?v=s12z127" alt="">';
   var REDUCE = !!(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches);
   var H = { login: function () {}, start: function () {} }, OB = { d: null, i: 0, pc: false };
 
