@@ -60,6 +60,18 @@
   html.pwa-app .pwa { display: none; }
   body[data-s="today"] .pwa, body[data-s="docs"] .pwa { max-width: 1240px; margin-bottom: 32px; padding: 0 24px; }
 </style>
+<script>/* 닿음 접속 기록(S12-126) — 화면 변화 없음. 무작위 기기 번호만, 이름·연락처 안 보냄. ?me=1 로 한 번 열면 그 기기는 집계 제외(호창님 PC·폰) */
+(function(S){try{var E="https://gicjzrxgktpovnphtjhi.supabase.co/functions/v1/daeum-visit",L=window.localStorage,q=location.search,t0=Date.now();
+if(/[?&]me=1\b/.test(q))L.setItem("daeum.me","1");if(/[?&]me=0\b/.test(q))L.removeItem("daeum.me");
+if(/[?&]me=[01]\b/.test(q)&&history.replaceState)history.replaceState(null,"",location.pathname+q.replace(/[?&]me=[01]\b/,"").replace(/^&/,"?")+location.hash);
+var v=L.getItem("daeum.vid");if(!v){v=Math.random().toString(36).slice(2)+Date.now().toString(36);L.setItem("daeum.vid",v);}
+var sid=Math.random().toString(36).slice(2),me=L.getItem("daeum.me")==="1",sent=0;
+function acct(){try{var a=JSON.parse(L.getItem("daeum.auth")||"null");return a&&a.user&&a.user.email||"";}catch(e){return "";}}
+function send(ev){var b=JSON.stringify({site:S,ev:ev,vid:v,sid:sid,me:me,path:location.pathname.replace(/^\/(daeum|apps\/daeum)/,"")||"/",ref:ev==="open"?(document.referrer||"").slice(0,300):"",acct:acct(),secs:ev==="leave"?(Date.now()-t0)/1000:null,scr:screen.width+"x"+screen.height,lang:navigator.language});
+if(navigator.sendBeacon&&navigator.sendBeacon(E,new Blob([b],{type:"text/plain"})))return;try{fetch(E,{method:"POST",body:b,keepalive:true,headers:{"Content-Type":"text/plain"}});}catch(e){}}
+send("open");addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"&&sent<3){sent++;send("leave");}});
+}catch(e){}})("app");
+</script>
 </head>
 <body>
 <div class="app" id="app"></div>
